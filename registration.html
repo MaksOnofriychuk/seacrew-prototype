@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SeaCrew — регистрация моряка</title>
+<style>
+:root{
+  --bg:#0B1117;--page:#070C11;--surface:#121A22;--raised:#1A2430;--nav:#0E151C;--input:#0F1720;
+  --border:#243242;--divider:#16202B;--strong:#3A4A5C;
+  --t1:#E8EEF3;--t2:#9AA8B5;--t3:#96A3AF;--muted:#5C6B79;
+  --accent:#2EC4B6;--accentHi:#5FD9CE;--onAccent:#062723;
+  --tint08:rgba(var(--accentRGB),.08);--tint:rgba(var(--accentRGB),.12);--accentBorder:rgba(var(--accentRGB),.25);
+  --success:#3FB950;--successBg:rgba(63,185,80,.12);
+  --warning:#E3A008;--warningBg:rgba(227,160,8,.14);--warningSoft:rgba(227,160,8,.07);--warningBorder:rgba(227,160,8,.35);
+  --danger:#F26A6A;--dangerBg:rgba(242,106,106,.12);--dangerBorder:rgba(242,106,106,.35);
+  --accentRGB:46,196,182;--docA:#1E2A36;--docB:#141D26;--docLine:#2A3846;--heroA:#0E1922;--chrome:#05080B;--homeBar:#E8EEF3;--shadow:rgba(0,0,0,.35);
+}
+.screen.light{
+  --bg:#F4F6F8;--surface:#FFFFFF;--raised:#EBEFF3;--nav:#FFFFFF;--input:#F9FAFB;
+  --border:#C9D2DB;--divider:#E6EBF0;--strong:#8C99A6;
+  --t1:#0B1117;--t2:#4A5866;--t3:#55616D;--muted:#7A8794;
+  --accent:#096E64;--accentHi:#0B8578;--onAccent:#FFFFFF;
+  --tint08:rgba(9,110,100,.08);--tint:rgba(9,110,100,.12);--accentBorder:rgba(9,110,100,.25);
+  --success:#177030;--successBg:rgba(23,112,48,.12);
+  --warning:#845600;--warningBg:rgba(132,86,0,.14);--warningSoft:rgba(132,86,0,.07);--warningBorder:rgba(132,86,0,.35);
+  --danger:#B82525;--dangerBg:rgba(184,37,37,.12);--dangerBorder:rgba(184,37,37,.35);
+  --accentRGB:9,110,100;--docA:#E9EEF2;--docB:#DCE3E9;--docLine:#C3CDD6;--heroA:#E3EFEE;--homeBar:#0B1117;--shadow:rgba(11,17,23,.12);
+  color:var(--t1);
+}
+.screen.light .status{color:#0B1117}
+.screen.light .sheet{background:rgba(11,17,23,.4)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--t1);font-family:-apple-system,"SF Pro Text","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select{font-family:inherit}
+input::placeholder{color:var(--muted)}
+a{color:var(--accent);text-decoration:none}
+svg{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes rise{from{transform:translateY(100%)}to{transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes ring{from{stroke-dashoffset:302}to{stroke-dashoffset:0}}
+@keyframes shimmer{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}
+@keyframes scan{0%{top:6%}50%{top:86%}100%{top:6%}}
+@keyframes inR{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes inL{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+@keyframes boxpop{0%{transform:scale(.7)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes burst{0%{opacity:0;transform:translate(0,0) scale(.4)}20%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1)}}
+@keyframes typeIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+@keyframes sk{0%{background-position:-200px 0}100%{background-position:200px 0}}
+@keyframes waveX{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes riseIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes sweep{0%{left:-70%}45%,100%{left:120%}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(var(--accentRGB),0)}50%{box-shadow:0 0 18px 2px rgba(var(--accentRGB),.35)}}
+@keyframes zap{0%,40%,100%{transform:scale(1);opacity:1}46%{transform:scale(1.18);opacity:.75}52%{transform:scale(.96);opacity:1}}
+@keyframes drawOnce{to{stroke-dashoffset:0}}
+@keyframes draw{0%{stroke-dashoffset:24}35%,75%{stroke-dashoffset:0}100%{stroke-dashoffset:-24}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes conf{0%{opacity:0;transform:translate(0,0) rotate(0) scale(.4)}12%{opacity:1}100%{opacity:0;transform:translate(var(--dx),calc(var(--dy) + 40px)) rotate(var(--rot)) scale(1)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes dropSweep{0%,30%{background-position:120% 0}70%,100%{background-position:-20% 0}}
+@keyframes breathe{0%,100%{box-shadow:0 0 0 0 rgba(var(--accentRGB),0)}50%{box-shadow:0 0 0 6px rgba(var(--accentRGB),.10)}}
+@keyframes growIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes pgIn{from{opacity:0;transform:scale(.7) rotate(-4deg)}to{opacity:1;transform:none}}
+@keyframes fadeOut{to{opacity:0}}
+@keyframes sink{to{transform:translateY(100%)}}
+@keyframes readyPulse{0%{box-shadow:0 0 0 0 rgba(var(--accentRGB),.5)}100%{box-shadow:0 0 0 14px rgba(var(--accentRGB),0)}}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(-40px,30px) scale(1.12)}}
+@keyframes rock{0%,100%{transform:rotate(-5deg) translateY(0)}50%{transform:rotate(5deg) translateY(1px)}}
+@keyframes pulse{0%{opacity:.55;transform:scale(1)}70%,100%{opacity:0;transform:scale(1.35)}}
+@keyframes bubble{0%{opacity:0;transform:translate(0,0)}15%{opacity:.5}100%{opacity:0;transform:translate(var(--bx),-150px)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition:none!important}.stag,.act,.sheet .in > .btn{opacity:1!important;animation:none!important}.choice .lines svg path{stroke-dasharray:none!important;stroke-dashoffset:0!important}.drop::before,.choice.hi::before,.bub,.burst{display:none!important}}
+
+/* панель обзора */
+.bar{position:sticky;top:0;z-index:10;background:rgba(7,12,17,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.seg{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap;justify-content:center}
+.seg button{background:none;border:none;color:var(--t2);font-size:13px;font-weight:600;padding:9px 14px;border-radius:9px;cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--onAccent)}
+.nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+.nav button,.nav select{background:var(--surface);border:1px solid var(--border);color:var(--t1);border-radius:10px;padding:9px 12px;font-size:13px;cursor:pointer}
+.nav select{max-width:300px}
+.opts{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;align-items:center;font-size:12px;color:var(--t2)}
+.opts label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.opts select{background:var(--surface);border:1px solid var(--border);color:var(--t1);border-radius:8px;padding:6px 8px;font-size:12px}
+.note{max-width:760px;font-size:13px;line-height:1.5;color:var(--t2);text-align:center}
+.note b{color:var(--t1)}
+.note.dev{border:1px dashed var(--strong);border-radius:10px;padding:8px 12px;text-align:left}
+.note code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--accent)}
+
+/* сцена и телефон */
+.stage{display:flex;justify-content:center;padding:24px 12px 48px}
+.frameA{width:100%;max-width:1100px;height:calc(100vh - 150px);min-height:900px;border:1px solid var(--border);border-radius:14px;background:var(--page)}
+.phone{width:390px;height:844px;max-width:100%;border-radius:54px;background:#05080B;padding:11px;box-shadow:0 0 0 1px #2A3644,0 0 0 4px #0D141B,0 40px 90px rgba(0,0,0,.55);flex-shrink:0}
+.screen{position:relative;width:100%;height:100%;border-radius:44px;background:var(--bg);color:var(--t1);transition:background .25s;overflow:hidden;display:flex;flex-direction:column}
+.status{height:50px;position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:8px 32px 0 34px;font-size:15px;font-weight:600;z-index:4;pointer-events:none}
+.status .sig{display:flex;gap:5px;align-items:center}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:122px;height:35px;border-radius:20px;background:#000;z-index:3}
+.home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--homeBar);opacity:.85;z-index:6}
+.inner{flex:1;display:flex;flex-direction:column;min-height:0;padding-top:50px;animation:enter .22s ease-out}
+.inner.fw{animation:inR .26s cubic-bezier(.2,.8,.2,1)}
+.inner.bw{animation:inL .26s cubic-bezier(.2,.8,.2,1)}
+.inner.still{animation:none}
+.body{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:8px 22px 24px;gap:14px;scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+.body > *{flex-shrink:0}
+.body > .hero.grow{flex-shrink:1}
+.body.center{justify-content:center}
+.inner > .body:last-child{padding-bottom:44px}
+.welcome{gap:14px}
+.underbar{margin-top:-50px}
+.underbar .hero{margin-top:-8px;padding-top:96px}
+.welcome .card{padding:16px}
+.feats{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.feat{display:inline-flex;align-items:center;gap:5px;padding:6px 10px 6px 8px;border-radius:20px;background:var(--tint);border:1px solid var(--accentBorder);color:var(--t1);font-size:12.5px;font-weight:600;backdrop-filter:blur(6px)}
+.feat svg{color:var(--accent)}
+.stag{opacity:0;animation:riseIn .32s cubic-bezier(.2,.8,.2,1) forwards}
+.inner.still .stag,.inner.bw .stag{opacity:1;animation:none}
+.choice{position:relative;overflow:hidden}
+.choice:active{transform:scale(.97);transition-duration:.09s}
+.choice.hi::before{content:'';position:absolute;top:0;bottom:0;width:60%;left:-70%;background:linear-gradient(100deg,rgba(var(--accentRGB),0),rgba(var(--accentRGB),.14),rgba(var(--accentRGB),0));animation:sweep 6s 1.2s ease-in-out infinite;pointer-events:none}
+.choice.hi .ico svg{animation:zap 1.2s .5s ease-in-out 1}
+.choice .lines svg path{stroke-dasharray:24;stroke-dashoffset:24;animation:drawOnce .9s .55s ease-out forwards}
+.welcome .hero.grow{max-height:500px}
+.hero > *{flex-shrink:0}
+.foot{flex-shrink:0;padding:12px 22px 30px;display:flex;flex-direction:column;gap:6px;background:linear-gradient(to top,var(--bg) 70%,transparent)}
+.foot.line{border-top:1px solid var(--border);background:var(--bg)}
+
+/* типографика */
+.h1{font-size:28px;font-weight:700;line-height:1.18;letter-spacing:-.3px;text-wrap:balance}
+.h2{font-size:17px;font-weight:700;line-height:1.3}
+.h3{font-size:15px;font-weight:600;line-height:1.3}
+.sub{font-size:15px;color:var(--t2);line-height:1.45}
+.small{font-size:13px;color:var(--t2);line-height:18px}
+.over{font-size:12px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--t2)}
+
+/* кнопки */
+.btn{border:none;border-radius:12px;min-height:50px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s,opacity .15s}
+.btn:active{transform:scale(.97)}
+.btn.p{transition:transform .12s,opacity .2s,box-shadow .25s,filter .15s}
+.btn.p:not([disabled]){box-shadow:0 6px 18px rgba(var(--accentRGB),.22)}
+.btn.s:active,.btn.g:active,.btn.d:active{opacity:.6}
+.btn.ready{animation:readyPulse .6s ease-out}
+.back:active,.link:active{opacity:.5}
+.btn.p{background:var(--accent);color:var(--onAccent)}
+.btn.s{background:var(--raised);color:var(--t1);border:1px solid var(--border)}
+.btn.g{background:none;color:var(--accent);font-weight:500;font-size:15px;min-height:44px;padding:8px}
+.btn.d{background:none;color:var(--danger);font-weight:500;font-size:15px;min-height:44px;padding:8px}
+.btn[disabled]{opacity:.38;cursor:not-allowed}
+.btn.busy{pointer-events:none}
+.btn.off{opacity:.38}
+.btn .sp{width:18px;height:18px;border:2.5px solid rgba(6,39,35,.25);border-top-color:var(--onAccent);border-radius:50%;animation:spin .8s linear infinite}
+.back{background:none;border:none;color:var(--t1);padding:10px;margin-left:-10px;cursor:pointer;min-height:44px;min-width:44px;align-self:flex-start;display:flex;align-items:center;justify-content:center}
+.link{background:none;border:none;color:var(--accent);font-size:14px;cursor:pointer;padding:12px 0;margin:-12px 0}
+
+/* поля */
+.field{display:flex;flex-direction:column;gap:6px}
+.field .lr{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:18px}
+.field label{font-size:13px;color:var(--t2)}
+.ctl{position:relative}
+.field input,.field select{width:100%;background:var(--input);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--t1);font-size:15px;min-height:46px;outline:none;transition:border-color .15s}
+.field input:focus{border-color:var(--accent)}
+.field input.err{border-color:var(--danger)}
+.field input.ok{border-color:rgba(63,185,80,.55)}
+.field input[readonly]{color:var(--t2);background:var(--surface)}
+.field .eye{position:absolute;right:1px;top:50%;transform:translateY(-50%);width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--t2);cursor:pointer}
+.field .msg{font-size:12px;line-height:1.4;min-height:0}
+.field .msg.e{color:var(--danger)}
+.field .msg.n{color:var(--t2)}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--tint);color:var(--accent);white-space:nowrap}
+.tag.w{background:var(--warningBg);color:var(--warning)}
+.tag.m{background:var(--raised);color:var(--t2)}
+.tag.ok{background:var(--successBg);color:var(--success)}
+.meter{display:flex;gap:4px}
+.meter span{flex:1;height:4px;border-radius:2px;background:var(--border);transition:background .2s}
+
+/* карточки */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.card.hi{border-color:var(--accentBorder);background:linear-gradient(180deg,rgba(var(--accentRGB),.07),rgba(var(--accentRGB),.02))}
+.choice{cursor:pointer;text-align:left;color:var(--t1);transition:transform .16s cubic-bezier(.3,1.4,.5,1),border-color .15s,background .15s}
+.row{display:flex;gap:12px;align-items:center}
+.ico{width:42px;height:42px;border-radius:12px;background:var(--raised);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent)}
+.ico.acc{background:var(--tint);border-color:var(--accentBorder)}
+.ico.big{width:64px;height:64px;border-radius:18px}
+.check{display:flex;gap:12px;align-items:flex-start;cursor:pointer;font-size:14px;line-height:1.45;color:var(--t1)}
+.box{width:24px;height:24px;border-radius:7px;border:1.5px solid var(--strong);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--onAccent);margin-top:1px;transition:background .15s,border-color .15s}
+.box.on{background:var(--accent);border-color:var(--accent)}
+.box.pop{animation:boxpop .28s ease-out}
+.shake{animation:shake .4s}
+.toast{position:absolute;left:50%;bottom:112px;transform:translateX(-50%);z-index:7;background:var(--raised);color:var(--t1);border:1px solid var(--border);border-radius:14px;padding:4px 12px 4px 14px;display:flex;gap:12px;align-items:center;font-size:14px;white-space:nowrap;box-shadow:0 10px 30px var(--shadow);animation:toastIn .22s ease-out;overflow:hidden}
+.toast .tbar{position:absolute;left:0;bottom:0;height:2px;background:var(--accent);animation:tbar 4s linear forwards}
+@keyframes tbar{from{width:100%}to{width:0}}
+.toast button{background:none;border:none;color:var(--accent);font-weight:600;font-size:14px;cursor:pointer;padding:12px 8px;min-height:44px}
+.burst{position:absolute;left:50%;top:50%;border-radius:2px;animation:conf 1.1s .4s cubic-bezier(.15,.7,.3,1) both}
+.found{font-size:12px;color:var(--accent);font-weight:600;letter-spacing:.3px;animation:typeIn .3s ease-out;margin-top:2px}
+.skel{border-radius:8px;background:linear-gradient(90deg,var(--raised) 0,var(--surface) 50%,var(--raised) 100%);background-size:400px 100%;animation:sk 1.1s linear infinite}
+.pg .beam{position:absolute;left:0;right:0;height:2px;background:var(--accent);box-shadow:0 0 12px 3px rgba(var(--accentRGB),.45);animation:scan 1.2s ease-in-out infinite}
+button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.banner{border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.45;display:flex;gap:10px;align-items:flex-start}
+.banner .bi{flex-shrink:0;margin-top:1px}
+.banner .bt{display:flex;flex-direction:column;gap:6px;flex:1}
+.banner.w{background:var(--warningSoft);border:1px solid var(--warningBorder)}
+.banner.w .bi{color:var(--warning)}
+.banner.i{background:var(--tint08);border:1px solid var(--accentBorder)}
+.banner.i .bi{color:var(--accent)}
+.banner.d{background:var(--dangerBg);border:1px solid var(--dangerBorder)}
+.banner.d .bi{color:var(--danger)}
+.banner.ok{background:var(--successBg);border:1px solid rgba(63,185,80,.35)}
+.banner.ok .bi{color:var(--success)}
+.drop{position:relative;overflow:hidden;border:1.5px dashed var(--strong);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;background:var(--input);transition:border-color .2s,background .2s,transform .15s}
+.drop::before{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(var(--accentRGB),.10) 50%,transparent 70%);background-size:250% 100%;animation:dropSweep 6s ease-in-out infinite;pointer-events:none}
+.drop:active{border-color:var(--accent);background:var(--tint08)}
+.drop:active{transform:scale(.98);transition-duration:.09s}
+.drop .ico{transition:transform .15s}
+.drop:active .ico{transform:scale(.92)}
+.file{display:flex;gap:12px;align-items:center;background:var(--raised);border:1px solid var(--border);border-radius:12px;padding:10px 8px 10px 12px;font-size:14px;min-height:60px}
+.file .meta{display:flex;gap:5px;align-items:center;font-size:12px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.file .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.enter{animation:growIn .38s cubic-bezier(.2,.8,.2,1)}
+.popin{animation:boxpop .35s ease-out}
+.file .fi{width:36px;height:36px;border-radius:9px;background:var(--surface);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0}
+.file .x,.xbtn{margin-left:auto;width:44px;height:44px;border-radius:50%;background:none;border:none;color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,color .15s,transform .12s}
+.file .x:active,.xbtn:active{background:var(--surface);color:var(--danger)}
+.file .x:active,.xbtn:active{transform:scale(.88)}
+.prog{height:4px;border-radius:2px;background:var(--border);overflow:hidden;margin-top:6px}
+.prog span{display:block;height:100%;background:var(--accent);transition:width .15s linear}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.segc{position:relative;display:flex;background:var(--input);border:1px solid var(--border);border-radius:12px;padding:3px;gap:3px}
+.segc .thumb{position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 4.5px);border-radius:9px;background:var(--raised);box-shadow:0 1px 4px var(--shadow),0 0 0 1px var(--accentBorder);transition:transform .32s cubic-bezier(.3,1.2,.4,1)}
+.segc .thumb.r{transform:translateX(calc(100% + 3px))}
+.segc button{position:relative;z-index:1;flex:1;background:none;border:none;border-radius:9px;padding:9px 6px;cursor:pointer;color:var(--t2);display:flex;flex-direction:column;align-items:center;gap:1px;transition:color .2s}
+.segc button b{font-size:13px;font-weight:600}
+.segc button span{font-size:12px;opacity:.8}
+.segc button.on{color:var(--t1)}
+.segc button:active{opacity:.7}
+.num{width:24px;height:24px;border-radius:50%;background:var(--tint);color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.num.ok{background:var(--successBg);color:var(--success)}
+.pill{background:var(--raised);border:1px solid var(--border);color:var(--t1);border-radius:20px;padding:8px 12px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.pill.on{background:var(--tint);border-color:var(--accent);color:var(--accent)}
+.pages{display:flex;gap:10px}
+.pg{width:84px;height:110px;border-radius:10px;background:linear-gradient(160deg,var(--docA),var(--docB));border:1px solid var(--border);position:relative;overflow:hidden;flex-shrink:0}
+.pg .ph{position:absolute;left:10px;top:12px;width:24px;height:30px;border-radius:3px;background:var(--docLine)}
+.pg .ln{position:absolute;left:40px;right:10px;height:4px;border-radius:2px;background:var(--docLine)}
+.pg .mrz{position:absolute;left:8px;right:8px;bottom:10px;height:12px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--docLine) 0 4px,transparent 4px 6px)}
+.pg .n{position:absolute;right:6px;top:6px;font-size:10px;font-weight:600;color:var(--t2);background:var(--surface);border-radius:6px;padding:1px 5px}
+.pg.add{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;border:1.5px dashed var(--strong);background:var(--input);color:var(--t2);font-size:11px;cursor:pointer;transition:border-color .2s,color .2s,transform .15s}
+.pg.add:active{transform:scale(.95)}
+.pg.enter{animation:pgIn .4s cubic-bezier(.2,.9,.3,1.2)}
+.docfoot{display:flex;align-items:center;justify-content:space-between;min-height:36px;margin-top:-2px}
+.list{display:flex;flex-direction:column;gap:12px}
+.li{display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.4}
+.dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.dot.ok{background:var(--successBg);color:var(--success)}
+.dot.wait{background:var(--raised);color:var(--t2)}
+.dot.run{background:var(--tint);color:var(--accent)}
+.dot.skip{background:var(--warningBg);color:var(--warning)}
+.dot .s{width:12px;height:12px;border:2px solid var(--accentBorder);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:11px 0;border-bottom:1px solid var(--divider)}
+.kv:last-child{border-bottom:none}
+.kv span:first-child{color:var(--t2)}
+
+/* шторка */
+.sheet{position:absolute;inset:0;background:rgba(4,8,12,.62);display:flex;align-items:flex-end;z-index:5;animation:fade .18s}
+.sheet .in{width:100%;background:var(--surface);border-radius:20px 20px 0 0;border-top:1px solid var(--border);padding:10px 20px 34px;display:flex;flex-direction:column;gap:12px;animation:rise .24s ease-out;max-height:85%;overflow-y:auto}
+.sheet .grab{width:38px;height:5px;border-radius:3px;background:var(--strong);align-self:center;margin-bottom:6px}
+.act{display:flex;gap:14px;align-items:center;padding:11px 10px;margin:0 -10px;border-radius:12px;cursor:pointer;font-size:15px;transition:background .15s;opacity:0;animation:riseIn .34s cubic-bezier(.2,.8,.2,1) forwards}
+.act + .act{box-shadow:0 -1px 0 var(--divider)}
+.act:nth-of-type(1){animation-delay:.06s}.act:nth-of-type(2){animation-delay:.11s}.act:nth-of-type(3){animation-delay:.16s}.act:nth-of-type(4){animation-delay:.21s}
+.act:active{background:var(--raised);transform:scale(.99)}
+.act .ico{width:40px;height:40px;transition:transform .15s}
+.act:active .ico{transform:scale(.9)}
+.act .chev{color:var(--t2)}
+.sheet.out{animation:fadeOut .2s forwards}
+.sheet.out .in{animation:sink .22s ease-in forwards}
+.sheet .in > .btn{opacity:0;animation:riseIn .3s .24s forwards}
+.legal{font-size:14px;line-height:1.55;color:var(--t2);display:flex;flex-direction:column;gap:10px}
+.legal p{margin:0}
+.legal b{color:var(--t1)}
+
+/* герой */
+.hero{position:relative;margin:-58px -22px 0;padding:84px 22px 88px;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--heroA),var(--bg));overflow:hidden;isolation:isolate}
+.hero .glow,.ambient .glow{position:absolute;width:340px;height:340px;right:-120px;top:-150px;border-radius:50%;background:radial-gradient(circle,rgba(var(--accentRGB),.30),rgba(var(--accentRGB),0) 65%);animation:drift 11s ease-in-out infinite alternate;z-index:-1}
+.hero .glow.b,.ambient .glow.b{animation:none!important;width:260px;height:260px;left:-130px;right:auto;top:60px;background:radial-gradient(circle,rgba(var(--accentRGB),.14),rgba(var(--accentRGB),0) 65%);animation-duration:14s;animation-direction:alternate-reverse}
+.hero .sea,.ambient .sea{position:absolute;left:0;right:0;bottom:0;height:92px;overflow:hidden;z-index:-1;-webkit-mask-image:linear-gradient(to bottom,#000 55%,transparent);mask-image:linear-gradient(to bottom,#000 55%,transparent)}
+.hero.grow{flex:1;min-height:0}
+.underbar .hero.mini{padding:54px 22px 44px}
+.hero.mini .sea{height:64px}
+.navbar{position:absolute;top:0;left:0;right:0;height:94px;padding:50px 12px 0 18px;display:flex;align-items:center;gap:4px;z-index:3;pointer-events:none;transition:background .2s,box-shadow .2s}
+.navbar > *{pointer-events:auto}
+.navbar .back{align-self:center;margin-left:0}
+.navbar .nt{position:absolute;left:60px;right:60px;top:50px;height:44px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.navbar.scrolled{background:color-mix(in srgb,var(--bg) 72%,transparent);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:0 1px 0 var(--divider)}
+.navbar.titled .nt{opacity:1;transform:none}
+.navbar .close{margin-left:auto}
+.underbar .hero.mini{padding:96px 22px 40px}
+.consent{gap:10px;overflow:hidden;padding-bottom:12px}
+.underbar.consent .hero.mini{padding:90px 22px 18px}
+.consent .hero .h1{margin-top:14px!important}
+.consent .card{padding:12px 14px}
+.consent .list{gap:10px}
+.underbar .hero.compact{padding:98px 22px 8px;background:none}
+.hero.compact .h1{margin-top:0!important;font-size:28px}
+.btn.t{background:var(--tint);color:var(--accent);border:1px solid var(--accentBorder)}
+.btn.dd{background:var(--danger);color:#fff}
+.bigtitle{font-size:34px;font-weight:700;letter-spacing:-.4px;line-height:1.1}
+.need{font-size:13px;color:var(--t2);text-align:center;min-height:18px}
+.ambient{position:relative;isolation:isolate}
+.ambient-bg .glow{position:absolute;width:340px;height:340px;right:-140px;top:-120px;border-radius:50%;background:radial-gradient(circle,rgba(var(--accentRGB),.26),rgba(var(--accentRGB),0) 65%);animation:drift 11s ease-in-out infinite alternate}
+.ambient-bg .glow.b{width:260px;height:260px;left:-130px;right:auto;top:auto;bottom:80px;background:radial-gradient(circle,rgba(var(--accentRGB),.12),rgba(var(--accentRGB),0) 65%);animation-duration:14s}
+.ambient-bg .sea{position:absolute;left:0;right:0;bottom:0;height:120px;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,#000 55%,transparent);mask-image:linear-gradient(to bottom,#000 55%,transparent)}
+.ambient-bg .sea svg{position:absolute;bottom:0;left:0;width:200%;height:100%}
+.ambient-bg .sea .w1{animation:waveX 16s linear infinite}
+.ambient-bg .sea .w2{animation:waveX 24s linear infinite reverse;bottom:-6px}
+.ambient-bg .sea .w3{animation:waveX 34s linear infinite;bottom:-12px}
+.ambient-bg .bub{position:absolute;bottom:40px;width:4px;height:4px;border-radius:50%;background:var(--accent);opacity:0;animation:bubble 7s ease-in infinite}
+.ambient-bg .glow{display:none!important}
+.ambient-bg{background:radial-gradient(110% 55% at 100% 0%,rgba(var(--accentRGB),.20),transparent 62%)}
+.ambient-bg.tone-warn{background:radial-gradient(110% 55% at 100% 0%,rgba(227,160,8,.16),transparent 62%)}
+.ambient-bg.tone-muted{background:radial-gradient(110% 55% at 100% 0%,rgba(154,168,181,.12),transparent 62%)}
+.ambient-bg.tone-ok{background:radial-gradient(110% 55% at 100% 0%,rgba(63,185,80,.18),transparent 62%)}
+.ambient-bg.tone-warn .glow{background:radial-gradient(circle,rgba(227,160,8,.2),rgba(227,160,8,0) 65%)}
+.ambient-bg.tone-muted .glow{background:radial-gradient(circle,rgba(154,168,181,.14),rgba(154,168,181,0) 65%)}
+.ambient-bg.tone-warn .sea,.ambient-bg.tone-muted .sea{opacity:.4;filter:grayscale(.7)}
+.ambient-bg.tone-ok .glow{background:radial-gradient(circle,rgba(63,185,80,.22),rgba(63,185,80,0) 65%)}
+.ambient .sea{height:120px}
+.ambient .glow{right:-140px;top:-120px}
+.logo.tile svg{animation:bob 3.2s ease-in-out infinite}
+.tile.t-warn{color:var(--warning);border-color:var(--warningBorder)}
+.tile.t-warn::after{border-color:var(--warning)}
+.tile.t-muted{color:var(--t2);border-color:var(--border)}
+.tile.t-muted::after{border-color:var(--strong)}
+.tile.t-ok{color:var(--success);border-color:rgba(63,185,80,.35)}
+.tile.t-ok::after{border-color:var(--success)}
+.tone-warn .glow{background:radial-gradient(circle,rgba(227,160,8,.22),rgba(227,160,8,0) 65%)!important}
+.tone-muted .glow{background:radial-gradient(circle,rgba(154,168,181,.16),rgba(154,168,181,0) 65%)!important}
+.tone-ok .glow{background:radial-gradient(circle,rgba(63,185,80,.22),rgba(63,185,80,0) 65%)!important}
+.tone-warn .sea,.tone-muted .sea{opacity:.45;filter:grayscale(.7)}
+.tone-warn .bub,.tone-muted .bub{display:none}
+.feat.ok{background:var(--successBg);border-color:rgba(63,185,80,.35)}
+.feat.ok svg{color:var(--success)}
+.scanbox{box-shadow:0 0 0 1px var(--accentBorder),0 18px 50px rgba(var(--accentRGB),.18)}
+.hero .sea svg,.ambient .sea svg{position:absolute;bottom:0;left:0;width:200%;height:100%}
+.hero .sea .w1,.ambient .sea .w1{animation:waveX 16s linear infinite}
+.hero .sea .w2,.ambient .sea .w2{animation:waveX 24s linear infinite reverse;bottom:-6px}
+.hero .sea .w3,.ambient .sea .w3{animation:waveX 34s linear infinite;bottom:-12px}
+.hero .bub,.ambient .bub{position:absolute;bottom:20px;width:4px;height:4px;border-radius:50%;background:var(--accent);opacity:0;animation:bubble 7s ease-in infinite;z-index:-1}
+.logo{position:relative;flex-shrink:0;width:60px;height:60px;border-radius:18px;background:linear-gradient(160deg,var(--raised),var(--surface));border:1px solid var(--accentBorder);display:flex;align-items:center;justify-content:center;color:var(--accent);box-shadow:0 10px 28px var(--shadow),inset 0 1px 0 rgba(255,255,255,.06)}
+.logo svg{transform-origin:50% 18%;animation:rock 5s ease-in-out infinite}
+.logo::after{content:'';position:absolute;inset:-1px;border-radius:18px;border:1.5px solid var(--accent);opacity:0;animation:pulse 1.6s .3s ease-out 1}
+
+/* обработка */
+.scanbox{position:relative;width:220px;height:140px;border-radius:14px;background:linear-gradient(160deg,var(--docA),var(--docB));border:1px solid var(--border);overflow:hidden;align-self:center}
+.scanbox .ph{position:absolute;left:16px;top:18px;width:40px;height:52px;border-radius:5px;background:var(--docLine)}
+.scanbox .ln{position:absolute;left:68px;height:6px;border-radius:3px;background:var(--docLine)}
+.scanbox .mrz{position:absolute;left:14px;right:14px;bottom:14px;height:18px;background:repeating-linear-gradient(90deg,var(--docLine) 0 6px,transparent 6px 9px)}
+.scanbox .beam{position:absolute;left:0;right:0;height:2px;background:var(--accent);box-shadow:0 0 18px 4px rgba(var(--accentRGB),.45);animation:scan 2.2s ease-in-out infinite}
+.scanbox .hl{position:absolute;border:1.5px solid var(--accent);border-radius:4px;background:rgba(var(--accentRGB),.12);animation:shimmer 1.4s infinite}
+
+/* успех */
+.okring{width:108px;height:108px;align-self:center;position:relative}
+.okring circle.track{stroke:var(--border)}
+.okring circle.p{stroke:var(--accent);stroke-dasharray:302;animation:ring .7s ease-out forwards}
+.okring .mk{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--accent);animation:pop .45s .45s both}
+
+/* мастер */
+.whead{flex-shrink:0;padding:0 14px 12px 8px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
+.whead .top{display:flex;align-items:center;gap:2px}
+.whead .t{flex:1;font-size:15px;font-weight:600}
+.whead .later{background:none;border:none;color:var(--accent);font-size:14px;cursor:pointer;padding:8px}
+.steps{display:flex;gap:4px;padding:0 6px}
+.steps span{flex:1;height:4px;border-radius:3px;background:var(--border)}
+.steps span.done{background:var(--accent)}
+.steps span.cur{background:var(--accent);opacity:.55}
+.tabs{flex-shrink:0;display:flex;border-top:1px solid var(--border);background:var(--nav);padding:8px 0 28px}
+.tabs div{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:var(--t2)}
+.tabs div.on{color:var(--accent)}
+.avatar{width:88px;height:88px;border-radius:50%;background:var(--raised);border:1.5px dashed var(--strong);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;color:var(--t2);font-size:11px;text-align:center;cursor:pointer;align-self:center}
+.av{width:60px;height:60px;border-radius:50%;background:var(--tint);border:1px solid var(--accentBorder);display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;font-size:20px;flex-shrink:0}
+.pbar{height:6px;border-radius:3px;background:var(--border);overflow:hidden}
+.pbar span{display:block;height:100%;background:var(--warning);border-radius:3px}
+@media (max-width:440px){.phone{padding:0;border-radius:0;height:calc(100vh - 190px);min-height:700px;box-shadow:none}.screen{border-radius:0}.island,.home{display:none}}
+</style>
+</head>
+<body>
+<div class="bar" id="bar"></div>
+<div class="stage" id="stage"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var BAR = document.getElementById('bar');
+  var STAGE = document.getElementById('stage');
+
+  /* ---------- иконки ---------- */
+
+  var P = {
+    back: '<path d="M15 5l-7 7 7 7"/>',
+    chevron: '<path d="M9 5l7 7-7 7"/>',
+    bolt: '<path d="M13 3L5 13.5h6L10 21l8-10.5h-6L13 3z"/>',
+    steps: '<path d="M4 6h3M4 12h3M4 18h3M10 6h10M10 12h10M10 18h10"/>',
+    doc: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',
+    idcard: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2.2"/><path d="M5.8 16c.6-1.6 1.8-2.4 3.2-2.4s2.6.8 3.2 2.4M14.5 10h4M14.5 13.5h3"/>',
+    camera: '<path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"/><circle cx="12" cy="13.3" r="3.4"/>',
+    scan: '<path d="M4 8V5.5A1.5 1.5 0 015.5 4H8M16 4h2.5A1.5 1.5 0 0120 5.5V8M20 16v2.5a1.5 1.5 0 01-1.5 1.5H16M8 20H5.5A1.5 1.5 0 014 18.5V16M7 12h10"/>',
+    image: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 16l-5-5-8.5 8.5"/>',
+    folder: '<path d="M3.5 7.5A1.5 1.5 0 015 6h4.2l2 2.2H19a1.5 1.5 0 011.5 1.5v8.3A1.5 1.5 0 0119 19.5H5A1.5 1.5 0 013.5 18z"/>',
+    shield: '<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/>',
+    shieldOk: '<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.2 2.2 4.3-4.6"/>',
+    lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 018 0v2.5"/>',
+    sparkle: '<path d="M12 3.5l1.7 4.8 4.8 1.7-4.8 1.7L12 16.5l-1.7-4.8L5.5 10l4.8-1.7zM18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>',
+    clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    mail: '<rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M4.5 7l7.5 6 7.5-6"/>',
+    check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+    x: '<path d="M6 6l12 12M18 6L6 18"/>',
+    alert: '<path d="M12 4l9 16H3z"/><path d="M12 10v4.5M12 17.3v.2"/>',
+    info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8v.2"/>',
+    wifi: '<path d="M3 9.5a13.5 13.5 0 0118 0M6 13a8.5 8.5 0 0112 0M9 16.5a3.6 3.6 0 016 0M12 19.5v.2"/><path d="M4 4l16 16"/>',
+    eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+    eyeOff: '<path d="M4 4l16 16M10 6c.7-.3 1.3-.5 2-.5 6 0 9.5 6.5 9.5 6.5a17 17 0 01-3 3.7M6.6 7.5C4 9.4 2.5 12 2.5 12S6 18.5 12 18.5c1.6 0 3-.4 4.2-1"/><path d="M9.9 10a3 3 0 004.1 4.2"/>',
+    user: '<circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/>',
+    inbox: '<path d="M3.5 13.5l2.6-7.2A1.5 1.5 0 017.5 5.3h9a1.5 1.5 0 011.4 1l2.6 7.2V18a1.5 1.5 0 01-1.5 1.5H5A1.5 1.5 0 013.5 18z"/><path d="M3.5 13.5h5l1.2 2.2h4.6l1.2-2.2h5"/>',
+    docs: '<rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M8.5 8.5h7M8.5 12h7M8.5 15.5h4"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    anchor: '<circle cx="12" cy="5.5" r="2"/><path d="M12 7.5V20M8 11h8M4.5 13.5c0 3.6 3.4 6.5 7.5 6.5s7.5-2.9 7.5-6.5"/>',
+    refresh: '<path d="M19.5 8.5A8 8 0 006 6.6L4.5 8M4.5 4v4h4M4.5 15.5A8 8 0 0018 17.4l1.5-1.4M19.5 20v-4h-4"/>',
+    trash: '<path d="M5 7h14M10 7V4.5h4V7M7 7l1 12.5h8L17 7"/>',
+    heart: '<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0112 7.3 4.3 4.3 0 0119.5 10c0 5.4-7.5 10-7.5 10z"/>',
+    ship: '<path d="M4 15l1.5 5h13L20 15H4zM7 15V9h10v6M12 9V4M9.5 6.5h5"/>',
+    medical: '<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M12 9.5v6M9 12.5h6M9 5V3.5h6V5"/>'
+  };
+
+  function ic(name, size, sw) {
+    return '<svg width="' + (size || 20) + '" height="' + (size || 20) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (sw || 1.8) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P[name] + '</svg>';
+  }
+
+  /* ---------- данные ---------- */
+
+  var DOC_TYPES = [
+    { id: 'sid', n: 'Удостоверение личности моряка', s: 'Seafarer\'s ID' },
+    { id: 'book', n: 'Послужная книжка', s: 'Seaman\'s Book' }
+  ];
+
+  var STEPS = [
+    { n: 1, t: 'Аккаунт', req: true },
+    { n: 2, t: 'Личные данные' },
+    { n: 3, t: 'Документ моряка', req: true },
+    { n: 4, t: 'Другие документы' },
+    { n: 5, t: 'Медицинские документы' },
+    { n: 6, t: 'Морской стаж' },
+    { n: 7, t: 'Проверка' }
+  ];
+
+  var B_SCREENS = [
+    ['b01', 'Вход'],
+    ['b02', 'Создать аккаунт'],
+    ['b03', 'Мои документы (после регистрации)'],
+    ['b04', 'Профиль (после регистрации)']
+  ];
+
+  var C_GROUPS = [
+    ['Быстрая регистрация', [
+      ['q01', '1. Приветствие и выбор способа'],
+      ['q02', '2. Согласие'],
+      ['q03', '3. CV и документ моряка'],
+      ['q04', '4. Читаем документ'],
+      ['q05', '5. Проверьте данные'],
+      ['q06', '6. Аккаунт создан'],
+      ['q07', '7. Профиль'],
+      ['q08', '8. Email подтверждён'],
+      ['q09', 'Незаконченная регистрация'],
+      ['e01', 'Ошибка: документ не прочитан'],
+      ['e02', 'Ошибка: это не документ моряка'],
+      ['e03', 'Ошибка: нет интернета'],
+      ['e04', 'Ошибка: слишком много попыток'],
+      ['e05', 'Регистрация невозможна (бан)']
+    ]],
+    ['Пошаговая регистрация (следующий этап)', [
+      ['s1', 'Шаг 1 · Аккаунт'],
+      ['s2', 'Шаг 2 · Личные данные'],
+      ['s3', 'Шаг 3 · Документ моряка'],
+      ['s4', 'Шаг 4 · Другие документы'],
+      ['s5', 'Шаг 5 · Медицинские'],
+      ['s6', 'Шаг 6 · Морской стаж'],
+      ['s7', 'Шаг 7 · Проверка'],
+      ['c08', 'Продолжить регистрацию']
+    ]]
+  ];
+
+  var C_SCREENS = [];
+  C_GROUPS.forEach(function (g) { g[1].forEach(function (x) { C_SCREENS.push(x); }); });
+
+  var SCENARIOS = [
+    ['ok', 'Всё хорошо'],
+    ['blur', 'ИИ не прочитал документ'],
+    ['notSeafarer', 'Это не документ моряка'],
+    ['offline', 'Нет интернета'],
+    ['rate', 'Слишком много попыток'],
+    ['ban', 'Документ в бан-листе'],
+    ['noName', 'Имя не прочитано'],
+    ['emailTaken', 'Email уже занят']
+  ];
+
+  var NOTES = {
+    b01: 'Сейчас в TestFlight: вход только по email и паролю.',
+    b02: 'Сейчас: email, пароль и повтор пароля. Ни имени, ни согласия, ни документа моряка.',
+    b03: 'После регистрации моряк попадает на пустой список документов и добавляет их по одному.',
+    b04: 'Профиль пустой: имя и остальные данные появятся только из подтверждённых документов.',
+    q01: 'Два способа. <b>Быстро</b> — CV и документ моряка, около минуты. <b>Пошагово</b> — профиль по шагам, можно остановиться и продолжить позже. «Войти» — для тех, у кого уже есть аккаунт.',
+    q02: 'Согласие даётся <b>до первого файла</b>: документ читает ИИ, данные документа хранятся для безопасности платформы. «Подробнее» открывает краткий текст согласия.',
+    q03: 'Оба файла обязательны. CV — файл, фото или скан. Документ моряка — тип выбирает моряк, страницы сканируются или фотографируются. Пока аккаунта нет, файлы во временном хранилище и удаляются через 30 дней.',
+    q04: 'ИИ читает из документа моряка только имя, фамилию, дату рождения и номер. CV не распознаётся. Проверка по списку заблокированных — здесь же. Исход зависит от сценария в панели. В приложении экран переходит дальше сам; в прототипе — по кнопке (или включите «Автопереход»).',
+    q05: 'Имя и фамилию моряк может исправить. Email вводится дважды, пароль — с подсказкой надёжности. Дата рождения и номер — только в запись безопасности, в профиль не попадают.',
+    q06: 'Аккаунт создан: файлы перенесены к моряку и зашифрованы его ключом, временные копии удалены.',
+    q07: 'Пользоваться можно сразу, откликаться тоже. Рекрутер видит пометку «Профиль неполный». Email подтверждается в фоне, без ограничений.',
+    q08: 'Моряк нажал ссылку в письме. Подтверждённый email нужен, чтобы восстановить пароль.',
+    q09: 'Моряк вернулся на том же телефоне, не закончив быструю регистрацию (до 30 дней). С другого устройства продолжить нельзя — аккаунта ещё нет.',
+    e01: 'Фото размыто или обрезано. Моряк переснимает документ в той же попытке; число попыток ограничено. <b>Открытый вопрос:</b> «Ввести имя вручную» — без номера документа проверка по бан-листу не работает, поэтому такой аккаунт получает пометку для администратора.',
+    e02: 'ИИ видит другой тип документа (например, загранпаспорт). Моряк загружает документ моряка или продолжает, если ИИ ошибся, — тогда аккаунт получает пометку для администратора.',
+    e03: 'Нет сети при загрузке или чтении. Файлы, которые уже загрузились, не теряются.',
+    e04: 'Ограничение на число попыток с одного телефона за время — защита от ботов.',
+    e05: 'Номер документа в списке заблокированных. Текст нейтральный: причину не называем. Попытка записывается без файлов.',
+    s1: 'Аккаунт создаётся сразу после шага 1 — дальше можно остановиться на любом шаге и продолжить с любого устройства.',
+    s2: 'Необязательный шаг. Фото профиля добавляется здесь.',
+    s3: 'Обязательный шаг, как и в быстром способе: без документа моряка защита от повторных аккаунтов не работает.',
+    s4: 'Пока один общий шаг для остальных документов; тип выбирает моряк. Состав шагов уточняется.',
+    s5: 'Отдельное согласие на медицинские данные. Копия хранится зашифрованной и удаляется после окончания срока действия.',
+    s6: 'Необязательный шаг: суда и рейсы.',
+    s7: 'Сводка по шагам. «Готово» доступно, когда пройдены обязательные шаги 1 и 3.',
+    c08: 'Моряк вернулся, не закончив пошаговую регистрацию.'
+  };
+
+  var DEV = {
+    q01: 'expo-router: <code>app/(onboarding)/index.tsx</code>. Карточки — <code>Card</code> + <code>Pressable</code>. Фон героя — <code>expo-linear-gradient</code> або SVG (<code>react-native-svg</code>), хвилі — SVG. Іконки — SF Symbols через <code>expo-symbols</code>: bolt, list.bullet, anchor (або власний SVG логотипу).',
+    q02: 'Чекбокс — новий <code>ui/Checkbox</code> (Pressable + reanimated scale). «Подробнее» — нативний sheet: <code>presentation: \'formSheet\'</code> в expo-router. Іконки: sparkles, lock, checkmark.shield, clock.',
+    q03: 'CV: <code>expo-document-picker</code> (PDF, Word), <code>react-native-document-scanner-plugin</code>, <code>expo-image-picker</code>. Документ: той самий сканер, що в «Добавить документ». Вибір джерела — formSheet або <code>ActionSheetIOS</code>. Прогрес — <code>XMLHttpRequest.upload.onprogress</code> або <code>expo-file-system</code> uploadAsync з прогресом. Тип — <code>Pill</code>. Тост «Отменить» — новий <code>ui/Toast</code> на reanimated.',
+    q04: 'Промінь і рамки — reanimated (<code>withRepeat</code>, <code>withTiming</code>). Етапи — опитування статусу спроби (як <code>processing-status-polling</code>, ADR-028). Значення з\'являються, коли API їх повернув.',
+    q05: '<code>TextField</code> вже є; додати <code>secureTextEntry</code> з кнопкою ока і <code>ui/PasswordMeter</code>. Валідація — zod-схема в <code>@crew/shared</code> (як <code>registerSchema</code>), повідомлення — i18n. «Здригання» — reanimated <code>withSequence</code>. Нижня кнопка над клавіатурою — <code>KeyboardAvoidingView</code>.',
+    q06: 'Кільце — <code>react-native-svg</code> + reanimated (strokeDashoffset). Конфеті — 14 <code>Animated.View</code>, без бібліотек. Haptics — <code>expo-haptics</code> (success), треба додати пакет.',
+    q07: 'Профіль — наявний <code>(tabs)/profile.tsx</code> + новий блок «Профиль неполный». Заглушки — наявний <code>ui/Skeleton</code>. Банер — наявний <code>ui/Banner</code>.',
+    q08: 'Deep link з листа: <code>expo-linking</code>, маршрут <code>verify-email</code>. Universal Links — після переїзду на акаунт замовника (ADR-017).',
+    q09: 'Ідентифікатор спроби — у <code>expo-secure-store</code> на телефоні; при старті застосунку — запит стану спроби.',
+    e01: 'Один компонент <code>RegistrationError</code> з варіантами за кодом помилки API.',
+    e02: 'Той самий <code>RegistrationError</code>.',
+    e03: 'Нема мережі — наявний патерн <code>RefreshFailed</code>/<code>SlowServerHint</code>.',
+    e04: 'Код 429 від API (модуль rate-limits).',
+    e05: 'Код відмови від API без причини в тексті.'
+  };
+
+  var S;
+  function initial() {
+    return {
+      view: 'c', b: 'b01', c: 'q01',
+      scenario: 'ok', showIds: true, emailService: true,
+      sheet: null,
+      consent: false,
+      cv: { st: 'none', p: 0 },
+      doc: { type: 'sid', pages: 0, st: 'none', p: 0 },
+      phase: 0,
+      first: 'Andrii', last: 'Koval',
+      email: '', email2: '', pass: '', showPass: false,
+      creating: false, createErr: '',
+      verified: false,
+      done: {}, medConsent: false, med: false, photo: false,
+      cd: 872, e2blur: false,
+      light: false, anim: 'fw', toast: null, pop: false, loadingProfile: false, dev: false, fx: {}, autoNext: false, readDone: false, readTarget: 'q05'
+    };
+  }
+  S = initial();
+
+  var timers = [];
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+
+  function docType() {
+    return DOC_TYPES.filter(function (d) { return d.id === S.doc.type; })[0];
+  }
+
+  function readHash() {
+    var h = (location.hash || '').replace('#', '').split('/');
+    if (h[0] === 'a' || h[0] === 'b' || h[0] === 'c') S.view = h[0];
+    if (h[1]) {
+      if (S.view === 'b' && B_SCREENS.some(function (x) { return x[0] === h[1]; })) S.b = h[1];
+      if (S.view === 'c' && C_SCREENS.some(function (x) { return x[0] === h[1]; })) S.c = h[1];
+    }
+  }
+
+  function writeHash() {
+    var next = '#' + S.view + (S.view === 'a' ? '' : '/' + (S.view === 'b' ? S.b : S.c));
+    if (location.hash !== next) history.replaceState(null, '', next);
+  }
+
+  /* ---------- общие куски ---------- */
+
+  function btn(label, action, kind, disabled, extra) {
+    return '<button class="btn ' + (kind || 'p') + (disabled ? ' off' : '') + '" data-a="' + (disabled ? 'blocked' : action) + '" data-go="' + action + '"' + (disabled ? ' aria-disabled="true"' : '') + (extra || '') + '>' + label + '</button>';
+  }
+
+  function nav(back, title, close) {
+    return '<div class="navbar">' + (back ? backBtn(back) : '') + '<div class="nt">' + (title || '') + '</div>' +
+      (close ? '<button class="back close" data-a="' + close + '" aria-label="Закрыть">' + ic('x', 22, 2) + '</button>' : '') + '</div>';
+  }
+
+  function shake(el) {
+    if (!el) return;
+    el.classList.remove('shake');
+    void el.offsetWidth;
+    el.classList.add('shake');
+  }
+
+  function backBtn(action) {
+    return '<button class="back" data-a="' + action + '" aria-label="Назад">' + ic('back', 24, 2.2) + '</button>';
+  }
+
+  function field(label, o) {
+    o = o || {};
+    var tag = o.tag || '';
+    var input;
+    if (o.select) {
+      input = '<select>' + o.select.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('') + '</select>';
+    } else {
+      input = '<div class="ctl"><input type="' + (o.type || 'text') + '"' +
+        (o.id ? ' id="' + o.id + '"' : '') +
+        (o.value != null ? ' value="' + esc(o.value) + '"' : '') +
+        (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') +
+        (o.ro ? ' readonly' : '') +
+        (o.bind ? ' data-bind="' + o.bind + '"' : '') +
+        (o.ac ? ' autocomplete="' + o.ac + '"' : '') +
+        (o.eye ? ' style="padding-right:46px"' : '') + '>' +
+        (o.eye ? '<button class="eye" data-a="toggle-pass" aria-label="Показать пароль">' + ic(S.showPass ? 'eyeOff' : 'eye', 20) + '</button>' : '') +
+        '</div>';
+    }
+    return '<div class="field"><div class="lr"><label>' + label + '</label>' + tag + '</div>' + input +
+      (o.after || '') +
+      '<div class="msg ' + (o.noteKind || 'n') + '"' + (o.msgId ? ' id="' + o.msgId + '"' : '') + '>' + (o.note || '') + '</div></div>';
+  }
+
+  function check(on, action, text) {
+    return '<div class="check" data-a="' + action + '" role="checkbox" tabindex="0"' + (on ? '' : ' data-need="consent"') + ' aria-checked="' + on + '"><div class="box' + (on ? ' on' : '') + (on && S.pop ? ' pop' : '') + '">' + (on ? ic('check', 15, 2.6) : '') + '</div><div>' + text + '</div></div>';
+  }
+
+  function banner(kind, icon, html) {
+    return '<div class="banner ' + kind + '"><div class="bi">' + ic(icon, 18) + '</div><div class="bt">' + html + '</div></div>';
+  }
+
+  function sheetHtml() {
+    if (!S.sheet) return '';
+    var inner = '';
+    if (S.sheet === 'cv') {
+      inner = '<div class="h2">Добавить CV</div>' +
+        act('folder', 'Выбрать файл', 'PDF или Word', 'pick-cv') +
+        act('scan', 'Сканировать', 'Если CV напечатано', 'pick-cv') +
+        act('image', 'Выбрать из галереи', 'Фото или скриншот', 'pick-cv') +
+        btn('Отмена', 'sheet-close', 's');
+    } else if (S.sheet === 'doc') {
+      inner = '<div class="h2">' + esc(docType().n) + '</div>' +
+        '<div class="small">Снимите страницу с фото и данными. Если на развороте есть другие данные — добавьте её второй страницей.</div>' +
+        act('scan', 'Сканировать документ', 'Края найдутся сами', 'pick-doc') +
+        act('camera', 'Сфотографировать', 'При хорошем свете, без бликов', 'pick-doc') +
+        act('image', 'Выбрать из галереи', '', 'pick-doc') +
+        btn('Отмена', 'sheet-close', 's');
+    } else if (S.sheet === 'consent') {
+      inner = '<div class="h2">Согласие на обработку данных</div><div class="legal">' +
+        '<p><b>Что мы обрабатываем.</b> CV и документ моряка, которые вы загрузите, а также email и данные, которые вы введёте сами.</p>' +
+        '<p><b>Зачем.</b> Чтобы создать ваш профиль моряка, помогать с работой и защищать платформу от повторных и поддельных аккаунтов.</p>' +
+        '<p><b>Как.</b> Документ моряка читает ИИ: мы берём имя, фамилию, дату рождения и номер документа. CV хранится как файл. Файлы шифруются.</p>' +
+        '<p><b>Кто видит.</b> Вы. Агентства — только то, к чему вы откроете доступ. Администратор — для поддержки и безопасности.</p>' +
+        '<p><b>Сколько храним.</b> Пока у вас есть аккаунт. Если регистрацию не закончить — файлы удаляются через 30 дней. Для безопасности платформы храним обезличенные отпечатки документа.</p>' +
+        '<p class="small">Черновик. Окончательный текст готовит юрист.</p></div>' +
+        btn('Понятно', 'sheet-close');
+    } else if (S.sheet === 'later') {
+      inner = '<div class="h2">Продолжить позже?</div>' +
+        '<div class="sub" style="font-size:14px">Всё, что вы заполнили, сохранено. Продолжить можно с этого шага в любой момент и с любого устройства.</div>' +
+        btn('Выйти и продолжить позже', 'later-out') + btn('Остаться', 'sheet-close', 's');
+    } else if (S.sheet === 'stopread') {
+      inner = '<div class="h2">Остановить чтение?</div>' +
+        '<div class="sub" style="font-size:14px">Файлы останутся — вы сможете заменить документ или начать заново.</div>' +
+        btn('Остановить', 'stop-read', 'dd') + btn('Продолжить ждать', 'sheet-close', 's');
+    } else if (S.sheet === 'restart') {
+      inner = '<div class="h2">Начать заново?</div>' +
+        '<div class="sub" style="font-size:14px">Загруженные CV и документ удалятся. Это нельзя отменить.</div>' +
+        btn('Удалить и начать заново', 'restart', 'dd') + btn('Отмена', 'sheet-close', 's');
+    }
+    return '<div class="sheet" data-a="sheet-bg"><div class="in" data-a="noop"><div class="grab"></div>' + inner + '</div></div>';
+  }
+
+  function act(icon, title, sub, action) {
+    return '<div class="act" role="button" tabindex="0" data-a="' + action + '"><div class="ico acc">' + ic(icon, 20) + '</div><div style="flex:1"><div>' + title + '</div>' +
+      (sub ? '<div class="small">' + sub + '</div>' : '') + '</div><span class="chev">' + ic('chevron', 18) + '</span></div>';
+  }
+
+  function phone(inner) {
+    var toast = S.toast ? '<div class="toast"><span style="color:var(--t2);display:flex">' + ic('trash', 16) + '</span><span>' + S.toast.text + '</span><button data-a="undo">Отменить</button>' + (S.toast.fresh ? '<span class="tbar"></span>' : '<span class="tbar" style="animation:none;width:0"></span>') + '</div>' : '';
+    return '<div class="phone"><div class="screen' + (S.light ? ' light' : '') + '"><div class="island"></div>' +
+      '<div class="status"><span>9:41</span><span class="sig">' +
+      '<svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>' +
+      '<svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2.5" y="2.5" width="17" height="7" rx="2" fill="currentColor"/><rect x="24" y="4" width="1.6" height="4" rx=".8" fill="currentColor" opacity=".45"/></svg>' +
+      '</span></div><div class="inner ' + S.anim + '">' + inner + '</div>' + sheetHtml() + toast + '<div class="home"></div></div></div>';
+  }
+
+  function tabs(on) {
+    var items = [['docs', 'docs', 'Документы'], ['inbox', 'inbox', 'Входящие'], ['profile', 'user', 'Профиль']];
+    return '<div class="tabs">' + items.map(function (it) {
+      return '<div class="' + (it[0] === on ? 'on' : '') + '">' + ic(it[1], 23) + it[2] + '</div>';
+    }).join('') + '</div>';
+  }
+
+  function logo(size) {
+    return '<div class="logo"' + (size ? ' style="width:' + size + 'px;height:' + size + 'px"' : '') + '>' + ic('anchor', size ? size * 0.5 : 28, 2) + '</div>';
+  }
+
+  /* ---------- B: как сейчас в TestFlight ---------- */
+
+  function screenB(id) {
+    function simpleField(label, ph, type) {
+      return '<div class="field"><div class="lr"><label>' + label + '</label></div><div class="ctl"><input type="' + (type || 'text') + '"' + (ph ? ' placeholder="' + ph + '"' : '') + '></div></div>';
+    }
+    if (id === 'b01') {
+      return phone('<div class="body center" style="padding:20px">' +
+        '<div class="h1" style="font-size:24px">Вход</div>' +
+        '<div class="sub" style="font-size:14px">Ваши документы — распознаны и проверены в одном месте.</div>' +
+        simpleField('Email') + simpleField('Пароль', '', 'password') +
+        btn('Войти', 'b:b03') + btn('Нет аккаунта? Создайте', 'b:b02', 'g') + '</div>');
+    }
+    if (id === 'b02') {
+      return phone('<div class="body center" style="padding:20px">' +
+        '<div class="h1" style="font-size:24px">Создать аккаунт</div>' +
+        '<div class="sub" style="font-size:14px">Нужны только email и пароль.</div>' +
+        simpleField('Email') + simpleField('Пароль', 'Не менее 8 символов', 'password') + simpleField('Повторите пароль', '', 'password') +
+        btn('Создать аккаунт', 'b:b03') + btn('Уже есть аккаунт? Войдите', 'b:b01', 'g') + '</div>');
+    }
+    if (id === 'b03') {
+      return phone('<div class="body">' +
+        '<div class="row" style="justify-content:space-between"><div class="h3" style="font-size:16px">Мои документы</div><span style="color:var(--accent)">' + ic('plus', 24, 2) + '</span></div>' +
+        '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center">' +
+        '<div class="ico big">' + ic('scan', 28) + '</div>' +
+        '<div class="h2">Документов пока нет</div>' +
+        '<div class="sub" style="font-size:14px">Добавьте фото документа — ИИ сам заполнит поля.</div>' +
+        '<div style="width:220px">' + btn('Добавить документ', 'noop') + '</div></div></div>' + tabs('docs'));
+    }
+    return phone('<div class="body">' +
+      '<div class="h3" style="font-size:16px">Профиль</div>' +
+      '<div class="small">Имя, дата рождения и гражданство заполняются из паспорта или паспорта моряка, которые вы подтвердите. То, что вы ввели сами, никогда не перезаписывается.</div>' +
+      '<div class="over">Личные данные</div>' +
+      '<div class="card" style="gap:0;padding:4px 14px">' + ['Имя', 'Фамилия', 'Дата рождения', 'Гражданство'].map(function (k) {
+        return '<div class="kv"><span>' + k + '</span><span style="color:var(--t3)">Не заполнено</span></div>';
+      }).join('') + '</div>' +
+      '<div class="over">Мои документы</div>' +
+      '<div class="small">Здесь появятся подтверждённые документы.</div></div>' + tabs('profile'));
+  }
+
+  /* ---------- C: быстрая регистрация ---------- */
+
+  function seaPath(y, amp) {
+    var d = 'M0 ' + y;
+    for (var i = 0; i < 8; i++) {
+      var x0 = i * 97.5;
+      d += ' Q ' + (x0 + 48.75) + ' ' + (i % 2 ? y + amp : y - amp) + ' ' + (x0 + 97.5) + ' ' + y;
+    }
+    return d;
+  }
+
+  function sea() {
+    var layer = function (cls, y, amp, fill, stroke) {
+      return '<svg class="' + cls + '" viewBox="0 0 780 92" preserveAspectRatio="none">' +
+        '<path d="' + seaPath(y, amp) + ' V92 H0 Z" fill="' + fill + '"/>' +
+        '<path d="' + seaPath(y, amp) + '" fill="none" stroke="' + stroke + '" stroke-width="1.2"/></svg>';
+    };
+    var bubbles = '';
+    var xs = arguments[0] ? [16, 38, 62, 84] : [];
+    for (var i = 0; i < xs.length; i++) {
+      bubbles += '<span class="bub" style="left:' + xs[i] + '%;--bx:' + ((i % 2 ? 1 : -1) * (6 + i * 2)) + 'px;animation-delay:' + (i * 1.1).toFixed(1) + 's;width:' + (3 + (i % 3)) + 'px;height:' + (3 + (i % 3)) + 'px"></span>';
+    }
+    return '<div class="glow"></div><div class="glow b"></div>' + bubbles +
+      '<div class="sea">' +
+      layer('w3', 40, 12, 'rgba(var(--accentRGB),.05)', 'rgba(var(--accentRGB),.24)') +
+      layer('w2', 52, 10, 'rgba(var(--accentRGB),.07)', 'rgba(var(--accentRGB),.36)') +
+      layer('w1', 64, 8, 'rgba(var(--accentRGB),.09)', 'rgba(var(--accentRGB),.55)') +
+      '</div>';
+  }
+
+  function waves() {
+    return '<svg class="waves" viewBox="0 0 390 80" preserveAspectRatio="none" fill="none" stroke="rgba(var(--accentRGB),.35)" stroke-width="1.2">' +
+      '<path d="M0 40 Q 48 22 97 40 T 195 40 T 292 40 T 390 40"/>' +
+      '<path d="M0 56 Q 48 38 97 56 T 195 56 T 292 56 T 390 56" opacity=".6"/>' +
+      '<path d="M0 72 Q 48 54 97 72 T 195 72 T 292 72 T 390 72" opacity=".35"/></svg>';
+  }
+
+  function tile(icon, tone) {
+    return '<div class="logo tile t-' + (tone || 'acc') + '">' + ic(icon, 28, 2) + '</div>';
+  }
+
+  function head(o) {
+    if (o.compact) {
+      return '<div class="hero compact"><div class="h1 stag" style="animation-delay:.02s">' + o.title + '</div>' +
+        (o.sub ? '<div class="sub stag" style="margin-top:6px;animation-delay:.06s">' + o.sub + '</div>' : '') + '</div>';
+    }
+    return '<div class="hero mini tone-' + (o.tone || 'acc') + '">' + sea() + tile(o.icon, o.tone) +
+      '<div class="h1 stag" style="margin-top:18px;animation-delay:.06s">' + o.title + '</div>' +
+      (o.sub ? '<div class="sub stag" style="margin-top:8px;animation-delay:.12s">' + o.sub + '</div>' : '') +
+      (o.extra || '') + '</div>';
+  }
+
+  function ambient(tone) {
+    return '<div class="ambient-bg tone-' + (tone || 'acc') + '" style="position:absolute;inset:0;z-index:-1;pointer-events:none">' + sea() + '</div>';
+  }
+
+  function W(html, i) {
+    return '<div class="stag" style="animation-delay:' + (0.08 + i * 0.04).toFixed(2) + 's">' + html + '</div>';
+  }
+
+  function qWelcome() {
+    return phone('<div class="body welcome underbar">' +
+      '<div class="hero grow">' + sea(true) + logo() +
+      '<div class="h1" style="margin-top:24px;font-size:30px">Ваша морская карьера в одном приложении</div>' +
+      '<div class="feats">' +
+      '<span class="feat stag" style="animation-delay:.45s">' + ic('docs', 15) + 'Документы</span>' +
+      '<span class="feat stag" style="animation-delay:.55s">' + ic('doc', 15) + 'Анкеты</span>' +
+      '<span class="feat stag" style="animation-delay:.65s">' + ic('ship', 15) + 'Вакансии</span></div>' +
+      '<div class="stag" style="animation-delay:.75s;margin-top:12px;font-size:15px;color:var(--t1);font-weight:500">Без бумажной рутины.</div></div>' +
+      '<div class="h3 stag" style="animation-delay:.15s;font-size:15px">Выберите способ</div>' +
+      '<div class="card hi choice stag" style="animation-delay:.25s" data-a="start-quick" role="button" tabindex="0"><div class="row"><div class="ico acc">' + ic('bolt', 22) + '</div>' +
+      '<div style="flex:1"><div class="row" style="gap:8px"><div class="h3" style="font-size:16px">Быстро</div><span class="tag">≈ 1 минута</span></div>' +
+      '<div class="small" style="margin-top:2px">CV и документ моряка — остальное потом</div></div>' +
+      '<span class="chev" style="color:var(--t2)">' + ic('chevron', 18) + '</span></div></div>' +
+      '<div class="card choice stag" style="animation-delay:.37s" data-a="start-step" role="button" tabindex="0"><div class="row"><div class="ico lines">' + ic('steps', 22) + '</div>' +
+      '<div style="flex:1"><div class="h3" style="font-size:16px">Пошагово</div>' +
+      '<div class="small" style="margin-top:2px">Весь профиль по шагам, можно с перерывами</div></div>' +
+      '<span class="chev" style="color:var(--t2)">' + ic('chevron', 18) + '</span></div></div>' +
+      '<div class="row stag" style="animation-delay:.5s;justify-content:center;gap:6px;color:var(--t2);font-size:12px;margin-top:2px"><span style="color:var(--accent)">' + ic('lock', 13, 2) + '</span>Бесплатно · документы шифруются</div>' +
+      '<div style="flex:0 0 2px"></div><div class="stag" style="animation-delay:.6s;text-align:center;font-size:15px;color:var(--t2)">Уже есть аккаунт? <button class="link" style="font-size:15px;font-weight:600" data-a="noop">Войти</button></div></div>');
+  }
+
+  function qConsent() {
+    var items = [
+      ['sparkle', 'Документ моряка прочитает ИИ', 'Возьмём имя, фамилию, дату рождения и номер'],
+      ['lock', 'Файлы шифруются', 'Видите их вы и те, кому откроете доступ'],
+      ['shieldOk', 'Защита от поддельных аккаунтов', 'Данные документа храним для безопасности платформы'],
+      ['clock', 'Не закончили — удалим', 'Через 30 дней файлы удаляются сами']
+    ];
+    return phone('<div class="body underbar consent">' +
+      head({ icon: 'shield', title: 'Прежде чем начать', sub: 'Чтобы создать аккаунт по документам, нужно ваше согласие.' }) +
+      '<div class="card"><div class="list">' + items.map(function (x, i) {
+        return '<div class="li stag" style="animation-delay:' + (0.12 + i * 0.04).toFixed(2) + 's"><span class="ico acc" style="width:34px;height:34px;border-radius:10px">' + ic(x[0], 18) + '</span><div><div class="h3" style="font-size:15px">' + x[1] + '</div><div class="small">' + x[2] + '</div></div></div>';
+      }).join('') + '</div></div>' +
+      W('<button class="link" data-a="sheet:consent">Подробнее о согласии</button>', 5) +
+      '</div><div class="foot">' +
+      check(S.consent, 'toggle-consent', 'Я согласен(на) на обработку персональных данных и принимаю <a href="#" data-a="noop">Условия сервиса</a> и <a href="#" data-a="noop">Политику конфиденциальности</a>') +
+      '<div style="height:6px"></div>' + btn('Продолжить', 'c:q03', 'p', !S.consent) + '<div class="need">' + (S.consent ? '' : 'Отметьте согласие, чтобы продолжить') + '</div></div>' + nav('c:q01', 'Согласие'));
+  }
+
+  function uploadRow(icon, title, sub, st, p, rm, fx) {
+    var right = st === 'up'
+      ? '<span class="small" style="margin-left:auto;min-width:36px;text-align:right">' + p + '%</span>'
+      : '<button class="x" data-a="' + rm + '" aria-label="Удалить">' + ic('trash', 18) + '</button>';
+    return '<div class="file' + (fx ? ' enter' : '') + '"><div class="fi">' + ic(icon, 20) + '</div><div style="flex:1;min-width:0"><div class="name">' + title + '</div>' +
+      (st === 'up'
+        ? '<div class="prog"><span style="width:' + p + '%"></span></div>'
+        : '<div class="meta"><span style="color:var(--success);display:flex">' + ic('lock', 12, 2.2) + '</span>' + sub + '</div>') +
+      '</div>' + right + '</div>';
+  }
+
+  function num(n, ok, fx) {
+    return '<span class="num' + (ok ? ' ok' : '') + (fx ? ' popin' : '') + '">' + (ok ? ic('check', 13, 2.6) : n) + '</span>';
+  }
+
+  function qUpload() {
+    var cv = S.cv.st === 'none'
+      ? '<div class="drop" role="button" tabindex="0" data-need="cv" data-a="sheet:cv"><div class="ico acc">' + ic('plus', 22) + '</div><div><div class="h3" style="font-size:14px">Добавить CV</div><div class="small">PDF, Word, фото или скан</div></div></div>'
+      : uploadRow('doc', 'CV_Andrii_Koval.pdf', 'PDF · 412 КБ', S.cv.st, S.cv.p, 'rm-cv', S.fx.cvIn);
+
+    var types = '<div class="segc" role="tablist"><span class="thumb' + (S.doc.type === 'book' ? ' r' : '') + '"></span>' + DOC_TYPES.map(function (d) {
+      return '<button class="' + (S.doc.type === d.id ? 'on' : '') + '" role="tab" aria-selected="' + (S.doc.type === d.id) + '" data-a="type:' + d.id + '"><b>' + (d.id === 'sid' ? 'Удостоверение' : 'Послужная книжка') + '</b><span>' + d.s + '</span></button>';
+    }).join('') + '</div>';
+
+    var pages = '';
+    if (S.doc.pages > 0) {
+      pages = '<div class="pages">';
+      for (var i = 1; i <= S.doc.pages; i++) {
+        pages += '<div class="pg' + (S.fx.pgIn && i === S.doc.pages ? ' enter' : '') + '"><div class="ph"></div><div class="ln" style="top:14px"></div><div class="ln" style="top:24px;right:24px"></div><div class="ln" style="top:34px;right:18px"></div><div class="mrz"></div><div class="n">' + i + '</div>' + (S.doc.st === 'up' && i === S.doc.pages ? '<div class="beam"></div>' : '') + '</div>';
+      }
+      if (S.doc.pages < 2 && S.doc.st !== 'up') pages += '<div class="pg add" role="button" tabindex="0" aria-label="Добавить страницу" data-a="sheet:doc">' + ic('plus', 18) + 'Ещё страница</div>';
+      pages += '</div>' + (S.doc.st === 'up'
+        ? '<div><div class="small">Загружаем страницу ' + S.doc.pages + '… ' + S.doc.p + '%</div><div class="prog"><span style="width:' + S.doc.p + '%"></span></div></div>'
+        : '<div class="docfoot"><div class="small" style="display:flex;gap:6px;align-items:center"><span style="color:var(--success);display:flex">' + ic('lock', 12, 2.2) + '</span>Зашифровано · ' + S.doc.pages + ' стр.</div><button class="xbtn" data-a="rm-doc" aria-label="Удалить документ">' + ic('trash', 18) + '</button></div>');
+    } else {
+      pages = '<div class="drop" role="button" tabindex="0" data-need="doc" data-a="sheet:doc"><div class="ico acc">' + ic('scan', 22) + '</div><div><div class="h3" style="font-size:14px">Сканировать или сфотографировать</div><div class="small">Страница с фото и данными</div></div></div>';
+    }
+
+    var ready = S.cv.st === 'done' && S.doc.pages > 0 && S.doc.st === 'done';
+    var cvOk = S.cv.st === 'done';
+    var docOk = S.doc.st === 'done' && S.doc.pages > 0;
+    var miss = [];
+    if (!cvOk) miss.push('CV');
+    if (!docOk) miss.push('документ моряка');
+    return phone('<div class="body underbar">' +
+      head({ icon: 'bolt', title: 'Быстрая регистрация', sub: 'Два файла — и аккаунт готов. Остальное заполните потом.',
+        extra: '<div class="feats">' +
+          '<span class="feat stag' + (cvOk ? ' ok' : '') + '" style="animation-delay:.18s">' + ic(cvOk ? 'check' : 'doc', 15) + 'CV</span>' +
+          '<span class="feat stag' + (docOk ? ' ok' : '') + '" style="animation-delay:.24s">' + ic(docOk ? 'check' : 'idcard', 15) + 'Документ моряка</span></div>' }) +
+      W('<div class="card"><div class="row" style="gap:10px">' + num(1, cvOk, S.fx.cvDone) + '<div class="h3">CV</div></div>' + cv + '</div>', 1) +
+      W('<div class="card"><div class="row" style="gap:10px">' + num(2, docOk, S.fx.docDone) + '<div class="h3">Документ моряка</div></div>' +
+      types + pages +
+      '<div class="small">Загранпаспорт не подходит — он не подтверждает, что вы моряк.</div></div>', 2) +
+      '</div><div class="foot">' + btn('Продолжить', 'go-read', S.fx.ready ? 'p ready' : 'p', !ready) + '<div class="need">' + (miss.length ? 'Осталось: ' + miss.join(', ') : '') + '</div></div>' + nav('c:q02', 'Быстрая регистрация'));
+  }
+
+  function qReading() {
+    var found = S.scenario === 'noName' ? 'Не удалось прочитать' : 'ANDRII KOVAL';
+    var steps = [
+      ['Файлы загружены и зашифрованы', 0, '2 файла'],
+      ['Читаем имя и фамилию', 1, found],
+      ['Читаем дату рождения и номер', 2, S.showIds ? '14.03.1991 · AB 123456' : 'Найдено'],
+      ['Проверяем безопасность', 3, 'Всё в порядке']
+    ];
+    var list = steps.map(function (x) {
+      var st = S.phase > x[1] ? '<span class="dot ok">' + ic('check', 13, 2.6) + '</span>'
+        : S.phase === x[1] ? '<span class="dot run"><span class="s"></span></span>'
+          : '<span class="dot wait"></span>';
+      var col = S.phase >= x[1] ? 'var(--t1)' : 'var(--t2)';
+      var val = '';
+      return '<div class="li stag" style="animation-delay:' + (0.25 + x[1] * 0.08).toFixed(2) + 's;align-items:flex-start;color:' + col + '">' + st + '<div style="padding-top:2px">' + x[0] + val + '</div></div>';
+    }).join('');
+    var hl = S.phase === 1 ? '<div class="hl" style="left:64px;top:12px;width:110px;height:16px"></div>'
+      : S.phase === 2 ? '<div class="hl" style="left:64px;top:30px;width:90px;height:28px"></div><div class="hl" style="left:10px;bottom:10px;right:10px;height:24px"></div>' : '';
+    return phone('<div class="body center ambient" style="gap:22px">' + ambient() +
+      '<div class="scanbox stag" style="animation-delay:.05s"><div class="ph"></div><div class="ln" style="top:20px;width:96px"></div><div class="ln" style="top:36px;width:70px"></div><div class="ln" style="top:52px;width:84px"></div><div class="mrz"></div>' + hl + '<div class="beam"></div></div>' +
+      W('<div style="text-align:center;display:flex;flex-direction:column;gap:6px"><div class="h1" style="font-size:24px">Читаем ' + (S.doc.type === 'sid' ? 'удостоверение' : 'послужную книжку') + '</div><div class="small">Обычно это занимает 10–20 секунд</div></div>', 0) +
+      '<div class="card"><div class="list">' + list + '</div></div>' +
+      W('<div class="small" style="text-align:center">CV не распознаём — он сохранится как файл.</div>', 6) + '</div>' +
+      nav('', '', 'sheet:stopread') + (S.autoNext ? '' : '<div class="foot">' + btn(S.readDone ? (S.readTarget === 'q05' ? 'Продолжить' : 'Дальше') : '<span class="sp"></span>Читаем…', 'read-next', S.fx.ready ? 'p ready' : 'p', !S.readDone) + '</div>'));
+  }
+
+  function strength(p) {
+    if (!p) return 0;
+    var s = 0;
+    if (p.length >= 8) s++;
+    if (p.length >= 12) s++;
+    if (/[0-9]/.test(p) && /[a-zA-Zа-яА-Я]/.test(p)) s++;
+    if (/[^0-9a-zA-Zа-яА-Я]/.test(p)) s++;
+    return Math.min(4, Math.max(p.length >= 8 ? 1 : 0, s));
+  }
+
+  function emailOk(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e); }
+
+  function qCheckValid() {
+    return (S.first.trim() && S.last.trim() && emailOk(S.email) && S.email2 === S.email && S.pass.length >= 8);
+  }
+
+  function qCheck() {
+    var noName = S.scenario === 'noName';
+    var ids = S.showIds
+      ? '<div class="card" style="gap:0;padding:4px 14px">' +
+        '<div class="kv"><span>Дата рождения</span><span>14.03.1991</span></div>' +
+        '<div class="kv"><span>Номер документа</span><span>AB 123456</span></div></div>' +
+        '<div class="small" style="display:flex;gap:6px;margin-top:-6px"><span style="color:var(--t2)">' + ic('lock', 13, 2) + '</span>В профиль не попадают — нужны только для защиты аккаунта. Ошибка? Напишите в поддержку.</div>'
+      : '';
+    var fromDoc = '<span class="tag">' + ic('sparkle', 11, 2) + 'из документа</span>';
+    var err = S.createErr ? banner('d', 'alert', '<span>' + S.createErr + '</span><button class="link" style="align-self:flex-start" data-a="noop">Войти с этим email</button>') : '';
+    return phone('<div class="body underbar">' +
+      head({ icon: noName ? 'user' : 'sparkle', title: 'Проверьте данные',
+        sub: noName ? 'Не удалось прочитать имя — введите его как в документе.' : 'Мы взяли имя из документа. Исправьте, если что-то не так.' }) +
+      W('<div style="display:flex;flex-direction:column;gap:14px"><div class="over">' + esc(docType().n) + '</div>' +
+      field('Имя', { value: S.first, bind: 'first', ph: 'Как в документе', tag: noName ? '' : fromDoc, ac: 'given-name' }) +
+      field('Фамилия', { value: S.last, bind: 'last', ph: 'Как в документе', tag: noName ? '' : fromDoc, ac: 'family-name' }) +
+      ids + '</div>', 2) +
+      W('<div style="display:flex;flex-direction:column;gap:14px"><div class="over" style="margin-top:6px">Вход в аккаунт</div>' +
+      field('Email', { type: 'email', id: 'f-email', value: S.email, bind: 'email', ph: 'you@example.com', msgId: 'm-email', ac: 'email' }) +
+      field('Повторите email', { type: 'email', id: 'f-email2', value: S.email2, bind: 'email2', msgId: 'm-email2' }) +
+      field('Пароль', { type: S.showPass ? 'text' : 'password', id: 'f-pass', value: S.pass, bind: 'pass', ph: 'Не менее 8 символов', eye: true, msgId: 'm-pass', ac: 'new-password',
+        after: '<div class="meter" id="meter"><span></span><span></span><span></span><span></span></div>' }) + '</div>', 3) +
+      err +
+      '</div><div class="foot line">' +
+      btn(S.creating ? '<span class="sp"></span>Создаём аккаунт…' : 'Создать аккаунт', 'create', S.creating ? 'p busy' : 'p', !qCheckValid() && !S.creating, ' id="createBtn" aria-busy="' + S.creating + '"') + '<div class="need" id="missing"></div></div>' + nav('c:q03', 'Проверьте данные'));
+  }
+
+  function refreshCheck() {
+    var e = document.getElementById('f-email');
+    if (!e) return;
+    var e2 = document.getElementById('f-email2');
+    var p = document.getElementById('f-pass');
+    var me = document.getElementById('m-email');
+    var me2 = document.getElementById('m-email2');
+    var mp = document.getElementById('m-pass');
+    var badEmail = S.email && !emailOk(S.email) && document.activeElement !== e;
+    e.className = badEmail ? 'err' : (emailOk(S.email) ? 'ok' : '');
+    me.className = 'msg ' + (badEmail ? 'e' : 'n');
+    me.textContent = badEmail ? 'Проверьте адрес — похоже, в нём опечатка' : '';
+    var mism = S.email2 && S.email2 !== S.email && (S.e2blur || S.email2.length >= S.email.length);
+    e2.className = mism ? 'err' : (S.email2 && S.email2 === S.email && emailOk(S.email) ? 'ok' : '');
+    me2.className = 'msg ' + (mism ? 'e' : 'n');
+    me2.textContent = mism ? 'Адреса не совпадают' : (S.email2 && !mism ? 'Совпадает — на этот адрес придёт письмо' : '');
+    var s = strength(S.pass);
+    var cols = ['var(--border)', 'var(--danger)', 'var(--warning)', 'var(--accent)', 'var(--success)'];
+    var spans = document.querySelectorAll('#meter span');
+    for (var i = 0; i < spans.length; i++) spans[i].style.background = i < s ? cols[s] : 'var(--border)';
+    mp.className = 'msg n';
+    var left = 8 - S.pass.length;
+    var word = left === 1 ? 'символ' : (left >= 2 && left <= 4 ? 'символа' : 'символов');
+    mp.textContent = !S.pass ? '' : left > 0 ? 'Ещё ' + left + ' ' + word : ['', 'Слабый пароль', 'Нормальный пароль', 'Хороший пароль', 'Надёжный пароль'][s];
+    var b = document.getElementById('createBtn');
+    if (b && !S.creating) {
+      var off = !qCheckValid();
+      b.classList.toggle('off', off);
+      b.setAttribute('data-a', off ? 'blocked' : 'create');
+      if (off) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
+    }
+    var setNeed = function (el, bad) { if (el) { if (bad) el.setAttribute('data-need', '1'); else el.removeAttribute('data-need'); } };
+    setNeed(document.querySelector('[data-bind=first]'), !S.first.trim());
+    setNeed(document.querySelector('[data-bind=last]'), !S.last.trim());
+    setNeed(e, !emailOk(S.email));
+    setNeed(e2, S.email2 !== S.email || !S.email2);
+    setNeed(p, S.pass.length < 8);
+    var miss = [];
+    if (!S.first.trim() || !S.last.trim()) miss.push('имя');
+    if (!emailOk(S.email) || S.email2 !== S.email) miss.push('email');
+    if (S.pass.length < 8) miss.push('пароль');
+    var m = document.getElementById('missing');
+    if (m) m.textContent = miss.length && !S.creating ? 'Осталось: ' + miss.join(', ') : '';
+  }
+
+  function qDone() {
+    var row = function (t, v) {
+      return '<div class="li" style="align-items:center"><span class="dot ok">' + ic('check', 13, 2.6) + '</span><span style="flex:1">' + t + '</span><span class="small">' + v + '</span></div>';
+    };
+    return phone('<div class="body center ambient" style="gap:20px">' + ambient('ok') +
+      '<div class="okring">' + burst() + '<svg width="108" height="108" viewBox="0 0 108 108" fill="none" stroke-width="5"><circle class="track" cx="54" cy="54" r="48"/><circle class="p" cx="54" cy="54" r="48" stroke-linecap="round" transform="rotate(-90 54 54)"/></svg><div class="mk">' + ic('check', 46, 2.6) + '</div></div>' +
+      W('<div style="text-align:center;display:flex;flex-direction:column;gap:8px"><div class="h1">Аккаунт создан</div><div class="sub">Добро пожаловать, ' + esc(S.first || 'моряк') + '!</div></div>', 4) +
+      W('<div class="card"><div class="list">' + row('Имя и фамилия', esc((S.first + ' ' + S.last).trim())) + row('CV', 'зашифровано') + row(esc(docType().n), 'зашифровано') + '</div></div>', 5) +
+      (S.emailService ? W(banner('i', 'mail', '<span>Мы отправили письмо на <b>' + esc(S.email || 'you@example.com') + '</b>. Подтвердите адрес, когда будет удобно.</span>'), 6) : '') +
+      '</div><div class="foot">' + btn('Дополнить профиль', 'fill-profile') + btn('Перейти в приложение', 'c:q07', 'g') + '</div>');
+  }
+
+  function burst() {
+    var cols = ['var(--accent)', 'var(--success)', 'var(--warning)', 'var(--accentHi)', 'var(--t1)'];
+    var out = '';
+    for (var i = 0; i < 20; i++) {
+      var ang = (i / 20) * Math.PI * 2 + ((i * 37) % 30 - 15) * Math.PI / 180;
+      var r = 120 + ((i * 53) % 50);
+      var sz = 5 + (i * 7) % 5;
+      out += '<span class="burst" style="width:' + sz + 'px;height:' + Math.round(sz * (i % 2 ? 1 : 0.5)) + 'px;margin:-' + Math.round(sz / 2) + 'px;background:' + cols[i % 5] +
+        ';--dx:' + Math.round(Math.cos(ang) * r) + 'px;--dy:' + Math.round(Math.sin(ang) * r) + 'px;--rot:' + (180 + (i * 67) % 360) + 'deg"></span>';
+    }
+    return out;
+  }
+
+  function qProfileSkeleton() {
+    var bar = function (w, h, r) { return '<div class="skel" style="width:' + w + ';height:' + h + 'px' + (r ? ';border-radius:' + r + 'px' : '') + '"></div>'; };
+    return phone('<div class="body">' + bar('140px', 36) +
+      '<div class="row"><div class="skel" style="width:60px;height:60px;border-radius:50%"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px">' + bar('60%', 18) + bar('45%', 13) + '</div></div>' +
+      bar('100%', 190, 16) + bar('100%', 92, 14) + bar('40%', 14) + bar('100%', 60, 12) + bar('100%', 60, 12) + '</div>' + tabs('profile'));
+  }
+
+  function qProfile() {
+    if (S.loadingProfile) return qProfileSkeleton();
+    var doneCount = STEPS.filter(function (s) { return S.done[s.n]; }).length || 2;
+    var pct = Math.round(doneCount / 7 * 100);
+    var emailB = '';
+    if (S.emailService && !S.verified) {
+      emailB = banner('i', 'mail', '<span><b>Подтвердите email.</b> Письмо на ' + esc(S.email || 'you@example.com') + '. Это нужно, чтобы восстановить пароль.</span>' +
+        '<button class="link" style="font-size:14px;align-self:flex-start" data-a="noop">Отправить ещё раз</button>');
+    }
+    return phone('<div class="body underbar">' +
+      '<div class="hero mini">' + sea() +
+      '<div class="row" style="gap:14px"><div class="av" style="width:64px;height:64px;font-size:22px;box-shadow:0 10px 28px var(--shadow)">' + esc(((S.first[0] || '?') + (S.last[0] || '')).toUpperCase()) + '</div>' +
+      '<div style="flex:1;min-width:0"><div class="h1 stag" style="font-size:26px;animation-delay:.06s">' + esc((S.first + ' ' + S.last).trim() || 'Без имени') + '</div>' +
+      '<div class="sub stag" style="margin-top:4px;font-size:14px;display:flex;gap:6px;align-items:center;animation-delay:.12s">' +
+      (S.verified ? '<span style="color:var(--success);display:flex">' + ic('check', 14, 2.6) + '</span>' : '') + esc(S.email || 'you@example.com') + '</div></div></div>' +
+      '<div class="feats">' +
+      '<span class="feat stag ok" style="animation-delay:.18s">' + ic('check', 15) + 'CV</span>' +
+      '<span class="feat stag ok" style="animation-delay:.24s">' + ic('check', 15) + esc(docType().id === 'sid' ? 'Удостоверение' : 'Послужная книжка') + '</span>' +
+      '<span class="feat stag" style="animation-delay:.30s">' + ic('user', 15) + 'Моряк</span></div></div>' +
+      '<div class="card stag" style="animation-delay:.08s">' +
+      '<div class="row" style="justify-content:space-between"><div class="h3">Профиль неполный</div><span class="small">' + doneCount + ' из 7</span></div>' +
+      '<div class="pbar"><span style="width:' + pct + '%"></span></div>' +
+      '<div class="small">Агентства видят, что профиль заполнен не до конца. Добавьте личные данные, дипломы и стаж — так вас быстрее заметят.</div>' +
+      btn('Дополнить профиль', 'fill-profile', 't') + '</div>' +
+      (emailB ? W(emailB, 1) : '') +
+      W('<div class="over">Мои документы</div>', 2) +
+      '<div class="file stag" style="animation-delay:.2s"><div class="fi">' + ic('doc', 20) + '</div><div style="flex:1"><div>CV</div><div class="small">Файл · агентства увидят, если вы его отправите</div></div><span style="color:var(--t2)">' + ic('chevron', 16) + '</span></div>' +
+      '<div class="file stag" style="animation-delay:.24s"><div class="fi">' + ic('idcard', 20) + '</div><div style="flex:1"><div>' + esc(docType().n) + '</div><div class="small">' + S.doc.pages + ' стр. · зашифровано</div></div><span style="color:var(--t2)">' + ic('chevron', 16) + '</span></div>' +
+      '</div>' + tabs('profile'));
+  }
+
+  function qVerified() {
+    return phone('<div class="body center ambient" style="gap:18px;text-align:center;align-items:center">' + ambient('ok') +
+      '<div style="animation:pop .45s both">' + tile('mail', 'ok') + '</div>' +
+      W('<div class="h1">Email подтверждён</div>', 1) +
+      W('<div class="sub">' + esc(S.email || 'you@example.com') + ' — теперь через него можно восстановить пароль.</div>', 2) +
+      '<div class="stag" style="animation-delay:.35s;width:100%;margin-top:8px">' + btn('Открыть профиль', 'verify-open') + '</div></div>');
+  }
+
+  function qResume() {
+    var row = function (ok, t, v) {
+      return '<div class="li" style="align-items:center">' + (ok ? '<span class="dot ok">' + ic('check', 13, 2.6) + '</span>' : '<span class="dot wait"></span>') +
+        '<span style="flex:1' + (ok ? '' : ';color:var(--t2)') + '">' + t + '</span>' + (v ? '<span class="small">' + v + '</span>' : '') + '</div>';
+    };
+    return phone('<div class="body underbar" style="gap:16px">' +
+      head({ icon: 'anchor', title: 'Продолжим регистрацию?', sub: 'Вы начали быструю регистрацию 2 дня назад.' }) +
+      W('<div class="card"><div class="list">' + row(true, 'CV', 'загружено') + row(true, esc(docType().n), 'загружено') + row(false, 'Проверка данных и пароль') + '</div></div>', 2) +
+      W(banner('w', 'clock', '<span>Если не закончить, файлы удалятся через <b>28 дней</b>.</span>'), 3) +
+      '<div style="flex:1"></div></div><div class="foot">' + btn('Продолжить', 'resume') + btn('Начать заново', 'sheet:restart', 'd') + '</div>');
+  }
+
+  function qError(kind) {
+    var cfg = {
+      e01: { ic: 'camera', t: 'Не получилось прочитать документ', s: 'Фото размыто, обрезано или с бликом.',
+        tips: ['Положите документ на тёмную ровную поверхность', 'Снимайте при дневном свете, без вспышки', 'В кадре вся страница — с фото и строками внизу'],
+        a: btn('Сфотографировать ещё раз', 'retake') + btn('Ввести имя вручную', 'manual', 'g'), foot: 'Осталось попыток: 2' },
+      e02: { ic: 'idcard', t: 'Это не похоже на документ моряка', s: 'Похоже, это загранпаспорт. Он не подтверждает, что вы моряк.',
+        tips: ['Удостоверение личности моряка (Seafarer\'s ID)', 'Послужная книжка (Seaman\'s Book)'], tipsTitle: 'Подойдёт',
+        a: btn('Загрузить документ моряка', 'retake') + btn('Это документ моряка — продолжить', 'override', 'g') },
+      e03: { ic: 'wifi', t: 'Нет интернета', s: 'Загруженные файлы сохранены. Продолжим сами, как только связь появится.',
+        wait: 'Ждём подключение…', a: btn('Повторить сейчас', 'go-read', 's') },
+      e04: { ic: 'clock', t: 'Слишком много попыток', s: 'С этого телефона было много попыток регистрации. Попробуйте чуть позже.',
+        a: btn('Повторить через <span id="cd">' + fmtCd(S.cd) + '</span>', 'noop', 's', true) + btn('Написать в поддержку', 'noop', 'g') },
+      e05: { ic: 'shield', muted: true, t: 'Регистрация невозможна', s: 'С этим документом нельзя создать аккаунт. Если вы считаете, что это ошибка, напишите в поддержку.',
+        a: btn('Написать в поддержку', 'noop', 's') + btn('На главную', 'restart', 'g') }
+    }[kind];
+    var tone = cfg.muted ? 'muted' : 'warn';
+    var tips = cfg.tips ? W('<div class="card" style="text-align:left"><div class="over">' + (cfg.tipsTitle || 'Как снять лучше') + '</div><div class="list">' + cfg.tips.map(function (t) {
+      return '<div class="li"><span style="color:var(--accent)">' + ic('check', 18, 2.2) + '</span><span>' + t + '</span></div>';
+    }).join('') + '</div></div>', 3) : '';
+    var wait = cfg.wait ? W('<div class="row" style="justify-content:center;gap:10px;color:var(--t2);font-size:14px"><span class="dot run"><span class="s"></span></span>' + cfg.wait + '</div>', 3) : '';
+    var back = kind === 'e04' || kind === 'e05' ? nav('', '', 'restart') : nav('c:q03', '');
+    return phone('<div class="body center ambient" style="gap:14px;text-align:center;align-items:stretch">' + ambient(tone) +
+      '<div style="align-self:center;animation:pop .45s both">' + tile(cfg.ic, tone) + '</div>' +
+      W('<div class="h1" style="font-size:26px">' + cfg.t + '</div>', 1) + W('<div class="sub">' + cfg.s + '</div>', 2) + tips + wait +
+      (cfg.foot ? W('<div class="small">' + cfg.foot + '</div>', 4) : '') + '</div><div class="foot">' + cfg.a + '</div>' + back);
+  }
+
+  function fmtCd(sec) {
+    var m = Math.floor(sec / 60), x = sec % 60;
+    return m + ':' + (x < 10 ? '0' : '') + x;
+  }
+
+  /* ---------- C: пошаговая (без изменений, следующий этап) ---------- */
+
+  function wizard(step, inner, footer) {
+    var bars = STEPS.map(function (s) {
+      return '<span class="' + (S.done[s.n] ? 'done' : (s.n === step ? 'cur' : '')) + '"></span>';
+    }).join('');
+    var laterBtn = step > 1 ? '<button class="later" data-a="sheet:later">Позже</button>' : '';
+    return '<div class="whead"><div class="top">' + backBtn(step > 1 ? 'c:s' + (step - 1) : 'c:q01') +
+      '<div class="t">Шаг ' + step + ' из 7 · ' + STEPS[step - 1].t + '</div>' + laterBtn + '</div>' +
+      '<div class="steps">' + bars + '</div></div>' +
+      '<div class="body" style="padding-top:16px">' + inner + '</div>' +
+      '<div class="foot line">' + footer + '</div>';
+  }
+
+  function nextStep(step) {
+    var n = step + 1;
+    while (n < 7 && S.done[n]) n++;
+    return 's' + n;
+  }
+
+  function stepFooter(step, canNext, optional) {
+    return btn(step === 7 ? 'Готово' : 'Продолжить', 'done:' + step, 'p', !canNext) +
+      (optional ? btn('Пропустить', 'skip:' + step, 'g') : '');
+  }
+
+  function consentText() {
+    return 'Я согласен(на) на обработку персональных данных и принимаю <a href="#" data-a="noop">Условия сервиса</a> и <a href="#" data-a="noop">Политику конфиденциальности</a>';
+  }
+
+  function screenStep(id) {
+    if (id === 'c08') {
+      var nextOpen = 1;
+      for (var k = 1; k <= 7; k++) { if (!S.done[k]) { nextOpen = k; break; } }
+      return phone('<div class="body center" style="gap:16px">' +
+        '<div class="h1">С возвращением!</div>' +
+        '<div class="sub">Вы остановились на шаге ' + nextOpen + ' из 7 — «' + STEPS[nextOpen - 1].t + '».</div>' +
+        '<div class="card"><div class="list">' + STEPS.map(function (s) {
+          var st = S.done[s.n] ? '<span class="dot ok">' + ic('check', 13, 2.6) + '</span>' : (S.done['skip' + s.n] ? '<span class="dot skip">–</span>' : '<span class="dot wait">' + s.n + '</span>');
+          return '<div class="li" style="align-items:center">' + st + '<span>' + s.t + '</span></div>';
+        }).join('') + '</div></div>' +
+        btn('Продолжить', 'c:s' + nextOpen) + btn('Позже', 'c:q07', 'g') + '</div>');
+    }
+    var step = Number(id.slice(1));
+    var types = '<div class="pills">' + DOC_TYPES.map(function (d) {
+      return '<button class="pill' + (S.doc.type === d.id ? ' on' : '') + '" data-a="type:' + d.id + '">' + d.n + '</button>';
+    }).join('') + '</div>';
+    if (step === 1) {
+      return phone(wizard(1,
+        '<div class="h1" style="font-size:24px">Создайте аккаунт</div>' +
+        field('Имя', { value: S.first, bind: 'first', ph: 'Как в документе' }) +
+        field('Фамилия', { value: S.last, bind: 'last', ph: 'Как в документе' }) +
+        field('Email', { type: 'email', ph: 'you@example.com' }) +
+        field('Повторите email', { type: 'email' }) +
+        field('Пароль', { type: 'password', ph: 'Не менее 8 символов' }) +
+        check(S.consent, 'toggle-consent', consentText()),
+        stepFooter(1, S.consent, false)));
+    }
+    if (step === 2) {
+      return phone(wizard(2,
+        '<div class="avatar" data-a="photo">' + (S.photo ? '<div class="av" style="width:84px;height:84px;font-size:26px">' + esc((S.first[0] || '') + (S.last[0] || '')) + '</div>' : ic('camera', 24) + 'Добавить<br>фото') + '</div>' +
+        field('Дата рождения', { ph: 'ДД.ММ.ГГГГ' }) +
+        field('Гражданство', { select: ['Выберите страну', 'Украина', 'Филиппины', 'Индия', 'Польша'] }) +
+        field('Телефон', { type: 'tel', ph: '+380 …' }) +
+        field('Должность', { select: ['Выберите должность', '3rd Engineer', '2nd Engineer', 'Chief Officer', 'AB Seaman'] }),
+        stepFooter(2, true, true)));
+    }
+    if (step === 3) {
+      var has = S.doc.pages > 0;
+      return phone(wizard(3,
+        '<div class="row" style="justify-content:space-between"><div class="h1" style="font-size:24px">Документ моряка</div><span class="tag m">обязательно</span></div>' +
+        '<div class="sub" style="font-size:14px">Подтверждает, что вы моряк. Без него регистрацию не закончить.</div>' +
+        '<div class="small">Какой документ вы загружаете?</div>' + types +
+        (has ? uploadRow('idcard', docType().n, 'Распознан · проверьте поля', 'done', 100, 'rm-doc')
+          : '<div class="drop" data-a="pick-doc-step"><div class="ico acc">' + ic('scan', 22) + '</div><div><div class="h3" style="font-size:14px">Сканировать или сфотографировать</div><div class="small">Страница с фото и данными</div></div></div>') +
+        (S.scenario === 'ban' && has ? banner('d', 'shield', '<span>С этим документом нельзя продолжить регистрацию. Напишите в поддержку.</span>') : ''),
+        stepFooter(3, has && S.scenario !== 'ban', false)));
+    }
+    if (step === 4) {
+      return phone(wizard(4,
+        '<div class="h1" style="font-size:24px">Другие документы</div>' +
+        '<div class="sub" style="font-size:14px">Дипломы, сертификаты, визы и другое. Тип каждого документа выбираете вы.</div>' +
+        uploadRow('doc', 'CoC — 3rd Engineer (III/1)', 'Распознан', 'done', 100, 'noop') +
+        '<div class="drop" data-a="noop"><div class="ico acc">' + ic('plus', 22) + '</div><div class="h3" style="font-size:14px">Добавить документ</div></div>',
+        stepFooter(4, true, true)));
+    }
+    if (step === 5) {
+      var medBody = S.medConsent
+        ? (S.med ? uploadRow('medical', 'Медицинский сертификат', 'Действителен до 14.10.2027 · удалится после', 'done', 100, 'rm-med')
+          : '<div class="drop" data-a="add-med"><div class="ico acc">' + ic('scan', 22) + '</div><div class="h3" style="font-size:14px">Добавить медицинский документ</div></div>')
+        : '<div class="small">Чтобы загрузить медицинские документы, нужно отдельное согласие.</div>';
+      return phone(wizard(5,
+        '<div class="h1" style="font-size:24px">Медицинские документы</div>' +
+        '<div class="card"><div class="list">' +
+        '<div class="li"><span style="color:var(--accent)">' + ic('lock', 18) + '</span><span>Хранятся зашифрованными</span></div>' +
+        '<div class="li"><span style="color:var(--accent)">' + ic('user', 18) + '</span><span>Видят только агентства, которым вы откроете доступ</span></div>' +
+        '<div class="li"><span style="color:var(--accent)">' + ic('clock', 18) + '</span><span>Удаляются автоматически, когда закончится срок действия</span></div>' +
+        '</div></div>' +
+        check(S.medConsent, 'toggle-med', 'Разрешаю хранить мои медицинские документы для трудоустройства') + medBody,
+        stepFooter(5, true, true)));
+    }
+    if (step === 6) {
+      return phone(wizard(6,
+        '<div class="h1" style="font-size:24px">Морской стаж</div>' +
+        '<div class="sub" style="font-size:14px">Суда и рейсы. Можно добавить из страниц стажа или вручную.</div>' +
+        '<div class="card"><div class="row"><span style="color:var(--accent)">' + ic('ship', 20) + '</span><div><div class="h3">MV Nordic Star</div><div class="small">Container Ship · 3rd Engineer · 02.2024 – 09.2024</div></div></div></div>' +
+        '<div class="drop" data-a="noop"><div class="ico acc">' + ic('plus', 22) + '</div><div class="h3" style="font-size:14px">Добавить рейс</div></div>',
+        stepFooter(6, true, true)));
+    }
+    var reqOk = S.done[1] && S.done[3];
+    return phone(wizard(7,
+      '<div class="h1" style="font-size:24px">Проверка</div>' +
+      '<div class="card"><div class="list">' + STEPS.slice(0, 6).map(function (s) {
+        var st = S.done[s.n] ? '<span class="dot ok">' + ic('check', 13, 2.6) + '</span>' : '<span class="dot skip">–</span>';
+        var label = S.done[s.n] ? '' : (s.req ? '<span class="tag w">обязательно</span>' : '<span class="small">пропущено</span>');
+        return '<div class="li" style="cursor:pointer;align-items:center" data-a="c:s' + s.n + '">' + st + '<span style="flex:1">' + s.t + '</span>' + label + '</div>';
+      }).join('') + '</div></div>' +
+      (reqOk ? '<div class="small">Пропущенные шаги можно заполнить позже из профиля.</div>'
+        : banner('w', 'alert', '<span>Чтобы закончить, пройдите обязательные шаги 1 и 3.</span>')),
+      stepFooter(7, reqOk, false)));
+  }
+
+  function screenC(id) {
+    switch (id) {
+      case 'q01': return qWelcome();
+      case 'q02': return qConsent();
+      case 'q03': return qUpload();
+      case 'q04': return qReading();
+      case 'q05': return qCheck();
+      case 'q06': return qDone();
+      case 'q07': return qProfile();
+      case 'q08': return qVerified();
+      case 'q09': return qResume();
+      case 'e01': case 'e02': case 'e03': case 'e04': case 'e05': return qError(id);
+      default: return screenStep(id);
+    }
+  }
+
+  /* ---------- панель ---------- */
+
+  function renderBar() {
+    var seg = '<div class="seg">' +
+      [['a', 'A · Текущий прототип'], ['b', 'B · Сейчас в TestFlight'], ['c', 'C · Новая регистрация']].map(function (v) {
+        return '<button class="' + (S.view === v[0] ? 'on' : '') + '" data-a="view:' + v[0] + '">' + v[1] + '</button>';
+      }).join('') + '</div>';
+    if (S.view === 'a') {
+      BAR.innerHTML = seg + '<div class="note">Прототип из Claude Design без изменений.</div>';
+      return;
+    }
+    var cur = S.view === 'b' ? S.b : S.c;
+    var options = S.view === 'b'
+      ? B_SCREENS.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === cur ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('')
+      : C_GROUPS.map(function (g) {
+        return '<optgroup label="' + g[0] + '">' + g[1].map(function (x) {
+          return '<option value="' + x[0] + '"' + (x[0] === cur ? ' selected' : '') + '>' + x[1] + '</option>';
+        }).join('') + '</optgroup>';
+      }).join('');
+    var nav = '<div class="nav"><button data-a="prev">‹ Назад</button><select id="jump">' + options +
+      '</select><button data-a="next">Далее ›</button>' +
+      (S.view === 'c' ? '<button data-a="restart">Сначала</button>' : '') + '</div>';
+    var theme = '<label><input type="checkbox" data-opt="light"' + (S.light ? ' checked' : '') + '> Светлая тема</label>';
+    var opts = S.view === 'b' ? '<div class="opts">' + theme + '</div>' : S.view === 'c'
+      ? '<div class="opts">' + theme + '<label>Сценарий <select id="scenario">' + SCENARIOS.map(function (x) {
+        return '<option value="' + x[0] + '"' + (S.scenario === x[0] ? ' selected' : '') + '>' + x[1] + '</option>';
+      }).join('') + '</select></label>' +
+        '<label><input type="checkbox" data-opt="showIds"' + (S.showIds ? ' checked' : '') + '> Показывать дату рождения и номер</label>' +
+        '<label><input type="checkbox" data-opt="emailService"' + (S.emailService ? ' checked' : '') + '> Почтовый сервис подключён</label>' +
+        '<label><input type="checkbox" data-opt="autoNext"' + (S.autoNext ? ' checked' : '') + '> Автопереход</label>' +
+        '<label><input type="checkbox" data-opt="dev"' + (S.dev ? ' checked' : '') + '> Для разработки</label></div>'
+      : '';
+    if (S.view === 'c' && cur === 'q07' && S.emailService && !S.verified) nav = nav.replace('</div>', '<button data-a="c:q08">Открыть ссылку из письма</button></div>');
+    var dev = S.view === 'c' && S.dev && DEV[cur] ? '<div class="note dev">' + DEV[cur] + '</div>' : '';
+    BAR.innerHTML = seg + nav + opts + '<div class="note">' + (NOTES[cur] || '') + '</div>' + dev;
+  }
+
+  function render() {
+    writeHash();
+    renderBar();
+    if (S.view === 'a') {
+      STAGE.innerHTML = '<iframe class="frameA" src="index.html" title="Текущий прототип"></iframe>';
+      return;
+    }
+    STAGE.innerHTML = S.view === 'b' ? screenB(S.b) : screenC(S.c);
+    S.fx = {};
+    if (S.view === 'c' && S.c === 'q05') refreshCheck();
+  }
+
+  function softRender() {
+    var body = STAGE.querySelector('.body');
+    var top = body ? body.scrollTop : 0;
+    S.anim = 'still';
+    render();
+    S.pop = false;
+    var nb = STAGE.querySelector('.body');
+    if (nb) nb.scrollTop = top;
+  }
+
+  function go(id) {
+    clearTimers();
+    S.sheet = null;
+    S.toast = null;
+    var list = S.view === 'b' ? B_SCREENS : C_SCREENS;
+    var from = list.findIndex(function (x) { return x[0] === (S.view === 'b' ? S.b : S.c); });
+    var to = list.findIndex(function (x) { return x[0] === id; });
+    S.anim = to < from ? 'bw' : 'fw';
+    if (S.view === 'c' && id === 'q07') S.loadingProfile = true;
+    if (S.view === 'b') S.b = id; else S.c = id;
+    render();
+    if (S.view === 'c') onEnter(id);
+  }
+
+  function onEnter(id) {
+    if (id === 'q04') startReading();
+    if (id === 'q07') later(function () { S.loadingProfile = false; softRender(); }, 650);
+    if (id === 'e04') {
+      var t = function () { later(function () { S.cd = Math.max(0, S.cd - 1); var el = document.getElementById('cd'); if (el) el.textContent = fmtCd(S.cd); t(); }, 1000); };
+      t();
+    }
+    if (id === 'q03') prefillUpload();
+    if (id === 'q05' || id === 'q06' || id === 'q07' || id === 'q09') prefillAll();
+  }
+
+  function prefillUpload() {
+    if (S.cv.st === 'up') S.cv = { st: 'done', p: 100 };
+    if (S.doc.st === 'up') S.doc.st = 'done';
+  }
+
+  function prefillAll() {
+    var changed = false;
+    if (S.cv.st !== 'done') { S.cv = { st: 'done', p: 100 }; changed = true; }
+    if (!S.doc.pages) { S.doc.pages = 1; S.doc.st = 'done'; changed = true; }
+    if (changed) softRender();
+  }
+
+  function startReading() {
+    prefillAll();
+    S.phase = 1;
+    S.readDone = false;
+    softRender();
+    var sc = S.scenario;
+    var stopAt = { blur: 1, notSeafarer: 1, offline: 1, rate: 0, ban: 3 }[sc];
+    var target = { blur: 'e01', notSeafarer: 'e02', offline: 'e03', rate: 'e04', ban: 'e05' }[sc] || 'q05';
+    var step = function (ph) {
+      later(function () {
+        S.phase = ph;
+        softRender();
+        if ((stopAt !== undefined && ph > stopAt) || ph === 4) {
+          if (sc === 'noName') { S.first = ''; S.last = ''; }
+          S.readTarget = target;
+          if (S.autoNext) { later(function () { go(target); }, 600); return; }
+          S.readDone = true;
+          S.fx.ready = true;
+          softRender();
+          return;
+        }
+        step(ph + 1);
+      }, ph === 0 ? 600 : 1200);
+    };
+    step(2);
+  }
+
+  function simulateUpload(which, done) {
+    var o = which === 'cv' ? S.cv : S.doc;
+    o.st = 'up'; o.p = 0;
+    if (which === 'cv') S.fx.cvIn = true; else S.fx.pgIn = true;
+    softRender();
+    var tick = function () {
+      later(function () {
+        o.p = Math.min(100, o.p + 17 + Math.round(Math.random() * 12));
+        if (o.p >= 100) {
+          o.st = 'done'; o.p = 100;
+          if (which === 'cv') S.fx.cvDone = true; else S.fx.docDone = true;
+          if (S.cv.st === 'done' && S.doc.pages > 0 && S.doc.st === 'done') S.fx.ready = true;
+          softRender();
+          if (done) done();
+          return;
+        }
+        softRender();
+        tick();
+      }, 120);
+    };
+    tick();
+  }
+
+  function closeSheet(after) {
+    var sh = STAGE.querySelector('.sheet');
+    if (!sh) { S.sheet = null; if (after) after(); else softRender(); return; }
+    sh.classList.add('out');
+    setTimeout(function () {
+      S.sheet = null;
+      if (after) after(); else softRender();
+    }, 200);
+  }
+
+  function showToast(text, undo) {
+    S.toast = { text: text, undo: undo, fresh: true };
+    softRender();
+    S.toast.fresh = false;
+    later(function () { S.toast = null; softRender(); }, 4000);
+  }
+
+  function move(delta) {
+    var list = S.view === 'b' ? B_SCREENS : C_SCREENS;
+    var cur = S.view === 'b' ? S.b : S.c;
+    var i = list.findIndex(function (x) { return x[0] === cur; });
+    var n = Math.min(list.length - 1, Math.max(0, i + delta));
+    go(list[n][0]);
+  }
+
+  function restart() {
+    var keep = { view: S.view, scenario: S.scenario, showIds: S.showIds, emailService: S.emailService, light: S.light, dev: S.dev, autoNext: S.autoNext };
+    S = initial();
+    Object.keys(keep).forEach(function (k) { S[k] = keep[k]; });
+    go('q01');
+  }
+
+  /* ---------- действия ---------- */
+
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-a]');
+    if (!el || el.disabled) return;
+    var a = el.getAttribute('data-a');
+    if (el.tagName === 'A') e.preventDefault();
+    if (a === 'noop') { e.stopPropagation(); return; }
+    if (a === 'blocked') {
+      var needs = STAGE.querySelectorAll('[data-need]');
+      if (needs.length) {
+        needs[0].scrollIntoView({ block: 'center', behavior: 'smooth' });
+        for (var n = 0; n < needs.length; n++) shake(needs[n]);
+      } else shake(el);
+      var hint = STAGE.querySelector('.need');
+      if (hint) shake(hint);
+      return;
+    }
+    if (a === 'sheet-bg') { closeSheet(); return; }
+
+    if (a.indexOf('view:') === 0) { clearTimers(); S.view = a.slice(5); S.anim = 'fw'; render(); return; }
+    if (a.indexOf('b:') === 0 || a.indexOf('c:') === 0) { go(a.slice(2)); return; }
+    if (a.indexOf('sheet:') === 0) { S.sheet = a.slice(6); softRender(); return; }
+    if (a.indexOf('type:') === 0) { S.doc.type = a.slice(5); softRender(); return; }
+    if (a.indexOf('done:') === 0) {
+      var st = Number(a.slice(5));
+      S.done[st] = true;
+      delete S.done['skip' + st];
+      if (st === 7) { go('q07'); return; }
+      go(nextStep(st));
+      return;
+    }
+    if (a.indexOf('skip:') === 0) {
+      var sk = Number(a.slice(5));
+      S.done['skip' + sk] = true;
+      go(nextStep(sk));
+      return;
+    }
+
+    switch (a) {
+      case 'prev': move(-1); break;
+      case 'next': move(1); break;
+      case 'restart': restart(); break;
+      case 'sheet-close': closeSheet(); break;
+      case 'start-quick': go('q02'); break;
+      case 'start-step': S.done = {}; go('s1'); break;
+      case 'toggle-consent': S.consent = !S.consent; S.pop = true; softRender(); break;
+      case 'toggle-med': S.medConsent = !S.medConsent; S.pop = true; if (!S.medConsent) S.med = false; softRender(); break;
+      case 'pick-cv': closeSheet(function () { simulateUpload('cv'); }); break;
+      case 'rm-cv':
+        clearTimers();
+        var cvBak = S.cv;
+        S.cv = { st: 'none', p: 0 };
+        showToast('CV удалено', function () { S.cv = cvBak; });
+        break;
+      case 'pick-doc': closeSheet(function () { S.doc.pages = Math.min(2, S.doc.pages + 1); simulateUpload('doc'); }); break;
+      case 'pick-doc-step': S.doc.pages = 1; S.doc.st = 'done'; softRender(); break;
+      case 'rm-doc':
+        clearTimers();
+        var docBak = { pages: S.doc.pages, st: S.doc.st };
+        S.doc.pages = 0; S.doc.st = 'none';
+        showToast('Документ удалён', function () { S.doc.pages = docBak.pages; S.doc.st = docBak.st; });
+        break;
+      case 'undo':
+        if (S.toast && S.toast.undo) S.toast.undo();
+        S.toast = null;
+        softRender();
+        break;
+      case 'add-med': S.med = true; softRender(); break;
+      case 'rm-med': S.med = false; softRender(); break;
+      case 'photo': S.photo = !S.photo; softRender(); break;
+      case 'go-read': go('q04'); break;
+      case 'read-next': go(S.readTarget || 'q05'); break;
+      case 'stop-read': closeSheet(function () { go('q03'); }); break;
+      case 'retake': S.doc.pages = 0; S.doc.st = 'none'; S.scenario = 'ok'; go('q03'); break;
+      case 'manual': S.first = ''; S.last = ''; S.scenario = 'ok'; go('q05'); break;
+      case 'override': S.scenario = 'ok'; go('q05'); break;
+      case 'toggle-pass':
+        S.showPass = !S.showPass;
+        softRender();
+        var p = document.getElementById('f-pass');
+        if (p) { p.focus(); p.setSelectionRange(p.value.length, p.value.length); }
+        break;
+      case 'create':
+        S.creating = true; S.createErr = '';
+        softRender();
+        later(function () {
+          S.creating = false;
+          if (S.scenario === 'emailTaken') {
+            S.createErr = 'Аккаунт с этим email уже есть.';
+            softRender();
+            return;
+          }
+          S.done = { 1: true, 3: true };
+          go('q06');
+        }, 1100);
+        break;
+      case 'fill-profile': S.done = { 1: true, 3: true }; go(nextStep(1)); break;
+      case 'verify-open': S.verified = true; go('q07'); break;
+      case 'resume': go('q05'); break;
+      case 'later-out': go('c08'); break;
+      default: break;
+    }
+  });
+
+  document.addEventListener('input', function (e) {
+    var b = e.target.getAttribute && e.target.getAttribute('data-bind');
+    if (!b) return;
+    S[b] = e.target.value;
+    if (b === 'email' || b === 'email2') S.createErr = '';
+    refreshCheck();
+  });
+
+  document.addEventListener('focusout', function (e) {
+    if (!e.target) return;
+    if (e.target.id === 'f-email') setTimeout(refreshCheck, 0);
+    if (e.target.id === 'f-email2') { S.e2blur = true; refreshCheck(); }
+    if (e.target.id === 'f-email2' && S.email2 && S.email2 !== S.email) {
+      var el = e.target;
+      el.classList.remove('shake');
+      void el.offsetWidth;
+      el.classList.add('shake');
+    }
+  });
+
+  document.addEventListener('change', function (e) {
+    if (e.target.id === 'jump') { go(e.target.value); return; }
+    if (e.target.id === 'scenario') { S.scenario = e.target.value; S.createErr = ''; renderBar(); return; }
+    var k = e.target.getAttribute && e.target.getAttribute('data-opt');
+    if (k) { S[k] = e.target.checked; softRender(); }
+  });
+
+  document.addEventListener('scroll', function (e) {
+    var t = e.target;
+    if (!t.classList || !t.classList.contains('body')) return;
+    var nb = STAGE.querySelector('.navbar');
+    if (!nb) return;
+    nb.classList.toggle('scrolled', t.scrollTop > 8);
+    nb.classList.toggle('titled', t.scrollTop > 70);
+  }, true);
+
+  window.addEventListener('hashchange', function () { readHash(); render(); });
+
+  readHash();
+  render();
+  if (S.view === 'c') onEnter(S.c);
+})();
+</script>
+</body>
+</html>
