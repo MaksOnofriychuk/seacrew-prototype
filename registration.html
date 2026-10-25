@@ -224,6 +224,28 @@ svg{display:block}
 .cntb{background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;border-radius:10px;padding:1px 7px}
 .mi>div .small{margin-top:2px}
 .body.np{padding-top:52px}
+/* фон приложения: морская карта */
+.appbg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.appbg .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--accentRGB),.07) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--accentRGB),.07) 1px,transparent 1px);background-size:44px 44px;background-position:-1px 20px;-webkit-mask-image:radial-gradient(120% 70% at 85% 0%,#000 10%,transparent 70%);mask-image:radial-gradient(120% 70% at 85% 0%,#000 10%,transparent 70%)}
+.appbg .g1{position:absolute;width:420px;height:420px;right:-170px;top:-190px;border-radius:50%;background:radial-gradient(circle,rgba(var(--accentRGB),.28),rgba(var(--accentRGB),0) 65%);animation:drift 12s ease-in-out infinite alternate}
+.appbg .g2{position:absolute;width:360px;height:360px;left:-200px;top:42%;border-radius:50%;background:radial-gradient(circle,rgba(var(--accentRGB),.10),rgba(var(--accentRGB),0) 65%);animation:drift 16s ease-in-out infinite alternate-reverse}
+.appbg .rose{position:absolute;width:250px;height:250px;right:-78px;top:22px;color:rgba(var(--accentRGB),.16);animation:roseSpin 140s linear infinite}
+.appbg .topsea{position:absolute;left:0;right:0;top:96px;height:80px;opacity:.55;-webkit-mask-image:linear-gradient(90deg,transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(90deg,transparent,#000 30%,#000 70%,transparent)}
+.appbg .topsea .sea{position:absolute;inset:0;overflow:hidden}
+.appbg .topsea .sea svg{position:absolute;bottom:0;left:0;width:200%;height:100%}
+.appbg .topsea .w1{animation:waveX 18s linear infinite}.appbg .topsea .w2{animation:waveX 26s linear infinite reverse}.appbg .topsea .w3{animation:waveX 36s linear infinite}
+.appbg .topsea .bub{display:none}
+@keyframes roseSpin{to{transform:rotate(360deg)}}
+.screen.app .inner{position:relative;z-index:1}
+.screen.app .card,.screen.app .menu,.screen.app .composer,.screen.app .notif,.screen.app .jt,.screen.app .search{background:color-mix(in srgb,var(--surface) 82%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.screen.app .card,.screen.app .menu{box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 8px 24px -14px var(--shadow)}
+.screen.app .card.news{background:linear-gradient(180deg,rgba(var(--accentRGB),.10),color-mix(in srgb,var(--surface) 82%,transparent) 70%)}
+.screen.app .tabs{background:color-mix(in srgb,var(--nav) 78%,transparent);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.screen.app .tabs div.on{position:relative}
+.screen.app .tabs div.on::before{content:"";position:absolute;top:-9px;width:22px;height:3px;border-radius:0 0 3px 3px;background:var(--accent);box-shadow:0 2px 10px rgba(var(--accentRGB),.6)}
+.screen.app .hero.mini{background:linear-gradient(180deg,rgba(var(--accentRGB),.06),transparent)}
+.screen.light .appbg .grid{opacity:.7}
+@media (prefers-reduced-motion:reduce){.appbg .g1,.appbg .g2,.appbg .rose,.appbg .topsea svg{animation:none!important}}
 .card.hi{border-color:var(--accentBorder);background:linear-gradient(180deg,rgba(var(--accentRGB),.07),rgba(var(--accentRGB),.02))}
 .choice{cursor:pointer;text-align:left;color:var(--t1);transition:transform .16s cubic-bezier(.3,1.4,.5,1),border-color .15s,background .15s}
 .row{display:flex;gap:12px;align-items:center}
@@ -1001,9 +1023,26 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       (sub ? '<div class="small">' + sub + '</div>' : '') + '</div><span class="chev">' + ic('chevron', 18) + '</span></div>';
   }
 
+  function appBg() {
+    var ticks = '';
+    for (var i = 0; i < 72; i++) {
+      var a = i * 5 * Math.PI / 180, r1 = i % 6 ? 112 : 104, r2 = 118;
+      ticks += '<line x1="' + (130 + r1 * Math.cos(a)).toFixed(1) + '" y1="' + (130 + r1 * Math.sin(a)).toFixed(1) + '" x2="' + (130 + r2 * Math.cos(a)).toFixed(1) + '" y2="' + (130 + r2 * Math.sin(a)).toFixed(1) + '"/>';
+    }
+    var rose = '<svg class="rose" viewBox="0 0 260 260" fill="none" stroke="currentColor" stroke-width="1">' +
+      '<circle cx="130" cy="130" r="118"/><circle cx="130" cy="130" r="96" stroke-dasharray="2 5"/><circle cx="130" cy="130" r="58"/>' + ticks +
+      '<path d="M130 22 L142 118 L130 130 L118 118 Z M130 238 L142 142 L130 130 L118 142 Z M22 130 L118 118 L130 130 L118 142 Z M238 130 L142 118 L130 130 L142 142 Z" stroke-linejoin="round"/>' +
+      '<path d="M130 22 L142 118 L130 130 Z M238 130 L142 142 L130 130 Z M130 238 L118 142 L130 130 Z M22 130 L118 118 L130 130 Z" fill="currentColor" fill-opacity=".35" stroke="none"/>' +
+      '<path d="M54 54 L124 124 M206 54 L136 124 M54 206 L124 136 M206 206 L136 136" stroke-dasharray="1 4"/>' +
+      '<text x="130" y="14" text-anchor="middle" font-size="11" fill="currentColor" stroke="none" font-weight="700">N</text></svg>';
+    return '<div class="appbg"><div class="grid"></div><div class="g1"></div><div class="g2"></div>' + rose +
+      '<div class="topsea">' + sea().replace(/^<div class="glow"><\/div><div class="glow b"><\/div>/, '') + '</div></div>';
+  }
+
   function phone(inner) {
     var toast = S.toast ? '<div class="toast"><span style="color:var(--t2);display:flex">' + ic(S.toast.undo ? 'trash' : 'check', 16) + '</span><span>' + S.toast.text + '</span>' + (S.toast.undo ? '<button data-a="undo">Отменить</button>' : '<span style="width:2px"></span>') + (S.toast.fresh ? '<span class="tbar"></span>' : '<span class="tbar" style="animation:none;width:0"></span>') + '</div>' : '';
-    return '<div class="phone"><div class="screen' + (S.light ? ' light' : '') + '"><div class="island"></div>' +
+    var isApp = S.view === 'c' && (/^[pg]/.test(S.c) || S.c === 'q09' || S.c === 'q10');
+    return '<div class="phone"><div class="screen' + (S.light ? ' light' : '') + (isApp ? ' app' : '') + '"><div class="island"></div>' + (isApp ? appBg() : '') +
       '<div class="status"><span>9:41</span><span class="sig">' +
       '<svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>' +
       '<svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2.5" y="2.5" width="17" height="7" rx="2" fill="currentColor"/><rect x="24" y="4" width="1.6" height="4" rx=".8" fill="currentColor" opacity=".45"/></svg>' +
