@@ -260,6 +260,7 @@ svg{display:block}
 .ico.acc{background:var(--tint);border-color:var(--accentBorder)}
 .ico.big{width:64px;height:64px;border-radius:18px}
 .check{display:flex;gap:12px;align-items:flex-start;cursor:pointer;font-size:14px;line-height:1.45;color:var(--t1)}
+.seatotal{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--tint08);border:1px solid var(--accentBorder)}.seatotal>span{color:var(--accent);display:flex}
 .check.sm{font-size:13.5px;align-items:center;gap:10px;margin:-2px 0 4px;color:var(--t2)}.check.sm .box{width:20px;height:20px;border-radius:6px}
 .box{width:24px;height:24px;border-radius:7px;border:1.5px solid var(--strong);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--onAccent);margin-top:1px;transition:background .15s,border-color .15s}
 .box.on{background:var(--accent);border-color:var(--accent)}
@@ -517,7 +518,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
 .mi + .mi{border-top:1px solid var(--divider)}
 .mi:active{background:var(--raised)}
 .mi .ico{width:34px;height:34px;border-radius:10px}
-.mi .mv{margin-left:auto;font-size:14px;color:var(--t2);display:flex;align-items:center;gap:6px}
+.mi .mv{margin-left:auto;font-size:14px;color:var(--t2);display:flex;align-items:center;gap:6px;white-space:nowrap}
 .grid2{display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
 .grid2 .field{min-width:0}
 .tabs div[role=button]:active{opacity:.6}
@@ -1575,11 +1576,11 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       '<div class="card stag" style="animation-delay:.08s">' +
       '<div class="row" style="justify-content:space-between"><div class="h3">Готовность к анкетам</div><span class="h3" style="color:' + (full ? 'var(--success)' : 'var(--accent)') + '">' + r.pct + ' %</span></div>' +
       '<div class="pbar"><span style="width:' + r.pct + '%;background:' + (full ? 'var(--success)' : 'var(--warning)') + '"></span></div>' +
-      '<div class="feats" style="margin-top:0">' + chips + '</div>' +
+
       (full ? banner('ok', 'shieldOk', '<span><b>Профиль заполнен.</b> Данные готовы для анкет агентств.</span>')
         : '<div class="small">Считаем только данные, которые чаще всего нужны агентствам в анкетах.</div>' + btn('Дополнить профиль', 'fill-profile', 't')) + '</div>' +
       W('<div class="over">Мой профиль</div><div class="menu">' +
-        mi('user', 'Личные данные', '', 'c:s2') + mi('ship', 'Морской стаж', '3 рейса', 'c:s6') +
+        mi('user', 'Личные данные', '', 'c:s2') + mi('ship', 'Морской стаж', durShort(months(S.d.per1) + months(S.d.per2)), 'c:s6') +
         mi('briefcase', 'Должность', '3rd Engineer', 'noop') + mi('doc', 'Моё CV', 'PDF', 'noop') + '</div>', 2) +
       W('<div class="over">Работа</div><div class="menu">' +
         mi('bookmark', 'Сохранённые вакансии', String(Object.keys(S.saved).filter(function (k) { return S.saved[k]; }).length), 'c:p09') +
@@ -1738,6 +1739,20 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       '<div class="check sm" data-a="noexp:' + nk + '" role="checkbox" tabindex="0" aria-checked="' + off + '"><div class="box' + (off ? ' on' : '') + '">' + (off ? ic('check', 13, 2.6) : '') + '</div><div>Без срока действия</div></div>';
   }
 
+  function plural(n, a, b, c) { var m = n % 10, h = n % 100; return n + ' ' + (m === 1 && h !== 11 ? a : (m >= 2 && m <= 4 && (h < 12 || h > 14) ? b : c)); }
+  function months(per) {
+    var m = String(per || '').match(/(\d{2})\.(\d{4})\D+(\d{2})\.(\d{4})/);
+    if (!m) return 0;
+    return Math.max(0, (+m[4] - +m[2]) * 12 + (+m[3] - +m[1]) + 1);
+  }
+  function durText(n) {
+    if (!n) return '';
+    var y = Math.floor(n / 12), mo = n % 12;
+    return [y ? plural(y, 'год', 'года', 'лет') : '', mo ? plural(mo, 'месяц', 'месяца', 'месяцев') : ''].filter(Boolean).join(' ');
+  }
+  function durShort(n) { var y = Math.floor(n / 12), mo = n % 12; return [y ? y + ' г.' : '', mo ? mo + ' мес.' : ''].filter(Boolean).join(' '); }
+  function seaTotal() { return durText(months(S.d.per1) + months(S.d.per2)); }
+
   function dataValid() { return !!(S.first.trim() && S.last.trim() && S.d.birth.trim() && S.d.docNum.trim()); }
 
   function editedNote() {
@@ -1767,10 +1782,12 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
         df('Номер диплома', 'dipNum') + df('Дата выдачи', 'dipIssue', { ph: 'ДД.ММ.ГГГГ' }) + expField('dipExp', 'dipNoExp') +
         df('Страна выдачи', 'dipCountry') + df('Название документа', 'dipName') + df('Должность по диплому', 'dipRank'), 4) +
       grp('Морской стаж',
+        '<div class="seatotal"><span>' + ic('ship', 18) + '</span><div><div class="small">Общий стаж</div><div class="h3">' + seaTotal() + '</div></div></div>' +
         field('Судно', { value: S.d.vessel1, bind: 'd.vessel1', tag: srcTag('vessel1', 'cv') }) +
-        '<div class="grid2">' + field('Должность', { value: S.d.rank1, bind: 'd.rank1' }) + field('Период', { value: S.d.per1, bind: 'd.per1' }) + '</div>' +
+        '<div class="grid2">' + field('Должность', { value: S.d.rank1, bind: 'd.rank1' }) + field('Период', { value: S.d.per1, bind: 'd.per1', note: durText(months(S.d.per1)) }) + '</div>' +
+        '<div style="height:1px;background:var(--divider);margin:2px 0 4px"></div>' +
         field('Судно', { value: S.d.vessel2, bind: 'd.vessel2', tag: srcTag('vessel2', 'cv') }) +
-        '<div class="grid2">' + field('Должность', { value: S.d.rank2, bind: 'd.rank2' }) + field('Период', { value: S.d.per2, bind: 'd.per2' }) + '</div>', 5) +
+        '<div class="grid2">' + field('Должность', { value: S.d.rank2, bind: 'd.rank2' }) + field('Период', { value: S.d.per2, bind: 'd.per2', note: durText(months(S.d.per2)) }) + '</div>', 5) +
       '<div id="editedNote">' + editedNote() + '</div>' +
       '<div class="small" style="display:flex;gap:6px"><span style="color:var(--t2)">' + ic('lock', 13, 2) + '</span>Подтверждённое идёт в профиль и в автозаполнение анкет. Неподтверждённое — нет.</div>' +
       '</div><div class="foot line">' + btn('Подтвердить и продолжить', 'c:q06', 'p', !dataValid(), ' id="confirmBtn"') + '<div class="need" id="missing"></div></div>' + nav('c:q03', 'Проверьте данные'));
@@ -1982,8 +1999,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     var r = readiness(), full = r.pct === 100;
     return '<div class="card"><div class="row" style="justify-content:space-between"><div class="h3">Профиль заполнен</div><span class="h3" style="color:' + (full ? 'var(--success)' : 'var(--accent)') + '">' + r.pct + ' %</span></div>' +
       '<div class="pbar"><span style="width:' + r.pct + '%;background:' + (full ? 'var(--success)' : 'var(--warning)') + '"></span></div>' +
-      '<div class="feats" style="margin-top:0">' + r.items.map(function (x) { return '<span class="feat' + (x[1] ? ' ok' : '') + '">' + ic(x[1] ? 'check' : 'plus', 14) + x[0] + '</span>'; }).join('') + '</div>' +
-      (full ? '' : '<div class="small">Осталось: ' + r.items.filter(function (x) { return !x[1]; }).map(function (x) { return x[0].toLowerCase(); }).join(', ') + '. Заполнить можно в профиле.</div>') + '</div>';
+      '</div>';
   }
 
   function burst() {
@@ -2049,7 +2065,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       '<div class="card stag" style="animation-delay:.08s">' +
       '<div class="row" style="justify-content:space-between"><div class="h3">Готовность к анкетам</div><span class="h3" style="color:' + (full ? 'var(--success)' : 'var(--accent)') + '">' + r.pct + ' %</span></div>' +
       '<div class="pbar"><span style="width:' + r.pct + '%;background:' + (full ? 'var(--success)' : 'var(--warning)') + '"></span></div>' +
-      '<div class="feats" style="margin-top:0">' + chips + '</div>' +
+
       (full ? banner('ok', 'shieldOk', '<span><b>Профиль заполнен.</b> Данные готовы для анкет агентств.</span>')
         : '<div class="small">Считаем только данные, которые чаще всего нужны агентствам в анкетах.</div>' + btn('Дополнить профиль', 'fill-profile', 't')) + '</div>' +
       W('<div class="menu">' +
@@ -2287,7 +2303,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     }
     if (step === 6) {
       return phone(wizard(6,
-        W('<div class="card"><div class="small">Можно добавить из страниц стажа или вручную.</div><div class="row"><span style="color:var(--accent)">' + ic('ship', 20) + '</span><div><div class="h3">MV Example Star</div><div class="small">Container Ship · 3rd Engineer · 02.2024 – 09.2024</div></div></div>' +
+        W('<div class="card"><div class="seatotal"><span>' + ic('ship', 18) + '</span><div><div class="small">Общий стаж</div><div class="h3">' + durText(months(S.d.per1)) + '</div></div></div><div class="small">Можно добавить из страниц стажа или вручную.</div><div class="row"><span style="color:var(--accent)">' + ic('ship', 20) + '</span><div style="flex:1"><div class="h3">MV Example Star</div><div class="small">Container Ship · 3rd Engineer</div><div class="small">02.2024 – 09.2024 · <b style="color:var(--t1);font-weight:600">' + durText(months(S.d.per1)) + '</b></div></div></div>' +
           '<div class="drop" role="button" tabindex="0" data-a="noop"><div class="ico acc">' + ic('plus', 22) + '</div><div class="h3" style="font-size:14px">Добавить рейс</div></div></div>', 1),
         stepFooter(6, true, true)));
     }
