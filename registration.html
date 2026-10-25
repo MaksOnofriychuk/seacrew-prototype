@@ -179,6 +179,8 @@ svg{display:block}
 
 /* карточки */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.hrow{display:flex;gap:10px;overflow-x:auto;margin:0 -22px;padding:0 22px 2px;scrollbar-width:none}.hrow::-webkit-scrollbar{display:none}
+.card.mini{flex:0 0 148px;gap:6px;padding:12px;cursor:pointer}.row>.btn{flex:1}
 .card.hi{border-color:var(--accentBorder);background:linear-gradient(180deg,rgba(var(--accentRGB),.07),rgba(var(--accentRGB),.02))}
 .choice{cursor:pointer;text-align:left;color:var(--t1);transition:transform .16s cubic-bezier(.3,1.4,.5,1),border-color .15s,background .15s}
 .row{display:flex;gap:12px;align-items:center}
@@ -501,7 +503,11 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
     download: '<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/>',
     globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.4 3.6 5.2 3.6 8.5s-1.1 6.1-3.6 8.5c-2.5-2.4-3.6-5.2-3.6-8.5S9.5 5.9 12 3.5z"/>',
-    moon: '<path d="M19.5 14.5A8 8 0 019.5 4.5a8 8 0 1010 10z"/>'
+    moon: '<path d="M19.5 14.5A8 8 0 019.5 4.5a8 8 0 1010 10z"/>',
+    feed: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/>',
+    briefcase: '<rect x="3.5" y="7.5" width="17" height="12" rx="2.5"/><path d="M9 7.5V6a1.5 1.5 0 011.5-1.5h3A1.5 1.5 0 0115 6v1.5M3.5 13h17"/>',
+    bell: '<path d="M6 16.5V11a6 6 0 0112 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 004 0"/>',
+    bookmark: '<path d="M7 4.5h10a1 1 0 011 1v15l-6-4-6 4v-15a1 1 0 011-1z"/>'
   };
 
   function ic(name, size, sw) {
@@ -552,7 +558,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       ['q08', '7. Аккаунт создан'],
       ['q09', '8. Профиль'],
       ['q10', 'Профиль · Согласия'],
-      ['p01', 'Приложение · Главная'],
+      ['p01', 'Приложение · Лента'],
+      ['p05', 'Приложение · Вакансии'],
       ['p04', 'Приложение · Боковое меню'],
       ['p02', 'Приложение · Документы'],
       ['p03', 'Приложение · Входящие'],
@@ -602,7 +609,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     o02: 'Четыре пути. <b>Быстро</b> — CV и документ моряка. <b>Пошагово</b> — профиль по шагам, можно с перерывами. <b>Войти</b> — для тех, у кого уже есть аккаунт. <b>Посмотреть без регистрации</b> — гость: аккаунт не создаётся.',
     o03: 'Короткий экран после выбора «Быстро»: что приготовить — CV, удостоверение или диплом моряка, доступ к почте.',
     o04: 'Короткий экран после выбора «Пошагово»: регистрацию можно прервать и продолжить с любого шага и любого устройства.',
-    g01: 'Гость видит образцы ленты — это заглушки, не настоящие публикации. Любое действие (отметка, сообщение, вкладки «Документы», «Входящие», «Профиль») открывает окно «Зарегистрируйтесь, чтобы…». <b>Приложение запоминает гостя на телефоне:</b> при следующем открытии он сразу попадает сюда, без слайдов и выбора способа.',
+    g01: 'Гость видит образцы ленты — это заглушки, не настоящие публикации. Любое действие (отметка, сообщение, вкладки «Документы», «Профиль») открывает окно «Зарегистрируйтесь, чтобы…». <b>Приложение запоминает гостя на телефоне:</b> при следующем открытии он сразу попадает сюда, без слайдов и выбора способа.',
     g02: 'Образцы вакансий — тоже заглушки. «Откликнуться» требует аккаунта. Гость запоминается на телефоне, как и в ленте.',
     g03: 'Окно появляется на любое действие гостя и предлагает оба пути регистрации. «Не сейчас» возвращает к просмотру.',
     q02: 'Две отдельные галочки, заранее не отмечены: условия сервиса и политика конфиденциальности; обработка документов, включая чтение ИИ. Нужны обе — до загрузки первого файла. «Подробнее» открывает краткий текст простым языком. Экран не прокручивается.',
@@ -615,7 +622,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     q09: '«Готовность к анкетам» считается <b>только по полям, которые чаще всего нужны агентствам в анкетах</b>: личные данные, документ моряка, диплом, медицинские, морской стаж. При 100 % — «Профиль заполнен», иначе — «Дополнить профиль» (ведёт на первый незаполненный шаг). Рекрутер видит «Профиль неполный», пока нет 100 %. Чтобы увидеть 100 %, включите галочку в панели.',
     q10: 'Каждое согласие хранится с версией текста и временем. «Отозвать согласие» — так же просто, как дать. Копию своих данных можно скачать отсюда и из профиля.',
     p04: 'Боковое меню, как в LinkedIn: открывается по аватару в левом верхнем углу главной. Сверху — кто вы: фото, имя, отметка «документ моряка проверен», должность, гражданство и <b>статус доступности</b> (нажмите, чтобы сменить) — то, что агентства ищут в первую очередь. Ниже — приглашения и анкеты, готовность к анкетам и <b>документы, которые скоро истекают</b>. Затем быстрый доступ: документы, стаж, CV одним PDF, анкеты, приглашения. Внизу — настройки и конфиденциальность.',
-    p01: 'Четыре вкладки внизу: Главная, Документы, Входящие, Профиль. Состав вкладок — предложение; его можно изменить. Та же главная, но с действиями для зарегистрированных.',
+    p01: 'Четыре вкладки внизу: <b>Лента, Вакансии, Документы, Профиль</b>. В ленте сверху — личные карточки, только когда есть что показать: незаполненный профиль, истекающий документ, новое приглашение с кнопкой «Ответить». Дальше — «Подходит вам» (вакансии под должность и тип судна из профиля), публикации агентств и новости, рекламные карточки с пометкой «Реклама». Позже: подписка на компании, курсы с датами, изменения в правилах (STCW, MLC).',
+    p05: 'Вакансии — отдельная вкладка. Сохранённые вакансии — в профиле.',
     p02: 'Список документов моряка. Медицинский документ показывает срок: «Медосмотр действителен до …».',
     p03: 'Анкеты и сообщения от агентств. Пока пусто.',
     q11: 'Моряк вернулся на том же телефоне, не закончив быструю регистрацию (до 30 дней). С другого устройства продолжить нельзя — аккаунта ещё нет. «Начать заново» <b>сразу удаляет файлы и прочитанные данные</b>, остаётся только запись «была попытка». <b>Лимит попыток не обнуляется:</b> он считается по телефону и IP.',
@@ -655,7 +663,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     q09: 'Наявний <code>(tabs)/profile.tsx</code>. Прогрес — <code>View</code> зі смугою; відсоток і чипи приходять з API (<code>readiness</code>), рахуються на сервері лише по полях анкет. Пункти списку — <code>Pressable</code> у <code>Card</code>; «Тема» — <code>useColorScheme</code> + збережене значення.',
     q10: 'Екран <code>profile/consents.tsx</code>. Список з <code>GET /v1/consents</code> (вид, версія, коли, відкликано). «Отозвать» — <code>ActionSheetIOS</code> або formSheet з підтвердженням → <code>DELETE /v1/consents/:id</code>.',
     p04: 'Бокове меню — drawer: <code>@react-navigation/drawer</code> або власна панель на reanimated + gesture-handler (свайп від лівого краю, тап по затемненню закриває). Статус доступності — поле профілю (enum + дата), бачать агентства з доступом. «Скоро истекают» — з дат документів профілю. «Моё CV» — PDF з профілю тим самим генератором, що «наш PDF» анкет.',
-    p01: 'Нижні вкладки — <code>Tabs</code> з expo-router (<code>app/(tabs)/_layout.tsx</code>): index, documents, inbox, profile. Іконки — expo-symbols.',
+    p01: 'Нижні вкладки — <code>Tabs</code> з expo-router (<code>app/(tabs)/_layout.tsx</code>): feed, vacancies, documents, profile. Входящие — стек-екран із профілю. Стрічка — <code>FlatList</code> з типами елементів (personal, vacancyRow, post, ad), ряд «Подходит вам» — горизонтальний <code>FlatList</code>. Іконки — expo-symbols.',
     p02: 'Наявний екран документів; рядок медичного документа показує «Медосмотр действителен до …» з поля <code>expiresAt</code>.',
     p03: 'Заглушка <code>EmptyState</code>; наповнюється, коли будуть анкети й повідомлення.',
     q11: 'Ідентифікатор спроби — у <code>expo-secure-store</code>; при старті застосунку — запит стану спроби. «Начать заново» — <code>DELETE /v1/registration/attempts/:id</code> (файли й прочитане видаляються одразу, запис спроби лишається).',
@@ -1120,8 +1128,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
   ];
 
   function tabs2(on, guest) {
-    var items = [['home', 'home', 'Главная', guest ? 'c:g01' : 'c:p01'], ['docs', 'docs', 'Документы', guest ? 'gate:docs' : 'c:p02'],
-      ['inbox', 'inbox', 'Входящие', guest ? 'gate:inbox' : 'c:p03'], ['profile', 'user', 'Профиль', guest ? 'gate:profile' : 'c:q09']];
+    var items = [['feed', 'feed', 'Лента', guest ? 'c:g01' : 'c:p01'], ['vac', 'briefcase', 'Вакансии', guest ? 'c:g02' : 'c:p05'],
+      ['docs', 'docs', 'Документы', guest ? 'gate:docs' : 'c:p02'], ['profile', 'user', 'Профиль', guest ? 'gate:profile' : 'c:q09']];
     return '<div class="tabs">' + items.map(function (it) {
       return '<div class="' + (it[0] === on ? 'on' : '') + '" role="button" tabindex="0" data-a="' + it[3] + '" style="cursor:pointer">' + ic(it[1], 23) + it[2] + '</div>';
     }).join('') + '</div>';
@@ -1129,21 +1137,25 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
 
   function homeScreen(tab, guest) {
     var act = function (k) { return guest ? 'gate:' + k : 'reg-act:' + k; };
-    var seg = '<div class="segc"><span class="thumb' + (tab === 'vac' ? ' r' : '') + '"></span>' +
-      [['feed', 'Лента', 'g01'], ['vac', 'Вакансии', 'g02']].map(function (x) {
-        return '<button class="' + (tab === x[0] ? 'on' : '') + '" data-a="' + (guest ? 'c:' + x[2] : 'home-tab:' + x[0]) + '"><b>' + x[1] + '</b></button>';
-      }).join('') + '</div>';
-    var top;
-    if (guest) top = banner('i', 'eye', '<span><b>Вы смотрите как гость.</b> Это примеры — настоящие публикации и вакансии появятся после регистрации.</span>');
-    else {
+    var top = '';
+    if (guest) top = W(banner('i', 'eye', '<span><b>Вы смотрите как гость.</b> Это примеры — настоящие публикации и вакансии появятся после регистрации.</span>'), 0);
+    else if (tab === 'feed') {
       var r = readiness();
-      top = r.pct < 100 ? banner('w', 'alert', '<span><b>Профиль готов на ' + r.pct + ' %.</b> Дополните его, чтобы быстрее отвечать на анкеты.</span><button class="link" style="align-self:flex-start;font-size:14px" data-a="fill-profile">Дополнить профиль</button>') : '';
+      top = (r.pct < 100 ? W(banner('w', 'alert', '<span><b>Профиль готов на ' + r.pct + ' %.</b> Дополните его, чтобы быстрее отвечать на анкеты.</span><button class="link" style="align-self:flex-start;font-size:14px" data-a="fill-profile">Дополнить профиль</button>'), 0) : '') +
+        W(banner('w', 'clock', '<span><b>Медосмотр истекает через 20 дней.</b> Обновите документ, чтобы не потерять предложения.</span><button class="link" style="align-self:flex-start;font-size:14px" data-a="c:p02">Открыть документы</button>'), 0) +
+        W('<div class="card"><div class="row"><div class="ico acc">' + ic('mail', 20) + '</div><div style="flex:1;min-width:0"><div class="h3">Приглашение от агентства</div><div class="small">Агентство «Образец» · 3-й механик, танкер</div></div><span class="tag m">новое</span></div>' +
+          '<div class="row" style="gap:10px">' + btn('Ответить', 'c:p03', 't') + btn('Позже', 'noop', 'g') + '</div></div>', 1) +
+        W('<div class="row" style="justify-content:space-between"><div class="h3">Подходит вам</div><button class="link" style="font-size:14px" data-a="c:p05">Все вакансии</button></div>', 2) +
+        W('<div class="hrow">' + VACS.map(function (v) {
+          return '<div class="card mini" role="button" tabindex="0" data-a="c:p05"><div class="ico acc" style="width:34px;height:34px;border-radius:10px">' + ic('ship', 17) + '</div><div class="h3" style="font-size:14px">' + v[0] + '</div><div class="small">' + v[1].split(' · ')[0] + '</div><div class="h3" style="font-size:13px;color:var(--accent)">' + v[2] + '</div></div>';
+        }).join('') + '</div>', 2);
     }
+    var ad = guest ? '' : W('<div class="card"><div class="row"><div class="ico acc">' + ic('medical', 20) + '</div><div style="flex:1;min-width:0"><div class="h3">Медосмотр за 1 день</div><div class="small">Клиника «Пример» · Одесса</div></div><span class="tag m">Реклама</span></div><button class="link" style="align-self:flex-start;font-size:14px" data-a="noop">Подробнее</button></div>', 5);
     var cards = tab === 'feed'
       ? FEED.map(function (f, i) {
         return W('<div class="card"><div class="row"><div class="skel" style="width:36px;height:36px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;min-width:0"><div class="small" style="color:var(--t1)">' + f[2] + '</div></div><span class="tag m">пример</span></div>' +
           '<div class="h3">' + f[0] + '</div><div class="small">' + f[1] + '</div>' +
-          '<div class="row" style="gap:18px;color:var(--t2);font-size:13px"><button class="link" style="color:var(--t2);display:flex;gap:6px;align-items:center" data-a="' + act('react') + '">' + ic('heart', 17) + 'Нравится</button><button class="link" style="color:var(--t2);display:flex;gap:6px;align-items:center" data-a="' + act('msg') + '">' + ic('mail', 17) + 'Написать</button></div></div>', i + 2);
+          '<div class="row" style="gap:18px;color:var(--t2);font-size:13px"><button class="link" style="color:var(--t2);display:flex;gap:6px;align-items:center" data-a="' + act('react') + '">' + ic('heart', 17) + 'Нравится</button><button class="link" style="color:var(--t2);display:flex;gap:6px;align-items:center" data-a="' + act('msg') + '">' + ic('mail', 17) + 'Написать</button></div></div>', i + 3) + (i === 0 ? ad : '');
       }).join('')
       : VACS.map(function (v, i) {
         return W('<div class="card"><div class="row"><div class="ico acc">' + ic('ship', 20) + '</div><div style="flex:1;min-width:0"><div class="h3">' + v[0] + '</div><div class="small">' + v[1] + '</div></div><span class="tag m">пример</span></div>' +
@@ -1151,8 +1163,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
           btn('Откликнуться', act('apply'), 't') + '</div>', i + 2);
       }).join('');
     var avatar = '<button class="avbtn" data-a="' + (guest ? 'gate:profile' : 'drawer') + '" aria-label="Меню">' + (guest ? ic('user', 18) : esc(((S.first[0] || '?') + (S.last[0] || '')).toUpperCase())) + '</button>';
-    return phone('<div class="body underbar">' + '<div class="hero compact"><div class="row" style="gap:12px">' + avatar + '<div class="h1 stag" style="animation-delay:.02s;font-size:28px">' + (tab === 'feed' ? 'Главная' : 'Вакансии') + '</div></div></div>' +
-      (top ? W(top, 0) : '') + W(seg, 1) + cards + '</div>' + tabs2('home', guest));
+    return phone('<div class="body underbar">' + '<div class="hero compact"><div class="row" style="gap:12px">' + avatar + '<div class="h1 stag" style="animation-delay:.02s;font-size:28px">' + (tab === 'feed' ? 'Лента' : 'Вакансии') + '</div></div></div>' +
+      top + cards + '</div>' + tabs2(tab, guest));
   }
 
   /* ---------- C: быстрая регистрация ---------- */
@@ -1602,7 +1614,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       (full ? banner('ok', 'shieldOk', '<span><b>Профиль заполнен.</b> Данные готовы для анкет агентств.</span>')
         : '<div class="small">Считаем только данные, которые чаще всего нужны агентствам в анкетах.</div>' + btn('Дополнить профиль', 'fill-profile', 't')) + '</div>' +
       W('<div class="menu">' +
-        mi('docs', 'Мои документы', docCount(), 'c:p02') + mi('inbox', 'Входящие', '', 'c:p03') +
+        mi('bookmark', 'Сохранённые вакансии', '2', 'noop') + mi('bell', 'Уведомления', '3', 'noop') + mi('inbox', 'Входящие', '', 'c:p03') +
         mi('globe', 'Язык', 'Русский', 'noop') + mi('moon', 'Тема', S.light ? 'Светлая' : 'Тёмная', 'theme') +
         mi('shieldOk', 'Согласия', '', 'c:q10') + mi('download', 'Скачать мои данные', '', 'download-data') + '</div>', 2) +
       '</div>' + tabs2('profile'));
@@ -1647,7 +1659,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     return phone('<div class="body underbar">' + head({ compact: true, title: 'Входящие' }) +
       '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding-bottom:40px">' +
       '<div class="ico big acc stag">' + ic('inbox', 28) + '</div><div class="h2 stag">Входящих пока нет</div>' +
-      '<div class="sub stag" style="font-size:14px">Анкеты и сообщения от агентств появятся здесь.</div></div></div>' + tabs2('inbox'));
+      '<div class="sub stag" style="font-size:14px">Анкеты и сообщения от агентств появятся здесь.</div></div></div>' + tabs2('profile'));
   }
 
   function qResume() {
@@ -1860,8 +1872,9 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       case 'o04': return oPath('s');
       case 'g01': return homeScreen('feed', true);
       case 'g02': case 'g03': return homeScreen('vac', true);
-      case 'p01': return homeScreen(S.homeTab, false);
-      case 'p04': S.drawer = true; return homeScreen(S.homeTab, false);
+      case 'p01': return homeScreen('feed', false);
+      case 'p05': return homeScreen('vac', false);
+      case 'p04': S.drawer = true; return homeScreen('feed', false);
       case 'p02': return qDocs();
       case 'p03': return qInbox();
       case 'q02': return qConsent();
@@ -1979,7 +1992,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       var f = document.querySelector('#otp input');
       if (f) f.focus();
     }
-    if (['q05', 'q06', 'q07', 'q08', 'q09', 'q10', 'q11', 'p01', 'p02', 'p03', 'p04'].indexOf(id) >= 0) prefillAll(id);
+    if (['q05', 'q06', 'q07', 'q08', 'q09', 'q10', 'q11', 'p01', 'p02', 'p03', 'p04', 'p05'].indexOf(id) >= 0) prefillAll(id);
   }
 
   function prefillUpload() {
@@ -1991,7 +2004,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     var changed = false;
     if (S.cv.st !== 'done') { S.cv = { st: 'done', p: 100 }; changed = true; }
     if (!S.doc.pages) { S.doc.pages = 1; S.doc.st = 'done'; changed = true; }
-    if (['q08', 'q09', 'q10', 'p01', 'p02', 'p03', 'p04'].indexOf(id) >= 0 && S.fast && !S.done[2]) { S.done = { 1: true, 2: true, 3: true, 4: true, 6: true }; changed = true; }
+    if (['q08', 'q09', 'q10', 'p01', 'p02', 'p03', 'p04', 'p05'].indexOf(id) >= 0 && S.fast && !S.done[2]) { S.done = { 1: true, 2: true, 3: true, 4: true, 6: true }; changed = true; }
     if (changed && id !== 'q09') softRender();
   }
 
