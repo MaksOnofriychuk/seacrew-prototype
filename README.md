@@ -6,7 +6,9 @@
 
 | Файл | Опис |
 |------|------|
-| `index.html` | Основний прототип (публікується на GitHub Pages) |
+| `index.html` | Прототип: перемикач A (перший прототип) / B (TestFlight) / C (нова реєстрація й застосунок) — головна сторінка на GitHub Pages |
+| `prototype-v1.html` | Перший прототип з Claude Design (вкладка A) |
+| `registration.html` | Переадресація на `index.html` (стара адреса) |
 | `SeaCrew Prototype.html` | Прототип (EN) |
 | `SeaCrew Prototype (RU).html` | Прототип (RU) |
 | `SeaCrew Prototype.dc.html`, `seacrew-export.dc.html` | Експорт у форматі Claude Design |
