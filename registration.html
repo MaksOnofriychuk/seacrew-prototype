@@ -317,6 +317,20 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
 .ambient-bg .sea .w3{animation:waveX 34s linear infinite;bottom:-12px}
 .ambient-bg .bub{position:absolute;bottom:40px;width:4px;height:4px;border-radius:50%;background:var(--accent);opacity:0;animation:bubble 7s ease-in infinite}
 .ambient-bg .glow{display:none!important}
+.drawer{position:absolute;inset:0;z-index:6;display:flex;animation:fade .18s}
+.drawer .dim{flex:1;background:rgba(4,8,12,.55)}
+.drawer .pane{width:84%;height:100%;background:var(--surface);border-right:1px solid var(--border);padding:62px 20px 30px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;animation:slideIn .26s cubic-bezier(.2,.8,.2,1);order:-1;box-shadow:12px 0 40px var(--shadow)}
+.drawer.out{animation:fadeOut .2s forwards}
+.drawer.out .pane{animation:slideOut .2s ease-in forwards}
+.drawer .mi{display:flex;gap:14px;align-items:center;padding:11px 4px;font-size:16px;font-weight:600;cursor:pointer;border-radius:10px;transition:background .15s}
+.drawer .mi:active{background:var(--raised)}
+.drawer .mi .cnt{margin-left:auto;font-size:13px;font-weight:600;color:var(--t2)}
+.drawer .sep{height:1px;background:var(--divider);margin:2px 0}
+.availpill{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;align-self:flex-start;border:1px solid}
+.availpill .d{width:8px;height:8px;border-radius:50%;background:currentColor}
+.avbtn{width:36px;height:36px;border-radius:50%;background:var(--tint);border:1px solid var(--accentBorder);color:var(--accent);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+@keyframes slideIn{from{transform:translateX(-100%)}to{transform:none}}
+@keyframes slideOut{to{transform:translateX(-100%)}}
 .ambient-bg{background:radial-gradient(110% 55% at 100% 0%,rgba(var(--accentRGB),.20),transparent 62%)}
 .ambient-bg.tone-warn{background:radial-gradient(110% 55% at 100% 0%,rgba(227,160,8,.16),transparent 62%)}
 .ambient-bg.tone-muted{background:radial-gradient(110% 55% at 100% 0%,rgba(154,168,181,.12),transparent 62%)}
@@ -507,6 +521,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       ['q09', '8. Профиль'],
       ['q10', 'Профиль · Согласия'],
       ['p01', 'Приложение · Главная'],
+      ['p04', 'Приложение · Боковое меню'],
       ['p02', 'Приложение · Документы'],
       ['p03', 'Приложение · Входящие'],
       ['q11', 'Незаконченная регистрация'],
@@ -567,6 +582,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     q08: 'Аккаунт создан: файлы перенесены к моряку и зашифрованы его ключом, временные копии стёрты. Подтверждённые данные уже в профиле.',
     q09: '«Готовность к анкетам» считается <b>только по полям, которые чаще всего нужны агентствам в анкетах</b>: личные данные, документ моряка, диплом, медицинские, морской стаж. При 100 % — «Профиль заполнен», иначе — «Дополнить профиль» (ведёт на первый незаполненный шаг). Рекрутер видит «Профиль неполный», пока нет 100 %. Чтобы увидеть 100 %, включите галочку в панели.',
     q10: 'Каждое согласие хранится с версией текста и временем. «Отозвать согласие» — так же просто, как дать. Копию своих данных можно скачать отсюда и из профиля.',
+    p04: 'Боковое меню, как в LinkedIn: открывается по аватару в левом верхнем углу главной. Сверху — кто вы: фото, имя, отметка «документ моряка проверен», должность, гражданство и <b>статус доступности</b> (нажмите, чтобы сменить) — то, что агентства ищут в первую очередь. Ниже — приглашения и анкеты, готовность к анкетам и <b>документы, которые скоро истекают</b>. Затем быстрый доступ: документы, стаж, CV одним PDF, анкеты, приглашения. Внизу — настройки и конфиденциальность.',
     p01: 'Четыре вкладки внизу: Главная, Документы, Входящие, Профиль. Состав вкладок — предложение; его можно изменить. Та же главная, но с действиями для зарегистрированных.',
     p02: 'Список документов моряка. Медицинский документ показывает срок: «Медосмотр действителен до …».',
     p03: 'Анкеты и сообщения от агентств. Пока пусто.',
@@ -606,6 +622,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     q08: 'Кільце — <code>react-native-svg</code> + reanimated (strokeDashoffset). Конфеті — 14 <code>Animated.View</code>. Haptics — <code>expo-haptics</code> (success).',
     q09: 'Наявний <code>(tabs)/profile.tsx</code>. Прогрес — <code>View</code> зі смугою; відсоток і чипи приходять з API (<code>readiness</code>), рахуються на сервері лише по полях анкет. Пункти списку — <code>Pressable</code> у <code>Card</code>; «Тема» — <code>useColorScheme</code> + збережене значення.',
     q10: 'Екран <code>profile/consents.tsx</code>. Список з <code>GET /v1/consents</code> (вид, версія, коли, відкликано). «Отозвать» — <code>ActionSheetIOS</code> або formSheet з підтвердженням → <code>DELETE /v1/consents/:id</code>.',
+    p04: 'Бокове меню — drawer: <code>@react-navigation/drawer</code> або власна панель на reanimated + gesture-handler (свайп від лівого краю, тап по затемненню закриває). Статус доступності — поле профілю (enum + дата), бачать агентства з доступом. «Скоро истекают» — з дат документів профілю. «Моё CV» — PDF з профілю тим самим генератором, що «наш PDF» анкет.',
     p01: 'Нижні вкладки — <code>Tabs</code> з expo-router (<code>app/(tabs)/_layout.tsx</code>): index, documents, inbox, profile. Іконки — expo-symbols.',
     p02: 'Наявний екран документів; рядок медичного документа показує «Медосмотр действителен до …» з поля <code>expiresAt</code>.',
     p03: 'Заглушка <code>EmptyState</code>; наповнюється, коли будуть анкети й повідомлення.',
@@ -634,7 +651,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     return {
       view: 'c', b: 'b01', c: 'o01',
       scenario: 'ok', showIds: true, full: false,
-      sheet: null, gate: 'apply', slide: 0, homeTab: 'feed', revoke: '', revoked: {},
+      sheet: null, gate: 'apply', slide: 0, homeTab: 'feed', revoke: '', revoked: {}, drawer: false, avail: 0,
       consentTerms: false, consentData: false,
       cv: { st: 'none', p: 0 },
       doc: { type: 'sid', pages: 0, st: 'none', p: 0 }, doc2: false,
@@ -742,6 +759,41 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     return '<div class="banner ' + kind + '"><div class="bi">' + ic(icon, 18) + '</div><div class="bt">' + html + '</div></div>';
   }
 
+  var AVAIL = [
+    ['Готов к контракту с 01.12', 'var(--success)', 'var(--successBg)', 'rgba(63,185,80,.35)'],
+    ['В рейсе до 15.02', 'var(--accent)', 'var(--tint)', 'var(--accentBorder)'],
+    ['Не ищу работу', 'var(--t2)', 'var(--raised)', 'var(--border)']
+  ];
+
+  function drawerHtml() {
+    if (!S.drawer) return '';
+    var r = readiness();
+    var a = AVAIL[S.avail % AVAIL.length];
+    var initials = esc(((S.first[0] || '?') + (S.last[0] || '')).toUpperCase());
+    var mi = function (icon, label, action, cnt) {
+      return '<div class="mi" role="button" tabindex="0" data-a="' + action + '"><span style="color:var(--accent);display:flex">' + ic(icon, 21) + '</span>' + label + (cnt ? '<span class="cnt">' + cnt + '</span>' : '') + '</div>';
+    };
+    return '<div class="drawer" data-a="drawer-close"><div class="pane" data-a="noop">' +
+      '<div class="av" style="width:72px;height:72px;font-size:24px">' + initials + '</div>' +
+      '<div><div class="row" style="gap:6px"><div class="h2" style="font-size:22px">' + esc((S.first + ' ' + S.last).trim() || 'Без имени') + '</div>' +
+      '<span title="Документ моряка проверен" style="color:var(--accent);display:flex">' + ic('shieldOk', 20) + '</span></div>' +
+      '<div class="sub" style="font-size:15px;margin-top:4px;color:var(--t1)">3rd Engineer · Chemical Tanker</div>' +
+      '<div class="small" style="margin-top:2px">Гражданство: Украина</div></div>' +
+      '<div class="availpill" data-a="avail-next" style="color:' + a[1] + ';background:' + a[2] + ';border-color:' + a[3] + '"><span class="d"></span>' + a[0] + '</div>' +
+      '<div class="sep"></div>' +
+      '<div class="row" style="gap:20px"><div data-a="c:p03" style="cursor:pointer"><span class="h2" style="color:var(--accent)">2</span> <span class="small">приглашения</span></div>' +
+      '<div data-a="c:p03" style="cursor:pointer"><span class="h2" style="color:var(--accent)">1</span> <span class="small">анкета ждёт ответа</span></div></div>' +
+      '<div data-a="c:q09" style="cursor:pointer;display:flex;flex-direction:column;gap:6px"><div class="row" style="justify-content:space-between"><span class="h3" style="font-size:14px">Готовность к анкетам</span><span class="h3" style="font-size:14px;color:var(--accent)">' + r.pct + ' %</span></div>' +
+      '<div class="pbar"><span style="width:' + r.pct + '%"></span></div></div>' +
+      banner('w', 'clock', '<span><b>Скоро истекает:</b> медосмотр — через 20 дней</span>') +
+      '<div class="sep"></div>' +
+      mi('docs', 'Мои документы', 'c:p02', '3') + mi('ship', 'Морской стаж', 'c:s6') + mi('doc', 'Моё CV · PDF', 'noop') +
+      mi('inbox', 'Мои анкеты', 'c:p03', '1') + mi('mail', 'Приглашения агентств', 'c:p03', '2') +
+      '<div style="flex:1"></div><div class="sep"></div>' +
+      mi('lock', 'Настройки и конфиденциальность', 'c:q10') +
+      '</div><div class="dim"></div></div>';
+  }
+
   function sheetHtml() {
     if (!S.sheet) return '';
     var inner = '';
@@ -809,7 +861,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       '<div class="status"><span>9:41</span><span class="sig">' +
       '<svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>' +
       '<svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2.5" y="2.5" width="17" height="7" rx="2" fill="currentColor"/><rect x="24" y="4" width="1.6" height="4" rx=".8" fill="currentColor" opacity=".45"/></svg>' +
-      '</span></div><div class="inner ' + S.anim + '">' + inner + '</div>' + sheetHtml() + toast + '<div class="home"></div></div></div>';
+      '</span></div><div class="inner ' + S.anim + '">' + inner + '</div>' + drawerHtml() + sheetHtml() + toast + '<div class="home"></div></div></div>';
   }
 
   function tabs(on) {
@@ -1028,7 +1080,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
           '<div class="row" style="justify-content:space-between"><span class="h3" style="font-size:14px;color:var(--accent)">' + v[2] + '</span><span class="small">Агентство «Образец»</span></div>' +
           btn('Откликнуться', act('apply'), 't') + '</div>', i + 2);
       }).join('');
-    return phone('<div class="body underbar">' + head({ compact: true, title: tab === 'feed' ? 'Главная' : 'Вакансии' }) +
+    var avatar = '<button class="avbtn" data-a="' + (guest ? 'gate:profile' : 'drawer') + '" aria-label="Меню">' + (guest ? ic('user', 18) : esc(((S.first[0] || '?') + (S.last[0] || '')).toUpperCase())) + '</button>';
+    return phone('<div class="body underbar">' + '<div class="hero compact"><div class="row" style="gap:12px">' + avatar + '<div class="h1 stag" style="animation-delay:.02s;font-size:28px">' + (tab === 'feed' ? 'Главная' : 'Вакансии') + '</div></div></div>' +
       (top ? W(top, 0) : '') + W(seg, 1) + cards + '</div>' + tabs2('home', guest));
   }
 
@@ -1738,6 +1791,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       case 'g01': return homeScreen('feed', true);
       case 'g02': case 'g03': return homeScreen('vac', true);
       case 'p01': return homeScreen(S.homeTab, false);
+      case 'p04': S.drawer = true; return homeScreen(S.homeTab, false);
       case 'p02': return qDocs();
       case 'p03': return qInbox();
       case 'q02': return qConsent();
@@ -1824,6 +1878,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
   function go(id) {
     clearTimers();
     S.sheet = null;
+    S.drawer = false;
     S.toast = null;
     var list = S.view === 'b' ? B_SCREENS : C_SCREENS;
     var from = list.findIndex(function (x) { return x[0] === (S.view === 'b' ? S.b : S.c); });
@@ -1854,7 +1909,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       var f = document.querySelector('#otp input');
       if (f) f.focus();
     }
-    if (['q05', 'q06', 'q07', 'q08', 'q09', 'q10', 'q11', 'p01', 'p02', 'p03'].indexOf(id) >= 0) prefillAll(id);
+    if (['q05', 'q06', 'q07', 'q08', 'q09', 'q10', 'q11', 'p01', 'p02', 'p03', 'p04'].indexOf(id) >= 0) prefillAll(id);
   }
 
   function prefillUpload() {
@@ -1866,7 +1921,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     var changed = false;
     if (S.cv.st !== 'done') { S.cv = { st: 'done', p: 100 }; changed = true; }
     if (!S.doc.pages) { S.doc.pages = 1; S.doc.st = 'done'; changed = true; }
-    if (['q08', 'q09', 'q10', 'p01', 'p02', 'p03'].indexOf(id) >= 0 && S.fast && !S.done[2]) { S.done = { 1: true, 2: true, 3: true, 4: true, 6: true }; changed = true; }
+    if (['q08', 'q09', 'q10', 'p01', 'p02', 'p03', 'p04'].indexOf(id) >= 0 && S.fast && !S.done[2]) { S.done = { 1: true, 2: true, 3: true, 4: true, 6: true }; changed = true; }
     if (changed && id !== 'q09') softRender();
   }
 
@@ -1971,6 +2026,9 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       return;
     }
     if (a === 'sheet-bg') { closeSheet(); return; }
+    if (a === 'drawer') { S.drawer = true; softRender(); return; }
+    if (a === 'drawer-close') { var dr = STAGE.querySelector('.drawer'); if (dr) dr.classList.add('out'); setTimeout(function () { S.drawer = false; if (S.c === 'p04') S.c = 'p01'; softRender(); }, 200); return; }
+    if (a === 'avail-next') { S.avail = (S.avail + 1) % AVAIL.length; softRender(); return; }
 
     if (a.indexOf('view:') === 0) { clearTimers(); S.view = a.slice(5); S.anim = 'fw'; render(); return; }
     if (a.indexOf('b:') === 0 || a.indexOf('c:') === 0) { go(a.slice(2)); return; }
