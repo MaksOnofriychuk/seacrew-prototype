@@ -181,6 +181,49 @@ svg{display:block}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:12px}
 .hrow{display:flex;gap:10px;overflow-x:auto;margin:0 -22px;padding:0 22px 2px;scrollbar-width:none}.hrow::-webkit-scrollbar{display:none}
 .card.mini{flex:0 0 148px;gap:6px;padding:12px;cursor:pointer}.row>.btn{flex:1}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -22px;padding:0 22px}.chips::-webkit-scrollbar{display:none}
+.chips.wrap{flex-wrap:wrap;margin:0;padding:0;overflow:visible}
+.chip{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--t2);font-size:13.5px;font-weight:600;cursor:pointer;transition:all .15s}
+.chip.on{background:var(--tint);border-color:var(--accentBorder);color:var(--accent)}
+.chip:active{transform:scale(.96)}
+.composer{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:10px 14px;color:var(--t2);font-size:14px;cursor:pointer}
+.composer>span:nth-child(2){flex:1}
+.card.post,.card.job{cursor:pointer;transition:transform .12s}
+.card.post:active,.card.job:active{transform:scale(.99)}
+.card.job{gap:8px}
+.card.news{border-color:var(--accentBorder);background:linear-gradient(180deg,var(--tint08),var(--surface) 70%)}
+.photo,.docprev{position:relative;height:170px;border-radius:12px;overflow:hidden;background:var(--raised);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--t2);isolation:isolate}
+.docprev{height:180px;border-radius:16px;background:var(--surface)}
+.photo .glow,.docprev .glow,.photo .bub,.docprev .bub{display:none}
+.photo .sea,.docprev .sea{position:absolute;left:0;right:0;bottom:0;height:90px;overflow:hidden;z-index:-1}
+.photo .sea svg,.docprev .sea svg{position:absolute;bottom:0;left:0;width:200%;height:100%}
+.docprev .lockb{position:absolute;right:10px;bottom:10px;display:flex;gap:5px;align-items:center;font-size:12px;font-weight:600;color:var(--success);background:var(--successBg);padding:4px 9px;border-radius:20px}
+.pacts{display:flex;gap:18px;border-top:1px solid var(--divider);padding-top:10px}
+.pacts button{background:none;border:none;color:var(--t2);display:flex;gap:6px;align-items:center;font-size:13.5px;cursor:pointer;padding:0}
+.pacts button:last-child{margin-left:auto}
+.pacts button.on{color:var(--danger)}.pacts button.on svg{fill:currentColor}
+.bubble{background:var(--surface);border:1px solid var(--border);border-radius:4px 14px 14px 14px;padding:9px 12px;font-size:14px;display:flex;flex-direction:column;gap:3px;flex:1;line-height:1.45}
+.search{display:flex;align-items:center;gap:8px;background:var(--input);border:1px solid var(--border);border-radius:12px;padding:0 12px;min-height:46px;color:var(--t2)}
+.search>span{display:flex}
+.search input{flex:1;background:none;border:none;outline:none;color:var(--t1);font-size:15px;min-width:0}
+.fbtn,.addb,.sendb{width:46px;height:46px;border-radius:12px;border:1px solid var(--accentBorder);background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.addb{width:40px;height:40px}
+.heart{background:none;border:none;color:var(--t2);cursor:pointer;padding:4px;display:flex;flex-shrink:0}
+.heart.on{color:var(--accent)}.heart.on svg{fill:currentColor}
+.heart.big{width:50px;height:50px;border-radius:12px;border:1px solid var(--border);background:var(--raised);align-items:center;justify-content:center}
+.match{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--success);font-weight:600}.match span{display:flex}
+.jtiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.jt{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.notif{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:14px;border:1px solid var(--border);background:var(--surface);cursor:pointer}
+.notif.new{border-color:var(--accentBorder)}
+.ndot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:6px;flex-shrink:0}
+.ico.w{background:var(--warningBg);border-color:var(--warningBorder);color:var(--warning)}
+.ico.ok{background:var(--successBg);border-color:rgba(63,185,80,.35);color:var(--success)}
+.ta{width:100%;background:var(--input);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--t1);font-size:15px;resize:none;outline:none;font-family:inherit;line-height:1.5}
+.ta:focus{border-color:var(--accent)}
+.cntb{background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;border-radius:10px;padding:1px 7px}
+.mi>div .small{margin-top:2px}
+.body.np{padding-top:52px}
 .card.hi{border-color:var(--accentBorder);background:linear-gradient(180deg,rgba(var(--accentRGB),.07),rgba(var(--accentRGB),.02))}
 .choice{cursor:pointer;text-align:left;color:var(--t1);transition:transform .16s cubic-bezier(.3,1.4,.5,1),border-color .15s,background .15s}
 .row{display:flex;gap:12px;align-items:center}
@@ -507,7 +550,12 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     feed: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/>',
     briefcase: '<rect x="3.5" y="7.5" width="17" height="12" rx="2.5"/><path d="M9 7.5V6a1.5 1.5 0 011.5-1.5h3A1.5 1.5 0 0115 6v1.5M3.5 13h17"/>',
     bell: '<path d="M6 16.5V11a6 6 0 0112 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 004 0"/>',
-    bookmark: '<path d="M7 4.5h10a1 1 0 011 1v15l-6-4-6 4v-15a1 1 0 011-1z"/>'
+    bookmark: '<path d="M7 4.5h10a1 1 0 011 1v15l-6-4-6 4v-15a1 1 0 011-1z"/>',
+    search: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
+    sliders: '<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
+    share: '<path d="M12 15V4M8 8l4-4 4 4"/><path d="M6 12v6.5A1.5 1.5 0 007.5 20h9a1.5 1.5 0 001.5-1.5V12"/>',
+    comment: '<path d="M5 18.5V7a2 2 0 012-2h10a2 2 0 012 2v7a2 2 0 01-2 2H8.5z"/>',
+    send: '<path d="M4.5 12L20 4.5 15 20l-3-6.5z"/><path d="M12 13.5L20 4.5"/>'
   };
 
   function ic(name, size, sw) {
@@ -546,6 +594,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       ['o04', '4. Что понадобится (пошагово)'],
       ['g01', 'Гость · Лента'],
       ['g02', 'Гость · Вакансии'],
+      ['g04', 'Гость · Вакансия'],
       ['g03', 'Гость · «Зарегистрируйтесь, чтобы…»']
     ]],
     ['Быстрая регистрация', [
@@ -558,11 +607,6 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       ['q08', '7. Аккаунт создан'],
       ['q09', '8. Профиль'],
       ['q10', 'Профиль · Согласия'],
-      ['p01', 'Приложение · Лента'],
-      ['p05', 'Приложение · Вакансии'],
-      ['p04', 'Приложение · Боковое меню'],
-      ['p02', 'Приложение · Документы'],
-      ['p03', 'Приложение · Входящие'],
       ['q11', 'Незаконченная регистрация'],
       ['e01', 'Ошибка: документ не прочитан'],
       ['e02', 'Ошибка: это не документ моряка'],
@@ -571,6 +615,22 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       ['e03', 'Ошибка: нет интернета'],
       ['e04', 'Ошибка: слишком много попыток'],
       ['e05', 'Регистрация невозможна (бан)']
+    ]],
+    ['Приложение', [
+      ['p01', 'Лента'],
+      ['p07', 'Лента · Публикация'],
+      ['p06', 'Лента · Новая публикация'],
+      ['p05', 'Вакансии'],
+      ['p13', 'Вакансии · Фильтры'],
+      ['p08', 'Вакансия'],
+      ['p12', 'Вакансия · Отклик'],
+      ['p02', 'Документы'],
+      ['p11', 'Документ'],
+      ['p14', 'Профиль'],
+      ['p09', 'Профиль · Сохранённые вакансии'],
+      ['p10', 'Профиль · Уведомления'],
+      ['p03', 'Профиль · Входящие'],
+      ['p04', 'Боковое меню']
     ]],
     ['Пошаговая регистрация', [
       ['s1', 'Шаг 1 · Аккаунт'],
@@ -622,10 +682,20 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     q09: '«Готовность к анкетам» считается <b>только по полям, которые чаще всего нужны агентствам в анкетах</b>: личные данные, документ моряка, диплом, медицинские, морской стаж. При 100 % — «Профиль заполнен», иначе — «Дополнить профиль» (ведёт на первый незаполненный шаг). Рекрутер видит «Профиль неполный», пока нет 100 %. Чтобы увидеть 100 %, включите галочку в панели.',
     q10: 'Каждое согласие хранится с версией текста и временем. «Отозвать согласие» — так же просто, как дать. Копию своих данных можно скачать отсюда и из профиля.',
     p04: 'Боковое меню, как в LinkedIn: открывается по аватару в левом верхнем углу главной. Сверху — кто вы: фото, имя, отметка «документ моряка проверен», должность, гражданство и <b>статус доступности</b> (нажмите, чтобы сменить) — то, что агентства ищут в первую очередь. Ниже — приглашения и анкеты, готовность к анкетам и <b>документы, которые скоро истекают</b>. Затем быстрый доступ: документы, стаж, CV одним PDF, анкеты, приглашения. Внизу — настройки и конфиденциальность.',
-    p01: 'Четыре вкладки внизу: <b>Лента, Вакансии, Документы, Профиль</b>. В ленте сверху — личные карточки, только когда есть что показать: незаполненный профиль, истекающий документ, новое приглашение с кнопкой «Ответить». Дальше — «Подходит вам» (вакансии под должность и тип судна из профиля), публикации агентств и новости, рекламные карточки с пометкой «Реклама». Позже: подписка на компании, курсы с датами, изменения в правилах (STCW, MLC).',
-    p05: 'Вакансии — отдельная вкладка. Сохранённые вакансии — в профиле.',
-    p02: 'Список документов моряка. Медицинский документ показывает срок: «Медосмотр действителен до …».',
-    p03: 'Анкеты и сообщения от агентств. Пока пусто.',
+    p01: 'Лента — для общения моряков и новостей, <b>без служебных предупреждений</b>: сроки документов, приглашения и статусы откликов живут в «Уведомлениях», «Входящих» и в боковом меню. Сверху — «Поделитесь опытом или задайте вопрос», фильтр «Все · Моряки · Новости». В ленте: <b>публикации моряков</b> (у автора — отметка «документ моряка проверен», значит, пишут настоящие моряки), <b>новости Crew от администратора</b> (выделены, можно закрепить), рекламные карточки с пометкой «Реклама» — не чаще одной на несколько публикаций. Позже: подписка на компании, курсы с датами, изменения в правилах (STCW, MLC).',
+    p05: 'Как в первом прототипе, в новом стиле. Поиск, кнопка фильтров, активные фильтры чипами, «Сохранить поиск» — пришлём новые вакансии в уведомления. В карточке: должность, зарплата, судно, дата посадки, контракт, агентство (отметка «проверено»), закладка и <b>«Подходит по профилю: 5 из 6»</b> — сравнение с документами и профилем моряка.',
+    p02: 'Документы сгруппированы: документ моряка, дипломы и сертификаты, медицинские, CV. В строке — номер (скрыт, кроме последних цифр) и срок. Предупреждение показываем <b>только у истекающих</b>: срок на плашке и баннер сверху. Напоминаем за 60, 30 и 7 дней. «+» — добавить документ: ИИ прочитает, моряк проверит.',
+    p03: 'Входящие открываются из профиля. Две вкладки: <b>«Приглашения»</b> — агентства зовут на вакансию или присылают анкету; главная кнопка <b>«Заполнить из профиля»</b> — анкета заполняется в один тап. <b>«Мои отклики»</b> — статусы: отправлен, просмотрен.',
+    p06: 'Новая публикация: текст, фото, судно. Подсказка — не публиковать номера документов и личные данные. Публикации проходят модерацию.',
+    p07: 'Публикация с комментариями. Отметка «Нравится», комментарии, «Поделиться».',
+    p08: 'Страница вакансии. Сверху — должность, агентство и 4 главных параметра: зарплата, тип судна, посадка, контракт. <b>«Требования» сравниваются с профилем</b>: зелёное — есть, красное — «нет в профиле». Дальше — судно, описание, похожие вакансии. Внизу — закладка и «Откликнуться».',
+    p12: 'Отклик: агентство получает <b>анкету, заполненную из профиля</b> (PDF). Если профиль не на 100 % — честно пишем, чего не хватает, но отклик отправить можно. Сопроводительное письмо — по желанию.',
+    p13: 'Фильтры: должность, тип судна, зарплата от, дата посадки. По умолчанию подставляются из профиля моряка.',
+    p11: 'Карточка документа: превью (зашифровано), данные из документа, подтверждённые моряком. Заменить фото, изменить данные (правка отмечается для администратора), удалить.',
+    p14: 'Профиль: фото, имя, отметка «документ моряка проверен», должность и тип судна, <b>статус доступности</b> (нажмите, чтобы сменить). Готовность к анкетам. Разделы: «Мой профиль» (личные данные, стаж, должность, CV), «Работа» (сохранённые вакансии, уведомления, входящие), «Настройки». Документы — в отдельной вкладке.',
+    p09: 'Сохранённые вакансии — закладка на карточке или странице вакансии.',
+    p10: 'Уведомления: приглашения, <b>сроки документов</b>, новые вакансии по сохранённому поиску, ответы на комментарии, статусы откликов. Непрочитанные выделены. Тап ведёт туда, где нужно действие.',
+    g04: 'Гость видит вакансию без сравнения с профилем. «Откликнуться» и закладка просят регистрацию.',
     q11: 'Моряк вернулся на том же телефоне, не закончив быструю регистрацию (до 30 дней). С другого устройства продолжить нельзя — аккаунта ещё нет. «Начать заново» <b>сразу удаляет файлы и прочитанные данные</b>, остаётся только запись «была попытка». <b>Лимит попыток не обнуляется:</b> он считается по телефону и IP.',
     e01: 'Фото размыто или обрезано. Три выхода: переснять, загрузить файл или ввести данные вручную. Число попыток ограничено.',
     e02: 'ИИ видит другой тип документа (например, загранпаспорт). Те же три выхода: переснять, загрузить файл, ввести вручную.',
@@ -663,9 +733,20 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     q09: 'Наявний <code>(tabs)/profile.tsx</code>. Прогрес — <code>View</code> зі смугою; відсоток і чипи приходять з API (<code>readiness</code>), рахуються на сервері лише по полях анкет. Пункти списку — <code>Pressable</code> у <code>Card</code>; «Тема» — <code>useColorScheme</code> + збережене значення.',
     q10: 'Екран <code>profile/consents.tsx</code>. Список з <code>GET /v1/consents</code> (вид, версія, коли, відкликано). «Отозвать» — <code>ActionSheetIOS</code> або formSheet з підтвердженням → <code>DELETE /v1/consents/:id</code>.',
     p04: 'Бокове меню — drawer: <code>@react-navigation/drawer</code> або власна панель на reanimated + gesture-handler (свайп від лівого краю, тап по затемненню закриває). Статус доступності — поле профілю (enum + дата), бачать агентства з доступом. «Скоро истекают» — з дат документів профілю. «Моё CV» — PDF з профілю тим самим генератором, що «наш PDF» анкет.',
-    p01: 'Нижні вкладки — <code>Tabs</code> з expo-router (<code>app/(tabs)/_layout.tsx</code>): feed, vacancies, documents, profile. Входящие — стек-екран із профілю. Стрічка — <code>FlatList</code> з типами елементів (personal, vacancyRow, post, ad), ряд «Подходит вам» — горизонтальний <code>FlatList</code>. Іконки — expo-symbols.',
-    p02: 'Наявний екран документів; рядок медичного документа показує «Медосмотр действителен до …» з поля <code>expiresAt</code>.',
-    p03: 'Заглушка <code>EmptyState</code>; наповнюється, коли будуть анкети й повідомлення.',
+    p01: 'Вкладки <code>app/(tabs)/_layout.tsx</code>: feed, vacancies, documents, profile. Стрічка — <code>FlatList</code> з типами елементів <code>post | news | ad</code> з API (<code>GET /feed?filter=</code>, курсорна пагінація), pull-to-refresh. Новини створює адмін у веб-адмінці; <code>pinned</code>. Лайк — оптимістичне оновлення. Реклама — окремий тип, частоту задає сервер.',
+    p02: 'Секції — <code>SectionList</code> за групою типу документа (ADR-084: тип — ярлик). Номер маскується на сервері. Нагадування — фонова задача за <code>expiresAt</code> (60/30/7 днів) → push + запис в уведомленнях.',
+    p03: 'Стек-екран із профілю. Сегмент — той самий, що в реєстрації. «Заполнить из профиля» — існуючий автофіл анкети з профілю (лише підтверджені поля).',
+    p05: '<code>FlatList</code> вакансій, <code>GET /vacancies</code> з фільтрами; «Подходит по профилю» рахує сервер (вимоги вакансії ↔ поля профілю). Закладка — <code>POST/DELETE /vacancies/:id/save</code>. Збережений пошук — запис фільтрів + фонова перевірка нових.',
+    p06: 'Модальний стек (presentation: modal); <code>TextInput multiline</code>, фото через expo-image-picker. Модерація — статус <code>pending</code>, показ після схвалення.',
+    p07: 'Стек <code>feed/[postId]</code>; коментарі — <code>FlatList</code>, поле вводу з <code>KeyboardAvoidingView</code>.',
+    p08: 'Стек <code>vacancies/[id]</code>. Плитки — grid 2×2. Вимоги з прапорцем <code>matched</code> з API. Нижня панель — sticky footer.',
+    p12: 'formSheet; PDF анкети — той самий генератор, що й «наш PDF». Відправка створює <code>Application</code> зі статусом <code>sent</code>.',
+    p13: 'formSheet з чипами; значення за замовчуванням — з профілю.',
+    p11: 'Стек <code>documents/[id]</code>. Превʼю розшифровується через API з журналом доступу. «Изменить данные» ставить прапорець ручної правки для адміна.',
+    p14: 'Той самий <code>(tabs)/profile.tsx</code>. Статус доступності — поле профілю (enum + дата).',
+    p09: '<code>GET /vacancies/saved</code>, той самий компонент картки.',
+    p10: '<code>GET /notifications</code>; тип → маршрут для переходу. Бейдж непрочитаних у профілі.',
+    g04: 'Той самий екран вакансії з <code>guest=true</code>: без блоку відповідності; дії → <code>useRequireAuth()</code>.',
     q11: 'Ідентифікатор спроби — у <code>expo-secure-store</code>; при старті застосунку — запит стану спроби. «Начать заново» — <code>DELETE /v1/registration/attempts/:id</code> (файли й прочитане видаляються одразу, запис спроби лишається).',
     e01: 'Один компонент <code>RegistrationError</code> з варіантами за кодом помилки API. «Загрузить файл» — <code>expo-document-picker</code>; «Ввести вручную» — перехід на форму.',
     e02: 'Той самий <code>RegistrationError</code>.',
@@ -691,7 +772,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     return {
       view: 'c', b: 'b01', c: 'o01',
       scenario: 'ok', showIds: true, full: false,
-      sheet: null, gate: 'apply', slide: 0, homeTab: 'feed', revoke: '', revoked: {}, drawer: false, avail: 0,
+      sheet: null, gate: 'apply', slide: 0, homeTab: 'feed', feedF: 'all', post: 'u1', liked: {}, job: 0, saved: { 0: true, 3: true }, applied: {}, docSel: 'sid', inboxTab: 'inv', fch: { r3: true, tank: true, s4: true, next: true }, revoke: '', revoked: {}, drawer: false, avail: 0,
       consentTerms: false, consentData: false,
       cv: { st: 'none', p: 0 },
       doc: { type: 'sid', pages: 0, st: 'none', p: 0 }, doc2: false,
@@ -739,6 +820,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       if (S.view === 'c' && C_SCREENS.some(function (x) { return x[0] === h[1]; })) S.c = h[1];
     }
     if (S.view === 'c' && S.c === 'g03') { S.sheet = 'gate'; S.gate = 'apply'; }
+    if (S.view === 'c' && S.c === 'p12') S.sheet = 'apply';
+    if (S.view === 'c' && S.c === 'p13') S.sheet = 'filters';
   }
 
   function writeHash() {
@@ -862,7 +945,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
         '<p class="small">Черновик. Окончательный текст готовит юрист.</p></div>' +
         btn('Понятно', 'sheet-close');
     } else if (S.sheet === 'gate') {
-      var gt = { apply: 'откликнуться на вакансию', msg: 'написать агентству', react: 'ставить отметки и писать комментарии', docs: 'хранить документы', inbox: 'получать анкеты и сообщения', profile: 'создать профиль' }[S.gate] || 'продолжить';
+      var gt = { apply: 'откликнуться на вакансию', msg: 'написать агентству', react: 'ставить отметки и писать комментарии', docs: 'хранить документы', post: 'публиковать', save: 'сохранять вакансии', inbox: 'получать анкеты и сообщения', profile: 'создать профиль' }[S.gate] || 'продолжить';
       inner = '<div class="row" style="gap:12px"><div class="ico acc">' + ic('lock', 20) + '</div><div class="h2">Зарегистрируйтесь, чтобы ' + gt + '</div></div>' +
         '<div class="small">Это займёт около минуты. Смотреть примеры можно и без регистрации.</div>' +
         btn('Быстро — по CV и документам', 'gate-fast') + btn('Пошагово', 'gate-step', 's') + btn('Не сейчас', 'sheet-close', 'g');
@@ -882,6 +965,29 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       inner = '<div class="h2">Остановить чтение?</div>' +
         '<div class="sub" style="font-size:14px">Файлы останутся — вы сможете заменить документ или начать заново.</div>' +
         btn('Остановить', 'stop-read', 'dd') + btn('Продолжить ждать', 'sheet-close', 's');
+    } else if (S.sheet === 'apply') {
+      var aj = JOBS[S.job], ar = readiness();
+      var miss = ar.items.filter(function (x) { return !x[1]; }).map(function (x) { return x[0].toLowerCase(); });
+      inner = '<div class="h2">Отклик — ' + aj.t + '</div>' +
+        '<div class="small">' + aj.co + ' получит анкету, заполненную из вашего профиля и документов.</div>' +
+        '<div class="file"><div class="fi">' + ic('doc', 20) + '</div><div style="flex:1;min-width:0"><div class="name">Анкета · Koval_Andrii_3rdEng.pdf</div><div class="meta">Документы, морской стаж, контакты</div></div><button class="link" style="font-size:14px;padding-right:6px" data-a="noop">Открыть</button></div>' +
+        (ar.pct < 100 ? banner('w', 'alert', '<span><b>Профиль готов на ' + ar.pct + ' %.</b> Не хватает: ' + miss.join(', ') + '. Отклик можно отправить и так.</span>') : '') +
+        '<textarea class="ta" rows="3" placeholder="Сопроводительное письмо (необязательно)"></textarea>' +
+        btn('Отправить отклик', 'do-apply') + btn('Отмена', 'sheet-close', 'g');
+    } else if (S.sheet === 'filters') {
+      var grp = function (t, items) { return '<div class="over">' + t + '</div><div class="chips wrap">' + items.map(function (x) { return '<button class="chip' + (S.fch[x[0]] ? ' on' : '') + '" data-a="fchip:' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>'; };
+      inner = '<div class="h2">Фильтры</div>' +
+        grp('Должность', [['r2', '2nd Engineer'], ['r3', '3rd Engineer'], ['r4', '4th Engineer']]) +
+        grp('Тип судна', [['tank', 'Танкеры'], ['cont', 'Контейнеровозы'], ['bulk', 'Балкеры'], ['gas', 'Газовозы']]) +
+        grp('Зарплата от', [['s3', '$3 000'], ['s4', '$4 000'], ['s5', '$5 000']]) +
+        grp('Посадка', [['now', 'В этом месяце'], ['next', 'В следующем'], ['any', 'Любая']]) +
+        btn('Показать 4 вакансии', 'sheet-close') + btn('Сбросить', 'noop', 'g');
+    } else if (S.sheet === 'adddoc') {
+      inner = '<div class="h2">Добавить документ</div><div class="small">ИИ прочитает документ, вы проверите данные.</div>' +
+        act('scan', 'Сканировать документ', 'Края найдутся сами', 'sheet-close') +
+        act('camera', 'Сфотографировать', 'При хорошем свете, без бликов', 'sheet-close') +
+        act('folder', 'Выбрать файл', 'PDF или изображение', 'sheet-close') +
+        btn('Отмена', 'sheet-close', 's');
     } else if (S.sheet === 'restart') {
       inner = '<div class="h2">Начать заново?</div>' +
         '<div class="sub" style="font-size:14px">Загруженные файлы и прочитанные данные удалятся сразу. Это нельзя отменить. Число попыток регистрации с этого телефона при этом не обнуляется.</div>' +
@@ -1165,6 +1271,276 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     var avatar = '<button class="avbtn" data-a="' + (guest ? 'gate:profile' : 'drawer') + '" aria-label="Меню">' + (guest ? ic('user', 18) : esc(((S.first[0] || '?') + (S.last[0] || '')).toUpperCase())) + '</button>';
     return phone('<div class="body underbar">' + '<div class="hero compact"><div class="row" style="gap:12px">' + avatar + '<div class="h1 stag" style="animation-delay:.02s;font-size:28px">' + (tab === 'feed' ? 'Лента' : 'Вакансии') + '</div></div></div>' +
       top + cards + '</div>' + tabs2(tab, guest));
+  }
+
+  /* ---------- C: приложение (лента, вакансии, документы, профиль) ---------- */
+
+  var POSTS = [
+    { id: 'n1', kind: 'news', pin: true, title: 'Crew запущен: профиль из документов за минуту', text: 'Загрузите удостоверение, диплом и CV — ИИ заполнит профиль. Анкеты агентств заполняются из профиля в один тап.', time: 'Закреплено' },
+    { id: 'u1', kind: 'user', av: 'МП', name: 'Марко Петров', role: 'Chief Officer · Bulk Carrier', time: '2 ч', text: 'Закончил 6-месячный контракт на MV Nordic Star. Отличный экипаж, ротация по графику, зарплата вовремя. Спрашивайте о компании что угодно.', photo: true, likes: 24, comments: 6 },
+    { id: 'ad', kind: 'ad' },
+    { id: 'u2', kind: 'user', av: 'ИБ', name: 'Ирина Бондарь', role: '2nd Officer · Container Ship', time: '5 ч', text: 'Кто недавно проходил медосмотр в Одессе? Посоветуйте клинику, где делают за один день и без очередей.', likes: 8, comments: 14 },
+    { id: 'n2', kind: 'news', title: 'Напоминание: сроки сертификатов STCW', text: 'Проверьте даты в разделе «Документы». Мы напомним за 60 и 30 дней до окончания срока.', time: 'вчера' },
+    { id: 'u3', kind: 'user', av: 'ОК', name: 'Олег Коваленко', role: 'Master · Chemical Tanker', time: '2 дня', text: 'Совет молодым офицерам: держите сканы всех документов в одном месте и следите за сроками. Половина отказов — из-за просроченного сертификата.', likes: 61, comments: 9 }
+  ];
+
+  var COMMENTS = [
+    ['ИБ', 'Ирина Бондарь', '1 ч', 'Как со сменами — по графику?'],
+    ['МП', 'Марко Петров', '40 мин', 'Да, сменщик прибыл в Роттердам точно в дату контракта.'],
+    ['ДС', 'Денис Савчук', '12 мин', 'Какой был состав экипажа?']
+  ];
+
+  var JOBS = [
+    { t: '3rd Engineer', sal: '$4 200–4 600 / мес', ship: 'Chemical Tanker', board: '05.12.2026', dur: '4 ±1 мес', co: 'BlueWave Crewing', lg: 'BW', ago: '2 ч назад', tags: ['NEW'], match: 5,
+      vessel: [['Судно', 'MT Aurora Spirit'], ['Флаг', 'Malta'], ['DWT', '19 800'], ['Построено', '2018'], ['Главный двигатель', 'MAN B&W 6S46']],
+      req: [['Английский — хороший (B1+)', true], ['Диплом 3rd Engineer (III/1)', true], ['Опыт на Chemical Tanker от 12 мес', true], ['Действующий медосмотр', true], ['Basic Safety Training (STCW VI/1)', true], ['Шенгенская виза', false]],
+      desc: 'Надёжный судовладелец, ротация 4 месяца ±1. Смены экипажа в ЕС, интернет на борту, оплата в USD без задержек.' },
+    { t: '3rd Engineer', sal: '$4 000 / мес', ship: 'Container Ship', board: 'как можно скорее', dur: '6 мес', co: 'Nordline Ship Management', lg: 'NS', ago: '5 ч назад', tags: ['NEW', 'Срочно'], match: 4,
+      vessel: [['Судно', 'MV Baltic Way'], ['Флаг', 'Liberia'], ['TEU', '4 200'], ['Построено', '2015']],
+      req: [['Английский — хороший (B1+)', true], ['Диплом 3rd Engineer (III/1)', true], ['Опыт на Container Ship от 6 мес', false], ['Действующий медосмотр', true]],
+      desc: 'Срочная замена. Линия Европа — Азия, экипаж смешанный.' },
+    { t: '4th Engineer', sal: 'Договорная', ship: 'Oil Tanker', board: '15.12.2026', dur: '4 мес', co: 'Meridian Crew', lg: 'MC', ago: '1 д назад', tags: [], match: 5,
+      vessel: [['Судно', 'MT North Pearl'], ['Флаг', 'Marshall Islands'], ['DWT', '45 000']],
+      req: [['Английский — средний (A2+)', true], ['Диплом 4th Engineer', true], ['Действующий медосмотр', true]],
+      desc: 'Подойдёт кандидатам, которые хотят опыт на танкерах.' },
+    { t: '3rd Engineer', sal: '$4 500 / мес', ship: 'LPG Carrier', board: '20.12.2026', dur: '5 мес', co: 'Atlas Marine Services', lg: 'AM', ago: '2 д назад', tags: [], match: 4,
+      vessel: [['Судно', 'LPG Atlas Star'], ['Флаг', 'Panama'], ['CBM', '22 000']],
+      req: [['Английский — хороший (B1+)', true], ['Диплом 3rd Engineer (III/1)', true], ['Gas Tanker Familiarization', false], ['Действующий медосмотр', true]],
+      desc: 'Газовоз, ротация 5 месяцев, бонус за продление.' }
+  ];
+
+  function initials() { return esc(((S.first[0] || '?') + (S.last[0] || '')).toUpperCase()); }
+
+  function appHead(title, guest, right) {
+    var avatar = '<button class="avbtn" data-a="' + (guest ? 'gate:profile' : 'drawer') + '" aria-label="Меню">' + (guest ? ic('user', 18) : initials()) + '</button>';
+    return '<div class="hero compact"><div class="row" style="gap:12px">' + avatar + '<div class="h1 stag" style="animation-delay:.02s;font-size:28px;flex:1">' + title + '</div>' + (right || '') + '</div></div>';
+  }
+
+  function chipRow(items, cur, prefix) {
+    return '<div class="chips">' + items.map(function (x) {
+      return '<button class="chip' + (cur === x[0] ? ' on' : '') + '" data-a="' + prefix + x[0] + '">' + x[1] + '</button>';
+    }).join('') + '</div>';
+  }
+
+  function postCard(p, guest, i, full) {
+    var act = function (k) { return guest ? 'gate:' + k : k; };
+    var open = full ? 'noop' : (guest ? 'gate:react' : 'post:' + p.id);
+    if (p.kind === 'ad') {
+      return W('<div class="card post"><div class="row"><div class="ico acc">' + ic('medical', 20) + '</div><div style="flex:1;min-width:0"><div class="h3">Медосмотр за 1 день</div><div class="small">Клиника «Пример» · Одесса</div></div><span class="tag m">Реклама</span></div>' +
+        '<div class="small" style="color:var(--t1)">Медкомиссия для моряков по требованиям ПДНВ. Запись онлайн, результат в тот же день.</div>' +
+        '<button class="link" style="align-self:flex-start;font-size:14px" data-a="noop">Записаться</button></div>', i);
+    }
+    if (p.kind === 'news') {
+      return W('<div class="card post news" data-a="' + open + '" role="button" tabindex="0"><div class="row"><div class="ico acc">' + ic('anchor', 20) + '</div><div style="flex:1;min-width:0"><div class="h3" style="font-size:15px">Новости Crew</div><div class="small">' + p.time + '</div></div>' +
+        (p.pin ? '<span class="tag">Закреплено</span>' : '<span class="tag">Новости</span>') + '</div>' +
+        '<div class="h3">' + p.title + '</div><div class="small" style="color:var(--t1);font-size:14px;line-height:1.5">' + p.text + '</div></div>', i);
+    }
+    var liked = !!S.liked[p.id];
+    return W('<div class="card post" data-a="' + open + '" role="button" tabindex="0"><div class="row"><div class="av" style="width:40px;height:40px;font-size:14px">' + p.av + '</div><div style="flex:1;min-width:0"><div class="row" style="gap:5px"><span class="h3" style="font-size:15px">' + p.name + '</span><span title="Документ моряка проверен" style="color:var(--accent);display:flex">' + ic('shieldOk', 15) + '</span></div><div class="small">' + p.role + ' · ' + p.time + '</div></div></div>' +
+      '<div style="font-size:15px;line-height:1.5">' + p.text + '</div>' +
+      (p.photo ? '<div class="photo">' + sea() + '<span>' + ic('image', 22) + '</span></div>' : '') +
+      '<div class="pacts"><button class="' + (liked ? 'on' : '') + '" data-a="' + act('like:' + p.id) + '">' + ic('heart', 18) + (p.likes + (liked ? 1 : 0)) + '</button><button data-a="' + act(full ? 'noop' : 'post:' + p.id) + '">' + ic('comment', 18) + p.comments + '</button><button data-a="' + act('share') + '">' + ic('share', 18) + 'Поделиться</button></div></div>', i);
+  }
+
+  function feedScreen(guest) {
+    var f = S.feedF;
+    var list = POSTS.filter(function (p) { return f === 'all' || (f === 'people' ? p.kind === 'user' : p.kind === 'news'); });
+    var composer = W('<div class="composer" role="button" tabindex="0" data-a="' + (guest ? 'gate:post' : 'c:p06') + '"><div class="av" style="width:36px;height:36px;font-size:13px">' + (guest ? ic('user', 16) : initials()) + '</div><span>Поделитесь опытом или задайте вопрос</span><span style="color:var(--accent);display:flex">' + ic('image', 20) + '</span></div>', 1);
+    return phone('<div class="body underbar">' + appHead('Лента', guest) +
+      (guest ? W(banner('i', 'eye', '<span><b>Вы смотрите как гость.</b> Это примеры — настоящие публикации появятся после регистрации.</span>'), 0) : '') +
+      composer + W(chipRow([['all', 'Все'], ['people', 'Моряки'], ['news', 'Новости']], f, 'feedf:'), 2) +
+      list.map(function (p, i) { return postCard(p, guest, i + 3); }).join('') + '</div>' + tabs2('feed', guest));
+  }
+
+  function postScreen() {
+    var p = POSTS.filter(function (x) { return x.id === S.post; })[0] || POSTS[1];
+    var com = p.kind === 'user' ? COMMENTS.map(function (c, i) {
+      return W('<div class="row" style="align-items:flex-start;gap:10px"><div class="av" style="width:32px;height:32px;font-size:12px">' + c[0] + '</div><div class="bubble"><div><b>' + c[1] + '</b> <span class="small">· ' + c[2] + '</span></div><div>' + c[3] + '</div></div></div>', i + 3);
+    }).join('') : '';
+    return phone('<div class="body np">' + postCard(p, false, 1, true) +
+      (com ? W('<div class="over">Комментарии</div>', 2) + com : '') + '</div>' +
+      (p.kind === 'user' ? '<div class="foot"><div class="row" style="gap:8px"><div class="search" style="flex:1"><input placeholder="Напишите комментарий"></div><button class="sendb" data-a="toast:Комментарий отправлен (пример)" aria-label="Отправить">' + ic('send', 20) + '</button></div></div>' : '') +
+      nav('c:p01', 'Публикация'));
+  }
+
+  function newPostScreen() {
+    return phone('<div class="body np">' +
+      W('<div class="row" style="gap:10px"><div class="av" style="width:40px;height:40px;font-size:14px">' + initials() + '</div><div><div class="h3" style="font-size:15px">' + esc((S.first + ' ' + S.last).trim()) + '</div><div class="small">Видят моряки и агентства</div></div></div>', 0) +
+      W('<textarea class="ta" rows="7" placeholder="Расскажите о рейсе, компании или задайте вопрос коллегам"></textarea>', 1) +
+      W('<div class="row" style="gap:10px">' + btn(ic('image', 18) + 'Фото', 'noop', 's') + btn(ic('ship', 18) + 'Судно', 'noop', 's') + '</div>', 2) +
+      W(banner('i', 'shieldOk', '<span>Не публикуйте номера документов и личные данные. Публикации проверяет модератор.</span>'), 3) +
+      '</div><div class="foot">' + btn('Опубликовать', 'publish') + '</div>' + nav(null, 'Новая публикация', 'c:p01'));
+  }
+
+  function jobCard(j, k, guest, i) {
+    var saved = !!S.saved[k];
+    return W('<div class="card job" role="button" tabindex="0" data-a="' + (guest ? 'c:g04' : 'job:' + k) + '"><div class="row" style="align-items:flex-start"><div style="flex:1;min-width:0"><div class="row" style="gap:6px;flex-wrap:wrap"><span class="h3">' + j.t + '</span>' + j.tags.map(function (t) { return '<span class="tag' + (t === 'Срочно' ? ' w' : '') + '">' + t + '</span>'; }).join('') + '</div>' +
+      '<div class="h3" style="color:var(--accent);margin-top:6px">' + j.sal + '</div></div>' +
+      '<button class="heart' + (saved ? ' on' : '') + '" data-a="' + (guest ? 'gate:save' : 'save:' + k) + '" aria-label="Сохранить">' + ic('bookmark', 20) + '</button></div>' +
+      '<div class="small" style="color:var(--t1)">' + j.ship + ' · посадка ' + j.board + ' · ' + j.dur + '</div>' +
+      '<div class="row" style="justify-content:space-between"><span class="small" style="display:flex;gap:4px;align-items:center">' + j.co + '<span style="color:var(--success);display:flex">' + ic('check', 12, 2.6) + '</span></span><span class="small">' + j.ago + '</span></div>' +
+      (guest ? '' : '<div class="match"><span>' + ic('check', 13, 2.6) + '</span>Подходит по профилю: ' + j.match + ' из ' + j.req.length + '</div>') + '</div>', i);
+  }
+
+  function jobsScreen(guest) {
+    return phone('<div class="body underbar">' + appHead('Вакансии', guest) +
+      (guest ? W(banner('i', 'eye', '<span><b>Вы смотрите как гость.</b> Это примеры вакансий.</span>'), 0) : '') +
+      W('<div class="row" style="gap:8px"><div class="search" style="flex:1"><span>' + ic('search', 18) + '</span><input placeholder="Должность, судно, компания"></div><button class="fbtn" data-a="sheet:filters" aria-label="Фильтры">' + ic('sliders', 20) + '</button></div>', 1) +
+      W('<div class="chips"><button class="chip on" data-a="sheet:filters">3rd Engineer ' + ic('x', 13, 2.4) + '</button><button class="chip on" data-a="sheet:filters">Танкеры ' + ic('x', 13, 2.4) + '</button><button class="chip" data-a="noop">Новые сначала</button></div>', 2) +
+      (guest ? '' : W('<div class="small">' + JOBS.length + ' вакансии под ваш профиль · <button class="link" style="font-size:13px" data-a="toast:Поиск сохранён — пришлём новые вакансии">Сохранить поиск</button></div>', 2)) +
+      JOBS.map(function (j, k) { return jobCard(j, k, guest, k + 3); }).join('') + '</div>' + tabs2('vac', guest));
+  }
+
+  function jobScreen(guest) {
+    var k = S.job, j = JOBS[k];
+    var saved = !!S.saved[k], applied = !!S.applied[k];
+    var okN = j.req.filter(function (r) { return r[1]; }).length;
+    var tileK = function (l, v, acc) { return '<div class="jt"><div class="small">' + l + '</div><div class="h3" style="font-size:15px' + (acc ? ';color:var(--accent)' : '') + '">' + v + '</div></div>'; };
+    return phone('<div class="body np">' +
+      W('<div class="row" style="gap:6px">' + j.tags.map(function (t) { return '<span class="tag' + (t === 'Срочно' ? ' w' : '') + '">' + t + '</span>'; }).join('') + (applied ? '<span class="tag ok">Вы откликнулись</span>' : '') + '</div>', 0) +
+      W('<div class="h1" style="font-size:28px">' + j.t + '</div>', 0) +
+      W('<div class="row" style="gap:10px"><div class="ico acc" style="width:36px;height:36px;border-radius:10px;font-size:12px;font-weight:700">' + j.lg + '</div><div style="flex:1"><div class="h3" style="font-size:15px">' + j.co + '</div><div class="small"><span style="color:var(--success)">Агентство проверено</span> · ' + j.ago + '</div></div></div>', 1) +
+      W('<div class="jtiles">' + tileK('Зарплата', j.sal, true) + tileK('Тип судна', j.ship) + tileK('Посадка', j.board) + tileK('Контракт', j.dur) + '</div>', 2) +
+      (guest ? '' : W('<div class="card"><div class="row" style="justify-content:space-between"><div class="over" style="margin:0">Требования</div><span class="tag' + (okN === j.req.length ? ' ok' : '') + '">Подходит: ' + okN + ' из ' + j.req.length + '</span></div><div class="list">' +
+        j.req.map(function (r) { return '<div class="li" style="align-items:center;gap:10px"><span style="display:flex;color:' + (r[1] ? 'var(--success)' : 'var(--danger)') + '">' + ic(r[1] ? 'check' : 'x', 16, 2.4) + '</span><span style="flex:1">' + r[0] + '</span>' + (r[1] ? '' : '<span class="small">нет в профиле</span>') + '</div>'; }).join('') +
+        '</div><div class="small">Сравниваем с данными вашего профиля и документов.</div></div>', 3)) +
+      (guest ? W('<div class="card"><div class="over" style="margin:0">Требования</div><div class="list">' + j.req.map(function (r) { return '<div class="li">' + r[0] + '</div>'; }).join('') + '</div></div>', 3) : '') +
+      W('<div class="card"><div class="over" style="margin:0">Судно</div><div>' + j.vessel.map(function (v) { return '<div class="kv"><span>' + v[0] + '</span><span>' + v[1] + '</span></div>'; }).join('') + '</div></div>', 4) +
+      W('<div class="card"><div class="over" style="margin:0">Описание</div><div style="font-size:15px;line-height:1.5">' + j.desc + '</div></div>', 5) +
+      W('<div class="over">Похожие вакансии</div>', 6) +
+      W('<div class="hrow">' + JOBS.filter(function (x, i) { return i !== k; }).map(function (x) {
+        var idx = JOBS.indexOf(x);
+        return '<div class="card mini" role="button" tabindex="0" data-a="' + (guest ? 'noop' : 'job:' + idx) + '"><div class="h3" style="font-size:14px">' + x.t + '</div><div class="small">' + x.ship + '</div><div class="h3" style="font-size:13px;color:var(--accent)">' + x.sal + '</div></div>';
+      }).join('') + '</div>', 6) +
+      '</div><div class="foot"><div class="row" style="gap:10px"><button class="heart big' + (saved ? ' on' : '') + '" data-a="' + (guest ? 'gate:save' : 'save:' + k) + '" aria-label="Сохранить">' + ic('bookmark', 22) + '</button>' +
+      (applied ? btn('Отклик отправлен', 'noop', 's') : btn('Откликнуться', guest ? 'gate:apply' : 'sheet:apply')) + '</div></div>' +
+      nav(guest ? 'c:g02' : 'c:p05', 'Вакансия'));
+  }
+
+  function savedScreen() {
+    var ks = Object.keys(S.saved).filter(function (k) { return S.saved[k]; }).map(Number);
+    return phone('<div class="body underbar">' + head({ compact: true, title: 'Сохранённые' }) +
+      (ks.length ? ks.map(function (k, i) { return jobCard(JOBS[k], k, false, i); }).join('')
+        : '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center"><div class="ico big acc">' + ic('bookmark', 28) + '</div><div class="h2">Нет сохранённых вакансий</div><div class="sub" style="font-size:14px">Нажмите на закладку у вакансии, чтобы вернуться к ней позже.</div></div>') +
+      '</div>' + nav('c:q09', 'Сохранённые вакансии'));
+  }
+
+  var NOTIFS = [
+    ['mail', 'acc', '<b>BlueWave Crewing</b> приглашает вас на вакансию 3rd Engineer · Chemical Tanker', '15 мин', 'c:p03', true],
+    ['clock', 'w', '<b>Медосмотр истекает через 20 дней.</b> Обновите документ, чтобы не терять предложения.', '2 ч', 'c:p02', true],
+    ['briefcase', 'acc', '3 новые вакансии по вашему поиску «3rd Engineer · Танкеры»', '5 ч', 'c:p05', true],
+    ['comment', 'acc', '<b>Марко Петров</b> ответил на ваш комментарий', 'вчера', 'post:u1', false],
+    ['check', 'ok', 'Агентство <b>Nordline</b> просмотрело ваш отклик', '2 дня', 'c:p03', false]
+  ];
+
+  function notifScreen() {
+    return phone('<div class="body underbar">' + head({ compact: true, title: 'Уведомления' }) + NOTIFS.map(function (n, i) {
+      return W('<div class="notif' + (n[5] ? ' new' : '') + '" role="button" tabindex="0" data-a="' + n[4] + '"><div class="ico ' + (n[1] === 'acc' ? 'acc' : n[1]) + '" style="width:38px;height:38px;border-radius:11px">' + ic(n[0], 18) + '</div><div style="flex:1;min-width:0"><div style="font-size:14px;line-height:1.45">' + n[2] + '</div><div class="small" style="margin-top:3px">' + n[3] + '</div></div>' + (n[5] ? '<span class="ndot"></span>' : '') + '</div>', i);
+    }).join('') + '</div>' + nav('c:q09', 'Уведомления'));
+  }
+
+  function inboxScreen() {
+    var tab = S.inboxTab;
+    var seg = '<div class="segc"><span class="thumb' + (tab === 'app' ? ' r' : '') + '"></span>' + [['inv', 'Приглашения'], ['app', 'Мои отклики']].map(function (x) {
+      return '<button class="' + (tab === x[0] ? 'on' : '') + '" data-a="inbox:' + x[0] + '"><b>' + x[1] + '</b></button>';
+    }).join('') + '</div>';
+    var body = tab === 'inv'
+      ? W('<div class="card"><div class="row"><div class="ico acc" style="font-size:12px;font-weight:700">BW</div><div style="flex:1;min-width:0"><div class="h3">BlueWave Crewing</div><div class="small">3rd Engineer · Chemical Tanker · 15 мин</div></div><span class="tag">новое</span></div>' +
+          '<div style="font-size:14px;line-height:1.5">Здравствуйте! Ваш профиль подходит под нашу вакансию. Заполните, пожалуйста, анкету компании.</div>' +
+          '<div class="row" style="gap:10px">' + btn(ic('bolt', 18) + 'Заполнить из профиля', 'toast:Анкета заполнена из профиля — проверьте и отправьте (пример)') + '</div>' +
+          '<button class="link" style="align-self:center;font-size:14px" data-a="job:0">Открыть вакансию</button></div>', 1) +
+        W('<div class="card"><div class="row"><div class="ico acc" style="font-size:12px;font-weight:700">MC</div><div style="flex:1;min-width:0"><div class="h3">Meridian Crew</div><div class="small">Анкета · отправлена вчера</div></div><span class="tag ok">отправлено</span></div></div>', 2)
+      : [[1, 'Просмотрен', 'ok'], [3, 'Отправлен', 'm']].map(function (a, i) {
+        var j = JOBS[a[0]];
+        return W('<div class="card" role="button" tabindex="0" data-a="job:' + a[0] + '"><div class="row"><div style="flex:1;min-width:0"><div class="h3">' + j.t + ' · ' + j.ship + '</div><div class="small">' + j.co + '</div></div><span class="tag ' + a[2] + '">' + a[1] + '</span></div></div>', i + 1);
+      }).join('');
+    return phone('<div class="body underbar">' + head({ compact: true, title: 'Входящие' }) + W(seg, 0) + body + '</div>' + nav('c:q09', 'Входящие'));
+  }
+
+  /* документы */
+
+  function docList() {
+    var d = S.d, list = [];
+    list.push({ id: 'sid', g: 'Документ моряка', ic: 'idcard', t: 'Удостоверение личности моряка', num: 'AB •••' + d.docNum.slice(-3), exp: d.docExp, st: 'ok' });
+    list.push({ id: 'dip', g: 'Дипломы и сертификаты', ic: 'doc', t: 'Диплом · ' + d.dipRank, num: '№ •••' + d.dipNum.slice(-3), exp: d.dipExp, st: 'ok' });
+    if (S.med) list.push({ id: 'med', g: 'Медицинские', ic: 'medical', t: 'Медицинский сертификат', num: 'Годен к работе', exp: '14.11.2026', st: 'w', left: 'через 20 дней' });
+    if (S.cv.st === 'done') list.push({ id: 'cv', g: 'CV', ic: 'doc', t: 'CV · Andrii_Koval.pdf', num: 'Загружено 25.10.2026', exp: '', st: '' });
+    return list;
+  }
+
+  function docsScreen() {
+    var list = docList();
+    var groups = ['Документ моряка', 'Дипломы и сертификаты', 'Медицинские', 'CV'];
+    var warn = list.filter(function (x) { return x.st === 'w'; }).length;
+    var html = groups.map(function (g, gi) {
+      var items = list.filter(function (x) { return x.g === g; });
+      if (!items.length && g === 'Медицинские') {
+        return W('<div class="over">' + g + '</div><div class="drop" role="button" tabindex="0" data-a="c:s5"><div class="ico acc">' + ic('medical', 22) + '</div><div><div class="h3" style="font-size:14px">Добавить медицинский документ</div><div class="small">Часто нужен в анкетах · отдельное согласие</div></div></div>', gi + 2);
+      }
+      if (!items.length) return '';
+      return W('<div class="over">' + g + '</div><div class="menu">' + items.map(function (x) {
+        var stv = x.st === 'w' ? '<span class="tag w">' + x.left + '</span>' : '';
+        return '<div class="mi" role="button" tabindex="0" data-a="doc:' + x.id + '"><span class="ico acc">' + ic(x.ic, 18) + '</span><div style="flex:1;min-width:0"><div style="font-size:15px">' + x.t + '</div><div class="small">' + x.num + (x.exp ? ' · до ' + x.exp : '') + '</div></div>' + stv + '<span style="color:var(--t2);display:flex">' + ic('chevron', 16) + '</span></div>';
+      }).join('') + '</div>', gi + 2);
+    }).join('');
+    return phone('<div class="body underbar">' + appHead('Документы', false, '<button class="addb" data-a="sheet:adddoc" aria-label="Добавить">' + ic('plus', 22, 2.2) + '</button>') +
+      (warn ? W(banner('w', 'clock', '<span><b>Медосмотр истекает через 20 дней.</b> Мы напомним ещё раз за 7 дней.</span>'), 0) : '') +
+      W('<div class="row" style="gap:8px;color:var(--t2);font-size:13px"><span style="color:var(--success);display:flex">' + ic('lock', 14, 2.2) + '</span>Файлы зашифрованы. Агентства видят их только с вашего разрешения.</div>', 1) +
+      html + '</div>' + tabs2('docs'));
+  }
+
+  function docScreen() {
+    var x = docList().filter(function (y) { return y.id === S.docSel; })[0] || docList()[0];
+    var d = S.d;
+    var rows = {
+      sid: [['Имя и фамилия', esc(S.first + ' ' + S.last)], ['Номер', d.docNum], ['Дата выдачи', d.docIssue], ['Действует до', d.docExp], ['Страна выдачи', d.cit]],
+      dip: [['Должность', d.dipRank], ['Номер', d.dipNum], ['Дата выдачи', d.dipIssue], ['Действует до', d.dipExp]],
+      med: [['Заключение', 'Годен к работе'], ['Действует до', '14.11.2026']],
+      cv: [['Файл', 'Andrii_Koval.pdf'], ['Загружено', '25.10.2026']]
+    }[x.id];
+    return phone('<div class="body np">' +
+      W('<div class="docprev">' + sea() + '<span class="ico acc big">' + ic(x.ic, 28) + '</span><span class="lockb">' + ic('lock', 13, 2.2) + 'Зашифровано</span></div>', 0) +
+      W('<div><div class="h2">' + x.t + '</div>' + (x.st === 'w' ? '<div style="margin-top:6px"><span class="tag w">Истекает ' + x.left + '</span></div>' : (x.st === 'ok' ? '<div style="margin-top:6px"><span class="tag ok">Действует</span></div>' : '')) + '</div>', 1) +
+      W('<div class="card" style="gap:0">' + rows.map(function (r) { return '<div class="kv"><span>' + r[0] + '</span><span>' + r[1] + '</span></div>'; }).join('') + '</div>', 2) +
+      W('<div class="small">' + (x.id === 'cv' ? 'Данные из CV перенесены в профиль после вашего подтверждения.' : 'Данные прочитаны из документа и подтверждены вами.') + '</div>', 3) +
+      W('<div class="menu">' + mi('camera', 'Заменить фото', '', 'noop') + mi('edit', 'Изменить данные', '', 'noop') + '</div>', 4) +
+      W(btn('Удалить документ', 'noop', 'd'), 5) +
+      '</div>' + nav('c:p02', 'Документ'));
+  }
+
+  /* профиль */
+
+  function profileScreen() {
+    if (S.loadingProfile) return qProfileSkeleton();
+    var r = readiness();
+    var full = r.pct === 100;
+    var chips = r.items.map(function (x, i) {
+      return '<span class="feat' + (x[1] ? ' ok' : '') + ' stag" style="animation-delay:' + (0.14 + i * 0.04).toFixed(2) + 's">' + ic(x[1] ? 'check' : 'plus', 14) + x[0] + '</span>';
+    }).join('');
+    var a = AVAIL[S.avail];
+    return phone('<div class="body underbar">' +
+      '<div class="hero mini">' + sea() +
+      '<div class="row" style="gap:14px"><div class="av" style="width:68px;height:68px;font-size:23px;box-shadow:0 10px 28px var(--shadow)">' + initials() + '</div>' +
+      '<div style="flex:1;min-width:0"><div class="row" style="gap:6px"><div class="h1 stag" style="font-size:25px;animation-delay:.06s">' + esc((S.first + ' ' + S.last).trim() || 'Без имени') + '</div><span title="Документ моряка проверен" style="color:var(--accent);display:flex">' + ic('shieldOk', 20) + '</span></div>' +
+      '<div class="sub stag" style="margin-top:3px;font-size:15px;color:var(--t1);animation-delay:.1s">3rd Engineer · Chemical Tanker</div>' +
+      '<div class="small stag" style="margin-top:2px;animation-delay:.12s">' + esc(S.email || 'you@example.com') + '</div></div></div>' +
+      '<div class="availpill stag" data-a="avail-next" style="margin-top:14px;align-self:flex-start;color:' + a[1] + ';background:' + a[2] + ';border-color:' + a[3] + '"><span class="d"></span>' + a[0] + '<span style="display:flex;opacity:.7">' + ic('chevron', 14) + '</span></div></div>' +
+      '<div class="card stag" style="animation-delay:.08s">' +
+      '<div class="row" style="justify-content:space-between"><div class="h3">Готовность к анкетам</div><span class="h3" style="color:' + (full ? 'var(--success)' : 'var(--accent)') + '">' + r.pct + ' %</span></div>' +
+      '<div class="pbar"><span style="width:' + r.pct + '%;background:' + (full ? 'var(--success)' : 'var(--warning)') + '"></span></div>' +
+      '<div class="feats" style="margin-top:0">' + chips + '</div>' +
+      (full ? banner('ok', 'shieldOk', '<span><b>Профиль заполнен.</b> Данные готовы для анкет агентств.</span>')
+        : '<div class="small">Считаем только данные, которые чаще всего нужны агентствам в анкетах.</div>' + btn('Дополнить профиль', 'fill-profile', 't')) + '</div>' +
+      W('<div class="over">Мой профиль</div><div class="menu">' +
+        mi('user', 'Личные данные', '', 'c:s2') + mi('ship', 'Морской стаж', '3 рейса', 'c:s6') +
+        mi('briefcase', 'Должность', '3rd Engineer', 'noop') + mi('doc', 'Моё CV', 'PDF', 'noop') + '</div>', 2) +
+      W('<div class="over">Работа</div><div class="menu">' +
+        mi('bookmark', 'Сохранённые вакансии', String(Object.keys(S.saved).filter(function (k) { return S.saved[k]; }).length), 'c:p09') +
+        mi('bell', 'Уведомления', '<span class="cntb">3</span>', 'c:p10') + mi('inbox', 'Входящие', '<span class="cntb">1</span>', 'c:p03') + '</div>', 3) +
+      W('<div class="over">Настройки</div><div class="menu">' +
+        mi('globe', 'Язык', 'Русский', 'noop') + mi('moon', 'Тема', S.light ? 'Светлая' : 'Тёмная', 'theme') +
+        mi('shieldOk', 'Согласия', '', 'c:q10') + mi('download', 'Скачать мои данные', '', 'download-data') + '</div>', 4) +
+      '</div>' + tabs2('profile'));
   }
 
   /* ---------- C: быстрая регистрация ---------- */
@@ -1870,13 +2246,21 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       case 'o02': return oChoice();
       case 'o03': return oPath('q');
       case 'o04': return oPath('s');
-      case 'g01': return homeScreen('feed', true);
-      case 'g02': case 'g03': return homeScreen('vac', true);
-      case 'p01': return homeScreen('feed', false);
-      case 'p05': return homeScreen('vac', false);
-      case 'p04': S.drawer = true; return homeScreen('feed', false);
-      case 'p02': return qDocs();
-      case 'p03': return qInbox();
+      case 'g01': return feedScreen(true);
+      case 'g02': case 'g03': return jobsScreen(true);
+      case 'g04': return jobScreen(true);
+      case 'p01': return feedScreen(false);
+      case 'p06': return newPostScreen();
+      case 'p07': return postScreen();
+      case 'p05': case 'p13': return jobsScreen(false);
+      case 'p08': case 'p12': return jobScreen(false);
+      case 'p04': S.drawer = true; return feedScreen(false);
+      case 'p02': return docsScreen();
+      case 'p11': return docScreen();
+      case 'p09': return savedScreen();
+      case 'p10': return notifScreen();
+      case 'p03': return inboxScreen();
+      case 'p14': return profileScreen();
       case 'q02': return qConsent();
       case 'q03': return qUpload();
       case 'q04': return qReading();
@@ -1884,7 +2268,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       case 'q06': return qAccount();
       case 'q07': case 's1c': return qCode();
       case 'q08': return qDone();
-      case 'q09': return qProfile();
+      case 'q09': return profileScreen();
       case 'q10': return qConsents();
       case 'q11': return qResume();
       case 'e01': case 'e02': case 'e03': case 'e04': case 'e05': case 'e06': return qError(id);
@@ -1972,6 +2356,9 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       if (id === 'q07' || id === 's1c') resetCode();
       if (id === 'o01') S.slide = 0;
       if (id === 'g03') { S.sheet = 'gate'; S.gate = 'apply'; }
+      if (id === 'p12') S.sheet = 'apply';
+      if (id === 'p13') S.sheet = 'filters';
+      if (id === 'p14') S.loadingProfile = true;
     }
     if (S.view === 'b') S.b = id; else S.c = id;
     render();
@@ -1980,7 +2367,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
 
   function onEnter(id) {
     if (id === 'q04') startReading();
-    if (id === 'q09') later(function () { S.loadingProfile = false; softRender(); }, 650);
+    if (id === 'q09' || id === 'p14') later(function () { S.loadingProfile = false; softRender(); }, 650);
     if (id === 'e04') {
       var t = function () { later(function () { S.cd = Math.max(0, S.cd - 1); var el = document.getElementById('cd'); if (el) el.textContent = fmtCd(S.cd); t(); }, 1000); };
       t();
@@ -1992,7 +2379,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       var f = document.querySelector('#otp input');
       if (f) f.focus();
     }
-    if (['q05', 'q06', 'q07', 'q08', 'q09', 'q10', 'q11', 'p01', 'p02', 'p03', 'p04', 'p05'].indexOf(id) >= 0) prefillAll(id);
+    if (['q05', 'q06', 'q07', 'q08', 'q09', 'q10', 'q11'].indexOf(id) >= 0 || id[0] === 'p') prefillAll(id);
   }
 
   function prefillUpload() {
@@ -2004,8 +2391,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     var changed = false;
     if (S.cv.st !== 'done') { S.cv = { st: 'done', p: 100 }; changed = true; }
     if (!S.doc.pages) { S.doc.pages = 1; S.doc.st = 'done'; changed = true; }
-    if (['q08', 'q09', 'q10', 'p01', 'p02', 'p03', 'p04', 'p05'].indexOf(id) >= 0 && S.fast && !S.done[2]) { S.done = { 1: true, 2: true, 3: true, 4: true, 6: true }; changed = true; }
-    if (changed && id !== 'q09') softRender();
+    if ((['q08', 'q09', 'q10'].indexOf(id) >= 0 || id[0] === 'p') && S.fast && !S.done[2]) { S.done = { 1: true, 2: true, 3: true, 4: true, 6: true }; changed = true; }
+    if (changed && id !== 'q09' && id !== 'p14') softRender();
   }
 
   function startReading() {
@@ -2119,7 +2506,18 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     if (a.indexOf('type:') === 0) { S.doc.type = a.slice(5); S.doc2 = false; softRender(); return; }
     if (a.indexOf('gate:') === 0) { S.gate = a.slice(5); S.sheet = 'gate'; softRender(); return; }
     if (a.indexOf('reg-act:') === 0) { showToast(a === 'reg-act:apply' ? 'Отклик отправлен (пример)' : 'Готово (пример)', null); return; }
-    if (a.indexOf('home-tab:') === 0) { S.homeTab = a.slice(9); softRender(); return; }
+    if (a.indexOf('feedf:') === 0) { S.feedF = a.slice(6); softRender(); return; }
+    if (a.indexOf('post:') === 0) { S.post = a.slice(5); go('p07'); return; }
+    if (a.indexOf('like:') === 0) { var lk = a.slice(5); S.liked[lk] = !S.liked[lk]; softRender(); return; }
+    if (a.indexOf('job:') === 0) { S.job = Number(a.slice(4)); go('p08'); return; }
+    if (a.indexOf('save:') === 0) { var sk = a.slice(5); S.saved[sk] = !S.saved[sk]; showToast(S.saved[sk] ? 'Вакансия сохранена' : 'Убрано из сохранённых', null); return; }
+    if (a.indexOf('doc:') === 0) { S.docSel = a.slice(4); go('p11'); return; }
+    if (a.indexOf('inbox:') === 0) { S.inboxTab = a.slice(6); softRender(); return; }
+    if (a.indexOf('fchip:') === 0) { var fk = a.slice(6); S.fch[fk] = !S.fch[fk]; softRender(); return; }
+    if (a.indexOf('toast:') === 0) { showToast(a.slice(6), null); return; }
+    if (a === 'share') { showToast('Ссылка скопирована (пример)', null); return; }
+    if (a === 'publish') { go('p01'); showToast('Публикация отправлена на проверку', null); return; }
+    if (a === 'do-apply') { S.applied[S.job] = true; closeSheet(function () { if (S.c === 'p12') S.c = 'p08'; softRender(); showToast('Отклик отправлен — статус во «Входящих»', null); }); return; }
     if (a.indexOf('slide:') === 0) { S.slide = Number(a.slice(6)); S.anim = 'fw'; render(); return; }
     if (a.indexOf('revoke:') === 0) { S.revoke = a.slice(7); S.sheet = 'revoke'; softRender(); return; }
     if (a.indexOf('regrant:') === 0) {
