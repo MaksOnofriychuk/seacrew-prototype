@@ -224,6 +224,13 @@ svg{display:block}
 .cntb{background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;border-radius:10px;padding:1px 7px}
 .mi>div .small{margin-top:2px}
 .body.np{padding-top:52px}
+.stag > .over:first-child{display:block;margin:10px 4px 8px}
+.stag > .over:only-child{margin-bottom:-6px}
+.card .kv:first-child{padding-top:4px}.card .kv:last-child{padding-bottom:2px}
+.sheet .over{margin:6px 0 -4px}
+.screen.app::before{content:"";position:absolute;left:0;right:0;top:0;height:54px;z-index:4;pointer-events:none;background:color-mix(in srgb,var(--bg) 72%,transparent);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:0 1px 0 var(--divider);opacity:0;transition:opacity .2s}
+.screen.app.scrolled::before{opacity:1}
+.screen.app.scrolled:has(.navbar)::before{opacity:0}
 /* фон приложения: морская карта */
 .appbg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .appbg .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--accentRGB),.07) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--accentRGB),.07) 1px,transparent 1px);background-size:44px 44px;background-position:-1px 20px;-webkit-mask-image:radial-gradient(120% 70% at 85% 0%,#000 10%,transparent 70%);mask-image:radial-gradient(120% 70% at 85% 0%,#000 10%,transparent 70%)}
@@ -992,7 +999,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       var miss = ar.items.filter(function (x) { return !x[1]; }).map(function (x) { return x[0].toLowerCase(); });
       inner = '<div class="h2">Отклик — ' + aj.t + '</div>' +
         '<div class="small">' + aj.co + ' получит анкету, заполненную из вашего профиля и документов.</div>' +
-        '<div class="file"><div class="fi">' + ic('doc', 20) + '</div><div style="flex:1;min-width:0"><div class="name">Анкета · Koval_Andrii_3rdEng.pdf</div><div class="meta">Документы, морской стаж, контакты</div></div><button class="link" style="font-size:14px;padding-right:6px" data-a="noop">Открыть</button></div>' +
+        '<div class="file"><div class="fi">' + ic('doc', 20) + '</div><div style="flex:1;min-width:0"><div class="name">Анкета · Koval_Andrii_3rdEng.pdf</div><div class="meta">PDF · из профиля</div></div><button class="link" style="font-size:14px;padding-right:6px" data-a="noop">Открыть</button></div>' +
         (ar.pct < 100 ? banner('w', 'alert', '<span><b>Профиль готов на ' + ar.pct + ' %.</b> Не хватает: ' + miss.join(', ') + '. Отклик можно отправить и так.</span>') : '') +
         '<textarea class="ta" rows="3" placeholder="Сопроводительное письмо (необязательно)"></textarea>' +
         btn('Отправить отклик', 'do-apply') + btn('Отмена', 'sheet-close', 'g');
@@ -2755,6 +2762,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
   document.addEventListener('scroll', function (e) {
     var t = e.target;
     if (!t.classList || !t.classList.contains('body')) return;
+    var sc = STAGE.querySelector('.screen');
+    if (sc) sc.classList.toggle('scrolled', t.scrollTop > 8);
     var nb = STAGE.querySelector('.navbar');
     if (!nb) return;
     nb.classList.toggle('scrolled', t.scrollTop > 8);
