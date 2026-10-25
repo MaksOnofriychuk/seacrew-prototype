@@ -224,6 +224,76 @@ svg{display:block}
 .cntb{background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;border-radius:10px;padding:1px 7px}
 .mi>div .small{margin-top:2px}
 .body.np{padding-top:52px}
+/* пошаговая: маршрут */
+.hero.wiz{padding-bottom:22px}
+.wiz .eyebrow{margin-top:0;font-size:11.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--accent)}
+.route{margin-top:16px;display:flex;flex-direction:column;gap:10px;padding:12px 12px 14px;border-radius:16px;background:color-mix(in srgb,var(--surface) 70%,transparent);border:1px solid var(--accentBorder);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.rhead{display:flex;align-items:center;justify-content:space-between}
+.rmap{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--t1);font-size:13px;font-weight:600;cursor:pointer;padding:0}
+.rmap svg:first-child{color:var(--accent)}.rmap svg:last-child{color:var(--t2)}
+.rpct{font-size:12.5px;color:var(--t2)}.rpct b{color:var(--accent)}
+.rtrack{display:flex;align-items:center}
+.rseg{flex:1;height:0;border-top:2px dashed var(--strong);min-width:3px}
+.rseg.on{border-top-style:solid;border-color:var(--accent)}
+.rseg.fork{border-top-style:dotted;border-color:var(--t3);opacity:.6;flex:1.6}
+.rn{position:relative;flex-shrink:0;width:16px;height:16px;border-radius:50%;border:2px solid var(--strong);background:var(--bg);color:var(--onAccent);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;font-size:10px;font-weight:800;transition:transform .15s}
+.rn:active{transform:scale(.9)}
+.rn.extra{width:11px;height:11px;border-width:1.5px}
+.rn.final{width:15px;height:15px;border-radius:4px;transform:rotate(45deg)}.rn.final.cur{transform:none;border-radius:50%}
+.rn.done{background:var(--accent);border-color:var(--accent)}
+.rn.extra.done{width:13px;height:13px}
+.rn.skip{border-color:var(--warning);color:var(--warning);background:var(--warningBg)}
+.rn.extra.skip{width:13px;height:13px;font-size:8px}
+.rn.cur{width:28px;height:28px;background:var(--accent);border-color:var(--accent);color:var(--onAccent);box-shadow:0 0 0 5px rgba(var(--accentRGB),.18),0 4px 14px rgba(var(--accentRGB),.45)}
+.rn.cur::after{content:"";position:absolute;inset:-7px;border-radius:50%;border:1.5px solid rgba(var(--accentRGB),.5);animation:rping 2s ease-out infinite}
+@keyframes rping{from{transform:scale(.8);opacity:1}to{transform:scale(1.5);opacity:0}}
+.misspill{display:flex;align-items:center;gap:10px;width:100%;border:1px solid var(--warningBorder);background:var(--warningSoft);color:var(--t1);border-radius:12px;padding:9px 12px;font-size:13.5px;cursor:pointer;margin-bottom:4px;animation:riseIn .3s ease-out}
+.misspill .mp-i{color:var(--warning);display:flex}
+.misspill .mp-go{display:flex;align-items:center;gap:2px;color:var(--warning);font-weight:600}
+.hl{animation:hlPulse 1.6s ease-out}
+@keyframes hlPulse{0%,40%{outline:2px solid var(--warning);outline-offset:6px;border-radius:10px}100%{outline:2px solid transparent;outline-offset:6px}}
+/* добавить: распознать или вручную */
+.addx{display:flex;flex-direction:column;gap:10px}
+.ax-drop{display:flex;gap:14px;align-items:center;padding:14px;border-radius:14px;border:1.5px dashed var(--accentBorder);background:linear-gradient(135deg,var(--tint08),transparent);cursor:pointer}
+.ax-ill{position:relative;width:46px;height:54px;flex-shrink:0;color:var(--accent);display:flex;align-items:flex-end;justify-content:flex-end}
+.ax-doc{position:absolute;left:0;top:0;width:38px;height:48px;border-radius:6px;background:var(--docA);border:1px solid var(--docLine);overflow:hidden}
+.ax-doc::before{content:"";position:absolute;left:6px;right:6px;top:8px;height:3px;border-radius:2px;background:var(--docLine);box-shadow:0 7px 0 var(--docLine),0 14px 0 var(--docLine),0 21px 0 var(--docLine)}
+.ax-beam{position:absolute;left:-3px;width:44px;height:2px;background:var(--accent);box-shadow:0 0 10px var(--accent);border-radius:2px;animation:axBeam 2.4s ease-in-out infinite}
+@keyframes axBeam{0%,100%{top:4px}50%{top:44px}}
+.ax-ill>svg{position:relative;background:var(--surface);border-radius:50%;padding:2px;box-sizing:content-box}
+.ax-src{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ax-src button{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 6px;border-radius:12px;border:1px solid var(--border);background:var(--raised);color:var(--t1);font-size:12.5px;font-weight:600;cursor:pointer}
+.ax-src button svg{color:var(--accent)}
+.ax-src button:active{transform:scale(.96)}
+.ax-man{display:flex;align-items:center;gap:6px;align-self:center;font-size:14px}
+.mancard{border-color:var(--warningBorder)}
+.mancard .x{background:none;border:none;color:var(--t2);cursor:pointer;display:flex;padding:4px}
+.voy{position:relative;display:flex;gap:12px;align-items:center;padding:12px 14px 12px 34px;border-radius:14px;border:1px solid var(--border);background:color-mix(in srgb,var(--surface) 82%,transparent)}
+.voy .vdot{position:absolute;left:13px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(var(--accentRGB),.18)}
+.voy .vline{position:absolute;left:17px;top:-9px;bottom:-9px;width:2px;background:rgba(var(--accentRGB),.25)}
+.voy:first-child .vline{top:50%}.voy:last-child .vline{bottom:50%}
+.lang{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:15px}
+.lvl{display:flex;gap:4px;background:var(--input);border:1px solid var(--border);border-radius:10px;padding:3px}
+.lvl button{border:none;background:none;color:var(--t2);font-weight:700;font-size:13px;padding:6px 10px;border-radius:7px;cursor:pointer}
+.lvl button.on{background:var(--accent);color:var(--onAccent)}
+/* онбординг пошагово */
+.benefits{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bn{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:14px;border:1px solid var(--border);background:color-mix(in srgb,var(--surface) 82%,transparent)}
+.sroute{position:relative;margin-top:18px;height:92px}
+.sroute svg{width:100%;height:100%;overflow:visible}
+.sr-draw{stroke-dasharray:420;stroke-dashoffset:420;animation:srDraw 2.6s .2s ease-out forwards}
+@keyframes srDraw{to{stroke-dashoffset:0}}
+.sr-port{fill:var(--bg);stroke:var(--accent);stroke-width:2;opacity:0;animation:srPort .4s ease-out forwards}
+@keyframes srPort{to{opacity:1;fill:var(--accent)}}
+.sr-ship{position:absolute;left:0;top:0;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:var(--accent);color:var(--onAccent);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(var(--accentRGB),.5);offset-rotate:0deg;animation:srShip 2.6s .2s ease-out forwards;offset-distance:0%}
+@keyframes srShip{to{offset-distance:100%}}
+.sroute svg{position:absolute;inset:0}
+/* шторка разделов */
+.rlist{display:flex;flex-direction:column;gap:6px}
+.rli{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--raised);color:var(--t1);font-size:15px;cursor:pointer}
+.rli.cur{border-color:var(--accentBorder);background:var(--tint08)}
+.rli .rn{cursor:inherit}
+@media (prefers-reduced-motion:reduce){.rn.cur::after,.ax-beam,.sr-ship,.sr-draw,.sr-port{animation:none!important}.sr-draw{stroke-dashoffset:0}.sr-port{opacity:1}.sr-ship{offset-distance:100%}}
 .stag > .over:first-child{display:block;margin:10px 4px 8px}
 .stag > .over:only-child{margin-bottom:-6px}
 .card .kv:first-child{padding-top:4px}.card .kv:last-child{padding-bottom:2px}
@@ -586,7 +656,10 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     sliders: '<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
     share: '<path d="M12 15V4M8 8l4-4 4 4"/><path d="M6 12v6.5A1.5 1.5 0 007.5 20h9a1.5 1.5 0 001.5-1.5V12"/>',
     comment: '<path d="M5 18.5V7a2 2 0 012-2h10a2 2 0 012 2v7a2 2 0 01-2 2H8.5z"/>',
-    send: '<path d="M4.5 12L20 4.5 15 20l-3-6.5z"/><path d="M12 13.5L20 4.5"/>'
+    send: '<path d="M4.5 12L20 4.5 15 20l-3-6.5z"/><path d="M12 13.5L20 4.5"/>',
+    map: '<path d="M9 4.5L3.5 6.5v13L9 17.5l6 2 5.5-2v-13L15 6.5z"/><path d="M9 4.5v13M15 6.5v13"/>',
+    flag: '<path d="M5.5 21V4M5.5 4.5h11l-2 4 2 4h-11"/>',
+    grad: '<path d="M2.5 9.5L12 5l9.5 4.5L12 14z"/><path d="M6.5 11.5V16c1.5 1.5 3.4 2.2 5.5 2.2s4-.7 5.5-2.2v-4.5M21.5 9.5v5"/>'
   };
 
   function ic(name, size, sw) {
@@ -601,13 +674,19 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
   ];
 
   var STEPS = [
-    { n: 1, t: 'Аккаунт', req: true },
-    { n: 2, t: 'Личные данные' },
-    { n: 3, t: 'Документ моряка', req: true },
-    { n: 4, t: 'Другие документы' },
-    { n: 5, t: 'Медицинские документы' },
-    { n: 6, t: 'Морской стаж' },
-    { n: 7, t: 'Проверка' }
+    { n: 1, t: 'Аккаунт', req: true, k: 'core' },
+    { n: 2, t: 'Личные данные', k: 'core' },
+    { n: 3, t: 'Документ моряка', req: true, k: 'core' },
+    { n: 4, t: 'Дипломы и сертификаты', k: 'core' },
+    { n: 5, t: 'Медицинские документы', k: 'core' },
+    { n: 6, t: 'Морской стаж', k: 'core' },
+    { n: 8, t: 'Доп. сертификаты', k: 'extra' },
+    { n: 9, t: 'Флаговые документы', k: 'extra' },
+    { n: 10, t: 'Образование', k: 'extra' },
+    { n: 11, t: 'О себе', k: 'extra' },
+    { n: 12, t: 'Доп. информация', k: 'extra' },
+    { n: 13, t: 'Заметки', k: 'extra' },
+    { n: 7, t: 'Проверка', k: 'final' }
   ];
 
   var B_SCREENS = [
@@ -668,10 +747,17 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       ['s1c', 'Шаг 1 · Код из письма'],
       ['s2', 'Шаг 2 · Личные данные'],
       ['s3', 'Шаг 3 · Документ моряка'],
-      ['s4', 'Шаг 4 · Другие документы'],
+      ['s4', 'Шаг 4 · Дипломы и сертификаты'],
       ['s5', 'Шаг 5 · Медицинские'],
       ['s6', 'Шаг 6 · Морской стаж'],
-      ['s7', 'Шаг 7 · Проверка'],
+      ['sx', 'Основное заполнено'],
+      ['s8', 'Доп. · Сертификаты'],
+      ['s9', 'Доп. · Флаговые документы'],
+      ['s10', 'Доп. · Образование'],
+      ['s11', 'Доп. · О себе'],
+      ['s12', 'Доп. · Дополнительная информация'],
+      ['s13', 'Доп. · Заметки'],
+      ['s7', 'Проверка'],
       ['c08', 'Продолжить регистрацию']
     ]]
   ];
@@ -699,7 +785,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     o01: 'Четыре слайда — что приложение <b>закрывает</b>: 1) профиль из документов за минуту, без ручного ввода; 2) ответ на анкету агентства в один тап (автозаполнение из профиля); 3) лента и вакансии моряков; 4) документы под контролем — напоминания о сроках и шифрование. Над заголовком — «боль», которую снимаем. Иллюстрации — живые мини-сцены. «Пропустить» — сразу к выбору способа. Показываются при первом запуске.',
     o02: 'Три пути. <b>Пошагово</b> — основной, рекомендуемый: профиль по шагам, можно с перерывами. <b>Быстро</b> — CV и документ моряка. <b>Посмотреть без регистрации</b> — гость: аккаунт не создаётся. Внизу строка «Уже есть аккаунт? Войти» — для нового телефона или после выхода. Тот, кто уже вошёл, этот экран не видит: приложение сразу открывает ленту.',
     o03: 'Короткий экран после выбора «Быстро»: что приготовить — CV, удостоверение или диплом моряка, доступ к почте.',
-    o04: 'Короткий экран после выбора «Пошагово»: регистрацию можно прервать и продолжить с любого шага и любого устройства.',
+    o04: 'Зачем пошагово и что это даёт моряку: анкеты в 1 тап, агентства видят всё сразу, ИИ читает документы, напоминания о сроках. Иллюстрация — маршрут судна к «100 %». Разделы разбиты на <b>Основное</b> (≈ 10 минут, по ним считается готовность к анкетам) и <b>Дополнительно</b> (по желанию).',
     g01: 'Гость видит образцы ленты — это заглушки, не настоящие публикации. Любое действие (отметка, сообщение, вкладки «Документы», «Профиль») открывает окно «Зарегистрируйтесь, чтобы…». <b>Приложение запоминает гостя на телефоне:</b> при следующем открытии он сразу попадает сюда, без слайдов и выбора способа.',
     g02: 'Образцы вакансий — тоже заглушки. «Откликнуться» требует аккаунта. Гость запоминается на телефоне, как и в ленте.',
     g03: 'Окно появляется на любое действие гостя и предлагает оба пути регистрации. «Не сейчас» возвращает к просмотру.',
@@ -735,22 +821,29 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     e03: 'Нет сети при загрузке или чтении. Файлы, которые уже загрузились, не теряются; повтор происходит сам.',
     e04: 'Ограничение на число попыток с одного телефона за время — защита от ботов.',
     e05: 'Номер документа в списке заблокированных. Текст нейтральный: причину не называем. Попытка записывается без файлов.',
-    s1: 'Email, пароль, повтор пароля и две галочки согласия — до создания аккаунта. Дальше код из письма; после него аккаунт создан, и можно остановиться на любом шаге и продолжить с любого устройства.',
+    s1: 'Email, пароль, повтор пароля и две галочки согласия — до создания аккаунта. Дальше код из письма; после него аккаунт создан, и можно остановиться на любом шаге и продолжить с любого устройства. <b>Шапка шагов — «маршрут»:</b> точки разделов, судно — где вы сейчас, оранжевые — пропущенные; тап по точке или по «Основное · 2 из 6» — переход в любой раздел. <b>Плашка «Пропущено N полей»</b> едет внизу на каждом шаге: тап — список полей, тап по полю — переход и подсветка.',
     s1c: 'Тот же экран кода, что и в быстром способе. <b>В прототипе верный код — 123456.</b>',
-    s2: 'Фото, имя, фамилия, дата рождения, гражданство, телефон, должность. Шаг можно пропустить.',
+    s2: '«Заполнить из документа» — имя, фамилия и дата рождения подставятся из документа моряка. Остальное — вручную. Шаг можно пропустить.',
     s3: 'Обязателен <b>один документ моряка: удостоверение или диплом</b>; второй — по желанию. Из каждого берётся запись безопасности. Без этого защита от повторных аккаунтов не работает.',
-    s4: 'Другие документы и сертификаты; тип выбирает моряк. Послужная книжка при регистрации не запрашивается — её можно добавить позже из профиля как обычный документ.',
-    s5: 'Отдельное согласие на медицинские данные. Копия хранится зашифрованной и удаляется после окончания срока действия; в профиле видно «Медосмотр действителен до …».',
-    s6: 'Суда и рейсы. Шаг необязательный.',
-    s7: 'Сводка по шагам. «Готово» доступно, когда пройдены обязательные шаги 1 и 3.',
-    c08: 'Моряк вернулся, не закончив пошаговую регистрацию.'
+    s4: 'Дипломы, подтверждения и обязательные сертификаты STCW. <b>Два способа:</b> загрузить (камера, файл, галерея) — ИИ распознает, или «Ввести вручную» (название, номер, даты, «Без срока действия», страна + фото для администратора). Чипы «Обычно просят агентства» — быстрый старт: тап открывает ручной ввод с названием.',
+    s5: 'Отдельное согласие на медицинские данные; после него — тот же блок «загрузить или вручную». Копии удаляются после окончания срока.',
+    s6: 'Рейсы за последние 5 лет, общий стаж словами. Добавить — из страниц послужной книжки или CV (ИИ найдёт рейсы) или вручную: судно, тип, флаг, должность, DWT, даты, судовладелец, двигатель.',
+    sx: 'Основное заполнено: процент готовности и предложение заполнить дополнительные разделы — или завершить.',
+    s8: 'Дополнительно: танкерные, DP, ECDIS и другие сертификаты. Те же два способа добавления.',
+    s9: 'Дополнительно: подтверждения флагов (Liberia, Panama, Marshall Islands…) и мореходные книжки других стран.',
+    s10: 'Дополнительно: образование — загрузить диплом (ИИ возьмёт поля) или ввести вручную.',
+    s11: 'Дополнительно: языки с уровнем, желаемая должность и типы судов, коротко о себе.',
+    s12: 'Дополнительно: рост, вес, размеры спецодежды и обуви, ближайший аэропорт, близкий человек для экстренной связи.',
+    s13: 'Дополнительно: заметки для агентств — например, когда не можете выйти в рейс.',
+    s7: 'Проверка: разделы сгруппированы «Основное / Дополнительно», у пропущенных — какие поля. Тап — переход в раздел. «Готово» — когда заполнены «Аккаунт» и «Документ моряка».',
+    c08: 'Моряк вернулся, не закончив: показываем основные разделы со статусом и продолжаем с первого незаполненного.'
   };
 
   var DEV = {
     o01: 'Слайди: <code>FlatList</code> з <code>pagingEnabled</code> і <code>onViewableItemsChanged</code> для крапок (або <code>react-native-reanimated-carousel</code>). Прапорець «онбординг показано» — <code>expo-secure-store</code>. «Пропустить» — <code>router.replace</code> на вибір способу. Хвилі — <code>react-native-svg</code>.',
     o02: 'expo-router: <code>app/(onboarding)/index.tsx</code>. Картки — <code>Card</code> + <code>Pressable</code>, іконки — <code>expo-symbols</code>. «Посмотреть без регистрации» пише <code>guest=true</code> у <code>expo-secure-store</code>; при старті застосунку це читається і одразу відкривається гостьовий стек. «Войти» — наявний екран входу (formSheet).',
     o03: 'Окремий екран <code>app/(onboarding)/quick.tsx</code>: <code>Card</code> зі списком, кнопка «Продолжить» веде на згоду. Той самий компонент з іншими пропсами для покрокового шляху.',
-    o04: 'Той самий компонент, що й <code>o03</code>, інші тексти (i18n). Крок 1 степера відкривається звідси.',
+    o04: 'Новий екран <code>(onboarding)/step-intro.tsx</code>: маршрут — <code>react-native-svg</code> path + анімація судна вздовж шляху (reanimated, <code>getPointAtLength</code>); переваги — сітка 2×2; розділи — чипи.',
     g01: 'Гостьовий стек <code>app/(guest)/(tabs)</code>. Стрічка — <code>FlatList</code> із заглушками (мок-дані, позначка «пример»). Перемикач — власний сегмент на reanimated або <code>@react-native-segmented-control/segmented-control</code>. Будь-яка дія викликає хук <code>useRequireAuth()</code>, який відкриває formSheet «Зарегистрируйтесь…».',
     g02: 'Те саме: <code>FlatList</code> вакансій-заглушок; «Откликнуться» → <code>useRequireAuth()</code>.',
     g03: '<code>presentation: \'formSheet\'</code> в expo-router з параметром <code>reason</code> (apply, msg, docs…) — з нього будується заголовок. Кнопки ведуть у <code>(onboarding)/quick</code> або <code>/step</code>.',
@@ -786,13 +879,20 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     e03: 'Нема мережі — наявний патерн <code>RefreshFailed</code>/<code>SlowServerHint</code>.',
     e04: 'Код 429 від API (модуль rate-limits).',
     e05: 'Код відмови від API без причини в тексті.',
-    s1: 'Той самий <code>TextField</code> і <code>PasswordMeter</code>, що в швидкому шляху; два <code>ui/Checkbox</code>. <code>POST /v1/auth/register</code>, далі екран коду.',
+    s1: 'Той самий <code>TextField</code> і <code>PasswordMeter</code>, що в швидкому шляху; два <code>ui/Checkbox</code>. <code>POST /v1/auth/register</code>, далі екран коду. Шапка-маршрут — <code>RouteBar</code> (стан кроків з API степера), шторка розділів і шторка пропущених полів — formSheet; перехід до поля — <code>scrollTo</code> + підсвітка через reanimated.',
     s1c: 'Той самий екран коду, інший <code>onSuccess</code>: створює акаунт і відкриває крок 2.',
     s2: '<code>expo-image-picker</code> для фото, <code>react-hook-form</code>, дата — <code>datetimepicker</code>. Стан степера — <code>GET/PATCH /v1/onboarding</code>.',
     s3: 'Той самий вибір типу й сканер, що в швидкому шляху. Обов\'язковий один із двох документів.',
-    s4: 'Список документів + <code>expo-document-picker</code> / сканер; тип обирає моряк.',
+    s4: 'Компонент <code>DocSection</code>: зона upload (камера — сканер документів, файл — <code>expo-document-picker</code>, галерея — <code>expo-image-picker</code>), ручна форма з прапорцем ручного введення для адміна, чипи-підказки з довідника типів.',
     s5: 'Окремий <code>ui/Checkbox</code> для медичної згоди; завантаження вмикається після неї.',
     s6: 'Форма рейсу (<code>react-hook-form</code>), список через <code>FlatList</code>.',
+    sx: 'Проміжний екран після основних розділів; кільце — той самий компонент, що «Аккаунт создан».',
+    s8: 'Той самий компонент <code>DocSection</code> (upload + manual + suggestions), інший набір типів.',
+    s9: '<code>DocSection</code> з типами флагових документів.',
+    s10: 'Форма + upload; поля з розпізнавання.',
+    s11: 'Мови — масив {мова, рівень}; сегмент рівня — власний компонент.',
+    s12: 'Прості поля профілю; близька людина — окрема модель контакту.',
+    s13: '<code>TextInput multiline</code>, поле профілю <code>notes</code>.',
     s7: 'Підсумок кроків; «Готово» активне, коли пройдені обов\'язкові кроки.',
     c08: 'Старт застосунку: запит <code>GET /v1/onboarding</code>, перехід на перший незавершений крок.'
   };
@@ -818,7 +918,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       email: '', pass: '', pass2: '', showPass: false, p2blur: false,
       creating: false, emailTaken: false,
       code: ['', '', '', '', '', ''], codeErr: '', codeTries: 5, codeCd: 60, codeBusy: false, cdTok: 0,
-      done: {}, medConsent: false, med: false, photo: false, fast: true,
+      man: {}, added: {}, rec: {}, eng: 'B1', done: {}, medConsent: false, med: false, photo: false, fast: true,
       cd: 872,
       light: false, anim: 'fw', toast: null, pop: false, loadingProfile: false, dev: false, fx: {}, autoNext: false, readDone: false, readTarget: 'q05'
     };
@@ -853,6 +953,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     if (S.view === 'c' && S.c === 'g03') { S.sheet = 'gate'; S.gate = 'apply'; }
     if (S.view === 'c' && S.c === 'p12') S.sheet = 'apply';
     if (S.view === 'c' && S.c === 'p13') S.sheet = 'filters';
+    if (S.view === 'c') demoSteps(S.c);
   }
 
   function writeHash() {
@@ -996,6 +1097,26 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       inner = '<div class="h2">Остановить чтение?</div>' +
         '<div class="sub" style="font-size:14px">Файлы останутся — вы сможете заменить документ или начать заново.</div>' +
         btn('Остановить', 'stop-read', 'dd') + btn('Продолжить ждать', 'sheet-close', 's');
+    } else if (S.sheet === 'route') {
+      var cur = Number((S.c || '').slice(1));
+      var gl = function (k, t) {
+        return '<div class="over">' + t + '</div><div class="rlist">' + STEPS.filter(function (s) { return s.k === k; }).map(function (s) {
+          var st = s.n === cur ? 'cur' : stepState(s.n);
+          var lab = st === 'done' ? '<span class="tag ok">готово</span>' : st === 'skip' ? '<span class="tag w">пропущено</span>' : st === 'cur' ? '<span class="tag">сейчас</span>' : (s.req ? '<span class="tag m">обязательно</span>' : '');
+          return '<button class="rli ' + st + '" data-a="sheet-go:s' + s.n + '"><span class="rn ' + s.k + ' ' + st + '">' + (st === 'cur' ? ic('ship', 13, 2) : st === 'done' ? ic('check', 11, 3) : st === 'skip' ? '!' : '') + '</span><span style="flex:1;text-align:left">' + s.t + '</span>' + lab + '</button>';
+        }).join('') + '</div>';
+      };
+      inner = '<div class="h2">Разделы профиля</div><div class="small">Переходите в любой раздел — порядок не важен.</div>' + gl('core', 'Основное · для анкет') + gl('extra', 'Дополнительно · по желанию') + gl('final', 'Финиш');
+    } else if (S.sheet === 'missing') {
+      var ml = missingList();
+      var mg = function (k, t) {
+        var items = ml.filter(function (x) { return x.k === k; });
+        if (!items.length) return '';
+        return '<div class="over">' + t + '</div><div class="menu">' + items.map(function (x) {
+          return '<div class="mi" role="button" tabindex="0" data-a="jump:' + x.n + ':' + x.id + '"><span class="ico w" style="width:32px;height:32px;border-radius:9px">' + ic('alert', 16) + '</span><div style="flex:1;min-width:0"><div style="font-size:15px">' + x.t + '</div><div class="small">' + stepInfo(x.n).t + '</div></div><span style="color:var(--t2);display:flex">' + ic('chevron', 16) + '</span></div>';
+        }).join('') + '</div>';
+      };
+      inner = '<div class="h2">Пропущенные поля</div><div class="small">Нажмите — перейдём к полю. Основное влияет на готовность к анкетам.</div>' + mg('core', 'Основное') + mg('extra', 'Дополнительно') + btn('Закрыть', 'sheet-close', 's');
     } else if (S.sheet === 'apply') {
       var aj = JOBS[S.job], ar = readiness();
       var miss = ar.items.filter(function (x) { return !x[1]; }).map(function (x) { return x[0].toLowerCase(); });
@@ -2202,36 +2323,100 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
 
   /* ---------- C: пошаговая ---------- */
 
+  var STEP_HEAD = {
+    1: ['lock', 'Создайте аккаунт', 'Email и пароль. Затем код из письма.'],
+    2: ['user', 'Личные данные', 'Подставятся во все анкеты агентств.'],
+    3: ['idcard', 'Документ моряка', 'Удостоверение или диплом — один из них обязателен.'],
+    4: ['doc', 'Дипломы и сертификаты', 'Диплом, подтверждения и обязательные сертификаты STCW.'],
+    5: ['medical', 'Медицинские документы', 'Отдельное согласие. Файлы удаляются после окончания срока.'],
+    6: ['ship', 'Морской стаж', 'Рейсы за последние 5 лет — главное, что смотрят агентства.'],
+    8: ['shieldOk', 'Дополнительные сертификаты', 'Танкерные, DP, ECDIS и другие — повышают шансы на вакансию.'],
+    9: ['flag', 'Флаговые документы', 'Подтверждения флагов и мореходные книжки других стран.'],
+    10: ['grad', 'Образование', 'Морское учебное заведение и специальность.'],
+    11: ['user', 'О себе', 'Языки, желаемая должность и пара слов о себе.'],
+    12: ['info', 'Дополнительная информация', 'Размеры спецодежды, ближайший аэропорт, близкий человек.'],
+    13: ['edit', 'Заметки', 'Всё, что агентству стоит знать заранее.'],
+    7: ['check', 'Проверка', 'Последний взгляд перед завершением.']
+  };
+
+  var MISS = {
+    2: [['Дата рождения', 'f-birth'], ['Гражданство', 'f-cit'], ['Телефон', 'f-phone']],
+    3: [['Документ моряка', 'f-sid']],
+    4: [['Диплом (CoC)', 'f-up4'], ['Сертификаты STCW', 'f-sug4']],
+    5: [['Медицинский сертификат', 'f-up5']],
+    6: [['Рейсы за последние 5 лет', 'f-up6']],
+    8: [['Дополнительные сертификаты', 'f-up8']],
+    9: [['Флаговые подтверждения', 'f-up9']],
+    10: [['Учебное заведение', 'f-up10']],
+    11: [['Английский язык', 'f-lang'], ['Желаемая должность', 'f-pos']],
+    12: [['Размеры спецодежды', 'f-size'], ['Близкий человек', 'f-kin']],
+    13: [['Заметки', 'f-notes']]
+  };
+
+  function stepInfo(n) { return STEPS.filter(function (s) { return s.n === n; })[0]; }
+  function stepIdx(n) { for (var i = 0; i < STEPS.length; i++) if (STEPS[i].n === n) return i; return 0; }
+  function stepState(n) { return S.done[n] ? 'done' : (S.done['skip' + n] ? 'skip' : 'todo'); }
+
+  function missingList() {
+    var out = [];
+    STEPS.forEach(function (s) {
+      if (S.done['skip' + s.n] && MISS[s.n]) MISS[s.n].forEach(function (m) { out.push({ n: s.n, t: m[0], id: m[1], k: s.k }); });
+    });
+    return out;
+  }
+
+  function routeBar(cur) {
+    var nodes = '';
+    STEPS.forEach(function (s, i) {
+      var st = s.n === cur ? 'cur' : stepState(s.n);
+      if (i > 0) {
+        var prevDone = stepState(STEPS[i - 1].n) === 'done';
+        nodes += '<span class="rseg' + (prevDone ? ' on' : '') + (s.k === 'extra' && STEPS[i - 1].k === 'core' ? ' fork' : '') + '"></span>';
+      }
+      var inner = st === 'cur' ? ic('ship', 15, 2) : st === 'done' ? ic('check', 11, 3) : st === 'skip' ? '!' : '';
+      nodes += '<button class="rn ' + s.k + ' ' + st + '" data-a="c:s' + s.n + '" aria-label="' + s.t + '">' + inner + '</button>';
+    });
+    var info = stepInfo(cur);
+    var grp = info.k === 'core' ? 'Основное' : info.k === 'extra' ? 'Дополнительно' : 'Финиш';
+    var list = STEPS.filter(function (s) { return s.k === info.k; });
+    var pos = list.indexOf(info) + 1;
+    var r = readiness();
+    return '<div class="route stag" style="animation-delay:.16s">' +
+      '<div class="rhead"><button class="rmap" data-a="sheet:route">' + ic('map', 14, 2) + grp + (info.k === 'final' ? '' : ' · ' + pos + ' из ' + list.length) + ic('chevron', 13, 2.2) + '</button>' +
+      '<span class="rpct">Профиль <b>' + r.pct + ' %</b></span></div>' +
+      '<div class="rtrack">' + nodes + '</div></div>';
+  }
+
   function navStep(step) {
-    return '<div class="navbar">' + backBtn(step > 1 ? 'c:s' + (step - 1) : 'c:o04') + '<div class="nt">Шаг ' + step + ' из 7</div>' +
+    var i = stepIdx(step);
+    var back = step === 8 ? 'c:sx' : (i > 0 ? 'c:s' + STEPS[i - 1].n : 'c:o04');
+    return '<div class="navbar">' + backBtn(back) + '<div class="nt">' + stepInfo(step).t + '</div>' +
       (step > 1 ? '<button class="link" style="margin-left:auto;font-weight:600;padding:12px 10px" data-a="sheet:later">Позже</button>' : '') + '</div>';
   }
 
-  var STEP_HEAD = {
-    1: ['lock', 'Создайте аккаунт', 'Email и пароль. Затем код из письма.'],
-    2: ['user', 'Личные данные', 'Эти данные подставятся в анкеты.'],
-    3: ['idcard', 'Документ моряка', 'Удостоверение или диплом — один из них обязателен.'],
-    4: ['docs', 'Другие документы', 'Дипломы, сертификаты, визы и другое.'],
-    5: ['medical', 'Медицинские документы', 'Отдельное согласие и защита данных.'],
-    6: ['ship', 'Морской стаж', 'Суда и рейсы.'],
-    7: ['shieldOk', 'Проверка', 'Последний взгляд перед завершением.']
-  };
+  function missPill() {
+    var m = missingList();
+    if (!m.length) return '';
+    var core = m.filter(function (x) { return x.k === 'core'; }).length;
+    return '<button class="misspill" data-a="sheet:missing"><span class="mp-i">' + ic('alert', 15, 2.2) + '</span><span style="flex:1;text-align:left">Пропущено <b>' + plural(m.length, 'поле', 'поля', 'полей') + '</b>' + (core ? '' : ' · необязательные') + '</span><span class="mp-go">Показать' + ic('chevron', 14, 2.2) + '</span></button>';
+  }
 
   function wizard(step, body, footer) {
-    var bars = STEPS.map(function (s) {
-      return '<span class="' + (S.done[s.n] ? 'done' : (s.n === step ? 'cur' : '')) + '"></span>';
-    }).join('');
     var h = STEP_HEAD[step];
+    var info = stepInfo(step);
     return '<div class="body underbar">' +
-      head({ icon: h[0], title: h[1], sub: h[2],
-        extra: '<div class="small stag" style="margin-top:14px;animation-delay:.16s">Шаг ' + step + ' из 7 · ' + STEPS[step - 1].t + '</div><div class="steps stag" style="padding:0;margin-top:8px;animation-delay:.2s">' + bars + '</div>' }) +
-      body + '</div><div class="foot line">' + footer + '</div>' + navStep(step);
+      '<div class="hero mini wiz">' + sea() +
+      '<div class="row" style="gap:12px;align-items:center">' + tile(h[0]) + '<div style="flex:1;min-width:0"><div class="eyebrow stag">' + (info.k === 'extra' ? 'Необязательно' : info.req ? 'Обязательно' : info.k === 'final' ? 'Почти готово' : 'Основное') + '</div>' +
+      '<div class="h1 stag" style="font-size:24px;margin-top:2px;animation-delay:.04s">' + h[1] + '</div></div></div>' +
+      '<div class="sub stag" style="margin-top:10px;animation-delay:.08s">' + h[2] + '</div>' + routeBar(step) + '</div>' +
+      body + '</div><div class="foot line">' + missPill() + footer + '</div>' + navStep(step);
   }
 
   function nextStep(step) {
-    var n = step + 1;
-    while (n < 7 && S.done[n]) n++;
-    return 's' + n;
+    if (step === 6) return 'sx';
+    var i = stepIdx(step) + 1;
+    while (i < STEPS.length - 1 && S.done[STEPS[i].n]) i++;
+    return 's' + STEPS[Math.min(i, STEPS.length - 1)].n;
   }
 
   function stepFooter(step, canNext, optional) {
@@ -2239,17 +2424,108 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       (optional ? btn('Пропустить', 'skip:' + step, 'g') : '');
   }
 
+  /* добавление документа: распознать или вручную */
+  function addPanel(n, title, sub) {
+    var man = S.man[n];
+    return '<div class="addx" id="f-up' + n + '">' +
+      '<div class="ax-drop" role="button" tabindex="0" data-a="up:' + n + '"><div class="ax-ill"><span class="ax-doc"></span><span class="ax-beam"></span>' + ic('sparkle', 16, 2) + '</div>' +
+      '<div style="flex:1;min-width:0"><div class="h3" style="font-size:15px">' + title + '</div><div class="small">' + sub + '</div></div></div>' +
+      '<div class="ax-src"><button data-a="up:' + n + '">' + ic('camera', 17) + 'Камера</button><button data-a="up:' + n + '">' + ic('folder', 17) + 'Файл</button><button data-a="up:' + n + '">' + ic('image', 17) + 'Галерея</button></div>' +
+      (man ? '' : '<button class="link ax-man" data-a="man:' + n + ':">' + ic('edit', 15) + 'Ввести вручную</button>') + '</div>';
+  }
+
+  function manualDoc(n, name) {
+    if (!S.man[n]) return '';
+    var nm = typeof S.man[n] === 'string' ? S.man[n] : (name || '');
+    return '<div class="card mancard"><div class="row" style="justify-content:space-between"><div class="h3">Ввести вручную</div><button class="x" data-a="man-close:' + n + '" aria-label="Закрыть">' + ic('x', 18) + '</button></div>' +
+      field('Название документа', { value: nm, ph: 'Например, Basic Safety Training' }) +
+      field('Номер', { ph: 'Как в документе' }) +
+      '<div class="grid2" style="grid-template-columns:1fr 1fr">' + field('Дата выдачи', { ph: 'ДД.ММ.ГГГГ' }) + field('Действителен до', { ph: 'ДД.ММ.ГГГГ' }) + '</div>' +
+      '<div class="check sm" data-a="noop" role="checkbox" tabindex="0" aria-checked="false"><div class="box"></div><div>Без срока действия</div></div>' +
+      field('Страна выдачи', { value: 'Украина' }) +
+      '<div class="drop" role="button" tabindex="0" data-a="noop" style="padding:12px"><div class="ico acc" style="width:36px;height:36px">' + ic('camera', 18) + '</div><div><div class="h3" style="font-size:14px">Прикрепите фото или файл</div><div class="small">Администратор сверит данные с документом</div></div></div>' +
+      btn('Сохранить документ', 'man-save:' + n, 't') + '</div>';
+  }
+
+  function sugChips(n, items) {
+    var have = S.added[n] || [];
+    return '<div id="f-sug' + n + '"><div class="over" style="margin:2px 2px 8px">Обычно просят агентства</div><div class="chips wrap">' + items.map(function (x) {
+      var on = have.indexOf(x) >= 0;
+      return '<button class="chip' + (on ? ' on' : '') + '" data-a="' + (on ? 'noop' : 'man:' + n + ':' + x) + '">' + ic(on ? 'check' : 'plus', 13, 2.4) + x + '</button>';
+    }).join('') + '</div></div>';
+  }
+
+  function docItems(n, base) {
+    var list = base.concat((S.rec[n] || []).map(function (x) { return ['doc', x, 'Распознано ИИ · проверьте данные']; }), (S.added[n] || []).map(function (x) { return ['doc', x, 'Введено вручную · проверит администратор', true]; }));
+    if (!list.length) return '';
+    return '<div style="display:flex;flex-direction:column;gap:8px">' + list.map(function (x) {
+      return '<div class="file"><div class="fi">' + ic(x[0], 20) + '</div><div style="flex:1;min-width:0"><div class="name">' + x[1] + '</div><div class="meta">' + (x[3] ? '<span style="color:var(--warning);display:flex">' + ic('edit', 12, 2.2) + '</span>' : '<span style="color:var(--success);display:flex">' + ic('sparkle', 12, 2.2) + '</span>') + x[2] + '</div></div><span style="color:var(--t2);display:flex;padding-right:6px">' + ic('chevron', 16) + '</span></div>';
+    }).join('') + '</div>';
+  }
+
+  function docStep(n, cfg) {
+    return W('<div class="card">' + addPanel(n, cfg.upT, cfg.upS) + '</div>', 1) +
+      (S.man[n] ? W(manualDoc(n), 2) : '') +
+      W(docItems(n, cfg.items), 3) +
+      (cfg.sug ? W(sugChips(n, cfg.sug), 4) : '');
+  }
+
+  function oStepIntro() {
+    var ports = [[20, 66], [70, 40], [120, 58], [170, 30], [220, 50], [270, 26]];
+    var path = 'M20 66 C45 40, 50 40, 70 40 S100 62, 120 58 S150 28, 170 30 S200 54, 220 50 S255 24, 270 26';
+    var ill = '<div class="sroute"><svg viewBox="0 0 300 92" fill="none"><path d="' + path + '" stroke="rgba(var(--accentRGB),.25)" stroke-width="2" stroke-dasharray="4 5"/>' +
+      '<path class="sr-draw" d="' + path + '" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/>' +
+      ports.map(function (p, i) { return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (i === 5 ? 7 : 5) + '" class="sr-port" style="animation-delay:' + (0.3 + i * 0.35).toFixed(2) + 's"/>'; }).join('') +
+      '<text x="270" y="14" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent)">100 %</text></svg>' +
+      '<span class="sr-ship" style="offset-path:path(\'' + path + '\')">' + ic('ship', 16, 2) + '</span></div>';
+    var ben = [
+      ['bolt', 'Анкеты агентств — в 1 тап', 'Заполненный профиль сам подставляется в любую анкету. Больше не переписываете одно и то же.'],
+      ['eye', 'Агентства видят всё сразу', 'Документы, стаж и сертификаты в одном месте — меньше вопросов и переписки.'],
+      ['sparkle', 'ИИ читает документы', 'Сфотографируйте или загрузите файл — поля заполнятся сами. Можно и вручную.'],
+      ['clock', 'Напомним о сроках', 'Заранее предупредим, когда истекает диплом, сертификат или медосмотр.']
+    ];
+    var core = ['Личные данные', 'Документ моряка', 'Дипломы и сертификаты', 'Медицинские', 'Стаж за 5 лет'];
+    var extra = ['Доп. сертификаты', 'Флаговые документы', 'Образование', 'О себе', 'Доп. информация', 'Заметки'];
+    return phone('<div class="body underbar">' +
+      '<div class="hero mini">' + sea() + tile('steps') +
+      '<div class="h1 stag" style="margin-top:16px;animation-delay:.06s">Полный профиль моряка — шаг за шагом</div>' +
+      '<div class="sub stag" style="margin-top:8px;animation-delay:.1s">Один раз заполняете — дальше анкеты, отклики и документы работают на вас.</div>' + ill + '</div>' +
+      W('<div class="benefits">' + ben.map(function (b) {
+        return '<div class="bn"><span class="ico acc" style="width:36px;height:36px;border-radius:10px">' + ic(b[0], 18) + '</span><div class="h3" style="font-size:14px">' + b[1] + '</div><div class="small">' + b[2] + '</div></div>';
+      }).join('') + '</div>', 1) +
+      W('<div class="card"><div class="row" style="justify-content:space-between"><div class="over" style="margin:0">Основное</div><span class="tag">≈ 10 минут</span></div>' +
+        '<div class="small">Этого достаточно для анкет — готовность к анкетам считается по этим разделам.</div>' +
+        '<div class="chips wrap">' + core.map(function (x) { return '<span class="chip on">' + x + '</span>'; }).join('') + '</div></div>', 2) +
+      W('<div class="card"><div class="row" style="justify-content:space-between"><div class="over" style="margin:0">Дополнительно</div><span class="tag m">по желанию</span></div>' +
+        '<div class="small">Агентства часто спрашивают об этом. Можно заполнить сейчас или позже из профиля.</div>' +
+        '<div class="chips wrap">' + extra.map(function (x) { return '<span class="chip">' + x + '</span>'; }).join('') + '</div></div>', 3) +
+      W('<div class="row" style="gap:10px;color:var(--t2);font-size:13px;padding:0 4px"><span style="color:var(--accent);display:flex">' + ic('refresh', 16) + '</span>Можно с перерывами — продолжите с любого шага и с любого устройства.</div>', 4) +
+      '</div><div class="foot">' + btn('Начать', 'c:s1') + '</div>' + nav('c:o02', 'Пошагово'));
+  }
+
+  function coreDone() {
+    var r = readiness();
+    var extra = STEPS.filter(function (s) { return s.k === 'extra'; });
+    return phone('<div class="body center ambient" style="gap:18px">' + ambient('ok') +
+      '<div class="okring" style="width:108px;height:108px">' + burst() + '<svg width="108" height="108" viewBox="0 0 108 108" fill="none" stroke-width="5"><circle class="track" cx="54" cy="54" r="48"/><circle class="p" cx="54" cy="54" r="48" stroke-linecap="round" transform="rotate(-90 54 54)"/></svg><div class="mk" style="font-size:24px;font-weight:700;color:var(--accent)">' + r.pct + '%</div></div>' +
+      W('<div style="text-align:center;display:flex;flex-direction:column;gap:8px"><div class="h1">Основное заполнено</div><div class="sub">Профиль готов для анкет агентств. Дополнительные разделы — по желанию, но агентства часто о них спрашивают.</div></div>', 3) +
+      W('<div class="card" style="gap:0">' + extra.map(function (s) {
+        return '<div class="li" style="align-items:center;padding:9px 0;cursor:pointer" data-a="c:s' + s.n + '"><span class="ico acc" style="width:32px;height:32px;border-radius:9px">' + ic(STEP_HEAD[s.n][0], 16) + '</span><span style="flex:1">' + s.t + '</span>' + (S.done[s.n] ? '<span class="tag ok">готово</span>' : '<span class="small">≈ 1 мин</span>') + '</div>';
+      }).join('') + '</div>', 4) +
+      '</div><div class="foot">' + btn('Заполнить дополнительное', 'c:s8') + btn('Завершить', 'c:s7', 'g') + '</div>' + nav('c:s6', ''));
+  }
+
   function screenStep(id) {
+    if (id === 'sx') return coreDone();
     if (id === 'c08') {
-      var nextOpen = 1;
-      for (var k = 1; k <= 7; k++) { if (!S.done[k]) { nextOpen = k; break; } }
+      var nextOpen = STEPS.filter(function (s) { return !S.done[s.n]; })[0] || STEPS[STEPS.length - 1];
       return phone('<div class="body underbar">' +
-        head({ icon: 'anchor', title: 'С возвращением!', sub: 'Вы остановились на шаге ' + nextOpen + ' из 7 — «' + STEPS[nextOpen - 1].t + '».' }) +
-        W('<div class="card"><div class="list">' + STEPS.map(function (s) {
-          var st = S.done[s.n] ? '<span class="dot ok">' + ic('check', 13, 2.6) + '</span>' : (S.done['skip' + s.n] ? '<span class="dot skip">–</span>' : '<span class="dot wait">' + s.n + '</span>');
+        head({ icon: 'anchor', title: 'С возвращением!', sub: 'Вы остановились на разделе «' + nextOpen.t + '».' }) +
+        W('<div class="card"><div class="list">' + STEPS.filter(function (s) { return s.k !== 'extra'; }).map(function (s) {
+          var st = S.done[s.n] ? '<span class="dot ok">' + ic('check', 13, 2.6) + '</span>' : (S.done['skip' + s.n] ? '<span class="dot skip">!</span>' : '<span class="dot wait">' + (stepIdx(s.n) + 1) + '</span>');
           return '<div class="li" style="align-items:center">' + st + '<span>' + s.t + '</span></div>';
-        }).join('') + '</div></div>', 1) +
-        '</div><div class="foot">' + btn('Продолжить', 'c:s' + nextOpen) + btn('Позже', 'c:q09', 'g') + '</div>');
+        }).join('') + '</div><div class="small">И ещё 6 дополнительных разделов — по желанию.</div></div>', 1) +
+        '</div><div class="foot">' + btn('Продолжить', 'c:s' + nextOpen.n) + btn('Позже', 'c:q09', 'g') + '</div>');
     }
     var step = Number(id.slice(1));
     if (step === 1) {
@@ -2262,60 +2538,127 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     }
     if (step === 2) {
       return phone(wizard(2,
+        W('<div class="card"><div class="addx" style="gap:8px"><div class="ax-drop" role="button" tabindex="0" data-a="toast:Данные возьмём из документа моряка на следующем шаге"><div class="ax-ill"><span class="ax-doc"></span><span class="ax-beam"></span>' + ic('sparkle', 16, 2) + '</div><div style="flex:1"><div class="h3" style="font-size:15px">Заполнить из документа</div><div class="small">Имя, фамилия и дата рождения — из удостоверения или диплома</div></div></div></div></div>', 1) +
         W('<div class="card"><div class="avatar" data-a="photo">' + (S.photo ? '<div class="av" style="width:84px;height:84px;font-size:26px">' + esc((S.first[0] || '') + (S.last[0] || '')) + '</div>' : ic('camera', 24) + 'Добавить<br>фото') + '</div>' +
           field('Имя', { value: S.first, bind: 'first', ph: 'Как в документе' }) +
           field('Фамилия', { value: S.last, bind: 'last', ph: 'Как в документе' }) +
-          field('Дата рождения', { ph: 'ДД.ММ.ГГГГ' }) +
-          field('Гражданство', { select: ['Выберите страну', 'Украина', 'Филиппины', 'Индия', 'Польша'] }) +
-          field('Телефон', { type: 'tel', ph: '+380 …' }) +
-          field('Должность', { select: ['Выберите должность', '3rd Engineer', '2nd Engineer', 'Chief Officer', 'AB Seaman'] }) + '</div>', 1),
+          field('Дата рождения', { ph: 'ДД.ММ.ГГГГ', id: 'f-birth' }) +
+          '<div id="f-cit">' + field('Гражданство', { select: ['Выберите страну', 'Украина', 'Филиппины', 'Индия', 'Польша'] }) + '</div>' +
+          field('Телефон', { type: 'tel', ph: '+380 …', id: 'f-phone' }) +
+          field('Должность', { select: ['Выберите должность', '3rd Engineer', '2nd Engineer', 'Chief Officer', 'AB Seaman'] }) + '</div>', 2),
         stepFooter(2, true, true)));
     }
     if (step === 3) {
       var has = S.doc.pages > 0;
       return phone(wizard(3,
-        W('<div class="card"><div class="row" style="justify-content:space-between"><div class="h3">Какой документ загружаете?</div><span class="tag m">один обязателен</span></div>' + typesSeg() +
+        W('<div class="card" id="f-sid"><div class="row" style="justify-content:space-between"><div class="h3">Какой документ загружаете?</div><span class="tag m">один обязателен</span></div>' + typesSeg() +
           (has ? uploadRow('idcard', esc(docType().n), 'Распознан', 'done', 100, 'rm-doc')
-            : '<div class="drop" role="button" tabindex="0" data-need="doc" data-a="pick-doc-step"><div class="ico acc">' + ic('scan', 22) + '</div><div><div class="h3" style="font-size:14px">Сканировать или сфотографировать</div><div class="small">Страница с фото и данными</div></div></div>') +
+            : addPanel(3, 'Загрузите — ИИ распознает', 'Страница с фото и данными. Края найдутся сами').replace(/data-a="up:3"/g, 'data-a="pick-doc-step"')) +
           (has ? secondDoc() : '') +
-          (S.scenario === 'ban' && has ? banner('d', 'shield', '<span>С этим документом нельзя продолжить регистрацию. Напишите в поддержку.</span>') : '') + '</div>', 1),
+          (S.scenario === 'ban' && has ? banner('d', 'shield', '<span>С этим документом нельзя продолжить регистрацию. Напишите в поддержку.</span>') : '') + '</div>', 1) +
+        (S.man[3] ? W(manualDoc(3, docType().n), 2) : ''),
         stepFooter(3, has && S.scenario !== 'ban', false)));
     }
     if (step === 4) {
-      return phone(wizard(4,
-        W('<div class="card"><div class="small">Тип каждого документа выбираете вы.</div>' + uploadRow('doc', 'CoC — 3rd Engineer (III/1)', 'Распознан', 'done', 100, 'noop') +
-          '<div class="drop" role="button" tabindex="0" data-a="noop"><div class="ico acc">' + ic('plus', 22) + '</div><div class="h3" style="font-size:14px">Добавить документ</div></div></div>', 1),
-        stepFooter(4, true, true)));
+      return phone(wizard(4, docStep(4, {
+        upT: 'Загрузите диплом или сертификат', upS: 'Можно сразу несколько файлов — ИИ разложит по типам',
+        items: [['doc', 'CoC — 3rd Engineer (III/1)', 'Распознан · до 20.06.2029']],
+        sug: ['Endorsement', 'Basic Safety Training', 'Advanced Fire Fighting', 'PSCRB', 'Medical First Aid', 'Security Awareness', 'GMDSS']
+      }), stepFooter(4, true, true)));
     }
     if (step === 5) {
-      var medBody = S.medConsent
-        ? (S.med ? uploadRow('medical', 'Медицинский сертификат', 'Действителен до 14.10.2027 · удалится после', 'done', 100, 'rm-med')
-          : '<div class="drop" role="button" tabindex="0" data-a="add-med"><div class="ico acc">' + ic('scan', 22) + '</div><div class="h3" style="font-size:14px">Добавить медицинский документ</div></div>')
-        : '<div class="small">Чтобы загрузить медицинские документы, нужно отдельное согласие.</div>';
+      var medBody = S.medConsent ? docStep(5, {
+        upT: 'Загрузите медицинский документ', upS: 'Медосмотр, прививки, тест на алкоголь и наркотики',
+        items: S.med ? [['medical', 'Медицинский сертификат', 'Распознан · до 14.11.2026 · удалится после']] : [],
+        sug: ['Медосмотр (PEME)', 'Жёлтая лихорадка', 'Drug & Alcohol test', 'COVID-19']
+      }) : '';
       return phone(wizard(5,
         W('<div class="card"><div class="list">' +
           '<div class="li"><span style="color:var(--accent)">' + ic('lock', 18) + '</span><span>Хранятся зашифрованными</span></div>' +
           '<div class="li"><span style="color:var(--accent)">' + ic('user', 18) + '</span><span>Видят только агентства, которым вы откроете доступ</span></div>' +
           '<div class="li"><span style="color:var(--accent)">' + ic('clock', 18) + '</span><span>Удаляются автоматически, когда закончится срок действия</span></div>' +
-          '</div></div>', 1) +
-        W('<div class="card">' + check(S.medConsent, 'toggle-med', 'Разрешаю хранить мои медицинские документы для трудоустройства') + medBody + '</div>', 2),
+          '</div>' + check(S.medConsent, 'toggle-med', 'Разрешаю хранить мои медицинские документы для трудоустройства') + '</div>', 1) +
+        (S.medConsent ? medBody : '<div id="f-up5"></div>'),
         stepFooter(5, true, true)));
     }
     if (step === 6) {
+      var voy = [[S.d.vessel1, 'Container Ship · ' + S.d.rank1, S.d.per1], [S.d.vessel2, 'Bulk Carrier · ' + S.d.rank2, S.d.per2]];
       return phone(wizard(6,
-        W('<div class="card"><div class="seatotal"><span>' + ic('ship', 18) + '</span><div><div class="small">Общий стаж</div><div class="h3">' + durText(months(S.d.per1)) + '</div></div></div><div class="small">Можно добавить из страниц стажа или вручную.</div><div class="row"><span style="color:var(--accent)">' + ic('ship', 20) + '</span><div style="flex:1"><div class="h3">MV Example Star</div><div class="small">Container Ship · 3rd Engineer</div><div class="small">02.2024 – 09.2024 · <b style="color:var(--t1);font-weight:600">' + durText(months(S.d.per1)) + '</b></div></div></div>' +
-          '<div class="drop" role="button" tabindex="0" data-a="noop"><div class="ico acc">' + ic('plus', 22) + '</div><div class="h3" style="font-size:14px">Добавить рейс</div></div></div>', 1),
+        W('<div class="seatotal"><span>' + ic('ship', 18) + '</span><div style="flex:1"><div class="small">Общий стаж за 5 лет</div><div class="h3">' + seaTotal() + '</div></div><span class="tag">' + voy.length + ' рейса</span></div>', 1) +
+        W('<div style="display:flex;flex-direction:column;gap:8px">' + voy.map(function (v) {
+          return '<div class="voy"><div class="vline"></div><span class="vdot"></span><div style="flex:1;min-width:0"><div class="h3" style="font-size:15px">' + esc(v[0]) + '</div><div class="small">' + esc(v[1]) + '</div><div class="small">' + esc(v[2]) + ' · <b style="color:var(--t1);font-weight:600">' + durText(months(v[2])) + '</b></div></div><span style="color:var(--t2);display:flex">' + ic('chevron', 16) + '</span></div>';
+        }).join('') + '</div>', 2) +
+        W('<div class="card">' + addPanel(6, 'Добавить рейсы из документа', 'Страницы послужной книжки или CV — ИИ найдёт рейсы') + '</div>', 3) +
+        (S.man[6] ? W('<div class="card mancard"><div class="row" style="justify-content:space-between"><div class="h3">Рейс вручную</div><button class="x" data-a="man-close:6" aria-label="Закрыть">' + ic('x', 18) + '</button></div>' +
+          field('Судно', { ph: 'MV …' }) + '<div class="grid2" style="grid-template-columns:1fr 1fr">' + field('Тип судна', { select: ['Выберите', 'Tanker', 'Container Ship', 'Bulk Carrier', 'LPG Carrier'] }) + field('Флаг', { ph: 'Malta' }) + '</div>' +
+          '<div class="grid2" style="grid-template-columns:1fr 1fr">' + field('Должность', { ph: '3rd Engineer' }) + field('DWT / GT', { ph: '19 800' }) + '</div>' +
+          '<div class="grid2" style="grid-template-columns:1fr 1fr">' + field('Начало', { ph: 'ММ.ГГГГ' }) + field('Окончание', { ph: 'ММ.ГГГГ' }) + '</div>' +
+          field('Судовладелец или агентство', { ph: 'Компания' }) + field('Двигатель', { ph: 'MAN B&W 6S46 · 7 860 kW' }) + btn('Сохранить рейс', 'man-close:6', 't') + '</div>', 4) : ''),
         stepFooter(6, true, true)));
     }
+    if (step === 8) {
+      return phone(wizard(8, docStep(8, {
+        upT: 'Загрузите сертификаты', upS: 'Фото, скан или PDF — ИИ распознает тип и сроки',
+        items: [],
+        sug: ['Oil Tanker Familiarization', 'Chemical Tanker Advanced', 'ECDIS', 'ERM / BRM', 'High Voltage', 'DP Basic']
+      }), stepFooter(8, true, true)));
+    }
+    if (step === 9) {
+      return phone(wizard(9, docStep(9, {
+        upT: 'Загрузите флаговый документ', upS: 'Подтверждения флагов и книжки других стран',
+        items: [],
+        sug: ['Liberia Endorsement', 'Panama Endorsement', 'Marshall Islands', 'Malta Endorsement', 'Мореходная книжка другой страны']
+      }), stepFooter(9, true, true)));
+    }
+    if (step === 10) {
+      return phone(wizard(10,
+        W('<div class="card">' + addPanel(10, 'Загрузите диплом об образовании', 'ИИ возьмёт учебное заведение, специальность и годы') + '</div>', 1) +
+        W('<div class="card">' + field('Учебное заведение', { ph: 'Например, Одесская морская академия' }) + field('Специальность', { ph: 'Судовые энергетические установки' }) +
+          '<div class="grid2" style="grid-template-columns:1fr 1fr">' + field('Начало', { ph: 'ГГГГ' }) + field('Окончание', { ph: 'ГГГГ' }) + '</div></div>', 2),
+        stepFooter(10, true, true)));
+    }
+    if (step === 11) {
+      return phone(wizard(11,
+        W('<div class="card"><div class="h3">Языки</div><div class="lang" id="f-lang"><span>Английский</span><div class="lvl">' + ['A2', 'B1', 'B2', 'C1'].map(function (l) { return '<button class="' + (S.eng === l ? 'on' : '') + '" data-a="eng:' + l + '">' + l + '</button>'; }).join('') + '</div></div>' +
+          '<button class="link" style="align-self:flex-start;font-size:14px" data-a="noop">+ Добавить язык</button></div>', 1) +
+        W('<div class="card" id="f-pos">' + field('Желаемая должность', { select: ['3rd Engineer', '2nd Engineer', 'Chief Engineer'] }) +
+          '<div class="over" style="margin:0">Типы судов</div><div class="chips wrap">' + ['Tanker', 'Chemical', 'Container', 'Bulk', 'LPG'].map(function (x, i) { return '<button class="chip' + (i < 2 ? ' on' : '') + '" data-a="noop">' + x + '</button>'; }).join('') + '</div></div>', 2) +
+        W('<div class="card"><div class="h3">Коротко о себе</div><textarea class="ta" rows="4" placeholder="Опыт, сильные стороны, чем гордитесь в работе"></textarea><div class="small">Агентства видят это в начале профиля.</div></div>', 3),
+        stepFooter(11, true, true)));
+    }
+    if (step === 12) {
+      return phone(wizard(12,
+        W('<div class="card" id="f-size"><div class="h3">Рост, вес и размеры</div><div class="small">Нужны агентству для спецодежды и обуви.</div>' +
+          '<div class="grid2" style="grid-template-columns:1fr 1fr">' + field('Рост, см', { ph: '180' }) + field('Вес, кг', { ph: '80' }) + '</div>' +
+          '<div class="grid2" style="grid-template-columns:1fr 1fr">' + field('Комбинезон', { select: ['M', 'L', 'XL', 'XXL'] }) + field('Обувь', { ph: '43' }) + '</div></div>', 1) +
+        W('<div class="card">' + field('Ближайший аэропорт', { ph: 'Одесса (ODS)' }) + '</div>', 2) +
+        W('<div class="card" id="f-kin"><div class="h3">Близкий человек</div><div class="small">С кем связаться в экстренном случае.</div>' + field('Имя', { ph: 'Имя и фамилия' }) +
+          '<div class="grid2" style="grid-template-columns:1fr 1fr">' + field('Кем приходится', { ph: 'Жена' }) + field('Телефон', { type: 'tel', ph: '+380 …' }) + '</div></div>', 3),
+        stepFooter(12, true, true)));
+    }
+    if (step === 13) {
+      return phone(wizard(13,
+        W('<div class="card" id="f-notes"><textarea class="ta" rows="6" placeholder="Например: не могу выйти в рейс до 1 декабря; рассматриваю только танкеры"></textarea>' +
+          '<div class="small">Видят агентства, которым вы откроете доступ.</div></div>', 1),
+        stepFooter(13, true, true)));
+    }
+    /* проверка */
     var reqOk = S.done[1] && S.done[3];
+    var miss = missingList();
+    var grpHtml = function (k, title) {
+      return '<div class="over" style="margin:4px 2px 0">' + title + '</div><div class="menu">' + STEPS.filter(function (s) { return s.k === k; }).map(function (s) {
+        var st = stepState(s.n);
+        var m = miss.filter(function (x) { return x.n === s.n; });
+        var right = st === 'done' ? '<span class="dot ok">' + ic('check', 13, 2.6) + '</span>'
+          : (s.req ? '<span class="tag w">обязательно</span>' : st === 'skip' ? '<span class="tag w">' + m.length + ' пропущено</span>' : '<span class="small">не заполнено</span>');
+        return '<div class="mi" role="button" tabindex="0" data-a="c:s' + s.n + '"><span class="ico acc">' + ic(STEP_HEAD[s.n][0], 17) + '</span><div style="flex:1;min-width:0"><div style="font-size:15px">' + s.t + '</div>' +
+          (m.length ? '<div class="small">' + m.map(function (x) { return x.t; }).join(', ') + '</div>' : '') + '</div>' + right + '</div>';
+      }).join('') + '</div>';
+    };
     return phone(wizard(7,
-      W('<div class="card"><div class="list">' + STEPS.slice(0, 6).map(function (s) {
-        var st = S.done[s.n] ? '<span class="dot ok">' + ic('check', 13, 2.6) + '</span>' : '<span class="dot skip">–</span>';
-        var label = S.done[s.n] ? '' : (s.req ? '<span class="tag w">обязательно</span>' : '<span class="small">пропущено</span>');
-        return '<div class="li" style="cursor:pointer;align-items:center" data-a="c:s' + s.n + '">' + st + '<span style="flex:1">' + s.t + '</span>' + label + '</div>';
-      }).join('') + '</div></div>', 1) +
-      W(reqOk ? '<div class="small">Пропущенные шаги можно заполнить позже из профиля.</div>'
-        : banner('w', 'alert', '<span>Чтобы закончить, пройдите обязательные шаги 1 и 3.</span>'), 2),
+      W(grpHtml('core', 'Основное'), 1) + W(grpHtml('extra', 'Дополнительно'), 2) +
+      W(reqOk ? '<div class="small">Пропущенное можно заполнить позже из профиля.</div>'
+        : banner('w', 'alert', '<span>Чтобы закончить, заполните «Аккаунт» и «Документ моряка».</span>'), 3),
       stepFooter(7, reqOk, false)));
   }
 
@@ -2324,7 +2667,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       case 'o01': return oSlides();
       case 'o02': return oChoice();
       case 'o03': return oPath('q');
-      case 'o04': return oPath('s');
+      case 'o04': return oStepIntro();
       case 'g01': return feedScreen(true);
       case 'g02': case 'g03': return jobsScreen(true);
       case 'g04': return jobScreen(true);
@@ -2421,6 +2764,10 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     if (nb) nb.scrollTop = top;
   }
 
+  function demoSteps(id) {
+    if (/^s(\d+|x)$/.test(id) && ['s1', 's2', 's3'].indexOf(id) < 0 && !Object.keys(S.done).length) { S.done = { 1: true, 3: true, skip2: true }; S.fast = false; }
+  }
+
   function go(id) {
     clearTimers();
     S.sheet = null;
@@ -2439,6 +2786,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       if (id === 'p13') S.sheet = 'filters';
       if (id === 'p14') S.loadingProfile = true;
     }
+    if (S.view === 'c') demoSteps(id);
     if (S.view === 'b') S.b = id; else S.c = id;
     render();
     if (S.view === 'c') onEnter(id);
@@ -2575,6 +2923,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       return;
     }
     if (a === 'sheet-bg') { closeSheet(); return; }
+    if (a.indexOf('sheet-go:') === 0) { var sg = a.slice(9); closeSheet(function () { go(sg); }); return; }
     if (a === 'drawer') { S.drawer = true; softRender(); return; }
     if (a === 'drawer-close') { var dr = STAGE.querySelector('.drawer'); if (dr) dr.classList.add('out'); setTimeout(function () { S.drawer = false; if (S.c === 'p04') S.c = 'p01'; softRender(); }, 200); return; }
     if (a === 'avail-next') { S.avail = (S.avail + 1) % AVAIL.length; softRender(); return; }
@@ -2606,17 +2955,51 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       showToast('Согласие дано снова', null);
       return;
     }
+    if (a.indexOf('up:') === 0) {
+      var un = Number(a.slice(3));
+      var recN = { 4: 'Endorsement — 3rd Engineer', 5: 'Медосмотр (PEME)', 8: 'ECDIS', 9: 'Liberia Endorsement' }[un];
+      if (un === 5) S.med = true;
+      if (recN) { S.rec[un] = (S.rec[un] || []).concat([recN]); softRender(); showToast('Распознано: ' + recN + ' — проверьте данные', null); }
+      else showToast(un === 6 ? 'Найден 1 рейс — проверьте данные (пример)' : 'Документ распознан (пример)', null);
+      return;
+    }
+    if (a.indexOf('man:') === 0) {
+      var mp = a.split(':'); S.man[Number(mp[1])] = mp[2] || true; softRender();
+      later(function () { var mc = STAGE.querySelector('.mancard'); if (mc) mc.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
+      return;
+    }
+    if (a.indexOf('man-close:') === 0) { S.man[Number(a.slice(10))] = false; softRender(); return; }
+    if (a.indexOf('man-save:') === 0) {
+      var ms = Number(a.slice(9)); var nm = typeof S.man[ms] === 'string' ? S.man[ms] : 'Документ';
+      S.added[ms] = (S.added[ms] || []).concat([nm]); S.man[ms] = false; softRender(); showToast('Сохранено: ' + nm, null); return;
+    }
+    if (a.indexOf('eng:') === 0) { S.eng = a.slice(4); softRender(); return; }
+    if (a.indexOf('jump:') === 0) {
+      var jp = a.split(':');
+      closeSheet(function () {
+        go('s' + jp[1]);
+        setTimeout(function () {
+          var el = document.getElementById(jp[2]); if (!el) return;
+          var box = el.closest('.field') || el;
+          box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          box.classList.remove('hl'); void box.offsetWidth; box.classList.add('hl');
+        }, 380);
+      });
+      return;
+    }
     if (a.indexOf('done:') === 0) {
       var st = Number(a.slice(5));
       S.done[st] = true;
       delete S.done['skip' + st];
       if (st === 7) { S.fast = false; go('q09'); return; }
+      if (st === 6) { go('sx'); return; }
       go(nextStep(st));
       return;
     }
     if (a.indexOf('skip:') === 0) {
       var sk = Number(a.slice(5));
       S.done['skip' + sk] = true;
+      showToast('Пропущено — вернуться можно в любой момент', null);
       go(nextStep(sk));
       return;
     }
