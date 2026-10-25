@@ -381,6 +381,26 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
 .av{width:60px;height:60px;border-radius:50%;background:var(--tint);border:1px solid var(--accentBorder);display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;font-size:20px;flex-shrink:0}
 .pbar{height:6px;border-radius:3px;background:var(--border);overflow:hidden}
 .pbar span{display:block;height:100%;background:var(--warning);border-radius:3px}
+
+/* онбординг, код, профиль */
+.dots{display:flex;gap:8px;justify-content:center;align-items:center;min-height:24px}
+.dots button{width:8px;height:8px;border-radius:4px;border:none;padding:0;background:var(--strong);transition:width .3s,background .2s;cursor:pointer}
+.dots button.on{width:24px;background:var(--accent)}
+.otp{display:flex;gap:8px}
+.otp input{flex:1;min-width:0;height:58px;border-radius:12px;border:1px solid var(--border);background:var(--input);color:var(--t1);font-size:24px;font-weight:700;text-align:center;outline:none;padding:0;transition:border-color .15s}
+.otp input:focus{border-color:var(--accent)}
+.otp input.f{border-color:var(--accentBorder)}
+.otp input.err{border-color:var(--danger)}
+.menu{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.mi{display:flex;gap:12px;align-items:center;padding:11px 14px;min-height:56px;cursor:pointer;font-size:15px;transition:background .15s}
+.mi + .mi{border-top:1px solid var(--divider)}
+.mi:active{background:var(--raised)}
+.mi .ico{width:34px;height:34px;border-radius:10px}
+.mi .mv{margin-left:auto;font-size:14px;color:var(--t2);display:flex;align-items:center;gap:6px}
+.grid2{display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
+.grid2 .field{min-width:0}
+.tabs div[role=button]:active{opacity:.6}
+.field select{appearance:none;-webkit-appearance:none}
 @media (max-width:440px){.phone{padding:0;border-radius:0;height:calc(100vh - 190px);min-height:700px;box-shadow:none}.screen{border-radius:0}.island,.home{display:none}}
 </style>
 </head>
@@ -430,7 +450,12 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     trash: '<path d="M5 7h14M10 7V4.5h4V7M7 7l1 12.5h8L17 7"/>',
     heart: '<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0112 7.3 4.3 4.3 0 0119.5 10c0 5.4-7.5 10-7.5 10z"/>',
     ship: '<path d="M4 15l1.5 5h13L20 15H4zM7 15V9h10v6M12 9V4M9.5 6.5h5"/>',
-    medical: '<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M12 9.5v6M9 12.5h6M9 5V3.5h6V5"/>'
+    medical: '<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M12 9.5v6M9 12.5h6M9 5V3.5h6V5"/>',
+    home: '<path d="M4 11l8-6.5 8 6.5V19a1.5 1.5 0 01-1.5 1.5H5.5A1.5 1.5 0 014 19z"/><path d="M10 20.5v-6h4v6"/>',
+    edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+    download: '<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/>',
+    globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.4 3.6 5.2 3.6 8.5s-1.1 6.1-3.6 8.5c-2.5-2.4-3.6-5.2-3.6-8.5S9.5 5.9 12 3.5z"/>',
+    moon: '<path d="M19.5 14.5A8 8 0 019.5 4.5a8 8 0 1010 10z"/>'
   };
 
   function ic(name, size, sw) {
@@ -440,8 +465,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
   /* ---------- данные ---------- */
 
   var DOC_TYPES = [
-    { id: 'sid', n: 'Удостоверение личности моряка', s: 'Seafarer\'s ID' },
-    { id: 'book', n: 'Послужная книжка', s: 'Seaman\'s Book' }
+    { id: 'sid', n: 'Удостоверение личности моряка', b: 'Удостоверение', s: 'Seafarer\'s ID' },
+    { id: 'diploma', n: 'Диплом моряка', b: 'Диплом моряка', s: 'Diploma / CoC' }
   ];
 
   var STEPS = [
@@ -462,24 +487,40 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
   ];
 
   var C_GROUPS = [
+    ['Онбординг и гость', [
+      ['o01', '1. Слайды'],
+      ['o02', '2. Выбор способа'],
+      ['o03', '3. Что понадобится (быстро)'],
+      ['o04', '4. Что понадобится (пошагово)'],
+      ['g01', 'Гость · Лента'],
+      ['g02', 'Гость · Вакансии'],
+      ['g03', 'Гость · «Зарегистрируйтесь, чтобы…»']
+    ]],
     ['Быстрая регистрация', [
-      ['q01', '1. Приветствие и выбор способа'],
-      ['q02', '2. Согласие'],
-      ['q03', '3. CV и документ моряка'],
-      ['q04', '4. Читаем документ'],
-      ['q05', '5. Проверьте данные'],
-      ['q06', '6. Аккаунт создан'],
-      ['q07', '7. Профиль'],
-      ['q08', '8. Email подтверждён'],
-      ['q09', 'Незаконченная регистрация'],
+      ['q02', '1. Согласие'],
+      ['q03', '2. CV и документ моряка'],
+      ['q04', '3. Читаем документы'],
+      ['q05', '4. Проверьте данные из документов'],
+      ['q06', '5. Аккаунт'],
+      ['q07', '6. Код из письма'],
+      ['q08', '7. Аккаунт создан'],
+      ['q09', '8. Профиль'],
+      ['q10', 'Профиль · Согласия'],
+      ['p01', 'Приложение · Главная'],
+      ['p02', 'Приложение · Документы'],
+      ['p03', 'Приложение · Входящие'],
+      ['q11', 'Незаконченная регистрация'],
       ['e01', 'Ошибка: документ не прочитан'],
       ['e02', 'Ошибка: это не документ моряка'],
+      ['e07', 'Ввести данные вручную'],
+      ['e06', 'Ошибка: документ уже зарегистрирован'],
       ['e03', 'Ошибка: нет интернета'],
       ['e04', 'Ошибка: слишком много попыток'],
       ['e05', 'Регистрация невозможна (бан)']
     ]],
-    ['Пошаговая регистрация (следующий этап)', [
+    ['Пошаговая регистрация', [
       ['s1', 'Шаг 1 · Аккаунт'],
+      ['s1c', 'Шаг 1 · Код из письма'],
       ['s2', 'Шаг 2 · Личные данные'],
       ['s3', 'Шаг 3 · Документ моряка'],
       ['s4', 'Шаг 4 · Другие документы'],
@@ -500,6 +541,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     ['offline', 'Нет интернета'],
     ['rate', 'Слишком много попыток'],
     ['ban', 'Документ в бан-листе'],
+    ['docTaken', 'Документ уже зарегистрирован'],
     ['noName', 'Имя не прочитано'],
     ['emailTaken', 'Email уже занят']
   ];
@@ -509,63 +551,106 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     b02: 'Сейчас: email, пароль и повтор пароля. Ни имени, ни согласия, ни документа моряка.',
     b03: 'После регистрации моряк попадает на пустой список документов и добавляет их по одному.',
     b04: 'Профиль пустой: имя и остальные данные появятся только из подтверждённых документов.',
-    q01: 'Два способа. <b>Быстро</b> — CV и документ моряка, около минуты. <b>Пошагово</b> — профиль по шагам, можно остановиться и продолжить позже. «Войти» — для тех, у кого уже есть аккаунт.',
-    q02: 'Согласие даётся <b>до первого файла</b>: документ читает ИИ, данные документа хранятся для безопасности платформы. «Подробнее» открывает краткий текст согласия.',
-    q03: 'Оба файла обязательны. CV — файл, фото или скан. Документ моряка — тип выбирает моряк, страницы сканируются или фотографируются. Пока аккаунта нет, файлы во временном хранилище и удаляются через 30 дней.',
-    q04: 'ИИ читает из документа моряка только имя, фамилию, дату рождения и номер. CV не распознаётся. Проверка по списку заблокированных — здесь же. Исход зависит от сценария в панели. В приложении экран переходит дальше сам; в прототипе — по кнопке (или включите «Автопереход»).',
-    q05: 'Имя и фамилию моряк может исправить. Email вводится дважды, пароль — с подсказкой надёжности. Дата рождения и номер — только в запись безопасности, в профиль не попадают.',
-    q06: 'Аккаунт создан: файлы перенесены к моряку и зашифрованы его ключом, временные копии удалены.',
-    q07: 'Пользоваться можно сразу, откликаться тоже. Рекрутер видит пометку «Профиль неполный». Email подтверждается в фоне, без ограничений.',
-    q08: 'Моряк нажал ссылку в письме. Подтверждённый email нужен, чтобы восстановить пароль.',
-    q09: 'Моряк вернулся на том же телефоне, не закончив быструю регистрацию (до 30 дней). С другого устройства продолжить нельзя — аккаунта ещё нет.',
-    e01: 'Фото размыто или обрезано. Моряк переснимает документ в той же попытке; число попыток ограничено. <b>Открытый вопрос:</b> «Ввести имя вручную» — без номера документа проверка по бан-листу не работает, поэтому такой аккаунт получает пометку для администратора.',
-    e02: 'ИИ видит другой тип документа (например, загранпаспорт). Моряк загружает документ моряка или продолжает, если ИИ ошибся, — тогда аккаунт получает пометку для администратора.',
-    e03: 'Нет сети при загрузке или чтении. Файлы, которые уже загрузились, не теряются.',
+    o01: 'Три коротких слайда о том, что умеет приложение, с точками внизу. «Пропустить» ведёт сразу к выбору способа. Показываются при первом запуске.',
+    o02: 'Четыре пути. <b>Быстро</b> — CV и документ моряка. <b>Пошагово</b> — профиль по шагам, можно с перерывами. <b>Войти</b> — для тех, у кого уже есть аккаунт. <b>Посмотреть без регистрации</b> — гость: аккаунт не создаётся.',
+    o03: 'Короткий экран после выбора «Быстро»: что приготовить — CV, удостоверение или диплом моряка, доступ к почте.',
+    o04: 'Короткий экран после выбора «Пошагово»: регистрацию можно прервать и продолжить с любого шага и любого устройства.',
+    g01: 'Гость видит образцы ленты — это заглушки, не настоящие публикации. Любое действие (отметка, сообщение, вкладки «Документы», «Входящие», «Профиль») открывает окно «Зарегистрируйтесь, чтобы…». <b>Приложение запоминает гостя на телефоне:</b> при следующем открытии он сразу попадает сюда, без слайдов и выбора способа.',
+    g02: 'Образцы вакансий — тоже заглушки. «Откликнуться» требует аккаунта. Гость запоминается на телефоне, как и в ленте.',
+    g03: 'Окно появляется на любое действие гостя и предлагает оба пути регистрации. «Не сейчас» возвращает к просмотру.',
+    q02: 'Две отдельные галочки, заранее не отмечены: условия сервиса и политика конфиденциальности; обработка документов, включая чтение ИИ. Нужны обе — до загрузки первого файла. «Подробнее» открывает краткий текст простым языком. Экран не прокручивается.',
+    q03: 'Обязательны CV и <b>один документ моряка на выбор</b>: удостоверение (Seafarer\'s ID) или диплом. Второй документ можно добавить сразу или позже. Файлы во временном хранилище, зашифрованы; большие фото уменьшаются. Пока аккаунта нет, файлы удаляются через 30 дней.',
+    q04: 'ИИ читает CV и документы целиком: личные данные, документы, диплом, морской стаж. Отдельно из документа моряка берутся номер и дата рождения — для записи безопасности. Проверка по списку заблокированных — здесь же. Исход зависит от сценария в панели. В приложении экран идёт дальше сам; в прототипе — по кнопке (или включите «Автопереход»).',
+    q05: 'Прочитанное сгруппировано: личные данные, документы, диплом, морской стаж. Каждое поле можно исправить; метка «из документа» показывает источник. Подтверждённое попадает в профиль и в автозаполнение анкет, неподтверждённое — нет. Если исправить номер или дату рождения, администратор получит пометку «данные документа введены вручную» и сверит их с фото.',
+    q06: 'Email, пароль и повтор пароля. Если email уже занят, сразу показываем «Этот email уже зарегистрирован» и два выхода: «Войти» или «Восстановить пароль» (сценарий «Email уже занят»).',
+    q07: 'Код из 6 цифр: действует 15 минут, 5 попыток. «Отправить ещё раз» доступно через 60 секунд. Можно изменить email; письмо могло попасть в «Спам». Закрыли приложение — при открытии сразу этот экран. <b>В прототипе верный код — 123456</b>, любой другой даёт ошибку.',
+    q08: 'Аккаунт создан: файлы перенесены к моряку и зашифрованы его ключом, временные копии стёрты. Подтверждённые данные уже в профиле.',
+    q09: '«Готовность к анкетам» считается <b>только по полям, которые чаще всего нужны агентствам в анкетах</b>: личные данные, документ моряка, диплом, медицинские, морской стаж. При 100 % — «Профиль заполнен», иначе — «Дополнить профиль» (ведёт на первый незаполненный шаг). Рекрутер видит «Профиль неполный», пока нет 100 %. Чтобы увидеть 100 %, включите галочку в панели.',
+    q10: 'Каждое согласие хранится с версией текста и временем. «Отозвать согласие» — так же просто, как дать. Копию своих данных можно скачать отсюда и из профиля.',
+    p01: 'Четыре вкладки внизу: Главная, Документы, Входящие, Профиль. Состав вкладок — предложение; его можно изменить. Та же главная, но с действиями для зарегистрированных.',
+    p02: 'Список документов моряка. Медицинский документ показывает срок: «Медосмотр действителен до …».',
+    p03: 'Анкеты и сообщения от агентств. Пока пусто.',
+    q11: 'Моряк вернулся на том же телефоне, не закончив быструю регистрацию (до 30 дней). С другого устройства продолжить нельзя — аккаунта ещё нет. «Начать заново» <b>сразу удаляет файлы и прочитанные данные</b>, остаётся только запись «была попытка». <b>Лимит попыток не обнуляется:</b> он считается по телефону и IP.',
+    e01: 'Фото размыто или обрезано. Три выхода: переснять, загрузить файл или ввести данные вручную. Число попыток ограничено.',
+    e02: 'ИИ видит другой тип документа (например, загранпаспорт). Те же три выхода: переснять, загрузить файл, ввести вручную.',
+    e07: 'Название документа, номер, дата выдачи, дата окончания, страна выдачи и фото или файл документа. Такой аккаунт получает пометку для администратора <b>«данные документа введены вручную»</b>; администратор сверяет данные с приложенным фото.',
+    e06: 'Документ уже привязан к другому аккаунту: один документ — один аккаунт. Предлагаем войти или восстановить доступ.',
+    e03: 'Нет сети при загрузке или чтении. Файлы, которые уже загрузились, не теряются; повтор происходит сам.',
     e04: 'Ограничение на число попыток с одного телефона за время — защита от ботов.',
     e05: 'Номер документа в списке заблокированных. Текст нейтральный: причину не называем. Попытка записывается без файлов.',
-    s1: 'Аккаунт создаётся сразу после шага 1 — дальше можно остановиться на любом шаге и продолжить с любого устройства.',
-    s2: 'Необязательный шаг. Фото профиля добавляется здесь.',
-    s3: 'Обязательный шаг, как и в быстром способе: без документа моряка защита от повторных аккаунтов не работает.',
-    s4: 'Пока один общий шаг для остальных документов; тип выбирает моряк. Состав шагов уточняется.',
-    s5: 'Отдельное согласие на медицинские данные. Копия хранится зашифрованной и удаляется после окончания срока действия.',
-    s6: 'Необязательный шаг: суда и рейсы.',
+    s1: 'Email, пароль, повтор пароля и две галочки согласия — до создания аккаунта. Дальше код из письма; после него аккаунт создан, и можно остановиться на любом шаге и продолжить с любого устройства.',
+    s1c: 'Тот же экран кода, что и в быстром способе. <b>В прототипе верный код — 123456.</b>',
+    s2: 'Фото, имя, фамилия, дата рождения, гражданство, телефон, должность. Шаг можно пропустить.',
+    s3: 'Обязателен <b>один документ моряка: удостоверение или диплом</b>; второй — по желанию. Из каждого берётся запись безопасности. Без этого защита от повторных аккаунтов не работает.',
+    s4: 'Другие документы и сертификаты; тип выбирает моряк. Послужная книжка при регистрации не запрашивается — её можно добавить позже из профиля как обычный документ.',
+    s5: 'Отдельное согласие на медицинские данные. Копия хранится зашифрованной и удаляется после окончания срока действия; в профиле видно «Медосмотр действителен до …».',
+    s6: 'Суда и рейсы. Шаг необязательный.',
     s7: 'Сводка по шагам. «Готово» доступно, когда пройдены обязательные шаги 1 и 3.',
     c08: 'Моряк вернулся, не закончив пошаговую регистрацию.'
   };
 
   var DEV = {
-    q01: 'expo-router: <code>app/(onboarding)/index.tsx</code>. Карточки — <code>Card</code> + <code>Pressable</code>. Фон героя — <code>expo-linear-gradient</code> або SVG (<code>react-native-svg</code>), хвилі — SVG. Іконки — SF Symbols через <code>expo-symbols</code>: bolt, list.bullet, anchor (або власний SVG логотипу).',
-    q02: 'Чекбокс — новий <code>ui/Checkbox</code> (Pressable + reanimated scale). «Подробнее» — нативний sheet: <code>presentation: \'formSheet\'</code> в expo-router. Іконки: sparkles, lock, checkmark.shield, clock.',
-    q03: 'CV: <code>expo-document-picker</code> (PDF, Word), <code>react-native-document-scanner-plugin</code>, <code>expo-image-picker</code>. Документ: той самий сканер, що в «Добавить документ». Вибір джерела — formSheet або <code>ActionSheetIOS</code>. Прогрес — <code>XMLHttpRequest.upload.onprogress</code> або <code>expo-file-system</code> uploadAsync з прогресом. Тип — <code>Pill</code>. Тост «Отменить» — новий <code>ui/Toast</code> на reanimated.',
+    o01: 'Слайди: <code>FlatList</code> з <code>pagingEnabled</code> і <code>onViewableItemsChanged</code> для крапок (або <code>react-native-reanimated-carousel</code>). Прапорець «онбординг показано» — <code>expo-secure-store</code>. «Пропустить» — <code>router.replace</code> на вибір способу. Хвилі — <code>react-native-svg</code>.',
+    o02: 'expo-router: <code>app/(onboarding)/index.tsx</code>. Картки — <code>Card</code> + <code>Pressable</code>, іконки — <code>expo-symbols</code>. «Посмотреть без регистрации» пише <code>guest=true</code> у <code>expo-secure-store</code>; при старті застосунку це читається і одразу відкривається гостьовий стек. «Войти» — наявний екран входу (formSheet).',
+    o03: 'Окремий екран <code>app/(onboarding)/quick.tsx</code>: <code>Card</code> зі списком, кнопка «Продолжить» веде на згоду. Той самий компонент з іншими пропсами для покрокового шляху.',
+    o04: 'Той самий компонент, що й <code>o03</code>, інші тексти (i18n). Крок 1 степера відкривається звідси.',
+    g01: 'Гостьовий стек <code>app/(guest)/(tabs)</code>. Стрічка — <code>FlatList</code> із заглушками (мок-дані, позначка «пример»). Перемикач — власний сегмент на reanimated або <code>@react-native-segmented-control/segmented-control</code>. Будь-яка дія викликає хук <code>useRequireAuth()</code>, який відкриває formSheet «Зарегистрируйтесь…».',
+    g02: 'Те саме: <code>FlatList</code> вакансій-заглушок; «Откликнуться» → <code>useRequireAuth()</code>.',
+    g03: '<code>presentation: \'formSheet\'</code> в expo-router з параметром <code>reason</code> (apply, msg, docs…) — з нього будується заголовок. Кнопки ведуть у <code>(onboarding)/quick</code> або <code>/step</code>.',
+    q02: 'Два <code>ui/Checkbox</code> (Pressable + reanimated scale), без стану за замовчуванням. «Подробнее» — formSheet. Версії текстів і час передаються в <code>POST /v1/registration/attempts</code>. Іконки: sparkles, lock, checkmark.shield, clock.',
+    q03: 'CV: <code>expo-document-picker</code> (PDF, Word), <code>react-native-document-scanner-plugin</code>, <code>expo-image-picker</code>. Документ моряка — той самий сканер; вибір типу — сегмент на reanimated. Прогрес — <code>expo-file-system</code> uploadAsync. Зменшення фото — <code>expo-image-manipulator</code>.',
     q04: 'Промінь і рамки — reanimated (<code>withRepeat</code>, <code>withTiming</code>). Етапи — опитування статусу спроби (як <code>processing-status-polling</code>, ADR-028). Значення з\'являються, коли API їх повернув.',
-    q05: '<code>TextField</code> вже є; додати <code>secureTextEntry</code> з кнопкою ока і <code>ui/PasswordMeter</code>. Валідація — zod-схема в <code>@crew/shared</code> (як <code>registerSchema</code>), повідомлення — i18n. «Здригання» — reanimated <code>withSequence</code>. Нижня кнопка над клавіатурою — <code>KeyboardAvoidingView</code>.',
-    q06: 'Кільце — <code>react-native-svg</code> + reanimated (strokeDashoffset). Конфеті — 14 <code>Animated.View</code>, без бібліотек. Haptics — <code>expo-haptics</code> (success), треба додати пакет.',
-    q07: 'Профіль — наявний <code>(tabs)/profile.tsx</code> + новий блок «Профиль неполный». Заглушки — наявний <code>ui/Skeleton</code>. Банер — наявний <code>ui/Banner</code>.',
-    q08: 'Deep link з листа: <code>expo-linking</code>, маршрут <code>verify-email</code>. Universal Links — після переїзду на акаунт замовника (ADR-017).',
-    q09: 'Ідентифікатор спроби — у <code>expo-secure-store</code> на телефоні; при старті застосунку — запит стану спроби.',
-    e01: 'Один компонент <code>RegistrationError</code> з варіантами за кодом помилки API.',
+    q05: 'Форма: <code>react-hook-form</code> + zod-схема з <code>@crew/shared</code>. Групи — <code>SectionList</code> або <code>ScrollView</code> з <code>Card</code>. Тег джерела («из документа» / «исправлено вами») — власний <code>ui/SourceTag</code>. Дати — <code>@react-native-community/datetimepicker</code>. Підтвердження — <code>POST /v1/registration/attempts/:id/confirm</code>.',
+    q06: '<code>TextField</code> з <code>secureTextEntry</code> і кнопкою ока, <code>ui/PasswordMeter</code>. Email зайнятий — код відповіді API → <code>Banner</code> з двома кнопками. <code>KeyboardAvoidingView</code> для нижньої кнопки.',
+    q07: 'Шість <code>TextInput</code> з <code>textContentType="oneTimeCode"</code> та <code>autoComplete="sms-otp"</code> (iOS підказує код) або пакет <code>react-native-otp-entry</code>. Таймер 60 с — <code>useCountdown</code> на <code>setInterval</code>. Помилка — reanimated shake + <code>expo-haptics</code> (error). <code>POST /v1/auth/email/verify</code> і <code>/resend</code>. Стан «чекаємо код» зберігається в secure-store.',
+    q08: 'Кільце — <code>react-native-svg</code> + reanimated (strokeDashoffset). Конфеті — 14 <code>Animated.View</code>. Haptics — <code>expo-haptics</code> (success).',
+    q09: 'Наявний <code>(tabs)/profile.tsx</code>. Прогрес — <code>View</code> зі смугою; відсоток і чипи приходять з API (<code>readiness</code>), рахуються на сервері лише по полях анкет. Пункти списку — <code>Pressable</code> у <code>Card</code>; «Тема» — <code>useColorScheme</code> + збережене значення.',
+    q10: 'Екран <code>profile/consents.tsx</code>. Список з <code>GET /v1/consents</code> (вид, версія, коли, відкликано). «Отозвать» — <code>ActionSheetIOS</code> або formSheet з підтвердженням → <code>DELETE /v1/consents/:id</code>.',
+    p01: 'Нижні вкладки — <code>Tabs</code> з expo-router (<code>app/(tabs)/_layout.tsx</code>): index, documents, inbox, profile. Іконки — expo-symbols.',
+    p02: 'Наявний екран документів; рядок медичного документа показує «Медосмотр действителен до …» з поля <code>expiresAt</code>.',
+    p03: 'Заглушка <code>EmptyState</code>; наповнюється, коли будуть анкети й повідомлення.',
+    q11: 'Ідентифікатор спроби — у <code>expo-secure-store</code>; при старті застосунку — запит стану спроби. «Начать заново» — <code>DELETE /v1/registration/attempts/:id</code> (файли й прочитане видаляються одразу, запис спроби лишається).',
+    e01: 'Один компонент <code>RegistrationError</code> з варіантами за кодом помилки API. «Загрузить файл» — <code>expo-document-picker</code>; «Ввести вручную» — перехід на форму.',
     e02: 'Той самий <code>RegistrationError</code>.',
+    e07: '<code>react-hook-form</code>: select назви (formSheet/<code>Picker</code>), номер, дати (<code>datetimepicker</code>), країна (список), файл — <code>expo-image-picker</code> / <code>document-picker</code>. На бекенді прапорець <code>manualEntry=true</code> → позначка адміну.',
+    e06: '<code>RegistrationError</code> з кодом <code>document_already_registered</code>; кнопки ведуть на вхід і відновлення.',
     e03: 'Нема мережі — наявний патерн <code>RefreshFailed</code>/<code>SlowServerHint</code>.',
     e04: 'Код 429 від API (модуль rate-limits).',
-    e05: 'Код відмови від API без причини в тексті.'
+    e05: 'Код відмови від API без причини в тексті.',
+    s1: 'Той самий <code>TextField</code> і <code>PasswordMeter</code>, що в швидкому шляху; два <code>ui/Checkbox</code>. <code>POST /v1/auth/register</code>, далі екран коду.',
+    s1c: 'Той самий екран коду, інший <code>onSuccess</code>: створює акаунт і відкриває крок 2.',
+    s2: '<code>expo-image-picker</code> для фото, <code>react-hook-form</code>, дата — <code>datetimepicker</code>. Стан степера — <code>GET/PATCH /v1/onboarding</code>.',
+    s3: 'Той самий вибір типу й сканер, що в швидкому шляху. Обов\'язковий один із двох документів.',
+    s4: 'Список документів + <code>expo-document-picker</code> / сканер; тип обирає моряк.',
+    s5: 'Окремий <code>ui/Checkbox</code> для медичної згоди; завантаження вмикається після неї.',
+    s6: 'Форма рейсу (<code>react-hook-form</code>), список через <code>FlatList</code>.',
+    s7: 'Підсумок кроків; «Готово» активне, коли пройдені обов\'язкові кроки.',
+    c08: 'Старт застосунку: запит <code>GET /v1/onboarding</code>, перехід на перший незавершений крок.'
   };
 
   var S;
+  var ORIG_DEFAULT = null;
   function initial() {
     return {
-      view: 'c', b: 'b01', c: 'q01',
-      scenario: 'ok', showIds: true, emailService: true,
-      sheet: null,
-      consent: false,
+      view: 'c', b: 'b01', c: 'o01',
+      scenario: 'ok', showIds: true, full: false,
+      sheet: null, gate: 'apply', slide: 0, homeTab: 'feed', revoke: '', revoked: {},
+      consentTerms: false, consentData: false,
       cv: { st: 'none', p: 0 },
-      doc: { type: 'sid', pages: 0, st: 'none', p: 0 },
+      doc: { type: 'sid', pages: 0, st: 'none', p: 0 }, doc2: false,
       phase: 0,
       first: 'Andrii', last: 'Koval',
-      email: '', email2: '', pass: '', showPass: false,
-      creating: false, createErr: '',
-      verified: false,
-      done: {}, medConsent: false, med: false, photo: false,
-      cd: 872, e2blur: false,
+      d: { birth: '14.03.1991', cit: 'Украина', phone: '+380 00 000 0000', docNum: 'AB 123456', docIssue: '12.05.2022', docExp: '12.05.2027',
+        dipRank: '3rd Engineer', dipNum: 'UA-2021-0457', dipIssue: '20.06.2021', dipExp: '20.06.2029',
+        vessel1: 'MV Example Star', rank1: '3rd Engineer', per1: '02.2024 – 09.2024',
+        vessel2: 'MV Example Wave', rank2: '4th Engineer', per2: '05.2022 – 12.2023' },
+      orig: null, edited: {}, manual: false,
+      m: { name: DOC_TYPES[0].n, num: '', issue: '', exp: '', country: 'Украина', file: false },
+      email: '', pass: '', pass2: '', showPass: false, p2blur: false,
+      creating: false, emailTaken: false,
+      code: ['', '', '', '', '', ''], codeErr: '', codeTries: 5, codeCd: 60, codeBusy: false, cdTok: 0,
+      done: {}, medConsent: false, med: false, photo: false, fast: true,
+      cd: 872,
       light: false, anim: 'fw', toast: null, pop: false, loadingProfile: false, dev: false, fx: {}, autoNext: false, readDone: false, readTarget: 'q05'
     };
   }
@@ -585,6 +670,10 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     return DOC_TYPES.filter(function (d) { return d.id === S.doc.type; })[0];
   }
 
+  function otherType() {
+    return DOC_TYPES.filter(function (d) { return d.id !== S.doc.type; })[0];
+  }
+
   function readHash() {
     var h = (location.hash || '').replace('#', '').split('/');
     if (h[0] === 'a' || h[0] === 'b' || h[0] === 'c') S.view = h[0];
@@ -592,6 +681,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       if (S.view === 'b' && B_SCREENS.some(function (x) { return x[0] === h[1]; })) S.b = h[1];
       if (S.view === 'c' && C_SCREENS.some(function (x) { return x[0] === h[1]; })) S.c = h[1];
     }
+    if (S.view === 'c' && S.c === 'g03') { S.sheet = 'gate'; S.gate = 'apply'; }
   }
 
   function writeHash() {
@@ -626,7 +716,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     var tag = o.tag || '';
     var input;
     if (o.select) {
-      input = '<select>' + o.select.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('') + '</select>';
+      input = '<select' + (o.bind ? ' data-bind="' + o.bind + '"' : '') + '>' + o.select.map(function (x) { return '<option' + (o.sel === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select>';
     } else {
       input = '<div class="ctl"><input type="' + (o.type || 'text') + '"' +
         (o.id ? ' id="' + o.id + '"' : '') +
@@ -666,17 +756,32 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
         '<div class="small">Снимите страницу с фото и данными. Если на развороте есть другие данные — добавьте её второй страницей.</div>' +
         act('scan', 'Сканировать документ', 'Края найдутся сами', 'pick-doc') +
         act('camera', 'Сфотографировать', 'При хорошем свете, без бликов', 'pick-doc') +
+        act('folder', 'Выбрать файл', 'PDF или изображение', 'pick-doc') +
         act('image', 'Выбрать из галереи', '', 'pick-doc') +
         btn('Отмена', 'sheet-close', 's');
     } else if (S.sheet === 'consent') {
       inner = '<div class="h2">Согласие на обработку данных</div><div class="legal">' +
-        '<p><b>Что мы обрабатываем.</b> CV и документ моряка, которые вы загрузите, а также email и данные, которые вы введёте сами.</p>' +
+        '<p><b>Что мы обрабатываем.</b> CV и документы, которые вы загрузите, а также email и данные, которые вы введёте сами.</p>' +
         '<p><b>Зачем.</b> Чтобы создать ваш профиль моряка, помогать с работой и защищать платформу от повторных и поддельных аккаунтов.</p>' +
-        '<p><b>Как.</b> Документ моряка читает ИИ: мы берём имя, фамилию, дату рождения и номер документа. CV хранится как файл. Файлы шифруются.</p>' +
+        '<p><b>Как.</b> CV и документы читает ИИ целиком: личные данные, документы, диплом, морской стаж. ИИ-сервисы работают как наши подрядчики. Файлы шифруются.</p>' +
         '<p><b>Кто видит.</b> Вы. Агентства — только то, к чему вы откроете доступ. Администратор — для поддержки и безопасности.</p>' +
-        '<p><b>Сколько храним.</b> Пока у вас есть аккаунт. Если регистрацию не закончить — файлы удаляются через 30 дней. Для безопасности платформы храним обезличенные отпечатки документа.</p>' +
+        '<p><b>Сколько храним.</b> Пока у вас есть аккаунт. Если регистрацию не закончить — файлы удаляются через 30 дней. После удаления аккаунта для безопасности платформы храним отпечаток номера документа, а не сам номер.</p>' +
+        '<p><b>Ваши права.</b> Отозвать согласие, удалить аккаунт и получить копию данных можно в профиле: «Отозвать согласие» и «Скачать мои данные».</p>' +
         '<p class="small">Черновик. Окончательный текст готовит юрист.</p></div>' +
         btn('Понятно', 'sheet-close');
+    } else if (S.sheet === 'gate') {
+      var gt = { apply: 'откликнуться на вакансию', msg: 'написать агентству', react: 'ставить отметки и писать комментарии', docs: 'хранить документы', inbox: 'получать анкеты и сообщения', profile: 'создать профиль' }[S.gate] || 'продолжить';
+      inner = '<div class="row" style="gap:12px"><div class="ico acc">' + ic('lock', 20) + '</div><div class="h2">Зарегистрируйтесь, чтобы ' + gt + '</div></div>' +
+        '<div class="small">Это займёт около минуты. Смотреть примеры можно и без регистрации.</div>' +
+        btn('Быстро — по CV и документам', 'gate-fast') + btn('Пошагово', 'gate-step', 's') + btn('Не сейчас', 'sheet-close', 'g');
+    } else if (S.sheet === 'login') {
+      inner = '<div class="h2">Вход</div>' +
+        field('Email', { type: 'email', ph: 'you@example.com' }) + field('Пароль', { type: 'password' }) +
+        btn('Войти', 'login-go') + btn('Восстановить пароль', 'recover', 'g');
+    } else if (S.sheet === 'revoke') {
+      inner = '<div class="h2">Отозвать согласие?</div>' +
+        '<div class="sub" style="font-size:14px">Мы перестанем обрабатывать данные по этому согласию. Дать его снова можно в любой момент — на этом же экране.</div>' +
+        btn('Отозвать согласие', 'do-revoke', 'dd') + btn('Отмена', 'sheet-close', 's');
     } else if (S.sheet === 'later') {
       inner = '<div class="h2">Продолжить позже?</div>' +
         '<div class="sub" style="font-size:14px">Всё, что вы заполнили, сохранено. Продолжить можно с этого шага в любой момент и с любого устройства.</div>' +
@@ -687,8 +792,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
         btn('Остановить', 'stop-read', 'dd') + btn('Продолжить ждать', 'sheet-close', 's');
     } else if (S.sheet === 'restart') {
       inner = '<div class="h2">Начать заново?</div>' +
-        '<div class="sub" style="font-size:14px">Загруженные CV и документ удалятся. Это нельзя отменить.</div>' +
-        btn('Удалить и начать заново', 'restart', 'dd') + btn('Отмена', 'sheet-close', 's');
+        '<div class="sub" style="font-size:14px">Загруженные файлы и прочитанные данные удалятся сразу. Это нельзя отменить. Число попыток регистрации с этого телефона при этом не обнуляется.</div>' +
+        btn('Удалить и начать заново', 'restart-reg', 'dd') + btn('Отмена', 'sheet-close', 's');
     }
     return '<div class="sheet" data-a="sheet-bg"><div class="in" data-a="noop"><div class="grab"></div>' + inner + '</div></div>';
   }
@@ -699,7 +804,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
   }
 
   function phone(inner) {
-    var toast = S.toast ? '<div class="toast"><span style="color:var(--t2);display:flex">' + ic('trash', 16) + '</span><span>' + S.toast.text + '</span><button data-a="undo">Отменить</button>' + (S.toast.fresh ? '<span class="tbar"></span>' : '<span class="tbar" style="animation:none;width:0"></span>') + '</div>' : '';
+    var toast = S.toast ? '<div class="toast"><span style="color:var(--t2);display:flex">' + ic(S.toast.undo ? 'trash' : 'check', 16) + '</span><span>' + S.toast.text + '</span>' + (S.toast.undo ? '<button data-a="undo">Отменить</button>' : '<span style="width:2px"></span>') + (S.toast.fresh ? '<span class="tbar"></span>' : '<span class="tbar" style="animation:none;width:0"></span>') + '</div>' : '';
     return '<div class="phone"><div class="screen' + (S.light ? ' light' : '') + '"><div class="island"></div>' +
       '<div class="status"><span>9:41</span><span class="sig">' +
       '<svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>' +
@@ -818,35 +923,125 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     return '<div class="stag" style="animation-delay:' + (0.08 + i * 0.04).toFixed(2) + 's">' + html + '</div>';
   }
 
-  function qWelcome() {
+  /* ---------- C: онбординг ---------- */
+
+  var SLIDES = [
+    ['docs', 'Все документы в одном месте', 'Загрузите удостоверение, диплом и сертификаты — ИИ прочитает их, а вам останется только проверить.'],
+    ['doc', 'Анкеты заполняются сами', 'Данные из подтверждённых документов подставляются в анкеты агентств.'],
+    ['ship', 'Вакансии и отклики', 'Смотрите вакансии и откликайтесь, когда профиль готов.']
+  ];
+
+  function oSlides() {
+    var sl = SLIDES[S.slide], last = S.slide === SLIDES.length - 1;
+    var dots = SLIDES.map(function (x, i) {
+      return '<button class="' + (i === S.slide ? 'on' : '') + '" data-a="slide:' + i + '" aria-label="Слайд ' + (i + 1) + '"></button>';
+    }).join('');
+    return phone('<div class="body welcome underbar">' +
+      '<div class="hero grow" style="justify-content:center;max-height:none">' + sea(true) +
+      '<div class="logo tile stag" style="width:84px;height:84px;border-radius:24px;animation-delay:.05s">' + ic(sl[0], 40, 2) + '</div>' +
+      '<div class="h1 stag" style="margin-top:28px;font-size:30px;animation-delay:.12s">' + sl[1] + '</div>' +
+      '<div class="sub stag" style="margin-top:12px;animation-delay:.2s">' + sl[2] + '</div></div>' +
+      '<div class="dots">' + dots + '</div></div>' +
+      '<div class="foot">' + btn(last ? 'Начать' : 'Далее', last ? 'c:o02' : 'slide-next') + '</div>' +
+      '<div class="navbar"><button class="link" style="margin-left:auto;font-size:15px;font-weight:600;padding:12px 10px" data-a="c:o02">Пропустить</button></div>');
+  }
+
+  function choice(o) {
+    return '<div class="card choice stag' + (o.hi ? ' hi' : '') + '" style="animation-delay:' + o.d + 's;padding:' + (o.pad || '14px') + '" data-a="' + o.a + '" role="button" tabindex="0"><div class="row">' +
+      '<div class="ico' + (o.hi ? ' acc' : '') + (o.lines ? ' lines' : '') + '">' + ic(o.icon, 22) + '</div>' +
+      '<div style="flex:1"><div class="row" style="gap:8px"><div class="h3" style="font-size:16px">' + o.t + '</div>' + (o.tag ? '<span class="tag">' + o.tag + '</span>' : '') + '</div>' +
+      '<div class="small" style="margin-top:2px">' + o.s + '</div></div><span class="chev" style="color:var(--t2)">' + ic('chevron', 18) + '</span></div></div>';
+  }
+
+  function oChoice() {
     return phone('<div class="body welcome underbar">' +
       '<div class="hero grow">' + sea(true) + logo() +
-      '<div class="h1" style="margin-top:24px;font-size:30px">Ваша морская карьера в одном приложении</div>' +
+      '<div class="h1" style="margin-top:22px;font-size:30px">Ваша морская карьера в одном приложении</div>' +
       '<div class="feats">' +
       '<span class="feat stag" style="animation-delay:.45s">' + ic('docs', 15) + 'Документы</span>' +
       '<span class="feat stag" style="animation-delay:.55s">' + ic('doc', 15) + 'Анкеты</span>' +
-      '<span class="feat stag" style="animation-delay:.65s">' + ic('ship', 15) + 'Вакансии</span></div>' +
-      '<div class="stag" style="animation-delay:.75s;margin-top:12px;font-size:15px;color:var(--t1);font-weight:500">Без бумажной рутины.</div></div>' +
+      '<span class="feat stag" style="animation-delay:.65s">' + ic('ship', 15) + 'Вакансии</span></div></div>' +
       '<div class="h3 stag" style="animation-delay:.15s;font-size:15px">Выберите способ</div>' +
-      '<div class="card hi choice stag" style="animation-delay:.25s" data-a="start-quick" role="button" tabindex="0"><div class="row"><div class="ico acc">' + ic('bolt', 22) + '</div>' +
-      '<div style="flex:1"><div class="row" style="gap:8px"><div class="h3" style="font-size:16px">Быстро</div><span class="tag">≈ 1 минута</span></div>' +
-      '<div class="small" style="margin-top:2px">CV и документ моряка — остальное потом</div></div>' +
-      '<span class="chev" style="color:var(--t2)">' + ic('chevron', 18) + '</span></div></div>' +
-      '<div class="card choice stag" style="animation-delay:.37s" data-a="start-step" role="button" tabindex="0"><div class="row"><div class="ico lines">' + ic('steps', 22) + '</div>' +
-      '<div style="flex:1"><div class="h3" style="font-size:16px">Пошагово</div>' +
-      '<div class="small" style="margin-top:2px">Весь профиль по шагам, можно с перерывами</div></div>' +
-      '<span class="chev" style="color:var(--t2)">' + ic('chevron', 18) + '</span></div></div>' +
-      '<div class="row stag" style="animation-delay:.5s;justify-content:center;gap:6px;color:var(--t2);font-size:12px;margin-top:2px"><span style="color:var(--accent)">' + ic('lock', 13, 2) + '</span>Бесплатно · документы шифруются</div>' +
-      '<div style="flex:0 0 2px"></div><div class="stag" style="animation-delay:.6s;text-align:center;font-size:15px;color:var(--t2)">Уже есть аккаунт? <button class="link" style="font-size:15px;font-weight:600" data-a="noop">Войти</button></div></div>');
+      choice({ d: .25, a: 'start-quick', icon: 'bolt', t: 'Быстро', tag: '≈ 1 минута', s: 'CV и документ моряка — остальное потом', hi: true }) +
+      choice({ d: .33, a: 'start-step', icon: 'steps', lines: true, t: 'Пошагово', s: 'Весь профиль по шагам, можно с перерывами' }) +
+      choice({ d: .41, a: 'login-sheet', icon: 'user', t: 'Войти', s: 'У меня уже есть аккаунт', pad: '11px 14px' }) +
+      choice({ d: .49, a: 'c:g01', icon: 'eye', t: 'Посмотреть без регистрации', s: 'Лента и вакансии — как гость', pad: '11px 14px' }) +
+      '<div class="row stag" style="animation-delay:.58s;justify-content:center;gap:6px;color:var(--t2);font-size:12px"><span style="color:var(--accent)">' + ic('lock', 13, 2) + '</span>Бесплатно · документы шифруются</div></div>');
   }
+
+  function oPath(kind) {
+    var quick = kind === 'q';
+    var items = quick
+      ? [['doc', 'CV', 'PDF, Word, фото или скан'], ['idcard', 'Удостоверение или диплом моряка', 'Один документ на выбор'], ['mail', 'Доступ к почте', 'Пришлём код подтверждения']]
+      : [['clock', 'Можно с перерывами', 'Продолжите с любого шага и с любого устройства'], ['mail', 'Начнём с email', 'Пришлём код подтверждения'], ['idcard', 'Документ моряка — на третьем шаге', 'Удостоверение или диплом, один обязателен']];
+    return phone('<div class="body underbar">' +
+      head({ icon: quick ? 'bolt' : 'steps', title: quick ? 'Быстрая регистрация' : 'Регистрация по шагам',
+        sub: quick ? 'Приготовьте файлы — и аккаунт готов за пару минут.' : 'Заполняете профиль по шагам, как удобно.',
+        extra: '<div class="feats"><span class="feat stag" style="animation-delay:.18s">' + ic('clock', 15) + (quick ? '≈ 1–2 минуты' : '7 шагов, можно с паузами') + '</span></div>' }) +
+      W('<div class="card"><div class="over">Что понадобится</div><div class="list">' + items.map(function (x) {
+        return '<div class="li"><span class="ico acc" style="width:34px;height:34px;border-radius:10px">' + ic(x[0], 18) + '</span><div><div class="h3" style="font-size:15px">' + x[1] + '</div><div class="small">' + x[2] + '</div></div></div>';
+      }).join('') + '</div></div>', 1) +
+      '</div><div class="foot">' + btn('Продолжить', quick ? 'c:q02' : 'c:s1') + '</div>' + nav('c:o02', quick ? 'Быстрая регистрация' : 'По шагам'));
+  }
+
+  /* ---------- C: гость и главная ---------- */
+
+  var FEED = [
+    ['Как подготовить документы к контракту', 'Образец текста. В приложении здесь будут публикации агентств и компаний.', 'Агентство «Образец» · 2 ч назад'],
+    ['Набор в палубную команду', 'Образец текста. Так будет выглядеть короткая публикация с новостью.', 'Компания «Пример» · вчера'],
+    ['Памятка: сроки действия документов', 'Образец текста. Полезные заметки для моряков появятся в ленте.', 'Агентство «Образец» · 3 дня назад']
+  ];
+  var VACS = [
+    ['3-й механик', 'Контейнеровоз · контракт 6 месяцев', 'от 4 000 USD в месяц'],
+    ['Старший помощник', 'Танкер · контракт 4 месяца', 'от 5 200 USD в месяц'],
+    ['Матрос (AB)', 'Балкер · контракт 8 месяцев', 'от 1 800 USD в месяц']
+  ];
+
+  function tabs2(on, guest) {
+    var items = [['home', 'home', 'Главная', guest ? 'c:g01' : 'c:p01'], ['docs', 'docs', 'Документы', guest ? 'gate:docs' : 'c:p02'],
+      ['inbox', 'inbox', 'Входящие', guest ? 'gate:inbox' : 'c:p03'], ['profile', 'user', 'Профиль', guest ? 'gate:profile' : 'c:q09']];
+    return '<div class="tabs">' + items.map(function (it) {
+      return '<div class="' + (it[0] === on ? 'on' : '') + '" role="button" tabindex="0" data-a="' + it[3] + '" style="cursor:pointer">' + ic(it[1], 23) + it[2] + '</div>';
+    }).join('') + '</div>';
+  }
+
+  function homeScreen(tab, guest) {
+    var act = function (k) { return guest ? 'gate:' + k : 'reg-act:' + k; };
+    var seg = '<div class="segc"><span class="thumb' + (tab === 'vac' ? ' r' : '') + '"></span>' +
+      [['feed', 'Лента', 'g01'], ['vac', 'Вакансии', 'g02']].map(function (x) {
+        return '<button class="' + (tab === x[0] ? 'on' : '') + '" data-a="' + (guest ? 'c:' + x[2] : 'home-tab:' + x[0]) + '"><b>' + x[1] + '</b></button>';
+      }).join('') + '</div>';
+    var top;
+    if (guest) top = banner('i', 'eye', '<span><b>Вы смотрите как гость.</b> Это примеры — настоящие публикации и вакансии появятся после регистрации.</span>');
+    else {
+      var r = readiness();
+      top = r.pct < 100 ? banner('w', 'alert', '<span><b>Профиль готов на ' + r.pct + ' %.</b> Дополните его, чтобы быстрее отвечать на анкеты.</span><button class="link" style="align-self:flex-start;font-size:14px" data-a="fill-profile">Дополнить профиль</button>') : '';
+    }
+    var cards = tab === 'feed'
+      ? FEED.map(function (f, i) {
+        return W('<div class="card"><div class="row"><div class="skel" style="width:36px;height:36px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;min-width:0"><div class="small" style="color:var(--t1)">' + f[2] + '</div></div><span class="tag m">пример</span></div>' +
+          '<div class="h3">' + f[0] + '</div><div class="small">' + f[1] + '</div>' +
+          '<div class="row" style="gap:18px;color:var(--t2);font-size:13px"><button class="link" style="color:var(--t2);display:flex;gap:6px;align-items:center" data-a="' + act('react') + '">' + ic('heart', 17) + 'Нравится</button><button class="link" style="color:var(--t2);display:flex;gap:6px;align-items:center" data-a="' + act('msg') + '">' + ic('mail', 17) + 'Написать</button></div></div>', i + 2);
+      }).join('')
+      : VACS.map(function (v, i) {
+        return W('<div class="card"><div class="row"><div class="ico acc">' + ic('ship', 20) + '</div><div style="flex:1;min-width:0"><div class="h3">' + v[0] + '</div><div class="small">' + v[1] + '</div></div><span class="tag m">пример</span></div>' +
+          '<div class="row" style="justify-content:space-between"><span class="h3" style="font-size:14px;color:var(--accent)">' + v[2] + '</span><span class="small">Агентство «Образец»</span></div>' +
+          btn('Откликнуться', act('apply'), 't') + '</div>', i + 2);
+      }).join('');
+    return phone('<div class="body underbar">' + head({ compact: true, title: tab === 'feed' ? 'Главная' : 'Вакансии' }) +
+      (top ? W(top, 0) : '') + W(seg, 1) + cards + '</div>' + tabs2('home', guest));
+  }
+
+  /* ---------- C: быстрая регистрация ---------- */
 
   function qConsent() {
     var items = [
-      ['sparkle', 'Документ моряка прочитает ИИ', 'Возьмём имя, фамилию, дату рождения и номер'],
+      ['sparkle', 'ИИ прочитает CV и документы', 'Возьмём из них всё нужное для профиля'],
       ['lock', 'Файлы шифруются', 'Видите их вы и те, кому откроете доступ'],
-      ['shieldOk', 'Защита от поддельных аккаунтов', 'Данные документа храним для безопасности платформы'],
+      ['shieldOk', 'Защита от повторных аккаунтов', 'Храним отпечаток номера документа, а не сам номер'],
       ['clock', 'Не закончили — удалим', 'Через 30 дней файлы удаляются сами']
     ];
+    var both = S.consentTerms && S.consentData;
     return phone('<div class="body underbar consent">' +
       head({ icon: 'shield', title: 'Прежде чем начать', sub: 'Чтобы создать аккаунт по документам, нужно ваше согласие.' }) +
       '<div class="card"><div class="list">' + items.map(function (x, i) {
@@ -854,8 +1049,9 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       }).join('') + '</div></div>' +
       W('<button class="link" data-a="sheet:consent">Подробнее о согласии</button>', 5) +
       '</div><div class="foot">' +
-      check(S.consent, 'toggle-consent', 'Я согласен(на) на обработку персональных данных и принимаю <a href="#" data-a="noop">Условия сервиса</a> и <a href="#" data-a="noop">Политику конфиденциальности</a>') +
-      '<div style="height:6px"></div>' + btn('Продолжить', 'c:q03', 'p', !S.consent) + '<div class="need">' + (S.consent ? '' : 'Отметьте согласие, чтобы продолжить') + '</div></div>' + nav('c:q01', 'Согласие'));
+      check(S.consentTerms, 'toggle-terms', 'Принимаю <a href="#" data-a="noop">Условия сервиса</a> и <a href="#" data-a="noop">Политику конфиденциальности</a>') +
+      check(S.consentData, 'toggle-data', 'Согласен на обработку документов, включая чтение ИИ') +
+      '<div style="height:2px"></div>' + btn('Продолжить', 'c:q03', 'p', !both) + '<div class="need">' + (both ? '' : 'Отметьте оба пункта, чтобы продолжить') + '</div></div>' + nav('c:o03', 'Согласие'));
   }
 
   function uploadRow(icon, title, sub, st, p, rm, fx) {
@@ -873,14 +1069,21 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     return '<span class="num' + (ok ? ' ok' : '') + (fx ? ' popin' : '') + '">' + (ok ? ic('check', 13, 2.6) : n) + '</span>';
   }
 
+  function typesSeg() {
+    return '<div class="segc" role="tablist"><span class="thumb' + (S.doc.type === 'diploma' ? ' r' : '') + '"></span>' + DOC_TYPES.map(function (d) {
+      return '<button class="' + (S.doc.type === d.id ? 'on' : '') + '" role="tab" aria-selected="' + (S.doc.type === d.id) + '" data-a="type:' + d.id + '"><b>' + d.b + '</b><span>' + d.s + '</span></button>';
+    }).join('') + '</div>';
+  }
+
+  function secondDoc() {
+    if (S.doc2) return uploadRow('idcard', esc(otherType().n), '1 стр. · зашифровано', 'done', 100, 'rm-doc2', S.fx.d2);
+    return '<div class="drop" role="button" tabindex="0" data-a="add-doc2" style="padding:12px"><div class="ico acc" style="width:36px;height:36px">' + ic('plus', 18) + '</div><div><div class="h3" style="font-size:14px">Добавить ещё: ' + otherType().b.toLowerCase() + '</div><div class="small">Необязательно — можно позже</div></div></div>';
+  }
+
   function qUpload() {
     var cv = S.cv.st === 'none'
       ? '<div class="drop" role="button" tabindex="0" data-need="cv" data-a="sheet:cv"><div class="ico acc">' + ic('plus', 22) + '</div><div><div class="h3" style="font-size:14px">Добавить CV</div><div class="small">PDF, Word, фото или скан</div></div></div>'
       : uploadRow('doc', 'CV_Andrii_Koval.pdf', 'PDF · 412 КБ', S.cv.st, S.cv.p, 'rm-cv', S.fx.cvIn);
-
-    var types = '<div class="segc" role="tablist"><span class="thumb' + (S.doc.type === 'book' ? ' r' : '') + '"></span>' + DOC_TYPES.map(function (d) {
-      return '<button class="' + (S.doc.type === d.id ? 'on' : '') + '" role="tab" aria-selected="' + (S.doc.type === d.id) + '" data-a="type:' + d.id + '"><b>' + (d.id === 'sid' ? 'Удостоверение' : 'Послужная книжка') + '</b><span>' + d.s + '</span></button>';
-    }).join('') + '</div>';
 
     var pages = '';
     if (S.doc.pages > 0) {
@@ -896,47 +1099,45 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       pages = '<div class="drop" role="button" tabindex="0" data-need="doc" data-a="sheet:doc"><div class="ico acc">' + ic('scan', 22) + '</div><div><div class="h3" style="font-size:14px">Сканировать или сфотографировать</div><div class="small">Страница с фото и данными</div></div></div>';
     }
 
-    var ready = S.cv.st === 'done' && S.doc.pages > 0 && S.doc.st === 'done';
     var cvOk = S.cv.st === 'done';
     var docOk = S.doc.st === 'done' && S.doc.pages > 0;
+    var ready = cvOk && docOk;
     var miss = [];
     if (!cvOk) miss.push('CV');
     if (!docOk) miss.push('документ моряка');
     return phone('<div class="body underbar">' +
-      head({ icon: 'bolt', title: 'Быстрая регистрация', sub: 'Два файла — и аккаунт готов. Остальное заполните потом.',
+      head({ icon: 'bolt', title: 'Быстрая регистрация', sub: 'CV и один документ моряка — остальное потом.',
         extra: '<div class="feats">' +
           '<span class="feat stag' + (cvOk ? ' ok' : '') + '" style="animation-delay:.18s">' + ic(cvOk ? 'check' : 'doc', 15) + 'CV</span>' +
           '<span class="feat stag' + (docOk ? ' ok' : '') + '" style="animation-delay:.24s">' + ic(docOk ? 'check' : 'idcard', 15) + 'Документ моряка</span></div>' }) +
       W('<div class="card"><div class="row" style="gap:10px">' + num(1, cvOk, S.fx.cvDone) + '<div class="h3">CV</div></div>' + cv + '</div>', 1) +
-      W('<div class="card"><div class="row" style="gap:10px">' + num(2, docOk, S.fx.docDone) + '<div class="h3">Документ моряка</div></div>' +
-      types + pages +
+      W('<div class="card"><div class="row" style="gap:10px">' + num(2, docOk, S.fx.docDone) + '<div class="h3">Документ моряка</div><span class="tag m" style="margin-left:auto">один на выбор</span></div>' +
+      typesSeg() + pages + (docOk ? secondDoc() : '') +
       '<div class="small">Загранпаспорт не подходит — он не подтверждает, что вы моряк.</div></div>', 2) +
       '</div><div class="foot">' + btn('Продолжить', 'go-read', S.fx.ready ? 'p ready' : 'p', !ready) + '<div class="need">' + (miss.length ? 'Осталось: ' + miss.join(', ') : '') + '</div></div>' + nav('c:q02', 'Быстрая регистрация'));
   }
 
   function qReading() {
-    var found = S.scenario === 'noName' ? 'Не удалось прочитать' : 'ANDRII KOVAL';
     var steps = [
-      ['Файлы загружены и зашифрованы', 0, '2 файла'],
-      ['Читаем имя и фамилию', 1, found],
-      ['Читаем дату рождения и номер', 2, S.showIds ? '14.03.1991 · AB 123456' : 'Найдено'],
-      ['Проверяем безопасность', 3, 'Всё в порядке']
+      ['Файлы загружены и зашифрованы', 0],
+      ['Читаем CV и документы целиком', 1],
+      ['Собираем данные: личные, документы, диплом, стаж', 2],
+      ['Проверяем безопасность', 3]
     ];
     var list = steps.map(function (x) {
       var st = S.phase > x[1] ? '<span class="dot ok">' + ic('check', 13, 2.6) + '</span>'
         : S.phase === x[1] ? '<span class="dot run"><span class="s"></span></span>'
           : '<span class="dot wait"></span>';
       var col = S.phase >= x[1] ? 'var(--t1)' : 'var(--t2)';
-      var val = '';
-      return '<div class="li stag" style="animation-delay:' + (0.25 + x[1] * 0.08).toFixed(2) + 's;align-items:flex-start;color:' + col + '">' + st + '<div style="padding-top:2px">' + x[0] + val + '</div></div>';
+      return '<div class="li stag" style="animation-delay:' + (0.25 + x[1] * 0.08).toFixed(2) + 's;align-items:flex-start;color:' + col + '">' + st + '<div style="padding-top:2px">' + x[0] + '</div></div>';
     }).join('');
     var hl = S.phase === 1 ? '<div class="hl" style="left:64px;top:12px;width:110px;height:16px"></div>'
       : S.phase === 2 ? '<div class="hl" style="left:64px;top:30px;width:90px;height:28px"></div><div class="hl" style="left:10px;bottom:10px;right:10px;height:24px"></div>' : '';
     return phone('<div class="body center ambient" style="gap:22px">' + ambient() +
       '<div class="scanbox stag" style="animation-delay:.05s"><div class="ph"></div><div class="ln" style="top:20px;width:96px"></div><div class="ln" style="top:36px;width:70px"></div><div class="ln" style="top:52px;width:84px"></div><div class="mrz"></div>' + hl + '<div class="beam"></div></div>' +
-      W('<div style="text-align:center;display:flex;flex-direction:column;gap:6px"><div class="h1" style="font-size:24px">Читаем ' + (S.doc.type === 'sid' ? 'удостоверение' : 'послужную книжку') + '</div><div class="small">Обычно это занимает 10–20 секунд</div></div>', 0) +
+      W('<div style="text-align:center;display:flex;flex-direction:column;gap:6px"><div class="h1" style="font-size:24px">Читаем CV и документы</div><div class="small">Обычно это занимает 10–20 секунд</div></div>', 0) +
       '<div class="card"><div class="list">' + list + '</div></div>' +
-      W('<div class="small" style="text-align:center">CV не распознаём — он сохранится как файл.</div>', 6) + '</div>' +
+      W('<div class="small" style="text-align:center">Вводить заново ничего не придётся — вы только проверите результат.</div>', 6) + '</div>' +
       nav('', '', 'sheet:stopread') + (S.autoNext ? '' : '<div class="foot">' + btn(S.readDone ? (S.readTarget === 'q05' ? 'Продолжить' : 'Дальше') : '<span class="sp"></span>Читаем…', 'read-next', S.fx.ready ? 'p ready' : 'p', !S.readDone) + '</div>'));
   }
 
@@ -952,53 +1153,126 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
 
   function emailOk(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e); }
 
-  function qCheckValid() {
-    return (S.first.trim() && S.last.trim() && emailOk(S.email) && S.email2 === S.email && S.pass.length >= 8);
+  /* проверка данных из документов */
+
+  var DOC_KEYS = ['first', 'last', 'birth', 'docNum', 'docIssue', 'docExp', 'dipNum', 'dipRank', 'dipIssue', 'dipExp'];
+
+  function dval(k) { return (k === 'first' || k === 'last') ? S[k] : S.d[k]; }
+
+  function srcTag(k, kind) {
+    var cls = 'tag', txt = ic('sparkle', 11, 2) + (kind === 'cv' ? 'из CV' : 'из документа');
+    if (!dval(k) && k !== 'cit' && k !== 'phone' && k.indexOf('vessel') !== 0) return '<span data-tag="' + k + '"></span>';
+    if (kind !== 'cv' && S.manual && ['docNum', 'docIssue', 'docExp'].indexOf(k) >= 0) { cls = 'tag w'; txt = 'введено вручную'; }
+    else if (S.edited[k]) { cls = 'tag w'; txt = 'исправлено вами'; }
+    else if (S.scenario === 'noName' && (k === 'first' || k === 'last')) return '<span data-tag="' + k + '"></span>';
+    return '<span class="' + cls + '" data-tag="' + k + '" data-kind="' + (kind || 'doc') + '">' + txt + '</span>';
+  }
+
+  function df(label, k, o) {
+    o = o || {};
+    var bind = (k === 'first' || k === 'last') ? k : 'd.' + k;
+    return field(label, { value: dval(k), bind: bind, ph: o.ph || '', tag: srcTag(k, o.kind), ac: o.ac });
+  }
+
+  function dataValid() { return !!(S.first.trim() && S.last.trim() && S.d.birth.trim() && S.d.docNum.trim()); }
+
+  function editedNote() {
+    var any = Object.keys(S.edited).length > 0;
+    return any ? banner('i', 'info', '<span>Вы исправили данные документа — администратор сверит их с фото документа.</span>') : '';
   }
 
   function qCheck() {
     var noName = S.scenario === 'noName';
-    var ids = S.showIds
-      ? '<div class="card" style="gap:0;padding:4px 14px">' +
-        '<div class="kv"><span>Дата рождения</span><span>14.03.1991</span></div>' +
-        '<div class="kv"><span>Номер документа</span><span>AB 123456</span></div></div>' +
-        '<div class="small" style="display:flex;gap:6px;margin-top:-6px"><span style="color:var(--t2)">' + ic('lock', 13, 2) + '</span>В профиль не попадают — нужны только для защиты аккаунта. Ошибка? Напишите в поддержку.</div>'
-      : '';
-    var fromDoc = '<span class="tag">' + ic('sparkle', 11, 2) + 'из документа</span>';
-    var err = S.createErr ? banner('d', 'alert', '<span>' + S.createErr + '</span><button class="link" style="align-self:flex-start" data-a="noop">Войти с этим email</button>') : '';
+    var sub = S.manual ? 'Данные документа введены вами вручную — администратор сверит их с фото. Остальное мы взяли из CV.'
+      : noName ? 'Не удалось прочитать имя — введите его как в документе.'
+        : 'Мы прочитали CV и документы. Проверьте и исправьте, если что-то не так — подтверждённое попадёт в профиль.';
+    var grp = function (title, inner, i) {
+      return W('<div style="display:flex;flex-direction:column;gap:10px"><div class="over">' + title + '</div><div class="card">' + inner + '</div></div>', i);
+    };
     return phone('<div class="body underbar">' +
-      head({ icon: noName ? 'user' : 'sparkle', title: 'Проверьте данные',
-        sub: noName ? 'Не удалось прочитать имя — введите его как в документе.' : 'Мы взяли имя из документа. Исправьте, если что-то не так.' }) +
-      W('<div style="display:flex;flex-direction:column;gap:14px"><div class="over">' + esc(docType().n) + '</div>' +
-      field('Имя', { value: S.first, bind: 'first', ph: 'Как в документе', tag: noName ? '' : fromDoc, ac: 'given-name' }) +
-      field('Фамилия', { value: S.last, bind: 'last', ph: 'Как в документе', tag: noName ? '' : fromDoc, ac: 'family-name' }) +
-      ids + '</div>', 2) +
-      W('<div style="display:flex;flex-direction:column;gap:14px"><div class="over" style="margin-top:6px">Вход в аккаунт</div>' +
-      field('Email', { type: 'email', id: 'f-email', value: S.email, bind: 'email', ph: 'you@example.com', msgId: 'm-email', ac: 'email' }) +
-      field('Повторите email', { type: 'email', id: 'f-email2', value: S.email2, bind: 'email2', msgId: 'm-email2' }) +
-      field('Пароль', { type: S.showPass ? 'text' : 'password', id: 'f-pass', value: S.pass, bind: 'pass', ph: 'Не менее 8 символов', eye: true, msgId: 'm-pass', ac: 'new-password',
-        after: '<div class="meter" id="meter"><span></span><span></span><span></span><span></span></div>' }) + '</div>', 3) +
-      err +
-      '</div><div class="foot line">' +
-      btn(S.creating ? '<span class="sp"></span>Создаём аккаунт…' : 'Создать аккаунт', 'create', S.creating ? 'p busy' : 'p', !qCheckValid() && !S.creating, ' id="createBtn" aria-busy="' + S.creating + '"') + '<div class="need" id="missing"></div></div>' + nav('c:q03', 'Проверьте данные'));
+      head({ icon: noName ? 'user' : 'sparkle', title: 'Проверьте данные из документов', sub: sub }) +
+      grp('Личные данные',
+        df('Имя', 'first', { ph: 'Как в документе', ac: 'given-name' }) + df('Фамилия', 'last', { ph: 'Как в документе', ac: 'family-name' }) +
+        df('Дата рождения', 'birth', { ph: 'ДД.ММ.ГГГГ' }) +
+        field('Гражданство', { value: S.d.cit, bind: 'd.cit', tag: srcTag('cit', 'cv') }) +
+        field('Телефон', { value: S.d.phone, bind: 'd.phone', tag: srcTag('phone', 'cv'), ph: '+380 …' }), 2) +
+      grp('Документы · ' + esc(docType().b),
+        df('Номер документа', 'docNum') + df('Дата выдачи', 'docIssue', { ph: 'ДД.ММ.ГГГГ' }) + df('Действителен до', 'docExp', { ph: 'ДД.ММ.ГГГГ' }), 3) +
+      grp('Диплом',
+        df('Должность по диплому', 'dipRank') + df('Номер диплома', 'dipNum') +
+        df('Дата выдачи', 'dipIssue', { ph: 'ДД.ММ.ГГГГ' }) + df('Действителен до', 'dipExp', { ph: 'ДД.ММ.ГГГГ' }), 4) +
+      grp('Морской стаж',
+        field('Судно', { value: S.d.vessel1, bind: 'd.vessel1', tag: srcTag('vessel1', 'cv') }) +
+        '<div class="grid2">' + field('Должность', { value: S.d.rank1, bind: 'd.rank1' }) + field('Период', { value: S.d.per1, bind: 'd.per1' }) + '</div>' +
+        field('Судно', { value: S.d.vessel2, bind: 'd.vessel2', tag: srcTag('vessel2', 'cv') }) +
+        '<div class="grid2">' + field('Должность', { value: S.d.rank2, bind: 'd.rank2' }) + field('Период', { value: S.d.per2, bind: 'd.per2' }) + '</div>', 5) +
+      '<div id="editedNote">' + editedNote() + '</div>' +
+      '<div class="small" style="display:flex;gap:6px"><span style="color:var(--t2)">' + ic('lock', 13, 2) + '</span>Подтверждённое идёт в профиль и в автозаполнение анкет. Неподтверждённое — нет.</div>' +
+      '</div><div class="foot line">' + btn('Подтвердить и продолжить', 'c:q06', 'p', !dataValid(), ' id="confirmBtn"') + '<div class="need" id="missing"></div></div>' + nav('c:q03', 'Проверьте данные'));
   }
 
-  function refreshCheck() {
+  function refreshData() {
+    var b = document.getElementById('confirmBtn');
+    if (!b) return;
+    var off = !dataValid();
+    b.classList.toggle('off', off);
+    b.setAttribute('data-a', off ? 'blocked' : 'c:q06');
+    if (off) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
+    var setNeed = function (sel, bad) { var el = document.querySelector(sel); if (el) { if (bad) el.setAttribute('data-need', '1'); else el.removeAttribute('data-need'); } };
+    setNeed('[data-bind=first]', !S.first.trim());
+    setNeed('[data-bind=last]', !S.last.trim());
+    setNeed('[data-bind="d.birth"]', !S.d.birth.trim());
+    setNeed('[data-bind="d.docNum"]', !S.d.docNum.trim());
+    var miss = [];
+    if (!S.first.trim() || !S.last.trim()) miss.push('имя и фамилия');
+    if (!S.d.birth.trim()) miss.push('дата рождения');
+    if (!S.d.docNum.trim()) miss.push('номер документа');
+    var m = document.getElementById('missing');
+    if (m) m.textContent = miss.length ? 'Осталось: ' + miss.join(', ') : '';
+  }
+
+  /* аккаунт */
+
+  function acctValid() {
+    return emailOk(S.email) && S.pass.length >= 8 && S.pass2 === S.pass && !S.emailTaken &&
+      (S.c !== 's1' || (S.consentTerms && S.consentData));
+  }
+
+  function takenBanner() {
+    return banner('d', 'alert', '<span><b>Этот email уже зарегистрирован</b></span><div class="row" style="gap:8px;width:100%">' +
+      '<button class="btn s" style="min-height:42px;font-size:13px;padding:8px;flex:1" data-a="login-sheet">Войти</button>' +
+      '<button class="btn s" style="min-height:42px;font-size:13px;padding:8px;flex:1" data-a="recover">Восстановить пароль</button></div>');
+  }
+
+  function acctFields() {
+    return '<div class="card">' +
+      field('Email', { type: 'email', id: 'f-email', value: S.email, bind: 'email', ph: 'you@example.com', msgId: 'm-email', ac: 'email' }) +
+      '<div id="acctErr">' + (S.emailTaken ? takenBanner() : '') + '</div>' +
+      field('Пароль', { type: S.showPass ? 'text' : 'password', id: 'f-pass', value: S.pass, bind: 'pass', ph: 'Не менее 8 символов', eye: true, msgId: 'm-pass', ac: 'new-password',
+        after: '<div class="meter" id="meter"><span></span><span></span><span></span><span></span></div>' }) +
+      field('Повторите пароль', { type: S.showPass ? 'text' : 'password', id: 'f-pass2', value: S.pass2, bind: 'pass2', msgId: 'm-pass2', ac: 'new-password' }) + '</div>';
+  }
+
+  function acctBtn() {
+    return btn(S.creating ? '<span class="sp"></span>Проверяем…' : 'Продолжить', 'acct-next', S.creating ? 'p busy' : 'p', !acctValid() && !S.creating, ' id="createBtn" aria-busy="' + S.creating + '"');
+  }
+
+  function qAccount() {
+    return phone('<div class="body underbar">' +
+      head({ icon: 'lock', title: 'Создайте аккаунт', sub: 'Email и пароль. На почту придёт код подтверждения.' }) +
+      W(acctFields(), 1) +
+      '</div><div class="foot line">' + acctBtn() + '<div class="need" id="missing"></div></div>' + nav('c:q05', 'Аккаунт'));
+  }
+
+  function refreshAcct() {
     var e = document.getElementById('f-email');
     if (!e) return;
-    var e2 = document.getElementById('f-email2');
-    var p = document.getElementById('f-pass');
-    var me = document.getElementById('m-email');
-    var me2 = document.getElementById('m-email2');
-    var mp = document.getElementById('m-pass');
+    var p = document.getElementById('f-pass'), p2 = document.getElementById('f-pass2');
+    var me = document.getElementById('m-email'), mp = document.getElementById('m-pass'), mp2 = document.getElementById('m-pass2');
     var badEmail = S.email && !emailOk(S.email) && document.activeElement !== e;
-    e.className = badEmail ? 'err' : (emailOk(S.email) ? 'ok' : '');
+    e.className = S.emailTaken ? 'err' : (badEmail ? 'err' : (emailOk(S.email) ? 'ok' : ''));
     me.className = 'msg ' + (badEmail ? 'e' : 'n');
     me.textContent = badEmail ? 'Проверьте адрес — похоже, в нём опечатка' : '';
-    var mism = S.email2 && S.email2 !== S.email && (S.e2blur || S.email2.length >= S.email.length);
-    e2.className = mism ? 'err' : (S.email2 && S.email2 === S.email && emailOk(S.email) ? 'ok' : '');
-    me2.className = 'msg ' + (mism ? 'e' : 'n');
-    me2.textContent = mism ? 'Адреса не совпадают' : (S.email2 && !mism ? 'Совпадает — на этот адрес придёт письмо' : '');
     var s = strength(S.pass);
     var cols = ['var(--border)', 'var(--danger)', 'var(--warning)', 'var(--accent)', 'var(--success)'];
     var spans = document.querySelectorAll('#meter span');
@@ -1007,25 +1281,124 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     var left = 8 - S.pass.length;
     var word = left === 1 ? 'символ' : (left >= 2 && left <= 4 ? 'символа' : 'символов');
     mp.textContent = !S.pass ? '' : left > 0 ? 'Ещё ' + left + ' ' + word : ['', 'Слабый пароль', 'Нормальный пароль', 'Хороший пароль', 'Надёжный пароль'][s];
+    var mism = S.pass2 && S.pass2 !== S.pass && (S.p2blur || S.pass2.length >= S.pass.length);
+    p2.className = mism ? 'err' : (S.pass2 && S.pass2 === S.pass ? 'ok' : '');
+    mp2.className = 'msg ' + (mism ? 'e' : 'n');
+    mp2.textContent = mism ? 'Пароли не совпадают' : (S.pass2 && S.pass2 === S.pass ? 'Пароли совпадают' : '');
     var b = document.getElementById('createBtn');
     if (b && !S.creating) {
-      var off = !qCheckValid();
+      var off = !acctValid();
       b.classList.toggle('off', off);
-      b.setAttribute('data-a', off ? 'blocked' : 'create');
+      b.setAttribute('data-a', off ? 'blocked' : 'acct-next');
       if (off) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
     }
     var setNeed = function (el, bad) { if (el) { if (bad) el.setAttribute('data-need', '1'); else el.removeAttribute('data-need'); } };
-    setNeed(document.querySelector('[data-bind=first]'), !S.first.trim());
-    setNeed(document.querySelector('[data-bind=last]'), !S.last.trim());
     setNeed(e, !emailOk(S.email));
-    setNeed(e2, S.email2 !== S.email || !S.email2);
     setNeed(p, S.pass.length < 8);
+    setNeed(p2, S.pass2 !== S.pass || !S.pass2);
     var miss = [];
-    if (!S.first.trim() || !S.last.trim()) miss.push('имя');
-    if (!emailOk(S.email) || S.email2 !== S.email) miss.push('email');
+    if (!emailOk(S.email)) miss.push('email');
     if (S.pass.length < 8) miss.push('пароль');
+    else if (S.pass2 !== S.pass) miss.push('повтор пароля');
+    if (S.c === 's1' && !(S.consentTerms && S.consentData)) miss.push('согласия');
     var m = document.getElementById('missing');
     if (m) m.textContent = miss.length && !S.creating ? 'Осталось: ' + miss.join(', ') : '';
+  }
+
+  /* код из письма */
+
+  function qCode() {
+    var step = S.c === 's1c';
+    var boxes = '';
+    for (var i = 0; i < 6; i++) {
+      boxes += '<input inputmode="numeric" autocomplete="' + (i === 0 ? 'one-time-code' : 'off') + '" data-otp="' + i + '" value="' + esc(S.code[i]) + '" class="' + (S.code[i] ? 'f' : '') + (S.codeErr ? ' err' : '') + '" aria-label="Цифра ' + (i + 1) + '">';
+    }
+    var resend = S.codeCd > 0
+      ? '<button class="link" id="resend" data-a="blocked" style="opacity:.55">Отправить ещё раз через ' + fmtCd(S.codeCd) + '</button>'
+      : '<button class="link" id="resend" data-a="resend" style="font-weight:600">Отправить ещё раз</button>';
+    return phone('<div class="body underbar">' +
+      head({ icon: 'mail', title: 'Введите код из письма', sub: 'Мы отправили 6-значный код на <b>' + esc(S.email || 'you@example.com') + '</b>. Он действует 15 минут.' }) +
+      W('<div class="otp" id="otp">' + boxes + '</div>', 1) +
+      '<div class="msg ' + (S.codeErr ? 'e' : 'n') + '" id="codeMsg" style="font-size:13px;min-height:18px;text-align:center;color:' + (S.codeErr ? 'var(--danger)' : 'var(--t2)') + '">' + esc(S.codeErr) + '</div>' +
+      '<div class="row" style="justify-content:center">' + resend + '</div>' +
+      W(banner('i', 'info', '<span>Письма нет? Загляните в папку «Спам» или «Промоакции».</span>'), 3) +
+      '</div><div class="foot">' + btn('Изменить email', step ? 'c:s1' : 'c:q06', 'g') + '</div>' + nav(step ? 'c:s1' : 'c:q06', 'Подтверждение email'));
+  }
+
+  function resetCode() {
+    S.code = ['', '', '', '', '', '']; S.codeErr = ''; S.codeTries = 5; S.codeCd = 60; S.codeBusy = false; S.cdTok = (S.cdTok || 0) + 1;
+  }
+
+  function updateResend() {
+    var el = document.getElementById('resend');
+    if (!el) return;
+    if (S.codeCd > 0) { el.textContent = 'Отправить ещё раз через ' + fmtCd(S.codeCd); el.setAttribute('data-a', 'blocked'); el.style.opacity = '.55'; el.style.fontWeight = ''; }
+    else { el.textContent = 'Отправить ещё раз'; el.setAttribute('data-a', 'resend'); el.style.opacity = ''; el.style.fontWeight = '600'; }
+  }
+
+  function codeTick(tok) {
+    later(function () {
+      if (tok !== S.cdTok) return;
+      S.codeCd = Math.max(0, S.codeCd - 1);
+      updateResend();
+      if (S.codeCd > 0) codeTick(tok);
+    }, 1000);
+  }
+
+  function setCodeMsg(text, err) {
+    S.codeErr = err ? text : '';
+    var m = document.getElementById('codeMsg');
+    if (m) { m.textContent = text; m.style.color = err ? 'var(--danger)' : 'var(--t2)'; }
+    var boxes = document.querySelectorAll('#otp input');
+    for (var i = 0; i < boxes.length; i++) boxes[i].classList.toggle('err', !!err);
+  }
+
+  function verifyCode() {
+    var code = S.code.join('');
+    if (code.length < 6 || S.codeBusy) return;
+    if (S.codeTries <= 0) { setCodeMsg('Попытки закончились. Отправьте код ещё раз.', true); return; }
+    S.codeBusy = true;
+    setCodeMsg('Проверяем…', false);
+    later(function () {
+      S.codeBusy = false;
+      if (code === '123456') {
+        if (S.c === 's1c') {
+          S.done[1] = true;
+          go('s2');
+          showToast('Аккаунт создан', null);
+        } else {
+          S.fast = true;
+          S.done = { 1: true, 2: true, 3: true, 4: true, 6: true };
+          go('q08');
+        }
+        return;
+      }
+      S.codeTries = Math.max(0, S.codeTries - 1);
+      S.code = ['', '', '', '', '', ''];
+      var boxes = document.querySelectorAll('#otp input');
+      for (var i = 0; i < boxes.length; i++) { boxes[i].value = ''; boxes[i].classList.remove('f'); }
+      setCodeMsg(S.codeTries > 0 ? 'Неверный код. Осталось попыток: ' + S.codeTries : 'Неверный код. Попытки закончились — отправьте код ещё раз.', true);
+      shake(document.getElementById('otp'));
+      if (boxes[0]) boxes[0].focus();
+    }, 700);
+  }
+
+  function otpInput(el, i) {
+    var v = el.value.replace(/\D/g, '');
+    var boxes = document.querySelectorAll('#otp input');
+    if (S.codeErr) setCodeMsg('', false);
+    if (v.length > 1) {
+      for (var k = 0; k < v.length && i + k < 6; k++) S.code[i + k] = v.charAt(k);
+      for (var j = 0; j < 6; j++) { boxes[j].value = S.code[j]; boxes[j].classList.toggle('f', !!S.code[j]); }
+      var nx = Math.min(5, i + v.length);
+      boxes[nx].focus();
+    } else {
+      S.code[i] = v;
+      el.value = v;
+      el.classList.toggle('f', !!v);
+      if (v && i < 5) boxes[i + 1].focus();
+    }
+    if (S.code.join('').length === 6) verifyCode();
   }
 
   function qDone() {
@@ -1035,9 +1408,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     return phone('<div class="body center ambient" style="gap:20px">' + ambient('ok') +
       '<div class="okring">' + burst() + '<svg width="108" height="108" viewBox="0 0 108 108" fill="none" stroke-width="5"><circle class="track" cx="54" cy="54" r="48"/><circle class="p" cx="54" cy="54" r="48" stroke-linecap="round" transform="rotate(-90 54 54)"/></svg><div class="mk">' + ic('check', 46, 2.6) + '</div></div>' +
       W('<div style="text-align:center;display:flex;flex-direction:column;gap:8px"><div class="h1">Аккаунт создан</div><div class="sub">Добро пожаловать, ' + esc(S.first || 'моряк') + '!</div></div>', 4) +
-      W('<div class="card"><div class="list">' + row('Имя и фамилия', esc((S.first + ' ' + S.last).trim())) + row('CV', 'зашифровано') + row(esc(docType().n), 'зашифровано') + '</div></div>', 5) +
-      (S.emailService ? W(banner('i', 'mail', '<span>Мы отправили письмо на <b>' + esc(S.email || 'you@example.com') + '</b>. Подтвердите адрес, когда будет удобно.</span>'), 6) : '') +
-      '</div><div class="foot">' + btn('Дополнить профиль', 'fill-profile') + btn('Перейти в приложение', 'c:q07', 'g') + '</div>');
+      W('<div class="card"><div class="list">' + row('Email', 'подтверждён') + row('Данные из документов', 'в профиле') + row('CV', 'зашифровано') + row(esc(docType().n), 'зашифровано') + '</div></div>', 5) +
+      '</div><div class="foot">' + btn('Дополнить профиль', 'fill-profile') + btn('Перейти в профиль', 'c:q09', 'g') + '</div>');
   }
 
   function burst() {
@@ -1053,50 +1425,106 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     return out;
   }
 
+  /* профиль */
+
+  function readiness() {
+    var items = [
+      ['Личные данные', !!S.done[2]],
+      ['Документ моряка', !!S.done[3]],
+      ['Диплом', !!(S.done[4] || S.doc.type === 'diploma' || S.doc2)],
+      ['Медицинские', !!(S.done[5] && S.med)],
+      ['Морской стаж', !!S.done[6]]
+    ];
+    if (S.full) items.forEach(function (x) { x[1] = true; });
+    var n = items.filter(function (x) { return x[1]; }).length;
+    return { items: items, n: n, pct: n * 20 };
+  }
+
+  function firstOpenStep() {
+    var order = [[2, 0], [3, 1], [4, 2], [5, 3], [6, 4]];
+    var r = readiness();
+    for (var i = 0; i < order.length; i++) if (!r.items[order[i][1]][1]) return order[i][0];
+    return 7;
+  }
+
   function qProfileSkeleton() {
     var bar = function (w, h, r) { return '<div class="skel" style="width:' + w + ';height:' + h + 'px' + (r ? ';border-radius:' + r + 'px' : '') + '"></div>'; };
     return phone('<div class="body">' + bar('140px', 36) +
       '<div class="row"><div class="skel" style="width:60px;height:60px;border-radius:50%"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px">' + bar('60%', 18) + bar('45%', 13) + '</div></div>' +
-      bar('100%', 190, 16) + bar('100%', 92, 14) + bar('40%', 14) + bar('100%', 60, 12) + bar('100%', 60, 12) + '</div>' + tabs('profile'));
+      bar('100%', 150, 16) + bar('100%', 92, 14) + bar('40%', 14) + bar('100%', 60, 12) + bar('100%', 60, 12) + '</div>' + tabs2('profile'));
   }
+
+  function mi(icon, title, val, action) {
+    return '<div class="mi" role="button" tabindex="0" data-a="' + action + '"><span class="ico acc">' + ic(icon, 18) + '</span><span>' + title + '</span><span class="mv">' + (val || '') + '<span style="display:flex">' + ic('chevron', 16) + '</span></span></div>';
+  }
+
+  function docCount() { return 1 + (S.cv.st === 'done' ? 1 : 0) + (S.doc2 ? 1 : 0) + (S.med ? 1 : 0); }
 
   function qProfile() {
     if (S.loadingProfile) return qProfileSkeleton();
-    var doneCount = STEPS.filter(function (s) { return S.done[s.n]; }).length || 2;
-    var pct = Math.round(doneCount / 7 * 100);
-    var emailB = '';
-    if (S.emailService && !S.verified) {
-      emailB = banner('i', 'mail', '<span><b>Подтвердите email.</b> Письмо на ' + esc(S.email || 'you@example.com') + '. Это нужно, чтобы восстановить пароль.</span>' +
-        '<button class="link" style="font-size:14px;align-self:flex-start" data-a="noop">Отправить ещё раз</button>');
-    }
+    var r = readiness();
+    var full = r.pct === 100;
+    var chips = r.items.map(function (x, i) {
+      return '<span class="feat' + (x[1] ? ' ok' : '') + ' stag" style="animation-delay:' + (0.14 + i * 0.04).toFixed(2) + 's">' + ic(x[1] ? 'check' : 'plus', 14) + x[0] + '</span>';
+    }).join('');
     return phone('<div class="body underbar">' +
       '<div class="hero mini">' + sea() +
       '<div class="row" style="gap:14px"><div class="av" style="width:64px;height:64px;font-size:22px;box-shadow:0 10px 28px var(--shadow)">' + esc(((S.first[0] || '?') + (S.last[0] || '')).toUpperCase()) + '</div>' +
       '<div style="flex:1;min-width:0"><div class="h1 stag" style="font-size:26px;animation-delay:.06s">' + esc((S.first + ' ' + S.last).trim() || 'Без имени') + '</div>' +
-      '<div class="sub stag" style="margin-top:4px;font-size:14px;display:flex;gap:6px;align-items:center;animation-delay:.12s">' +
-      (S.verified ? '<span style="color:var(--success);display:flex">' + ic('check', 14, 2.6) + '</span>' : '') + esc(S.email || 'you@example.com') + '</div></div></div>' +
-      '<div class="feats">' +
-      '<span class="feat stag ok" style="animation-delay:.18s">' + ic('check', 15) + 'CV</span>' +
-      '<span class="feat stag ok" style="animation-delay:.24s">' + ic('check', 15) + esc(docType().id === 'sid' ? 'Удостоверение' : 'Послужная книжка') + '</span>' +
-      '<span class="feat stag" style="animation-delay:.30s">' + ic('user', 15) + 'Моряк</span></div></div>' +
+      '<div class="sub stag" style="margin-top:4px;font-size:14px;display:flex;gap:6px;align-items:center;animation-delay:.12s"><span style="color:var(--success);display:flex">' + ic('check', 14, 2.6) + '</span>' + esc(S.email || 'you@example.com') + '</div></div></div></div>' +
       '<div class="card stag" style="animation-delay:.08s">' +
-      '<div class="row" style="justify-content:space-between"><div class="h3">Профиль неполный</div><span class="small">' + doneCount + ' из 7</span></div>' +
-      '<div class="pbar"><span style="width:' + pct + '%"></span></div>' +
-      '<div class="small">Агентства видят, что профиль заполнен не до конца. Добавьте личные данные, дипломы и стаж — так вас быстрее заметят.</div>' +
-      btn('Дополнить профиль', 'fill-profile', 't') + '</div>' +
-      (emailB ? W(emailB, 1) : '') +
-      W('<div class="over">Мои документы</div>', 2) +
-      '<div class="file stag" style="animation-delay:.2s"><div class="fi">' + ic('doc', 20) + '</div><div style="flex:1"><div>CV</div><div class="small">Файл · агентства увидят, если вы его отправите</div></div><span style="color:var(--t2)">' + ic('chevron', 16) + '</span></div>' +
-      '<div class="file stag" style="animation-delay:.24s"><div class="fi">' + ic('idcard', 20) + '</div><div style="flex:1"><div>' + esc(docType().n) + '</div><div class="small">' + S.doc.pages + ' стр. · зашифровано</div></div><span style="color:var(--t2)">' + ic('chevron', 16) + '</span></div>' +
-      '</div>' + tabs('profile'));
+      '<div class="row" style="justify-content:space-between"><div class="h3">Готовность к анкетам</div><span class="h3" style="color:' + (full ? 'var(--success)' : 'var(--accent)') + '">' + r.pct + ' %</span></div>' +
+      '<div class="pbar"><span style="width:' + r.pct + '%;background:' + (full ? 'var(--success)' : 'var(--warning)') + '"></span></div>' +
+      '<div class="feats" style="margin-top:0">' + chips + '</div>' +
+      (full ? banner('ok', 'shieldOk', '<span><b>Профиль заполнен.</b> Данные готовы для анкет агентств.</span>')
+        : '<div class="small">Считаем только данные, которые чаще всего нужны агентствам в анкетах.</div>' + btn('Дополнить профиль', 'fill-profile', 't')) + '</div>' +
+      W('<div class="menu">' +
+        mi('docs', 'Мои документы', docCount(), 'c:p02') + mi('inbox', 'Входящие', '', 'c:p03') +
+        mi('globe', 'Язык', 'Русский', 'noop') + mi('moon', 'Тема', S.light ? 'Светлая' : 'Тёмная', 'theme') +
+        mi('shieldOk', 'Согласия', '', 'c:q10') + mi('download', 'Скачать мои данные', '', 'download-data') + '</div>', 2) +
+      '</div>' + tabs2('profile'));
   }
 
-  function qVerified() {
-    return phone('<div class="body center ambient" style="gap:18px;text-align:center;align-items:center">' + ambient('ok') +
-      '<div style="animation:pop .45s both">' + tile('mail', 'ok') + '</div>' +
-      W('<div class="h1">Email подтверждён</div>', 1) +
-      W('<div class="sub">' + esc(S.email || 'you@example.com') + ' — теперь через него можно восстановить пароль.</div>', 2) +
-      '<div class="stag" style="animation-delay:.35s;width:100%;margin-top:8px">' + btn('Открыть профиль', 'verify-open') + '</div></div>');
+  function qConsents() {
+    var list = [
+      ['terms', 'Условия сервиса и Политика конфиденциальности', 'Версия 1.0 · принято 25.10.2026', true],
+      ['data', 'Обработка документов, включая чтение ИИ', 'Версия 1.0 · дано 25.10.2026', true],
+      ['med', 'Медицинские документы', S.medConsent ? 'Версия 1.0 · дано 25.10.2026' : 'Не дано — спросим на шаге «Медицинские документы»', S.medConsent]
+    ];
+    return phone('<div class="body underbar">' +
+      head({ compact: true, title: 'Согласия', sub: 'Любое согласие можно отозвать — так же просто, как дать.' }) +
+      list.map(function (x, i) {
+        var revoked = S.revoked[x[0]];
+        var given = x[3] && !revoked;
+        var action = given ? btn('Отозвать согласие', 'revoke:' + x[0], 'd')
+          : (x[0] === 'med' && !revoked ? '' : btn('Дать согласие снова', 'regrant:' + x[0], 't'));
+        return W('<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px"><div class="h3" style="font-size:15px">' + x[1] + '</div>' +
+          (given ? '<span class="tag ok">дано</span>' : '<span class="tag m">' + (revoked ? 'отозвано' : 'не дано') + '</span>') + '</div>' +
+          '<div class="small">' + (revoked ? 'Согласие отозвано. Мы не обрабатываем данные по нему.' : x[2]) + '</div>' + action + '</div>', i + 1);
+      }).join('') +
+      W(btn('Скачать мои данные', 'download-data', 's'), 5) +
+      '</div>' + nav('c:q09', 'Согласия'));
+  }
+
+  function qDocs() {
+    var r = readiness();
+    var rows = '';
+    if (S.cv.st === 'done') rows += '<div class="file stag" style="animation-delay:.1s"><div class="fi">' + ic('doc', 20) + '</div><div style="flex:1"><div>CV</div><div class="small">Файл · зашифровано</div></div><span style="color:var(--t2)">' + ic('chevron', 16) + '</span></div>';
+    rows += '<div class="file stag" style="animation-delay:.14s"><div class="fi">' + ic('idcard', 20) + '</div><div style="flex:1"><div>' + esc(docType().n) + '</div><div class="small">' + (S.doc.pages || 1) + ' стр. · зашифровано</div></div><span style="color:var(--t2)">' + ic('chevron', 16) + '</span></div>';
+    if (S.doc2) rows += '<div class="file stag" style="animation-delay:.18s"><div class="fi">' + ic('idcard', 20) + '</div><div style="flex:1"><div>' + esc(otherType().n) + '</div><div class="small">1 стр. · зашифровано</div></div><span style="color:var(--t2)">' + ic('chevron', 16) + '</span></div>';
+    rows += S.med
+      ? '<div class="file stag" style="animation-delay:.22s"><div class="fi">' + ic('medical', 20) + '</div><div style="flex:1"><div>Медицинский сертификат</div><div class="small">Медосмотр действителен до 14.10.2027</div></div><span style="color:var(--t2)">' + ic('chevron', 16) + '</span></div>'
+      : '<div class="drop stag" style="animation-delay:.22s" role="button" tabindex="0" data-a="c:s5"><div class="ico acc">' + ic('medical', 22) + '</div><div><div class="h3" style="font-size:14px">Добавить медицинский документ</div><div class="small">Нужно для анкет — отдельное согласие</div></div></div>';
+    return phone('<div class="body underbar">' + head({ compact: true, title: 'Документы' }) +
+      '<div style="display:flex;flex-direction:column;gap:10px">' + rows + '</div>' +
+      '<div class="drop stag" style="animation-delay:.28s" role="button" tabindex="0" data-a="noop"><div class="ico acc">' + ic('plus', 22) + '</div><div class="h3" style="font-size:14px">Добавить документ</div></div></div>' + tabs2('docs'));
+  }
+
+  function qInbox() {
+    return phone('<div class="body underbar">' + head({ compact: true, title: 'Входящие' }) +
+      '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding-bottom:40px">' +
+      '<div class="ico big acc stag">' + ic('inbox', 28) + '</div><div class="h2 stag">Входящих пока нет</div>' +
+      '<div class="sub stag" style="font-size:14px">Анкеты и сообщения от агентств появятся здесь.</div></div></div>' + tabs2('inbox'));
   }
 
   function qResume() {
@@ -1106,36 +1534,75 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     };
     return phone('<div class="body underbar" style="gap:16px">' +
       head({ icon: 'anchor', title: 'Продолжим регистрацию?', sub: 'Вы начали быструю регистрацию 2 дня назад.' }) +
-      W('<div class="card"><div class="list">' + row(true, 'CV', 'загружено') + row(true, esc(docType().n), 'загружено') + row(false, 'Проверка данных и пароль') + '</div></div>', 2) +
+      W('<div class="card"><div class="list">' + row(true, 'CV', 'загружено') + row(true, esc(docType().n), 'загружено') + row(false, 'Проверка данных, аккаунт и код') + '</div></div>', 2) +
       W(banner('w', 'clock', '<span>Если не закончить, файлы удалятся через <b>28 дней</b>.</span>'), 3) +
       '<div style="flex:1"></div></div><div class="foot">' + btn('Продолжить', 'resume') + btn('Начать заново', 'sheet:restart', 'd') + '</div>');
   }
 
   function qError(kind) {
+    var three = btn('Сфотографировать ещё раз', 'retake') + btn('Загрузить файл', 'upload-file', 's') + btn('Ввести вручную', 'c:e07', 'g');
     var cfg = {
       e01: { ic: 'camera', t: 'Не получилось прочитать документ', s: 'Фото размыто, обрезано или с бликом.',
         tips: ['Положите документ на тёмную ровную поверхность', 'Снимайте при дневном свете, без вспышки', 'В кадре вся страница — с фото и строками внизу'],
-        a: btn('Сфотографировать ещё раз', 'retake') + btn('Ввести имя вручную', 'manual', 'g'), foot: 'Осталось попыток: 2' },
+        a: three, foot: 'Осталось попыток: 2' },
       e02: { ic: 'idcard', t: 'Это не похоже на документ моряка', s: 'Похоже, это загранпаспорт. Он не подтверждает, что вы моряк.',
-        tips: ['Удостоверение личности моряка (Seafarer\'s ID)', 'Послужная книжка (Seaman\'s Book)'], tipsTitle: 'Подойдёт',
-        a: btn('Загрузить документ моряка', 'retake') + btn('Это документ моряка — продолжить', 'override', 'g') },
+        tips: ['Удостоверение личности моряка (Seafarer\'s ID)', 'Диплом моряка'], tipsTitle: 'Подойдёт',
+        a: three },
       e03: { ic: 'wifi', t: 'Нет интернета', s: 'Загруженные файлы сохранены. Продолжим сами, как только связь появится.',
         wait: 'Ждём подключение…', a: btn('Повторить сейчас', 'go-read', 's') },
       e04: { ic: 'clock', t: 'Слишком много попыток', s: 'С этого телефона было много попыток регистрации. Попробуйте чуть позже.',
         a: btn('Повторить через <span id="cd">' + fmtCd(S.cd) + '</span>', 'noop', 's', true) + btn('Написать в поддержку', 'noop', 'g') },
       e05: { ic: 'shield', muted: true, t: 'Регистрация невозможна', s: 'С этим документом нельзя создать аккаунт. Если вы считаете, что это ошибка, напишите в поддержку.',
-        a: btn('Написать в поддержку', 'noop', 's') + btn('На главную', 'restart', 'g') }
+        a: btn('Написать в поддержку', 'noop', 's') + btn('На главную', 'restart-reg', 'g') },
+      e06: { ic: 'shieldOk', t: 'Этот документ уже зарегистрирован', s: 'Войдите или восстановите доступ.',
+        a: btn('Войти', 'login-sheet') + btn('Восстановить доступ', 'recover', 's') }
     }[kind];
     var tone = cfg.muted ? 'muted' : 'warn';
     var tips = cfg.tips ? W('<div class="card" style="text-align:left"><div class="over">' + (cfg.tipsTitle || 'Как снять лучше') + '</div><div class="list">' + cfg.tips.map(function (t) {
       return '<div class="li"><span style="color:var(--accent)">' + ic('check', 18, 2.2) + '</span><span>' + t + '</span></div>';
     }).join('') + '</div></div>', 3) : '';
     var wait = cfg.wait ? W('<div class="row" style="justify-content:center;gap:10px;color:var(--t2);font-size:14px"><span class="dot run"><span class="s"></span></span>' + cfg.wait + '</div>', 3) : '';
-    var back = kind === 'e04' || kind === 'e05' ? nav('', '', 'restart') : nav('c:q03', '');
+    var back = kind === 'e04' || kind === 'e05' ? nav('', '', 'restart-reg') : nav('c:q03', '');
     return phone('<div class="body center ambient" style="gap:14px;text-align:center;align-items:stretch">' + ambient(tone) +
       '<div style="align-self:center;animation:pop .45s both">' + tile(cfg.ic, tone) + '</div>' +
       W('<div class="h1" style="font-size:26px">' + cfg.t + '</div>', 1) + W('<div class="sub">' + cfg.s + '</div>', 2) + tips + wait +
       (cfg.foot ? W('<div class="small">' + cfg.foot + '</div>', 4) : '') + '</div><div class="foot">' + cfg.a + '</div>' + back);
+  }
+
+  function manualValid() { return !!(S.m.num.trim() && S.m.issue.trim() && S.m.exp.trim() && S.m.file); }
+
+  function eManual() {
+    var m = S.m;
+    var file = m.file
+      ? uploadRow('image', 'Фото документа.jpg', 'JPG · 1,1 МБ', 'done', 100, 'rm-mfile')
+      : '<div class="drop" role="button" tabindex="0" data-need="mfile" data-a="pick-mfile"><div class="ico acc">' + ic('camera', 22) + '</div><div><div class="h3" style="font-size:14px">Прикрепить фото или файл</div><div class="small">Страница документа с данными</div></div></div>';
+    return phone('<div class="body underbar">' +
+      head({ icon: 'edit', title: 'Ввести данные вручную', sub: 'Заполните данные документа и приложите его фото — администратор сверит их.' }) +
+      W('<div class="card">' +
+        field('Название документа', { select: DOC_TYPES.map(function (d) { return d.n; }), sel: m.name, bind: 'm.name' }) +
+        field('Номер документа', { value: m.num, bind: 'm.num', ph: 'Как в документе', id: 'm-num' }) +
+        '<div class="grid2" style="grid-template-columns:1fr 1fr">' + field('Дата выдачи', { value: m.issue, bind: 'm.issue', ph: 'ДД.ММ.ГГГГ' }) + field('Дата окончания', { value: m.exp, bind: 'm.exp', ph: 'ДД.ММ.ГГГГ' }) + '</div>' +
+        field('Страна выдачи', { select: ['Украина', 'Филиппины', 'Индия', 'Польша'], sel: m.country, bind: 'm.country' }) + '</div>', 1) +
+      W('<div class="card"><div class="h3">Фото или файл документа</div>' + file + '</div>', 2) +
+      '</div><div class="foot line">' + btn('Продолжить', 'manual-done', 'p', !manualValid(), ' id="manualBtn"') + '<div class="need" id="missing"></div></div>' + nav('c:q03', 'Ввод вручную'));
+  }
+
+  function refreshManual() {
+    var b = document.getElementById('manualBtn');
+    if (!b) return;
+    var off = !manualValid();
+    b.classList.toggle('off', off);
+    b.setAttribute('data-a', off ? 'blocked' : 'manual-done');
+    var miss = [];
+    if (!S.m.num.trim()) miss.push('номер');
+    if (!S.m.issue.trim() || !S.m.exp.trim()) miss.push('даты');
+    if (!S.m.file) miss.push('фото документа');
+    var mm = document.getElementById('missing');
+    if (mm) mm.textContent = miss.length ? 'Осталось: ' + miss.join(', ') : '';
+    var setNeed = function (sel, bad) { var el = document.querySelector(sel); if (el) { if (bad) el.setAttribute('data-need', '1'); else el.removeAttribute('data-need'); } };
+    setNeed('[data-bind="m.num"]', !S.m.num.trim());
+    setNeed('[data-bind="m.issue"]', !S.m.issue.trim());
+    setNeed('[data-bind="m.exp"]', !S.m.exp.trim());
   }
 
   function fmtCd(sec) {
@@ -1143,18 +1610,32 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     return m + ':' + (x < 10 ? '0' : '') + x;
   }
 
-  /* ---------- C: пошаговая (без изменений, следующий этап) ---------- */
+  /* ---------- C: пошаговая ---------- */
 
-  function wizard(step, inner, footer) {
+  function navStep(step) {
+    return '<div class="navbar">' + backBtn(step > 1 ? 'c:s' + (step - 1) : 'c:o04') + '<div class="nt">Шаг ' + step + ' из 7</div>' +
+      (step > 1 ? '<button class="link" style="margin-left:auto;font-weight:600;padding:12px 10px" data-a="sheet:later">Позже</button>' : '') + '</div>';
+  }
+
+  var STEP_HEAD = {
+    1: ['lock', 'Создайте аккаунт', 'Email и пароль. Затем код из письма.'],
+    2: ['user', 'Личные данные', 'Эти данные подставятся в анкеты.'],
+    3: ['idcard', 'Документ моряка', 'Удостоверение или диплом — один из них обязателен.'],
+    4: ['docs', 'Другие документы', 'Дипломы, сертификаты, визы и другое.'],
+    5: ['medical', 'Медицинские документы', 'Отдельное согласие и защита данных.'],
+    6: ['ship', 'Морской стаж', 'Суда и рейсы.'],
+    7: ['shieldOk', 'Проверка', 'Последний взгляд перед завершением.']
+  };
+
+  function wizard(step, body, footer) {
     var bars = STEPS.map(function (s) {
       return '<span class="' + (S.done[s.n] ? 'done' : (s.n === step ? 'cur' : '')) + '"></span>';
     }).join('');
-    var laterBtn = step > 1 ? '<button class="later" data-a="sheet:later">Позже</button>' : '';
-    return '<div class="whead"><div class="top">' + backBtn(step > 1 ? 'c:s' + (step - 1) : 'c:q01') +
-      '<div class="t">Шаг ' + step + ' из 7 · ' + STEPS[step - 1].t + '</div>' + laterBtn + '</div>' +
-      '<div class="steps">' + bars + '</div></div>' +
-      '<div class="body" style="padding-top:16px">' + inner + '</div>' +
-      '<div class="foot line">' + footer + '</div>';
+    var h = STEP_HEAD[step];
+    return '<div class="body underbar">' +
+      head({ icon: h[0], title: h[1], sub: h[2],
+        extra: '<div class="small stag" style="margin-top:14px;animation-delay:.16s">Шаг ' + step + ' из 7 · ' + STEPS[step - 1].t + '</div><div class="steps stag" style="padding:0;margin-top:8px;animation-delay:.2s">' + bars + '</div>' }) +
+      body + '</div><div class="foot line">' + footer + '</div>' + navStep(step);
   }
 
   function nextStep(step) {
@@ -1168,114 +1649,109 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       (optional ? btn('Пропустить', 'skip:' + step, 'g') : '');
   }
 
-  function consentText() {
-    return 'Я согласен(на) на обработку персональных данных и принимаю <a href="#" data-a="noop">Условия сервиса</a> и <a href="#" data-a="noop">Политику конфиденциальности</a>';
-  }
-
   function screenStep(id) {
     if (id === 'c08') {
       var nextOpen = 1;
       for (var k = 1; k <= 7; k++) { if (!S.done[k]) { nextOpen = k; break; } }
-      return phone('<div class="body center" style="gap:16px">' +
-        '<div class="h1">С возвращением!</div>' +
-        '<div class="sub">Вы остановились на шаге ' + nextOpen + ' из 7 — «' + STEPS[nextOpen - 1].t + '».</div>' +
-        '<div class="card"><div class="list">' + STEPS.map(function (s) {
+      return phone('<div class="body underbar">' +
+        head({ icon: 'anchor', title: 'С возвращением!', sub: 'Вы остановились на шаге ' + nextOpen + ' из 7 — «' + STEPS[nextOpen - 1].t + '».' }) +
+        W('<div class="card"><div class="list">' + STEPS.map(function (s) {
           var st = S.done[s.n] ? '<span class="dot ok">' + ic('check', 13, 2.6) + '</span>' : (S.done['skip' + s.n] ? '<span class="dot skip">–</span>' : '<span class="dot wait">' + s.n + '</span>');
           return '<div class="li" style="align-items:center">' + st + '<span>' + s.t + '</span></div>';
-        }).join('') + '</div></div>' +
-        btn('Продолжить', 'c:s' + nextOpen) + btn('Позже', 'c:q07', 'g') + '</div>');
+        }).join('') + '</div></div>', 1) +
+        '</div><div class="foot">' + btn('Продолжить', 'c:s' + nextOpen) + btn('Позже', 'c:q09', 'g') + '</div>');
     }
     var step = Number(id.slice(1));
-    var types = '<div class="pills">' + DOC_TYPES.map(function (d) {
-      return '<button class="pill' + (S.doc.type === d.id ? ' on' : '') + '" data-a="type:' + d.id + '">' + d.n + '</button>';
-    }).join('') + '</div>';
     if (step === 1) {
       return phone(wizard(1,
-        '<div class="h1" style="font-size:24px">Создайте аккаунт</div>' +
-        field('Имя', { value: S.first, bind: 'first', ph: 'Как в документе' }) +
-        field('Фамилия', { value: S.last, bind: 'last', ph: 'Как в документе' }) +
-        field('Email', { type: 'email', ph: 'you@example.com' }) +
-        field('Повторите email', { type: 'email' }) +
-        field('Пароль', { type: 'password', ph: 'Не менее 8 символов' }) +
-        check(S.consent, 'toggle-consent', consentText()),
-        stepFooter(1, S.consent, false)));
+        W(acctFields(), 1) +
+        W('<div class="card">' + check(S.consentTerms, 'toggle-terms', 'Принимаю <a href="#" data-a="noop">Условия сервиса</a> и <a href="#" data-a="noop">Политику конфиденциальности</a>') +
+          check(S.consentData, 'toggle-data', 'Согласен на обработку документов, включая чтение ИИ') +
+          '<button class="link" style="align-self:flex-start" data-a="sheet:consent">Подробнее о согласии</button></div>', 2),
+        acctBtn() + '<div class="need" id="missing"></div>'));
     }
     if (step === 2) {
       return phone(wizard(2,
-        '<div class="avatar" data-a="photo">' + (S.photo ? '<div class="av" style="width:84px;height:84px;font-size:26px">' + esc((S.first[0] || '') + (S.last[0] || '')) + '</div>' : ic('camera', 24) + 'Добавить<br>фото') + '</div>' +
-        field('Дата рождения', { ph: 'ДД.ММ.ГГГГ' }) +
-        field('Гражданство', { select: ['Выберите страну', 'Украина', 'Филиппины', 'Индия', 'Польша'] }) +
-        field('Телефон', { type: 'tel', ph: '+380 …' }) +
-        field('Должность', { select: ['Выберите должность', '3rd Engineer', '2nd Engineer', 'Chief Officer', 'AB Seaman'] }),
+        W('<div class="card"><div class="avatar" data-a="photo">' + (S.photo ? '<div class="av" style="width:84px;height:84px;font-size:26px">' + esc((S.first[0] || '') + (S.last[0] || '')) + '</div>' : ic('camera', 24) + 'Добавить<br>фото') + '</div>' +
+          field('Имя', { value: S.first, bind: 'first', ph: 'Как в документе' }) +
+          field('Фамилия', { value: S.last, bind: 'last', ph: 'Как в документе' }) +
+          field('Дата рождения', { ph: 'ДД.ММ.ГГГГ' }) +
+          field('Гражданство', { select: ['Выберите страну', 'Украина', 'Филиппины', 'Индия', 'Польша'] }) +
+          field('Телефон', { type: 'tel', ph: '+380 …' }) +
+          field('Должность', { select: ['Выберите должность', '3rd Engineer', '2nd Engineer', 'Chief Officer', 'AB Seaman'] }) + '</div>', 1),
         stepFooter(2, true, true)));
     }
     if (step === 3) {
       var has = S.doc.pages > 0;
       return phone(wizard(3,
-        '<div class="row" style="justify-content:space-between"><div class="h1" style="font-size:24px">Документ моряка</div><span class="tag m">обязательно</span></div>' +
-        '<div class="sub" style="font-size:14px">Подтверждает, что вы моряк. Без него регистрацию не закончить.</div>' +
-        '<div class="small">Какой документ вы загружаете?</div>' + types +
-        (has ? uploadRow('idcard', docType().n, 'Распознан · проверьте поля', 'done', 100, 'rm-doc')
-          : '<div class="drop" data-a="pick-doc-step"><div class="ico acc">' + ic('scan', 22) + '</div><div><div class="h3" style="font-size:14px">Сканировать или сфотографировать</div><div class="small">Страница с фото и данными</div></div></div>') +
-        (S.scenario === 'ban' && has ? banner('d', 'shield', '<span>С этим документом нельзя продолжить регистрацию. Напишите в поддержку.</span>') : ''),
+        W('<div class="card"><div class="row" style="justify-content:space-between"><div class="h3">Какой документ загружаете?</div><span class="tag m">один обязателен</span></div>' + typesSeg() +
+          (has ? uploadRow('idcard', esc(docType().n), 'Распознан', 'done', 100, 'rm-doc')
+            : '<div class="drop" role="button" tabindex="0" data-need="doc" data-a="pick-doc-step"><div class="ico acc">' + ic('scan', 22) + '</div><div><div class="h3" style="font-size:14px">Сканировать или сфотографировать</div><div class="small">Страница с фото и данными</div></div></div>') +
+          (has ? secondDoc() : '') +
+          (S.scenario === 'ban' && has ? banner('d', 'shield', '<span>С этим документом нельзя продолжить регистрацию. Напишите в поддержку.</span>') : '') + '</div>', 1),
         stepFooter(3, has && S.scenario !== 'ban', false)));
     }
     if (step === 4) {
       return phone(wizard(4,
-        '<div class="h1" style="font-size:24px">Другие документы</div>' +
-        '<div class="sub" style="font-size:14px">Дипломы, сертификаты, визы и другое. Тип каждого документа выбираете вы.</div>' +
-        uploadRow('doc', 'CoC — 3rd Engineer (III/1)', 'Распознан', 'done', 100, 'noop') +
-        '<div class="drop" data-a="noop"><div class="ico acc">' + ic('plus', 22) + '</div><div class="h3" style="font-size:14px">Добавить документ</div></div>',
+        W('<div class="card"><div class="small">Тип каждого документа выбираете вы.</div>' + uploadRow('doc', 'CoC — 3rd Engineer (III/1)', 'Распознан', 'done', 100, 'noop') +
+          '<div class="drop" role="button" tabindex="0" data-a="noop"><div class="ico acc">' + ic('plus', 22) + '</div><div class="h3" style="font-size:14px">Добавить документ</div></div></div>', 1),
         stepFooter(4, true, true)));
     }
     if (step === 5) {
       var medBody = S.medConsent
         ? (S.med ? uploadRow('medical', 'Медицинский сертификат', 'Действителен до 14.10.2027 · удалится после', 'done', 100, 'rm-med')
-          : '<div class="drop" data-a="add-med"><div class="ico acc">' + ic('scan', 22) + '</div><div class="h3" style="font-size:14px">Добавить медицинский документ</div></div>')
+          : '<div class="drop" role="button" tabindex="0" data-a="add-med"><div class="ico acc">' + ic('scan', 22) + '</div><div class="h3" style="font-size:14px">Добавить медицинский документ</div></div>')
         : '<div class="small">Чтобы загрузить медицинские документы, нужно отдельное согласие.</div>';
       return phone(wizard(5,
-        '<div class="h1" style="font-size:24px">Медицинские документы</div>' +
-        '<div class="card"><div class="list">' +
-        '<div class="li"><span style="color:var(--accent)">' + ic('lock', 18) + '</span><span>Хранятся зашифрованными</span></div>' +
-        '<div class="li"><span style="color:var(--accent)">' + ic('user', 18) + '</span><span>Видят только агентства, которым вы откроете доступ</span></div>' +
-        '<div class="li"><span style="color:var(--accent)">' + ic('clock', 18) + '</span><span>Удаляются автоматически, когда закончится срок действия</span></div>' +
-        '</div></div>' +
-        check(S.medConsent, 'toggle-med', 'Разрешаю хранить мои медицинские документы для трудоустройства') + medBody,
+        W('<div class="card"><div class="list">' +
+          '<div class="li"><span style="color:var(--accent)">' + ic('lock', 18) + '</span><span>Хранятся зашифрованными</span></div>' +
+          '<div class="li"><span style="color:var(--accent)">' + ic('user', 18) + '</span><span>Видят только агентства, которым вы откроете доступ</span></div>' +
+          '<div class="li"><span style="color:var(--accent)">' + ic('clock', 18) + '</span><span>Удаляются автоматически, когда закончится срок действия</span></div>' +
+          '</div></div>', 1) +
+        W('<div class="card">' + check(S.medConsent, 'toggle-med', 'Разрешаю хранить мои медицинские документы для трудоустройства') + medBody + '</div>', 2),
         stepFooter(5, true, true)));
     }
     if (step === 6) {
       return phone(wizard(6,
-        '<div class="h1" style="font-size:24px">Морской стаж</div>' +
-        '<div class="sub" style="font-size:14px">Суда и рейсы. Можно добавить из страниц стажа или вручную.</div>' +
-        '<div class="card"><div class="row"><span style="color:var(--accent)">' + ic('ship', 20) + '</span><div><div class="h3">MV Nordic Star</div><div class="small">Container Ship · 3rd Engineer · 02.2024 – 09.2024</div></div></div></div>' +
-        '<div class="drop" data-a="noop"><div class="ico acc">' + ic('plus', 22) + '</div><div class="h3" style="font-size:14px">Добавить рейс</div></div>',
+        W('<div class="card"><div class="small">Можно добавить из страниц стажа или вручную.</div><div class="row"><span style="color:var(--accent)">' + ic('ship', 20) + '</span><div><div class="h3">MV Example Star</div><div class="small">Container Ship · 3rd Engineer · 02.2024 – 09.2024</div></div></div>' +
+          '<div class="drop" role="button" tabindex="0" data-a="noop"><div class="ico acc">' + ic('plus', 22) + '</div><div class="h3" style="font-size:14px">Добавить рейс</div></div></div>', 1),
         stepFooter(6, true, true)));
     }
     var reqOk = S.done[1] && S.done[3];
     return phone(wizard(7,
-      '<div class="h1" style="font-size:24px">Проверка</div>' +
-      '<div class="card"><div class="list">' + STEPS.slice(0, 6).map(function (s) {
+      W('<div class="card"><div class="list">' + STEPS.slice(0, 6).map(function (s) {
         var st = S.done[s.n] ? '<span class="dot ok">' + ic('check', 13, 2.6) + '</span>' : '<span class="dot skip">–</span>';
         var label = S.done[s.n] ? '' : (s.req ? '<span class="tag w">обязательно</span>' : '<span class="small">пропущено</span>');
         return '<div class="li" style="cursor:pointer;align-items:center" data-a="c:s' + s.n + '">' + st + '<span style="flex:1">' + s.t + '</span>' + label + '</div>';
-      }).join('') + '</div></div>' +
-      (reqOk ? '<div class="small">Пропущенные шаги можно заполнить позже из профиля.</div>'
-        : banner('w', 'alert', '<span>Чтобы закончить, пройдите обязательные шаги 1 и 3.</span>')),
+      }).join('') + '</div></div>', 1) +
+      W(reqOk ? '<div class="small">Пропущенные шаги можно заполнить позже из профиля.</div>'
+        : banner('w', 'alert', '<span>Чтобы закончить, пройдите обязательные шаги 1 и 3.</span>'), 2),
       stepFooter(7, reqOk, false)));
   }
 
   function screenC(id) {
     switch (id) {
-      case 'q01': return qWelcome();
+      case 'o01': return oSlides();
+      case 'o02': return oChoice();
+      case 'o03': return oPath('q');
+      case 'o04': return oPath('s');
+      case 'g01': return homeScreen('feed', true);
+      case 'g02': case 'g03': return homeScreen('vac', true);
+      case 'p01': return homeScreen(S.homeTab, false);
+      case 'p02': return qDocs();
+      case 'p03': return qInbox();
       case 'q02': return qConsent();
       case 'q03': return qUpload();
       case 'q04': return qReading();
       case 'q05': return qCheck();
-      case 'q06': return qDone();
-      case 'q07': return qProfile();
-      case 'q08': return qVerified();
-      case 'q09': return qResume();
-      case 'e01': case 'e02': case 'e03': case 'e04': case 'e05': return qError(id);
+      case 'q06': return qAccount();
+      case 'q07': case 's1c': return qCode();
+      case 'q08': return qDone();
+      case 'q09': return qProfile();
+      case 'q10': return qConsents();
+      case 'q11': return qResume();
+      case 'e01': case 'e02': case 'e03': case 'e04': case 'e05': case 'e06': return qError(id);
+      case 'e07': return eManual();
       default: return screenStep(id);
     }
   }
@@ -1308,13 +1784,19 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
         return '<option value="' + x[0] + '"' + (S.scenario === x[0] ? ' selected' : '') + '>' + x[1] + '</option>';
       }).join('') + '</select></label>' +
         '<label><input type="checkbox" data-opt="showIds"' + (S.showIds ? ' checked' : '') + '> Показывать дату рождения и номер</label>' +
-        '<label><input type="checkbox" data-opt="emailService"' + (S.emailService ? ' checked' : '') + '> Почтовый сервис подключён</label>' +
+        '<label><input type="checkbox" data-opt="full"' + (S.full ? ' checked' : '') + '> Профиль готов на 100 %</label>' +
         '<label><input type="checkbox" data-opt="autoNext"' + (S.autoNext ? ' checked' : '') + '> Автопереход</label>' +
         '<label><input type="checkbox" data-opt="dev"' + (S.dev ? ' checked' : '') + '> Для разработки</label></div>'
       : '';
-    if (S.view === 'c' && cur === 'q07' && S.emailService && !S.verified) nav = nav.replace('</div>', '<button data-a="c:q08">Открыть ссылку из письма</button></div>');
     var dev = S.view === 'c' && S.dev && DEV[cur] ? '<div class="note dev">' + DEV[cur] + '</div>' : '';
     BAR.innerHTML = seg + nav + opts + '<div class="note">' + (NOTES[cur] || '') + '</div>' + dev;
+  }
+
+  function refreshScreen() {
+    if (S.view !== 'c') return;
+    if (S.c === 'q05') refreshData();
+    else if (S.c === 'q06' || S.c === 's1') refreshAcct();
+    else if (S.c === 'e07') refreshManual();
   }
 
   function render() {
@@ -1326,7 +1808,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     }
     STAGE.innerHTML = S.view === 'b' ? screenB(S.b) : screenC(S.c);
     S.fx = {};
-    if (S.view === 'c' && S.c === 'q05') refreshCheck();
+    refreshScreen();
   }
 
   function softRender() {
@@ -1347,7 +1829,12 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     var from = list.findIndex(function (x) { return x[0] === (S.view === 'b' ? S.b : S.c); });
     var to = list.findIndex(function (x) { return x[0] === id; });
     S.anim = to < from ? 'bw' : 'fw';
-    if (S.view === 'c' && id === 'q07') S.loadingProfile = true;
+    if (S.view === 'c') {
+      if (id === 'q09') S.loadingProfile = true;
+      if (id === 'q07' || id === 's1c') resetCode();
+      if (id === 'o01') S.slide = 0;
+      if (id === 'g03') { S.sheet = 'gate'; S.gate = 'apply'; }
+    }
     if (S.view === 'b') S.b = id; else S.c = id;
     render();
     if (S.view === 'c') onEnter(id);
@@ -1355,13 +1842,19 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
 
   function onEnter(id) {
     if (id === 'q04') startReading();
-    if (id === 'q07') later(function () { S.loadingProfile = false; softRender(); }, 650);
+    if (id === 'q09') later(function () { S.loadingProfile = false; softRender(); }, 650);
     if (id === 'e04') {
       var t = function () { later(function () { S.cd = Math.max(0, S.cd - 1); var el = document.getElementById('cd'); if (el) el.textContent = fmtCd(S.cd); t(); }, 1000); };
       t();
     }
     if (id === 'q03') prefillUpload();
-    if (id === 'q05' || id === 'q06' || id === 'q07' || id === 'q09') prefillAll();
+    if (id === 'q05') { S.orig = {}; DOC_KEYS.forEach(function (k) { S.orig[k] = dval(k); }); }
+    if (id === 'q07' || id === 's1c') {
+      codeTick(S.cdTok);
+      var f = document.querySelector('#otp input');
+      if (f) f.focus();
+    }
+    if (['q05', 'q06', 'q07', 'q08', 'q09', 'q10', 'q11', 'p01', 'p02', 'p03'].indexOf(id) >= 0) prefillAll(id);
   }
 
   function prefillUpload() {
@@ -1369,21 +1862,22 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     if (S.doc.st === 'up') S.doc.st = 'done';
   }
 
-  function prefillAll() {
+  function prefillAll(id) {
     var changed = false;
     if (S.cv.st !== 'done') { S.cv = { st: 'done', p: 100 }; changed = true; }
     if (!S.doc.pages) { S.doc.pages = 1; S.doc.st = 'done'; changed = true; }
-    if (changed) softRender();
+    if (['q08', 'q09', 'q10', 'p01', 'p02', 'p03'].indexOf(id) >= 0 && S.fast && !S.done[2]) { S.done = { 1: true, 2: true, 3: true, 4: true, 6: true }; changed = true; }
+    if (changed && id !== 'q09') softRender();
   }
 
   function startReading() {
-    prefillAll();
+    prefillAll('q04');
     S.phase = 1;
     S.readDone = false;
     softRender();
     var sc = S.scenario;
-    var stopAt = { blur: 1, notSeafarer: 1, offline: 1, rate: 0, ban: 3 }[sc];
-    var target = { blur: 'e01', notSeafarer: 'e02', offline: 'e03', rate: 'e04', ban: 'e05' }[sc] || 'q05';
+    var stopAt = { blur: 1, notSeafarer: 1, offline: 1, rate: 0, ban: 3, docTaken: 3 }[sc];
+    var target = { blur: 'e01', notSeafarer: 'e02', offline: 'e03', rate: 'e04', ban: 'e05', docTaken: 'e06' }[sc] || 'q05';
     var step = function (ph) {
       later(function () {
         S.phase = ph;
@@ -1451,11 +1945,11 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     go(list[n][0]);
   }
 
-  function restart() {
-    var keep = { view: S.view, scenario: S.scenario, showIds: S.showIds, emailService: S.emailService, light: S.light, dev: S.dev, autoNext: S.autoNext };
+  function restart(to) {
+    var keep = { view: S.view, scenario: S.scenario, showIds: S.showIds, light: S.light, dev: S.dev, autoNext: S.autoNext, full: S.full };
     S = initial();
     Object.keys(keep).forEach(function (k) { S[k] = keep[k]; });
-    go('q01');
+    go(to || 'o01');
   }
 
   /* ---------- действия ---------- */
@@ -1481,12 +1975,24 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     if (a.indexOf('view:') === 0) { clearTimers(); S.view = a.slice(5); S.anim = 'fw'; render(); return; }
     if (a.indexOf('b:') === 0 || a.indexOf('c:') === 0) { go(a.slice(2)); return; }
     if (a.indexOf('sheet:') === 0) { S.sheet = a.slice(6); softRender(); return; }
-    if (a.indexOf('type:') === 0) { S.doc.type = a.slice(5); softRender(); return; }
+    if (a.indexOf('type:') === 0) { S.doc.type = a.slice(5); S.doc2 = false; softRender(); return; }
+    if (a.indexOf('gate:') === 0) { S.gate = a.slice(5); S.sheet = 'gate'; softRender(); return; }
+    if (a.indexOf('reg-act:') === 0) { showToast(a === 'reg-act:apply' ? 'Отклик отправлен (пример)' : 'Готово (пример)', null); return; }
+    if (a.indexOf('home-tab:') === 0) { S.homeTab = a.slice(9); softRender(); return; }
+    if (a.indexOf('slide:') === 0) { S.slide = Number(a.slice(6)); S.anim = 'fw'; render(); return; }
+    if (a.indexOf('revoke:') === 0) { S.revoke = a.slice(7); S.sheet = 'revoke'; softRender(); return; }
+    if (a.indexOf('regrant:') === 0) {
+      var rk = a.slice(8);
+      delete S.revoked[rk];
+      if (rk === 'med') S.medConsent = true;
+      showToast('Согласие дано снова', null);
+      return;
+    }
     if (a.indexOf('done:') === 0) {
       var st = Number(a.slice(5));
       S.done[st] = true;
       delete S.done['skip' + st];
-      if (st === 7) { go('q07'); return; }
+      if (st === 7) { S.fast = false; go('q09'); return; }
       go(nextStep(st));
       return;
     }
@@ -1500,12 +2006,29 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     switch (a) {
       case 'prev': move(-1); break;
       case 'next': move(1); break;
-      case 'restart': restart(); break;
+      case 'restart': restart('o01'); break;
+      case 'restart-reg': restart('o02'); break;
       case 'sheet-close': closeSheet(); break;
-      case 'start-quick': go('q02'); break;
-      case 'start-step': S.done = {}; go('s1'); break;
-      case 'toggle-consent': S.consent = !S.consent; S.pop = true; softRender(); break;
-      case 'toggle-med': S.medConsent = !S.medConsent; S.pop = true; if (!S.medConsent) S.med = false; softRender(); break;
+      case 'start-quick': S.fast = true; go('o03'); break;
+      case 'start-step': S.done = {}; S.fast = false; go('o04'); break;
+      case 'slide-next': S.slide = Math.min(SLIDES.length - 1, S.slide + 1); S.anim = 'fw'; render(); break;
+      case 'gate-fast': closeSheet(function () { S.fast = true; go('o03'); }); break;
+      case 'gate-step': closeSheet(function () { S.done = {}; S.fast = false; go('o04'); }); break;
+      case 'login-sheet': S.sheet = 'login'; softRender(); break;
+      case 'login-go': closeSheet(function () { S.fast = true; if (!S.email) S.email = 'andrii@example.com'; go('q09'); }); break;
+      case 'recover': closeSheet(function () { showToast('Ссылка для восстановления отправлена', null); }); break;
+      case 'theme': S.light = !S.light; softRender(); break;
+      case 'download-data': showToast('Копию данных отправим на ваш email', null); break;
+      case 'do-revoke':
+        closeSheet(function () {
+          S.revoked[S.revoke] = true;
+          if (S.revoke === 'med') { S.medConsent = false; S.med = false; }
+          showToast('Согласие отозвано', null);
+        });
+        break;
+      case 'toggle-terms': S.consentTerms = !S.consentTerms; S.pop = true; softRender(); break;
+      case 'toggle-data': S.consentData = !S.consentData; S.pop = true; softRender(); break;
+      case 'toggle-med': S.medConsent = !S.medConsent; S.pop = true; if (!S.medConsent) S.med = false; else delete S.revoked.med; softRender(); break;
       case 'pick-cv': closeSheet(function () { simulateUpload('cv'); }); break;
       case 'rm-cv':
         clearTimers();
@@ -1515,6 +2038,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
         break;
       case 'pick-doc': closeSheet(function () { S.doc.pages = Math.min(2, S.doc.pages + 1); simulateUpload('doc'); }); break;
       case 'pick-doc-step': S.doc.pages = 1; S.doc.st = 'done'; softRender(); break;
+      case 'add-doc2': S.doc2 = true; S.fx.d2 = true; softRender(); break;
+      case 'rm-doc2': S.doc2 = false; softRender(); break;
       case 'rm-doc':
         clearTimers();
         var docBak = { pages: S.doc.pages, st: S.doc.st };
@@ -1532,31 +2057,45 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       case 'go-read': go('q04'); break;
       case 'read-next': go(S.readTarget || 'q05'); break;
       case 'stop-read': closeSheet(function () { go('q03'); }); break;
-      case 'retake': S.doc.pages = 0; S.doc.st = 'none'; S.scenario = 'ok'; go('q03'); break;
-      case 'manual': S.first = ''; S.last = ''; S.scenario = 'ok'; go('q05'); break;
-      case 'override': S.scenario = 'ok'; go('q05'); break;
+      case 'retake': S.doc.pages = 0; S.doc.st = 'none'; S.doc2 = false; S.scenario = 'ok'; go('q03'); break;
+      case 'upload-file': S.doc.pages = 0; S.doc.st = 'none'; S.doc2 = false; S.scenario = 'ok'; go('q03'); S.sheet = 'doc'; softRender(); break;
+      case 'pick-mfile': S.m.file = true; softRender(); break;
+      case 'rm-mfile': S.m.file = false; softRender(); break;
+      case 'manual-done':
+        S.manual = true; S.scenario = 'ok'; S.edited = {};
+        S.d.docNum = S.m.num; S.d.docIssue = S.m.issue; S.d.docExp = S.m.exp;
+        S.doc.type = S.m.name === DOC_TYPES[1].n ? 'diploma' : 'sid';
+        S.first = ''; S.last = ''; S.d.birth = '';
+        go('q05');
+        break;
       case 'toggle-pass':
         S.showPass = !S.showPass;
         softRender();
         var p = document.getElementById('f-pass');
         if (p) { p.focus(); p.setSelectionRange(p.value.length, p.value.length); }
         break;
-      case 'create':
-        S.creating = true; S.createErr = '';
+      case 'acct-next':
+        S.creating = true;
         softRender();
         later(function () {
           S.creating = false;
-          if (S.scenario === 'emailTaken') {
-            S.createErr = 'Аккаунт с этим email уже есть.';
-            softRender();
-            return;
-          }
-          S.done = { 1: true, 3: true };
-          go('q06');
-        }, 1100);
+          if (S.scenario === 'emailTaken') { S.emailTaken = true; softRender(); return; }
+          go(S.c === 's1' ? 's1c' : 'q07');
+        }, 900);
         break;
-      case 'fill-profile': S.done = { 1: true, 3: true }; go(nextStep(1)); break;
-      case 'verify-open': S.verified = true; go('q07'); break;
+      case 'resend':
+        S.codeCd = 60; S.codeTries = 5; S.code = ['', '', '', '', '', '']; S.codeErr = ''; S.cdTok++;
+        codeTick(S.cdTok);
+        showToast('Код отправлен ещё раз', null);
+        var f0 = document.querySelector('#otp input');
+        if (f0) f0.focus();
+        break;
+      case 'fill-profile': {
+        if (S.fast && !S.done[2]) S.done = { 1: true, 2: true, 3: true, 4: true, 6: true };
+        var fo = firstOpenStep();
+        go('s' + fo);
+        break;
+      }
       case 'resume': go('q05'); break;
       case 'later-out': go('c08'); break;
       default: break;
@@ -1564,28 +2103,73 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
   });
 
   document.addEventListener('input', function (e) {
-    var b = e.target.getAttribute && e.target.getAttribute('data-bind');
+    var t = e.target;
+    if (!t.getAttribute) return;
+    var oi = t.getAttribute('data-otp');
+    if (oi !== null) { otpInput(t, Number(oi)); return; }
+    var b = t.getAttribute('data-bind');
     if (!b) return;
-    S[b] = e.target.value;
-    if (b === 'email' || b === 'email2') S.createErr = '';
-    refreshCheck();
+    if (b.indexOf('d.') === 0) S.d[b.slice(2)] = t.value;
+    else if (b.indexOf('m.') === 0) S.m[b.slice(2)] = t.value;
+    else S[b] = t.value;
+    var key = b.indexOf('d.') === 0 ? b.slice(2) : b;
+    if (S.c === 'q05' && DOC_KEYS.indexOf(key) >= 0) {
+      var og = (S.orig || {})[key];
+      if (og && t.value !== og) S.edited[key] = true; else delete S.edited[key];
+      var tg = document.querySelector('[data-tag="' + key + '"]');
+      if (tg && tg.getAttribute('data-kind')) {
+        if (S.edited[key]) { tg.className = 'tag w'; tg.textContent = 'исправлено вами'; }
+        else if (S.manual && ['docNum', 'docIssue', 'docExp'].indexOf(key) >= 0) { tg.className = 'tag w'; tg.textContent = 'введено вручную'; }
+        else { tg.className = 'tag'; tg.innerHTML = ic('sparkle', 11, 2) + 'из документа'; }
+      }
+      var en = document.getElementById('editedNote');
+      if (en) en.innerHTML = editedNote();
+    }
+    if (b === 'email') {
+      if (S.emailTaken) { S.emailTaken = false; var ae = document.getElementById('acctErr'); if (ae) ae.innerHTML = ''; }
+    }
+    refreshScreen();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var t = e.target;
+    if (!t.getAttribute || t.getAttribute('data-otp') === null) return;
+    var i = Number(t.getAttribute('data-otp'));
+    if (e.key === 'Backspace' && !t.value && i > 0) {
+      var boxes = document.querySelectorAll('#otp input');
+      S.code[i - 1] = '';
+      boxes[i - 1].value = '';
+      boxes[i - 1].classList.remove('f');
+      boxes[i - 1].focus();
+      e.preventDefault();
+    }
   });
 
   document.addEventListener('focusout', function (e) {
-    if (!e.target) return;
-    if (e.target.id === 'f-email') setTimeout(refreshCheck, 0);
-    if (e.target.id === 'f-email2') { S.e2blur = true; refreshCheck(); }
-    if (e.target.id === 'f-email2' && S.email2 && S.email2 !== S.email) {
-      var el = e.target;
-      el.classList.remove('shake');
-      void el.offsetWidth;
-      el.classList.add('shake');
+    var t = e.target;
+    if (!t) return;
+    if (t.id === 'f-email') {
+      setTimeout(function () {
+        refreshAcct();
+        if (S.scenario === 'emailTaken' && emailOk(S.email) && !S.emailTaken) {
+          S.emailTaken = true;
+          var ae = document.getElementById('acctErr');
+          if (ae) ae.innerHTML = takenBanner();
+          refreshAcct();
+        }
+      }, 0);
+    }
+    if (t.id === 'f-pass2') { S.p2blur = true; refreshAcct(); }
+    if (t.id === 'f-pass2' && S.pass2 && S.pass2 !== S.pass) {
+      t.classList.remove('shake');
+      void t.offsetWidth;
+      t.classList.add('shake');
     }
   });
 
   document.addEventListener('change', function (e) {
     if (e.target.id === 'jump') { go(e.target.value); return; }
-    if (e.target.id === 'scenario') { S.scenario = e.target.value; S.createErr = ''; renderBar(); return; }
+    if (e.target.id === 'scenario') { S.scenario = e.target.value; S.emailTaken = false; renderBar(); return; }
     var k = e.target.getAttribute && e.target.getAttribute('data-opt');
     if (k) { S[k] = e.target.checked; softRender(); }
   });
