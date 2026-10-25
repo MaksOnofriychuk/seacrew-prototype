@@ -317,6 +317,38 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
 .ambient-bg .sea .w3{animation:waveX 34s linear infinite;bottom:-12px}
 .ambient-bg .bub{position:absolute;bottom:40px;width:4px;height:4px;border-radius:50%;background:var(--accent);opacity:0;animation:bubble 7s ease-in infinite}
 .ambient-bg .glow{display:none!important}
+.hero.slide{justify-content:flex-end;padding-bottom:28px}
+.eyebrow{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.2px;margin-top:22px}
+.ill{position:relative;height:200px;border-radius:20px;background:linear-gradient(160deg,rgba(var(--accentRGB),.10),rgba(var(--accentRGB),.02));border:1px solid var(--accentBorder);display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;overflow:hidden}
+.ill-col{flex-direction:column;align-items:stretch;justify-content:center;gap:8px}
+.ill-doc{position:relative;width:92px;height:128px;border-radius:12px;background:linear-gradient(160deg,var(--docA),var(--docB));border:1px solid var(--border);overflow:hidden;flex-shrink:0}
+.ill-doc .ph{position:absolute;left:10px;top:12px;width:28px;height:36px;border-radius:4px;background:var(--docLine)}
+.ill-doc .ln{position:absolute;left:44px;height:5px;border-radius:3px;background:var(--docLine);max-width:40px}
+.ill-doc .mrz{position:absolute;left:8px;right:8px;bottom:10px;height:14px;background:repeating-linear-gradient(90deg,var(--docLine) 0 4px,transparent 4px 6px)}
+.ill-doc .beam{position:absolute;left:0;right:0;height:2px;background:var(--accent);box-shadow:0 0 14px 3px rgba(var(--accentRGB),.5);animation:scan 2.4s ease-in-out infinite}
+.ill-arrow{color:var(--accent);animation:nudge 1.4s ease-in-out infinite}
+.ill-fields{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.ill-f{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:6px 8px;font-size:11px;opacity:0;animation:riseIn .35s ease-out forwards}
+.ill-f .k{color:var(--t2);flex-shrink:0}.ill-f .v{font-weight:600;flex:1;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ill-f .ok{width:16px;height:16px;border-radius:50%;background:var(--successBg);color:var(--success);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ill-form{width:100%;max-width:260px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:7px;position:relative}
+.ill-row{display:flex;align-items:center;gap:8px;font-size:11px}.ill-row .k{color:var(--t2);width:96px;flex-shrink:0}
+.ill-row .fill{flex:1;height:14px;border-radius:5px;background:var(--input);border:1px solid var(--border);position:relative;overflow:hidden}
+.ill-row .fill::after{content:'';position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(var(--accentRGB),.35);animation:fillw .5s ease-out forwards;animation-delay:inherit}
+.ill-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:var(--onAccent);border-radius:9px;padding:7px;font-size:12px;font-weight:600;animation:tapp 2.6s .4s ease-in-out infinite}
+.ill-sent{position:absolute;right:10px;top:10px;display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--success);background:var(--successBg);border-radius:20px;padding:2px 8px;opacity:0;animation:fadeInOut 2.6s 2.4s ease-in-out forwards}
+.ill-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 10px;display:flex;flex-direction:column;gap:6px;opacity:0;animation:riseIn .4s ease-out forwards}
+.ill-card.dl{flex-direction:row;align-items:center;gap:8px}
+.ill-card .ln2{height:5px;border-radius:3px;background:var(--docLine);width:100%}
+.ill-card .dotav{width:20px;height:20px;border-radius:50%;background:var(--tint);border:1px solid var(--accentBorder)}
+.ill-card .sal{font-size:12px;font-weight:700;color:var(--accent)}
+.ill .badge{font-size:10px;font-weight:700;border-radius:20px;padding:3px 8px;white-space:nowrap}
+.ill .badge.ok{background:var(--successBg);color:var(--success)}.ill .badge.warn{background:var(--warningBg);color:var(--warning)}.ill .badge.bad{background:var(--dangerBg);color:var(--danger)}
+.ill-lock{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;color:var(--t2);margin-top:2px}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+@keyframes fillw{to{width:100%}}
+@keyframes tapp{0%,60%,100%{transform:scale(1)}70%{transform:scale(.94)}80%{transform:scale(1)}}
+@keyframes fadeInOut{0%{opacity:0;transform:scale(.8)}15%{opacity:1;transform:scale(1)}100%{opacity:1}}
 .drawer{position:absolute;inset:0;z-index:6;display:flex;animation:fade .18s}
 .drawer .dim{flex:1;background:rgba(4,8,12,.55)}
 .drawer .pane{width:84%;height:100%;background:var(--surface);border-right:1px solid var(--border);padding:62px 20px 30px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;animation:slideIn .26s cubic-bezier(.2,.8,.2,1);order:-1;box-shadow:12px 0 40px var(--shadow)}
@@ -566,7 +598,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     b02: 'Сейчас: email, пароль и повтор пароля. Ни имени, ни согласия, ни документа моряка.',
     b03: 'После регистрации моряк попадает на пустой список документов и добавляет их по одному.',
     b04: 'Профиль пустой: имя и остальные данные появятся только из подтверждённых документов.',
-    o01: 'Три коротких слайда о том, что умеет приложение, с точками внизу. «Пропустить» ведёт сразу к выбору способа. Показываются при первом запуске.',
+    o01: 'Четыре слайда — что приложение <b>закрывает</b>: 1) профиль из документов за минуту, без ручного ввода; 2) ответ на анкету агентства в один тап (автозаполнение из профиля); 3) лента и вакансии моряков; 4) документы под контролем — напоминания о сроках и шифрование. Над заголовком — «боль», которую снимаем. Иллюстрации — живые мини-сцены. «Пропустить» — сразу к выбору способа. Показываются при первом запуске.',
     o02: 'Четыре пути. <b>Быстро</b> — CV и документ моряка. <b>Пошагово</b> — профиль по шагам, можно с перерывами. <b>Войти</b> — для тех, у кого уже есть аккаунт. <b>Посмотреть без регистрации</b> — гость: аккаунт не создаётся.',
     o03: 'Короткий экран после выбора «Быстро»: что приготовить — CV, удостоверение или диплом моряка, доступ к почте.',
     o04: 'Короткий экран после выбора «Пошагово»: регистрацию можно прервать и продолжить с любого шага и любого устройства.',
@@ -978,10 +1010,46 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
   /* ---------- C: онбординг ---------- */
 
   var SLIDES = [
-    ['docs', 'Все документы в одном месте', 'Загрузите удостоверение, диплом и сертификаты — ИИ прочитает их, а вам останется только проверить.'],
-    ['doc', 'Анкеты заполняются сами', 'Данные из подтверждённых документов подставляются в анкеты агентств.'],
-    ['ship', 'Вакансии и отклики', 'Смотрите вакансии и откликайтесь, когда профиль готов.']
+    { ill: 'scan', eyebrow: 'Хватит переписывать документы вручную', t: 'Профиль из документов — за минуту',
+      s: 'Сфотографируйте удостоверение, диплом и CV. ИИ прочитает всё сам — вам останется только проверить.',
+      chips: [['sparkle', 'ИИ читает документы'], ['check', 'Вы только проверяете']] },
+    { ill: 'form', eyebrow: 'Агентство прислало анкету?', t: 'Ответ агентству в один тап',
+      s: 'Нажмите «Заполнить из профиля» — анкета заполнится данными из ваших документов. Проверьте и отправьте.',
+      chips: [['bolt', 'Без повторного ввода'], ['doc', 'Любые анкеты агентств']] },
+    { ill: 'feed', eyebrow: 'Всё о работе в море — в одном месте', t: 'Лента и вакансии моряков',
+      s: 'Новости, опыт коллег и свежие вакансии. Откликайтесь, когда профиль готов.',
+      chips: [['ship', 'Свежие вакансии'], ['user', 'Сообщество моряков']] },
+    { ill: 'docs', eyebrow: 'Ни одного просроченного документа', t: 'Документы под контролем',
+      s: 'Напомним заранее, когда истекает медосмотр или сертификат. Все файлы зашифрованы.',
+      chips: [['clock', 'Напоминания о сроках'], ['lock', 'Шифрование']] }
   ];
+
+  function illustration(kind) {
+    if (kind === 'scan') {
+      return '<div class="ill"><div class="ill-doc"><div class="ph"></div><div class="ln" style="top:16px;width:90px"></div><div class="ln" style="top:30px;width:64px"></div><div class="ln" style="top:44px;width:78px"></div><div class="mrz"></div><div class="beam"></div></div>' +
+        '<div class="ill-arrow">' + ic('chevron', 22, 2.4) + '</div>' +
+        '<div class="ill-fields">' + [['Имя', 'Andrii Koval'], ['Номер', 'AB 123456'], ['До', '12.03.2029'], ['Стаж', '3 рейса']].map(function (f, i) {
+          return '<div class="ill-f" style="animation-delay:' + (0.5 + i * 0.35).toFixed(2) + 's"><span class="k">' + f[0] + '</span><span class="v">' + f[1] + '</span><span class="ok">' + ic('check', 11, 3) + '</span></div>';
+        }).join('') + '</div></div>';
+    }
+    if (kind === 'form') {
+      return '<div class="ill"><div class="ill-form"><div class="row" style="justify-content:space-between"><span class="h3" style="font-size:13px">Анкета агентства</span><span class="tag m" style="font-size:10px">новая</span></div>' +
+        ['Фамилия, имя', 'Дата рождения', 'Диплом', 'Последний рейс'].map(function (l, i) {
+          return '<div class="ill-row"><span class="k">' + l + '</span><span class="fill" style="animation-delay:' + (1.0 + i * 0.3).toFixed(2) + 's"></span></div>';
+        }).join('') +
+        '<div class="ill-btn">' + ic('sparkle', 13, 2.2) + 'Заполнить из профиля</div>' +
+        '<div class="ill-sent">' + ic('check', 13, 3) + 'Отправлено</div></div></div>';
+    }
+    if (kind === 'feed') {
+      return '<div class="ill ill-col">' +
+        '<div class="ill-card" style="animation-delay:.2s"><div class="row" style="gap:8px"><span class="dotav"></span><span class="small" style="color:var(--t1)">Chief Officer · опыт</span></div><div class="ln2"></div><div class="ln2" style="width:70%"></div></div>' +
+        '<div class="ill-card vac" style="animation-delay:.45s"><div class="row" style="gap:8px"><span class="ico acc" style="width:28px;height:28px;border-radius:8px">' + ic('ship', 15) + '</span><div style="flex:1"><div class="h3" style="font-size:13px">3rd Engineer · Tanker</div><div class="small" style="font-size:11px">Посадка в декабре</div></div><span class="sal">$4 200</span></div></div>' +
+        '<div class="ill-card" style="animation-delay:.7s"><div class="row" style="gap:8px"><span class="dotav"></span><span class="small" style="color:var(--t1)">Новости флота</span></div><div class="ln2" style="width:85%"></div></div></div>';
+    }
+    return '<div class="ill ill-col">' + [['Удостоверение моряка', 'до 12.03.2029', 'ok'], ['Медосмотр', 'через 20 дней', 'warn'], ['Basic Safety Training', 'обновить', 'bad']].map(function (d, i) {
+      return '<div class="ill-card dl" style="animation-delay:' + (0.2 + i * 0.25).toFixed(2) + 's"><span class="ico acc" style="width:28px;height:28px;border-radius:8px">' + ic('doc', 15) + '</span><span class="h3" style="font-size:13px;flex:1">' + d[0] + '</span><span class="badge ' + d[2] + '">' + d[1] + '</span></div>';
+    }).join('') + '<div class="ill-lock">' + ic('lock', 14, 2.2) + 'Файлы зашифрованы</div></div>';
+  }
 
   function oSlides() {
     var sl = SLIDES[S.slide], last = S.slide === SLIDES.length - 1;
@@ -989,10 +1057,12 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       return '<button class="' + (i === S.slide ? 'on' : '') + '" data-a="slide:' + i + '" aria-label="Слайд ' + (i + 1) + '"></button>';
     }).join('');
     return phone('<div class="body welcome underbar">' +
-      '<div class="hero grow" style="justify-content:center;max-height:none">' + sea(true) +
-      '<div class="logo tile stag" style="width:84px;height:84px;border-radius:24px;animation-delay:.05s">' + ic(sl[0], 40, 2) + '</div>' +
-      '<div class="h1 stag" style="margin-top:28px;font-size:30px;animation-delay:.12s">' + sl[1] + '</div>' +
-      '<div class="sub stag" style="margin-top:12px;animation-delay:.2s">' + sl[2] + '</div></div>' +
+      '<div class="hero grow slide" style="max-height:none">' + sea(true) +
+      '<div class="stag" style="animation-delay:.04s">' + illustration(sl.ill) + '</div>' +
+      '<div class="eyebrow stag" style="animation-delay:.1s">' + sl.eyebrow + '</div>' +
+      '<div class="h1 stag" style="margin-top:6px;font-size:28px;animation-delay:.14s">' + sl.t + '</div>' +
+      '<div class="sub stag" style="margin-top:10px;animation-delay:.2s">' + sl.s + '</div>' +
+      '<div class="feats">' + sl.chips.map(function (c, i) { return '<span class="feat stag" style="animation-delay:' + (0.26 + i * 0.06).toFixed(2) + 's">' + ic(c[0], 15) + c[1] + '</span>'; }).join('') + '</div></div>' +
       '<div class="dots">' + dots + '</div></div>' +
       '<div class="foot">' + btn(last ? 'Начать' : 'Далее', last ? 'c:o02' : 'slide-next') + '</div>' +
       '<div class="navbar"><button class="link" style="margin-left:auto;font-size:15px;font-weight:600;padding:12px 10px" data-a="c:o02">Пропустить</button></div>');
@@ -1010,9 +1080,9 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       '<div class="hero grow">' + sea(true) + logo() +
       '<div class="h1" style="margin-top:22px;font-size:30px">Ваша морская карьера в одном приложении</div>' +
       '<div class="feats">' +
-      '<span class="feat stag" style="animation-delay:.45s">' + ic('docs', 15) + 'Документы</span>' +
-      '<span class="feat stag" style="animation-delay:.55s">' + ic('doc', 15) + 'Анкеты</span>' +
-      '<span class="feat stag" style="animation-delay:.65s">' + ic('ship', 15) + 'Вакансии</span></div></div>' +
+      '<span class="feat stag" style="animation-delay:.45s">' + ic('sparkle', 15) + 'Профиль за минуту</span>' +
+      '<span class="feat stag" style="animation-delay:.55s">' + ic('bolt', 15) + 'Анкета в 1 тап</span>' +
+      '</div></div>' +
       '<div class="h3 stag" style="animation-delay:.15s;font-size:15px">Выберите способ</div>' +
       choice({ d: .25, a: 'start-quick', icon: 'bolt', t: 'Быстро', tag: '≈ 1 минута', s: 'CV и документ моряка — остальное потом', hi: true }) +
       choice({ d: .33, a: 'start-step', icon: 'steps', lines: true, t: 'Пошагово', s: 'Весь профиль по шагам, можно с перерывами' }) +
