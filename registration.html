@@ -260,6 +260,7 @@ svg{display:block}
 .ico.acc{background:var(--tint);border-color:var(--accentBorder)}
 .ico.big{width:64px;height:64px;border-radius:18px}
 .check{display:flex;gap:12px;align-items:flex-start;cursor:pointer;font-size:14px;line-height:1.45;color:var(--t1)}
+.check.sm{font-size:13.5px;align-items:center;gap:10px;margin:-2px 0 4px;color:var(--t2)}.check.sm .box{width:20px;height:20px;border-radius:6px}
 .box{width:24px;height:24px;border-radius:7px;border:1.5px solid var(--strong);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--onAccent);margin-top:1px;transition:background .15s,border-color .15s}
 .box.on{background:var(--accent);border-color:var(--accent)}
 .box.pop{animation:boxpop .28s ease-out}
@@ -695,7 +696,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     b03: 'После регистрации моряк попадает на пустой список документов и добавляет их по одному.',
     b04: 'Профиль пустой: имя и остальные данные появятся только из подтверждённых документов.',
     o01: 'Четыре слайда — что приложение <b>закрывает</b>: 1) профиль из документов за минуту, без ручного ввода; 2) ответ на анкету агентства в один тап (автозаполнение из профиля); 3) лента и вакансии моряков; 4) документы под контролем — напоминания о сроках и шифрование. Над заголовком — «боль», которую снимаем. Иллюстрации — живые мини-сцены. «Пропустить» — сразу к выбору способа. Показываются при первом запуске.',
-    o02: 'Четыре пути. <b>Быстро</b> — CV и документ моряка. <b>Пошагово</b> — профиль по шагам, можно с перерывами. <b>Войти</b> — для тех, у кого уже есть аккаунт. <b>Посмотреть без регистрации</b> — гость: аккаунт не создаётся.',
+    o02: 'Три пути. <b>Пошагово</b> — основной, рекомендуемый: профиль по шагам, можно с перерывами. <b>Быстро</b> — CV и документ моряка. <b>Посмотреть без регистрации</b> — гость: аккаунт не создаётся. Внизу строка «Уже есть аккаунт? Войти» — для нового телефона или после выхода. Тот, кто уже вошёл, этот экран не видит: приложение сразу открывает ленту.',
     o03: 'Короткий экран после выбора «Быстро»: что приготовить — CV, удостоверение или диплом моряка, доступ к почте.',
     o04: 'Короткий экран после выбора «Пошагово»: регистрацию можно прервать и продолжить с любого шага и любого устройства.',
     g01: 'Гость видит образцы ленты — это заглушки, не настоящие публикации. Любое действие (отметка, сообщение, вкладки «Документы», «Профиль») открывает окно «Зарегистрируйтесь, чтобы…». <b>Приложение запоминает гостя на телефоне:</b> при следующем открытии он сразу попадает сюда, без слайдов и выбора способа.',
@@ -704,10 +705,10 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     q02: 'Две отдельные галочки, заранее не отмечены: условия сервиса и политика конфиденциальности; обработка документов, включая чтение ИИ. Нужны обе — до загрузки первого файла. «Подробнее» открывает краткий текст простым языком. Экран не прокручивается.',
     q03: 'Обязательны CV и <b>один документ моряка на выбор</b>: удостоверение (Seafarer\'s ID) или диплом. Второй документ можно добавить сразу или позже. Файлы во временном хранилище, зашифрованы; большие фото уменьшаются. Пока аккаунта нет, файлы удаляются через 30 дней.',
     q04: 'ИИ читает CV и документы целиком: личные данные, документы, диплом, морской стаж. Отдельно из документа моряка берутся номер и дата рождения — для записи безопасности. Проверка по списку заблокированных — здесь же. Исход зависит от сценария в панели. В приложении экран идёт дальше сам; в прототипе — по кнопке (или включите «Автопереход»).',
-    q05: 'Прочитанное сгруппировано: личные данные, документы, диплом, морской стаж. Каждое поле можно исправить; метка «из документа» показывает источник. Подтверждённое попадает в профиль и в автозаполнение анкет, неподтверждённое — нет. Если исправить номер или дату рождения, администратор получит пометку «данные документа введены вручную» и сверит их с фото.',
+    q05: 'Прочитанное сгруппировано: личные данные, документы, диплом, морской стаж. Каждое поле можно исправить; метка «из документа» показывает источник. Подтверждённое попадает в профиль и в автозаполнение анкет, неподтверждённое — нет. Если исправить номер или дату рождения, администратор получит пометку «данные документа введены вручную» и сверит их с фото. У документа и диплома: номер, дата выдачи, срок действия (или «Без срока действия»), страна выдачи, название документа.',
     q06: 'Email, пароль и повтор пароля. Если email уже занят, сразу показываем «Этот email уже зарегистрирован» и два выхода: «Войти» или «Восстановить пароль» (сценарий «Email уже занят»).',
     q07: 'Код из 6 цифр: действует 15 минут, 5 попыток. «Отправить ещё раз» доступно через 60 секунд. Можно изменить email; письмо могло попасть в «Спам». Закрыли приложение — при открытии сразу этот экран. <b>В прототипе верный код — 123456</b>, любой другой даёт ошибку.',
-    q08: 'Аккаунт создан: файлы перенесены к моряку и зашифрованы его ключом, временные копии стёрты. Подтверждённые данные уже в профиле.',
+    q08: 'Аккаунт создан: файлы перенесены к моряку и зашифрованы его ключом, временные копии стёрты. Подтверждённые данные уже в профиле. Ниже — <b>прогресс заполнения профиля</b> и чего не хватает.',
     q09: '«Готовность к анкетам» считается <b>только по полям, которые чаще всего нужны агентствам в анкетах</b>: личные данные, документ моряка, диплом, медицинские, морской стаж. При 100 % — «Профиль заполнен», иначе — «Дополнить профиль» (ведёт на первый незаполненный шаг). Рекрутер видит «Профиль неполный», пока нет 100 %. Чтобы увидеть 100 %, включите галочку в панели.',
     q10: 'Каждое согласие хранится с версией текста и временем. «Отозвать согласие» — так же просто, как дать. Копию своих данных можно скачать отсюда и из профиля.',
     p04: 'Боковое меню, как в LinkedIn: открывается по аватару в левом верхнем углу главной. Сверху — кто вы: фото, имя, отметка «документ моряка проверен», должность, гражданство и <b>статус доступности</b> (нажмите, чтобы сменить) — то, что агентства ищут в первую очередь. Ниже — приглашения и анкеты, готовность к анкетам и <b>документы, которые скоро истекают</b>. Затем быстрый доступ: документы, стаж, CV одним PDF, анкеты, приглашения. Внизу — настройки и конфиденциальность.',
@@ -807,8 +808,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       doc: { type: 'sid', pages: 0, st: 'none', p: 0 }, doc2: false,
       phase: 0,
       first: 'Andrii', last: 'Koval',
-      d: { birth: '14.03.1991', cit: 'Украина', phone: '+380 00 000 0000', docNum: 'AB 123456', docIssue: '12.05.2022', docExp: '12.05.2027',
-        dipRank: '3rd Engineer', dipNum: 'UA-2021-0457', dipIssue: '20.06.2021', dipExp: '20.06.2029',
+      d: { birth: '14.03.1991', cit: 'Украина', phone: '+380 00 000 0000', docNum: 'AB 123456', docIssue: '12.05.2022', docExp: '12.05.2027', docName: 'Seafarer\'s Identity Document', docCountry: 'Украина', docNoExp: false,
+        dipRank: '3rd Engineer', dipNum: 'UA-2021-0457', dipIssue: '20.06.2021', dipExp: '20.06.2029', dipName: 'Certificate of Competency', dipCountry: 'Украина', dipNoExp: false,
         vessel1: 'MV Example Star', rank1: '3rd Engineer', per1: '02.2024 – 09.2024',
         vessel2: 'MV Example Wave', rank2: '4th Engineer', per2: '05.2022 – 12.2023' },
       orig: null, edited: {}, manual: false,
@@ -977,7 +978,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       var gt = { apply: 'откликнуться на вакансию', msg: 'написать агентству', react: 'ставить отметки и писать комментарии', docs: 'хранить документы', post: 'публиковать', save: 'сохранять вакансии', inbox: 'получать анкеты и сообщения', profile: 'создать профиль' }[S.gate] || 'продолжить';
       inner = '<div class="row" style="gap:12px"><div class="ico acc">' + ic('lock', 20) + '</div><div class="h2">Зарегистрируйтесь, чтобы ' + gt + '</div></div>' +
         '<div class="small">Это займёт около минуты. Смотреть примеры можно и без регистрации.</div>' +
-        btn('Быстро — по CV и документам', 'gate-fast') + btn('Пошагово', 'gate-step', 's') + btn('Не сейчас', 'sheet-close', 'g');
+        btn('Пошагово', 'gate-step') + btn('Быстро — по CV и документам', 'gate-fast', 's') + btn('Не сейчас', 'sheet-close', 'g');
     } else if (S.sheet === 'login') {
       inner = '<div class="h2">Вход</div>' +
         field('Email', { type: 'email', ph: 'you@example.com' }) + field('Пароль', { type: 'password' }) +
@@ -1244,10 +1245,10 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       '<span class="feat stag" style="animation-delay:.55s">' + ic('bolt', 15) + 'Анкета в 1 тап</span>' +
       '</div></div>' +
       '<div class="h3 stag" style="animation-delay:.15s;font-size:15px">Выберите способ</div>' +
-      choice({ d: .25, a: 'start-quick', icon: 'bolt', t: 'Быстро', tag: '≈ 1 минута', s: 'CV и документ моряка — остальное потом', hi: true }) +
-      choice({ d: .33, a: 'start-step', icon: 'steps', lines: true, t: 'Пошагово', s: 'Весь профиль по шагам, можно с перерывами' }) +
-      choice({ d: .41, a: 'login-sheet', icon: 'user', t: 'Войти', s: 'У меня уже есть аккаунт', pad: '11px 14px' }) +
-      choice({ d: .49, a: 'c:g01', icon: 'eye', t: 'Посмотреть без регистрации', s: 'Лента и вакансии — как гость', pad: '11px 14px' }) +
+      choice({ d: .25, a: 'start-step', icon: 'steps', lines: true, t: 'Пошагово', tag: 'рекомендуем', s: 'Весь профиль по шагам, можно с перерывами', hi: true }) +
+      choice({ d: .33, a: 'start-quick', icon: 'bolt', t: 'Быстро', tag: '≈ 1 минута', s: 'CV и документ моряка — остальное потом' }) +
+      choice({ d: .41, a: 'c:g01', icon: 'eye', t: 'Посмотреть без регистрации', s: 'Лента и вакансии — как гость', pad: '11px 14px' }) +
+      '<div class="stag" style="animation-delay:.49s;text-align:center;font-size:15px;color:var(--t2)">Уже есть аккаунт? <button class="link" style="font-size:15px;font-weight:600" data-a="login-sheet">Войти</button></div>' +
       '<div class="row stag" style="animation-delay:.58s;justify-content:center;gap:6px;color:var(--t2);font-size:12px"><span style="color:var(--accent)">' + ic('lock', 13, 2) + '</span>Бесплатно · документы шифруются</div></div>');
   }
 
@@ -1507,8 +1508,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
 
   function docList() {
     var d = S.d, list = [];
-    list.push({ id: 'sid', g: 'Документ моряка', ic: 'idcard', t: 'Удостоверение личности моряка', num: 'AB •••' + d.docNum.slice(-3), exp: d.docExp, st: 'ok' });
-    list.push({ id: 'dip', g: 'Дипломы и сертификаты', ic: 'doc', t: 'Диплом · ' + d.dipRank, num: '№ •••' + d.dipNum.slice(-3), exp: d.dipExp, st: 'ok' });
+    list.push({ id: 'sid', g: 'Документ моряка', ic: 'idcard', t: 'Удостоверение личности моряка', num: 'AB •••' + d.docNum.slice(-3), exp: d.docNoExp ? '' : d.docExp, st: 'ok' });
+    list.push({ id: 'dip', g: 'Дипломы и сертификаты', ic: 'doc', t: 'Диплом · ' + d.dipRank, num: '№ •••' + d.dipNum.slice(-3), exp: d.dipNoExp ? '' : d.dipExp, st: 'ok' });
     if (S.med) list.push({ id: 'med', g: 'Медицинские', ic: 'medical', t: 'Медицинский сертификат', num: 'Годен к работе', exp: '14.11.2026', st: 'w', left: 'через 20 дней' });
     if (S.cv.st === 'done') list.push({ id: 'cv', g: 'CV', ic: 'doc', t: 'CV · Andrii_Koval.pdf', num: 'Загружено 25.10.2026', exp: '', st: '' });
     return list;
@@ -1539,8 +1540,8 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     var x = docList().filter(function (y) { return y.id === S.docSel; })[0] || docList()[0];
     var d = S.d;
     var rows = {
-      sid: [['Имя и фамилия', esc(S.first + ' ' + S.last)], ['Номер', d.docNum], ['Дата выдачи', d.docIssue], ['Действует до', d.docExp], ['Страна выдачи', d.cit]],
-      dip: [['Должность', d.dipRank], ['Номер', d.dipNum], ['Дата выдачи', d.dipIssue], ['Действует до', d.dipExp]],
+      sid: [['Название', esc(d.docName)], ['Имя и фамилия', esc(S.first + ' ' + S.last)], ['Номер', esc(d.docNum)], ['Дата выдачи', esc(d.docIssue)], ['Действует до', d.docNoExp ? 'Без срока' : esc(d.docExp)], ['Страна выдачи', esc(d.docCountry)]],
+      dip: [['Название', esc(d.dipName)], ['Должность', esc(d.dipRank)], ['Номер', esc(d.dipNum)], ['Дата выдачи', esc(d.dipIssue)], ['Действует до', d.dipNoExp ? 'Без срока' : esc(d.dipExp)], ['Страна выдачи', esc(d.dipCountry)]],
       med: [['Заключение', 'Годен к работе'], ['Действует до', '14.11.2026']],
       cv: [['Файл', 'Andrii_Koval.pdf'], ['Загружено', '25.10.2026']]
     }[x.id];
@@ -1712,7 +1713,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
 
   /* проверка данных из документов */
 
-  var DOC_KEYS = ['first', 'last', 'birth', 'docNum', 'docIssue', 'docExp', 'dipNum', 'dipRank', 'dipIssue', 'dipExp'];
+  var DOC_KEYS = ['first', 'last', 'birth', 'docNum', 'docIssue', 'docExp', 'docCountry', 'docName', 'dipNum', 'dipRank', 'dipIssue', 'dipExp', 'dipCountry', 'dipName'];
 
   function dval(k) { return (k === 'first' || k === 'last') ? S[k] : S.d[k]; }
 
@@ -1729,6 +1730,12 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     o = o || {};
     var bind = (k === 'first' || k === 'last') ? k : 'd.' + k;
     return field(label, { value: dval(k), bind: bind, ph: o.ph || '', tag: srcTag(k, o.kind), ac: o.ac });
+  }
+
+  function expField(k, nk) {
+    var off = !!S.d[nk];
+    return (off ? field('Действителен до', { value: '', ph: 'Без срока действия', ro: true, tag: '<span class="tag m">бессрочно</span>' }) : df('Действителен до', k, { ph: 'ДД.ММ.ГГГГ' })) +
+      '<div class="check sm" data-a="noexp:' + nk + '" role="checkbox" tabindex="0" aria-checked="' + off + '"><div class="box' + (off ? ' on' : '') + '">' + (off ? ic('check', 13, 2.6) : '') + '</div><div>Без срока действия</div></div>';
   }
 
   function dataValid() { return !!(S.first.trim() && S.last.trim() && S.d.birth.trim() && S.d.docNum.trim()); }
@@ -1754,10 +1761,11 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
         field('Гражданство', { value: S.d.cit, bind: 'd.cit', tag: srcTag('cit', 'cv') }) +
         field('Телефон', { value: S.d.phone, bind: 'd.phone', tag: srcTag('phone', 'cv'), ph: '+380 …' }), 2) +
       grp('Документы · ' + esc(docType().b),
-        df('Номер документа', 'docNum') + df('Дата выдачи', 'docIssue', { ph: 'ДД.ММ.ГГГГ' }) + df('Действителен до', 'docExp', { ph: 'ДД.ММ.ГГГГ' }), 3) +
+        df('Номер документа', 'docNum') + df('Дата выдачи', 'docIssue', { ph: 'ДД.ММ.ГГГГ' }) + expField('docExp', 'docNoExp') +
+        df('Страна выдачи', 'docCountry') + df('Название документа', 'docName'), 3) +
       grp('Диплом',
-        df('Должность по диплому', 'dipRank') + df('Номер диплома', 'dipNum') +
-        df('Дата выдачи', 'dipIssue', { ph: 'ДД.ММ.ГГГГ' }) + df('Действителен до', 'dipExp', { ph: 'ДД.ММ.ГГГГ' }), 4) +
+        df('Номер диплома', 'dipNum') + df('Дата выдачи', 'dipIssue', { ph: 'ДД.ММ.ГГГГ' }) + expField('dipExp', 'dipNoExp') +
+        df('Страна выдачи', 'dipCountry') + df('Название документа', 'dipName') + df('Должность по диплому', 'dipRank'), 4) +
       grp('Морской стаж',
         field('Судно', { value: S.d.vessel1, bind: 'd.vessel1', tag: srcTag('vessel1', 'cv') }) +
         '<div class="grid2">' + field('Должность', { value: S.d.rank1, bind: 'd.rank1' }) + field('Период', { value: S.d.per1, bind: 'd.per1' }) + '</div>' +
@@ -1807,7 +1815,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       '<div id="acctErr">' + (S.emailTaken ? takenBanner() : '') + '</div>' +
       field('Пароль', { type: S.showPass ? 'text' : 'password', id: 'f-pass', value: S.pass, bind: 'pass', ph: 'Не менее 8 символов', eye: true, msgId: 'm-pass', ac: 'new-password',
         after: '<div class="meter" id="meter"><span></span><span></span><span></span><span></span></div>' }) +
-      field('Повторите пароль', { type: S.showPass ? 'text' : 'password', id: 'f-pass2', value: S.pass2, bind: 'pass2', msgId: 'm-pass2', ac: 'new-password' }) + '</div>';
+      field('Повторите пароль', { type: S.showPass ? 'text' : 'password', id: 'f-pass2', value: S.pass2, bind: 'pass2', msgId: 'm-pass2', ac: 'new-password', eye: true }) + '</div>';
   }
 
   function acctBtn() {
@@ -1966,7 +1974,16 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       '<div class="okring">' + burst() + '<svg width="108" height="108" viewBox="0 0 108 108" fill="none" stroke-width="5"><circle class="track" cx="54" cy="54" r="48"/><circle class="p" cx="54" cy="54" r="48" stroke-linecap="round" transform="rotate(-90 54 54)"/></svg><div class="mk">' + ic('check', 46, 2.6) + '</div></div>' +
       W('<div style="text-align:center;display:flex;flex-direction:column;gap:8px"><div class="h1">Аккаунт создан</div><div class="sub">Добро пожаловать, ' + esc(S.first || 'моряк') + '!</div></div>', 4) +
       W('<div class="card"><div class="list">' + row('Email', 'подтверждён') + row('Данные из документов', 'в профиле') + row('CV', 'зашифровано') + row(esc(docType().n), 'зашифровано') + '</div></div>', 5) +
-      '</div><div class="foot">' + btn('Дополнить профиль', 'fill-profile') + btn('Перейти в профиль', 'c:q09', 'g') + '</div>');
+      W(readyCard(), 6) +
+      '</div><div class="foot">' + btn('Перейти в профиль', 'c:q09') + '</div>');
+  }
+
+  function readyCard() {
+    var r = readiness(), full = r.pct === 100;
+    return '<div class="card"><div class="row" style="justify-content:space-between"><div class="h3">Профиль заполнен</div><span class="h3" style="color:' + (full ? 'var(--success)' : 'var(--accent)') + '">' + r.pct + ' %</span></div>' +
+      '<div class="pbar"><span style="width:' + r.pct + '%;background:' + (full ? 'var(--success)' : 'var(--warning)') + '"></span></div>' +
+      '<div class="feats" style="margin-top:0">' + r.items.map(function (x) { return '<span class="feat' + (x[1] ? ' ok' : '') + '">' + ic(x[1] ? 'check' : 'plus', 14) + x[0] + '</span>'; }).join('') + '</div>' +
+      (full ? '' : '<div class="small">Осталось: ' + r.items.filter(function (x) { return !x[1]; }).map(function (x) { return x[0].toLowerCase(); }).join(', ') + '. Заполнить можно в профиле.</div>') + '</div>';
   }
 
   function burst() {
@@ -2652,6 +2669,9 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
         S.doc.type = S.m.name === DOC_TYPES[1].n ? 'diploma' : 'sid';
         S.first = ''; S.last = ''; S.d.birth = '';
         go('q05');
+        break;
+      case 'noexp:docNoExp': case 'noexp:dipNoExp':
+        var nk = a.slice(6); S.d[nk] = !S.d[nk]; softRender();
         break;
       case 'toggle-pass':
         S.showPass = !S.showPass;
