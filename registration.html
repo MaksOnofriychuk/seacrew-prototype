@@ -2476,7 +2476,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
     var ill = '<div class="sroute"><svg viewBox="0 0 300 92" fill="none"><path d="' + path + '" stroke="rgba(var(--accentRGB),.25)" stroke-width="2" stroke-dasharray="4 5"/>' +
       '<path class="sr-draw" d="' + path + '" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/>' +
       ports.map(function (p, i) { return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (i === 5 ? 7 : 5) + '" class="sr-port" style="animation-delay:' + (0.3 + i * 0.35).toFixed(2) + 's"/>'; }).join('') +
-      '<text x="270" y="14" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent)">100 %</text></svg>' +
+      '<text x="270" y="52" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent)">100 %</text></svg>' +
       '<span class="sr-ship" style="offset-path:path(\'' + path + '\')">' + ic('ship', 16, 2) + '</span></div>';
     var ben = [
       ['bolt', 'Анкеты агентств — в 1 тап', 'Заполненный профиль сам подставляется в любую анкету. Больше не переписываете одно и то же.'],
@@ -2728,8 +2728,7 @@ button:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outli
       }).join('') + '</select></label>' +
         '<label><input type="checkbox" data-opt="showIds"' + (S.showIds ? ' checked' : '') + '> Показывать дату рождения и номер</label>' +
         '<label><input type="checkbox" data-opt="full"' + (S.full ? ' checked' : '') + '> Профиль готов на 100 %</label>' +
-        '<label><input type="checkbox" data-opt="autoNext"' + (S.autoNext ? ' checked' : '') + '> Автопереход</label>' +
-        '<label><input type="checkbox" data-opt="dev"' + (S.dev ? ' checked' : '') + '> Для разработки</label></div>'
+        '<label><input type="checkbox" data-opt="autoNext"' + (S.autoNext ? ' checked' : '') + '> Автопереход</label></div>'
       : '';
     var dev = S.view === 'c' && S.dev && DEV[cur] ? '<div class="note dev">' + DEV[cur] + '</div>' : '';
     BAR.innerHTML = seg + nav + opts + '<div class="note">' + (NOTES[cur] || '') + '</div>' + dev;
