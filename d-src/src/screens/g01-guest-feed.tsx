@@ -79,7 +79,7 @@ function FeedItem({ p, onAct }: { p: Post; onAct: (a: string) => void }) {
     return (
       <article className="mx-4 rounded-xl bg-hero p-5">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-sm font-medium text-primary">Новости Crew</span>
+          <span className="text-sm font-medium text-primary">Новости Seafolio</span>
           <Badge variant="outline" className="border-primary text-primary">
             <Pin /> Закреплено
           </Badge>
@@ -93,7 +93,7 @@ function FeedItem({ p, onAct }: { p: Post; onAct: (a: string) => void }) {
     return (
       <article className="border-t border-border px-5 py-4 first:border-t-0">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-sm font-medium text-primary">Новости Crew</span>
+          <span className="text-sm font-medium text-primary">Новости Seafolio</span>
           <span className="text-sm text-muted-foreground">{p.time}</span>
         </div>
         <h2 className="mt-2 text-[17px] font-semibold">{p.title}</h2>

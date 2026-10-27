@@ -13,6 +13,22 @@ import { E04RateLimit } from './e/e04'
 import { E05Banned } from './e/e05'
 import { E06DocTaken } from './e/e06'
 import { E07Manual } from './e/e07'
+import { S1Account } from './s/s1'
+import { S1cCode } from './s/s1c'
+import { S2Personal } from './s/s2'
+import { S3SeafarerDoc } from './s/s3'
+import { S4Diplomas } from './s/s4'
+import { S5Medical } from './s/s5'
+import { S6SeaService } from './s/s6'
+import { SxCoreDone } from './s/sx'
+import { S7Review } from './s/s7'
+import { S8ExtraCerts } from './s/s8'
+import { S9FlagDocs } from './s/s9'
+import { S10Education } from './s/s10'
+import { S11About } from './s/s11'
+import { S12Extra } from './s/s12'
+import { S13Notes } from './s/s13'
+import { C08Resume } from './s/c08'
 import { Q02Consent } from './q/q02'
 import { Q03Upload } from './q/q03'
 import { Q04Reading } from './q/q04'
@@ -69,6 +85,27 @@ export const GROUPS: { title: string; screens: ScreenDef[] }[] = [
       { id: 'e03', title: 'Ошибка: нет интернета', Component: E03Offline },
       { id: 'e04', title: 'Ошибка: слишком много попыток', Component: E04RateLimit },
       { id: 'e05', title: 'Регистрация невозможна (бан)', Component: E05Banned },
+    ],
+  },
+  {
+    title: 'Пошаговая регистрация',
+    screens: [
+      { id: 's1', title: 'Шаг 1 · Аккаунт', Component: S1Account },
+      { id: 's1c', title: 'Шаг 1 · Код из письма', Component: S1cCode },
+      { id: 's2', title: 'Шаг 2 · Личные данные', Component: S2Personal },
+      { id: 's3', title: 'Шаг 3 · Документ моряка', Component: S3SeafarerDoc },
+      { id: 's4', title: 'Шаг 4 · Дипломы и сертификаты', Component: S4Diplomas },
+      { id: 's5', title: 'Шаг 5 · Медицинские', Component: S5Medical },
+      { id: 's6', title: 'Шаг 6 · Морской стаж', Component: S6SeaService },
+      { id: 'sx', title: 'Основное заполнено', Component: SxCoreDone },
+      { id: 's8', title: 'Доп. · Сертификаты', Component: S8ExtraCerts },
+      { id: 's9', title: 'Доп. · Флаговые документы', Component: S9FlagDocs },
+      { id: 's10', title: 'Доп. · Образование', Component: S10Education },
+      { id: 's11', title: 'Доп. · О себе', Component: S11About },
+      { id: 's12', title: 'Доп. · Дополнительная информация', Component: S12Extra },
+      { id: 's13', title: 'Доп. · Заметки', Component: S13Notes },
+      { id: 's7', title: 'Проверка', Component: S7Review },
+      { id: 'c08', title: 'Продолжить регистрацию', Component: C08Resume },
     ],
   },
 ]

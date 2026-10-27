@@ -1,6 +1,6 @@
 import { ControlPanel } from '@/components/control-panel'
 import { PhoneFrame } from '@/components/phone-frame'
-import { ProtoProvider } from '@/lib/proto-state'
+import { ProtoProvider, ToastHost } from '@/lib/proto-state'
 import { useRoute } from '@/lib/route'
 import { SCREENS } from '@/screens/registry'
 
@@ -22,6 +22,7 @@ export function App() {
         <main className="flex flex-1 items-start justify-center overflow-auto bg-card p-6 max-[480px]:p-0">
           <PhoneFrame bleed={def.bleed}>
             <def.Component key={def.id} go={go} />
+            <ToastHost />
           </PhoneFrame>
         </main>
       </div>
