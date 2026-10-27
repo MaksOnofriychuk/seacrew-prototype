@@ -1,8 +1,7 @@
 import { useState, type ReactNode } from 'react'
-import { Check, FileText, Send, ShieldCheck, UserRound } from 'lucide-react'
+import { Check, FileText, IdCard, Send, ShieldCheck, UserRound } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import type { ScreenProps } from './registry'
 
 // o01 — правка п. 3: 3 слайди, статична ілюстрація, заголовок до 5–6 слів,
@@ -11,17 +10,17 @@ const SLIDES: { title: string; text: string; art: ReactNode }[] = [
   {
     title: 'Профиль из документов за минуту',
     text: 'Сфотографируйте документы — поля заполнятся сами.',
-    art: <ArtDocument />,
+    art: <PaperId />,
   },
   {
     title: 'Анкета и пакет рекрутеру — в 1 тап',
     text: 'Анкета агентства заполнится из вашего профиля.',
-    art: <ArtForm />,
+    art: <PaperForm />,
   },
   {
     title: 'Документы под контролем: напомним о сроках',
     text: 'Предупредим заранее, когда истекает документ.',
-    art: <ArtDeadlines />,
+    art: <PaperDeadlines />,
   },
 ]
 
@@ -34,6 +33,7 @@ export function O01Slides({ go }: ScreenProps) {
   const [back, setBack] = useState(false)
   const last = i === SLIDES.length - 1
   const slide = SLIDES[i]
+  const enter = back ? 'screen-in-back' : 'screen-in'
   const toChoice = () => go('o02')
 
   const show = (n: number) => {
@@ -43,30 +43,40 @@ export function O01Slides({ go }: ScreenProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-4 px-6 pt-2">
-        <div className="flex flex-1 gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={SLIDES.length} aria-valuenow={i + 1} aria-label="Слайд">
-          {SLIDES.map((_, n) => (
-            <button
-              key={n}
-              type="button"
-              aria-label={`Слайд ${n + 1}`}
-              onClick={() => show(n)}
-              className={`h-1 flex-1 rounded-full transition-colors ${n <= i ? 'bg-primary' : 'bg-border'}`}
-            />
-          ))}
+      {/* Герой: панель із сіткою морської карти і документом на ній */}
+      <section className="relative flex h-[490px] shrink-0 flex-col overflow-hidden bg-hero">
+        <ChartGrid />
+        <div className="relative px-6 pt-[58px]">
+          <div className="flex items-center justify-between">
+            <span className="text-xl font-semibold tracking-tight text-primary">Seafolio</span>
+            <Button variant="ghost" className="-mr-2 h-9 px-2 text-primary hover:bg-transparent" onClick={toChoice}>
+              Пропустить
+            </Button>
+          </div>
+          <div className="mt-3 flex gap-1.5" role="progressbar" aria-label="Слайд" aria-valuemin={1} aria-valuemax={SLIDES.length} aria-valuenow={i + 1}>
+            {SLIDES.map((_, n) => (
+              <button
+                key={n}
+                type="button"
+                aria-label={`Слайд ${n + 1}`}
+                onClick={() => show(n)}
+                className={`h-1 flex-1 rounded-full transition-colors ${n <= i ? 'bg-primary' : 'bg-border'}`}
+              />
+            ))}
+          </div>
         </div>
-        <Button variant="ghost" className="h-9 px-2 text-primary" onClick={toChoice}>
-          Пропустить
-        </Button>
-      </div>
+        <div key={i} className={`relative flex flex-1 flex-col justify-center px-6 ${enter}`}>
+          {slide.art}
+        </div>
+        <span className="relative px-6 pb-3 font-mono text-[11px] text-muted-foreground">46°28′N 30°44′E</span>
+      </section>
 
-      <div key={i} className={`flex flex-1 flex-col px-6 pt-12 ${back ? 'screen-in-back' : 'screen-in'}`}>
-        <div className="flex h-[300px] items-center justify-center">{slide.art}</div>
-        <h1 className="mt-10 text-[28px] leading-[1.15] font-semibold tracking-tight text-balance">{slide.title}</h1>
+      <div key={`t${i}`} className={`px-6 pt-6 ${enter}`}>
+        <h1 className="text-[28px] leading-[1.15] font-semibold tracking-tight text-balance">{slide.title}</h1>
         <p className="mt-3 text-base text-muted-foreground">{slide.text}</p>
       </div>
 
-      <div className="px-6 pb-4">
+      <div className="mt-auto px-6 pb-4">
         <Button size="lg" onClick={() => (last ? toChoice() : show(i + 1))}>
           {last ? 'Начать' : 'Далее'}
         </Button>
@@ -75,72 +85,125 @@ export function O01Slides({ go }: ScreenProps) {
   )
 }
 
-/* ---------- статичні ілюстрації: лише токени, без градієнтів і тіней ---------- */
+/* ---------- морська карта: тонка сітка кольору border ---------- */
 
-function ArtDocument() {
+function ChartGrid() {
   return (
-    <div className="flex w-[290px] flex-col gap-4">
-      <Badge variant="success" className="self-end">
-        <Check /> Распознано
-      </Badge>
-      <div className="flex gap-4 rounded-xl border border-border bg-card p-5">
-        <UserRound className="size-14 shrink-0 text-muted-foreground" strokeWidth={1.25} />
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Seafarer's ID</div>
-          <div className="text-base font-semibold">Andrii Koval</div>
-          <div className="font-mono text-sm">AB 123456</div>
-          <div className="font-mono text-sm text-muted-foreground">до 12.05.2027</div>
-        </div>
-      </div>
+    <svg className="absolute inset-0 size-full" aria-hidden="true">
+      <defs>
+        <pattern id="chart-minor" width="24" height="24" patternUnits="userSpaceOnUse">
+          <path d="M24 0H0V24" fill="none" stroke="var(--border)" strokeWidth="0.75" />
+        </pattern>
+        <pattern id="chart-major" width="96" height="96" patternUnits="userSpaceOnUse">
+          <rect width="96" height="96" fill="url(#chart-minor)" />
+          <path d="M96 0H0V96" fill="none" stroke="var(--border)" strokeWidth="1.5" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#chart-major)" />
+    </svg>
+  )
+}
+
+/* ---------- «папір»: документи на панелі, лише токени ---------- */
+
+function Paper({ children }: { children: ReactNode }) {
+  return <div className="rounded-xl border border-border bg-background px-5 py-4">{children}</div>
+}
+
+function Field({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className={mono ? 'font-mono text-[15px]' : 'text-[15px] font-medium'}>{value}</span>
     </div>
   )
 }
 
-function ArtForm() {
-  const rows = [
-    ['Фамилия', 'Koval'],
-    ['Должность', '3rd Engineer'],
-    ['Диплом', 'до 20.06.2029'],
+function PaperId() {
+  return (
+    <Paper>
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[15px] font-semibold">Seafarer's ID</span>
+        <Badge variant="success">
+          <Check /> Распознано
+        </Badge>
+      </div>
+      <div className="mt-3 flex gap-4">
+        <div className="flex h-[92px] w-[74px] shrink-0 items-end justify-center overflow-hidden rounded-md bg-card">
+          <UserRound className="size-[68px] translate-y-3 text-muted-foreground" strokeWidth={1} />
+        </div>
+        <div className="flex flex-col justify-center gap-3">
+          <Field label="Фамилия" value="Koval" />
+          <Field label="Имя" value="Andrii" />
+        </div>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-4">
+        <Field label="Номер" value="AB 123456" mono />
+        <Field label="Действителен до" value="12.05.2027" mono />
+      </div>
+      <div className="mt-3 border-t border-border pt-2.5 font-mono text-[11px] leading-5 tracking-[0.08em] text-muted-foreground">
+        <div>I&lt;UKRKOVAL&lt;&lt;ANDRII&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</div>
+        <div>AB1234567UKR9103145M2705124&lt;&lt;</div>
+      </div>
+    </Paper>
+  )
+}
+
+function PaperForm() {
+  const rows: [string, string, boolean][] = [
+    ['Фамилия', 'Koval', false],
+    ['Имя', 'Andrii', false],
+    ['Должность', '3rd Engineer', false],
+    ['Диплом CoC, до', '20.06.2029', true],
+    ['Медосмотр, до', '14.11.2026', true],
   ]
   return (
-    <div className="flex w-[290px] flex-col gap-4">
-      <div className="flex flex-col rounded-xl border border-border bg-card px-5 py-2">
-        <div className="py-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">Application form</div>
-        {rows.map(([k, v]) => (
-          <div key={k} className="flex items-center gap-3 border-t border-border py-3">
+    <Paper>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col">
+          <span className="text-[15px] font-semibold">Application form</span>
+          <span className="text-sm text-muted-foreground">BlueWave Crewing</span>
+        </div>
+        <span className="flex items-center gap-1.5 pt-0.5 text-sm font-medium text-primary">
+          <Send className="size-4" /> Пакет рекрутеру
+        </span>
+      </div>
+      <div className="mt-3">
+        {rows.map(([k, v, mono]) => (
+          <div key={k} className="flex items-center gap-3 border-t border-border py-2.5">
             <Check className="size-4 shrink-0 text-success" />
             <span className="flex-1 text-sm text-muted-foreground">{k}</span>
-            <span className="font-mono text-sm">{v}</span>
+            <span className={mono ? 'font-mono text-sm' : 'text-sm font-medium'}>{v}</span>
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-        <Send className="size-4 text-primary" /> Пакет рекрутеру
-      </div>
-    </div>
+    </Paper>
   )
 }
 
-function ArtDeadlines() {
+function PaperDeadlines() {
+  const rows = [
+    { icon: FileText, name: 'Медосмотр (PEME)', until: '14.11.2026', badge: <Badge variant="warning">Истекает через 18 дней</Badge> },
+    { icon: ShieldCheck, name: 'CoC — 3rd Engineer', until: '20.06.2029', badge: <Badge variant="success">Действует</Badge> },
+    { icon: IdCard, name: "Seafarer's ID", until: '12.05.2027', badge: <Badge variant="success">Действует</Badge> },
+  ]
   return (
-    <div className="flex w-[290px] flex-col rounded-xl border border-border bg-card px-5 py-1">
-      <div className="flex items-start gap-3 py-4">
-        <FileText className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <div className="text-sm font-medium">Медосмотр (PEME)</div>
-          <div className="font-mono text-sm text-muted-foreground">до 14.11.2026</div>
-          <Badge variant="warning">Истекает через 18 дней</Badge>
-        </div>
+    <Paper>
+      <span className="text-[15px] font-semibold">Мои документы</span>
+      <div className="mt-2">
+        {rows.map((r) => (
+          <div key={r.name} className="flex items-start gap-3 border-t border-border py-2.5">
+            <r.icon className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+            <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
+              <div className="flex w-full items-baseline justify-between gap-3">
+                <span className="text-sm font-medium">{r.name}</span>
+                <span className="font-mono text-sm whitespace-nowrap text-muted-foreground">до {r.until}</span>
+              </div>
+              {r.badge}
+            </div>
+          </div>
+        ))}
       </div>
-      <Separator />
-      <div className="flex items-start gap-3 py-4">
-        <ShieldCheck className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <div className="text-sm font-medium">CoC — 3rd Engineer</div>
-          <div className="font-mono text-sm text-muted-foreground">до 20.06.2029</div>
-          <Badge variant="success">Действует</Badge>
-        </div>
-      </div>
-    </div>
+    </Paper>
   )
 }

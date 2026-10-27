@@ -18,7 +18,7 @@ export function App() {
         onTheme={(theme) => setRoute((r) => ({ ...r, theme }))}
       />
       <main className="flex flex-1 items-start justify-center overflow-auto bg-card p-6 max-[480px]:p-0">
-        <PhoneFrame>
+        <PhoneFrame bleed={def.bleed}>
           <def.Component key={def.id} go={go} />
         </PhoneFrame>
       </main>

@@ -20,6 +20,8 @@
   --signal: #C2410C;
   --success: #167A3E;
   --warning: #9A5B00;
+  /* панель героя: primary ~8 % на фоні */
+  --hero: color-mix(in srgb, var(--primary) 8%, var(--background));
 }
 
 .dark {
@@ -33,6 +35,7 @@
   --signal: #F08A4B;
   --success: #4CC38A;
   --warning: #E2B341;
+  --hero: var(--card);
 }
 
 @theme inline {
@@ -58,6 +61,7 @@
   --color-signal: var(--signal);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-hero: var(--hero);
   --color-border: var(--border);
   --color-input: var(--border);
   --color-ring: var(--primary);
