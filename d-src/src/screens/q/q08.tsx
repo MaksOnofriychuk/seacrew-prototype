@@ -1,6 +1,6 @@
 import { CircleCheck } from 'lucide-react'
+import { Status } from '@/components/app/status'
 import { Wordmark } from '@/components/app/chrome'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { ScreenProps } from '../registry'
 import { DOC_TYPES, Footer, readiness, ReadinessBlock, type DocTypeId, type QForm, useQ } from './_parts'
@@ -34,7 +34,7 @@ export function Q08Done({ go }: ScreenProps) {
           {rows.map(([t, v]) => (
             <li key={t} className="flex items-center justify-between gap-3 border-t border-border py-3.5 first:border-t-0">
               <span className="text-[15px]">{t}</span>
-              <Badge variant="success">{v}</Badge>
+              <Status kind="ok">{v}</Status>
             </li>
           ))}
         </ul>

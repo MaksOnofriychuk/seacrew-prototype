@@ -1,5 +1,6 @@
 import { Check, Paperclip } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
+import { Group } from '@/components/app/group'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
 import type { ScreenProps } from './registry'
@@ -29,7 +30,7 @@ export function O04StepIntro({ go }: ScreenProps) {
           </ul>
         </Paper>
 
-        <Paper title="Пакет документов рекрутеру в 1 тап" className="mt-4">
+        <Group title="Пакет документов рекрутеру в 1 тап" className="mt-4">
           <ul className="-my-1">
             {["Seafarer's ID", 'Диплом CoC', 'Медосмотр (PEME)'].map((d) => (
               <li key={d} className="flex items-center gap-3 border-t border-border py-3.5 first:border-t-0 first:pt-1">
@@ -38,7 +39,7 @@ export function O04StepIntro({ go }: ScreenProps) {
               </li>
             ))}
           </ul>
-        </Paper>
+        </Group>
       </div>
       <Footer>
         <Button size="lg" onClick={() => go('s1')}>

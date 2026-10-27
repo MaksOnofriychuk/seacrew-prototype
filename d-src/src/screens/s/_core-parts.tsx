@@ -400,7 +400,7 @@ export function DocForm({
                 id={f('file')}
                 type="button"
                 onClick={() => put({ file: true })}
-                className="flex w-full items-center gap-3 rounded-md border border-dashed border-primary/60 px-3 py-3 text-left active:scale-[0.99]"
+                className="flex w-full items-center gap-3 rounded-md border border-border px-3 py-3 text-left active:scale-[0.99]"
               >
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-primary">
                   <Camera className="size-5" />

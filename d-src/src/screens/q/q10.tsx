@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
+import { Status } from '@/components/app/status'
 import { Button } from '@/components/ui/button'
 import type { ScreenProps } from '../registry'
 import { FlowScreen, Footer, QSheet, Title, useToast, useQ } from './_parts'
@@ -79,7 +79,7 @@ export function Q10Consents({ go }: ScreenProps) {
             <li key={x.k} className="flex flex-col gap-2 border-t border-border px-4 py-4 first:border-t-0">
               <div className="flex items-start justify-between gap-3">
                 <span className="text-[15px] font-medium">{x.title}</span>
-                {given ? <Badge variant="success">дано</Badge> : <Badge variant="outline" className="text-muted-foreground">{off ? 'отозвано' : 'не дано'}</Badge>}
+                {given ? <Status kind="ok">дано</Status> : <Status>{off ? 'отозвано' : 'не дано'}</Status>}
               </div>
               <p className="text-sm text-muted-foreground">
                 {off ? (

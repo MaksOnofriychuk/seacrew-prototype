@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { AlertTriangle, Check, ChevronRight, MapIcon } from 'lucide-react'
+import { Status } from '@/components/app/status'
+import { AlertTriangle, ChevronRight, MapIcon } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { useProto } from '@/lib/proto-state'
@@ -89,8 +89,11 @@ export function useSteps() {
     return { items, n, pct: n * 20 }
   }
 
-  const missingList = () =>
-    STEPS.flatMap((s) => (done['skip' + s.n] && MISS[s.n] ? MISS[s.n].map(([t, id]) => ({ n: s.n, t, id, k: s.k })) : []))
+  // step — лише пропущене в цьому кроці (для «Пропущено N полей» на екрані кроку)
+  const missingList = (step?: number) =>
+    STEPS.filter((s) => step === undefined || s.n === step).flatMap((s) =>
+      done['skip' + s.n] && MISS[s.n] ? MISS[s.n].map(([t, id]) => ({ n: s.n, t, id, k: s.k })) : [],
+    )
 
   // C: nextStep — після стажу «Основное заполнено», далі перший незроблений крок.
   const nextStep = (n: number) => {
@@ -153,7 +156,8 @@ export function StepShell({ step, go, children, canNext = true, optional = false
   const group = STEPS.filter((s) => s.k === info.k)
   const pos = group.indexOf(info) + 1
   const groupName = info.k === 'core' ? 'Основное' : info.k === 'extra' ? 'Дополнительно' : 'Финиш'
-  const missing = steps.missingList()
+  // «Пропущено N полей» — лише якщо пропущено саме в цьому кроці
+  const missing = steps.missingList(step)
 
   // C: demoSteps — якщо відкрили крок із середини, кроки 1 і 3 вже пройдені, 2 пропущено.
   useEffect(() => {
@@ -203,7 +207,7 @@ export function StepShell({ step, go, children, canNext = true, optional = false
                 return (
                   <span
                     key={s.n}
-                    className={cn('h-1 flex-1 rounded-full', st === 'done' || st === 'cur' ? 'bg-primary' : st === 'skip' ? 'bg-warning' : 'bg-border')}
+                    className={cn('h-1 flex-1 rounded-full', st === 'done' || st === 'cur' ? 'bg-primary' : st === 'skip' ? 'bg-muted-foreground/40' : 'bg-border')}
                   />
                 )
               })}
@@ -244,7 +248,7 @@ export function StepShell({ step, go, children, canNext = true, optional = false
       <Sheet open={sheet !== null} onOpenChange={(o) => !o && setSheet(null)}>
         <SheetContent side="bottom" showCloseButton={false} className="max-h-[85%] gap-0 overflow-y-auto px-6 pt-6 pb-8">
           {sheet === 'route' && <RouteSheet step={step} go={go} close={() => setSheet(null)} />}
-          {sheet === 'missing' && <MissingSheet go={go} close={() => setSheet(null)} />}
+          {sheet === 'missing' && <MissingSheet step={step} go={go} close={() => setSheet(null)} />}
           {sheet === 'later' && (
             <>
               <SheetTitle className="text-2xl font-semibold tracking-tight">Продолжить позже?</SheetTitle>
@@ -297,17 +301,13 @@ function RouteSheet({ step, go, close }: { step: number; go: (id: string) => voi
                   >
                     <span className="flex-1">{s.t}</span>
                     {st === 'done' ? (
-                      <Badge variant="success">
-                        <Check /> готово
-                      </Badge>
+                      <Status kind="ok">готово</Status>
                     ) : st === 'skip' ? (
-                      <Badge variant="warning">пропущено</Badge>
+                      <Status kind="warn">пропущено</Status>
                     ) : st === 'cur' ? (
-                      <Badge variant="outline" className="border-primary text-primary">
-                        сейчас
-                      </Badge>
+                      <Status kind="current">сейчас</Status>
                     ) : s.req ? (
-                      <Badge variant="outline">обязательно</Badge>
+                      <Status>обязательно</Status>
                     ) : null}
                   </button>
                 </li>
@@ -321,9 +321,9 @@ function RouteSheet({ step, go, close }: { step: number; go: (id: string) => voi
 }
 
 // C: sheet 'missing' — «Пропущенные поля»; тап → крок і підсвічене поле.
-function MissingSheet({ go, close }: { go: (id: string) => void; close: () => void }) {
+function MissingSheet({ step, go, close }: { step: number; go: (id: string) => void; close: () => void }) {
   const { missingList } = useSteps()
-  const list = missingList()
+  const list = missingList(step)
   const groups: [StepKind, string][] = [
     ['core', 'Основное'],
     ['extra', 'Дополнительно'],

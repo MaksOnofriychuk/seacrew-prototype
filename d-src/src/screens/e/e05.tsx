@@ -8,6 +8,7 @@ import { ErrorLayout } from './_error-layout'
 export function E05Banned({ go }: ScreenProps) {
   return (
     <ErrorLayout
+      low
       icon={ShieldOff}
       tone="muted"
       title="Регистрация невозможна"

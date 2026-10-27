@@ -132,7 +132,7 @@ export function AddPanel({ n, title, sub, onUpload }: { n: number; title: string
     [Image, 'Галерея'],
   ] as const
   return (
-    <div id={`f-up${n}`} className="overflow-hidden rounded-xl border border-dashed border-primary/60 bg-surface">
+    <div id={`f-up${n}`} className="overflow-hidden rounded-xl border border-border bg-surface">
       <button type="button" onClick={onUpload} className="flex w-full items-center gap-4 px-4 py-4 text-left active:bg-muted">
         <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
           <Sparkles className="size-5" />
@@ -297,7 +297,7 @@ function ManualForm({ n, f, patch, close, save }: { n: number; f: ManForm; patch
             </Button>
           </div>
         ) : (
-          <button type="button" onClick={() => patch({ file: true })} className="flex items-center gap-4 rounded-md border border-dashed border-border px-4 py-3 text-left active:bg-muted">
+          <button type="button" onClick={() => patch({ file: true })} className="flex items-center gap-4 rounded-md border border-border px-4 py-3 text-left active:bg-muted">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
               <ScanLine className="size-5" />
             </span>

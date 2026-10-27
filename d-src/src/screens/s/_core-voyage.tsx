@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Trash2 } from 'lucide-react'
-import { Paper } from '@/components/app/paper'
+import { Group } from '@/components/app/group'
 import { Button } from '@/components/ui/button'
 import { Field, TextInput } from '../q/_parts'
 import { Dur, maskMonth, Pick } from './_core-parts'
@@ -162,7 +162,7 @@ export function VoyageForm({ initial, onSave, onCancel, onDelete }: { initial?: 
 
   return (
     <div ref={ref} className="scroll-mt-4">
-      <Paper title={v.vessel.trim() || 'Рейс вручную'}>
+      <Group title={v.vessel.trim() || 'Рейс вручную'}>
         <div className="flex flex-col gap-5 py-1">
           {text('vessel', 'Судно', 'MV …')}
           <div className="grid grid-cols-2 gap-3">
@@ -208,7 +208,7 @@ export function VoyageForm({ initial, onSave, onCancel, onDelete }: { initial?: 
             </button>
           )}
         </div>
-      </Paper>
+      </Group>
     </div>
   )
 }

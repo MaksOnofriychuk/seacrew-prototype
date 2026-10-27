@@ -29,6 +29,20 @@ import { S11About } from './s/s11'
 import { S12Extra } from './s/s12'
 import { S13Notes } from './s/s13'
 import { C08Resume } from './s/c08'
+import { P01Feed } from './p/p01'
+import { P07Post } from './p/p07'
+import { P06NewPost } from './p/p06'
+import { P05Jobs } from './p/p05'
+import { P13Filters } from './p/p13'
+import { P08Job } from './p/p08'
+import { P12Apply } from './p/p12'
+import { P02Docs } from './p/p02'
+import { P11Doc } from './p/p11'
+import { P14Profile } from './p/p14'
+import { P09Saved } from './p/p09'
+import { P10Notifications } from './p/p10'
+import { P03Inbox } from './p/p03'
+import { P04Drawer } from './p/p04'
 import { Q02Consent } from './q/q02'
 import { Q03Upload } from './q/q03'
 import { Q04Reading } from './q/q04'
@@ -106,6 +120,25 @@ export const GROUPS: { title: string; screens: ScreenDef[] }[] = [
       { id: 's13', title: 'Доп. · Заметки', Component: S13Notes },
       { id: 's7', title: 'Проверка', Component: S7Review },
       { id: 'c08', title: 'Продолжить регистрацию', Component: C08Resume },
+    ],
+  },
+  {
+    title: 'Приложение',
+    screens: [
+      { id: 'p01', title: 'Лента', Component: P01Feed },
+      { id: 'p07', title: 'Лента · Публикация', Component: P07Post },
+      { id: 'p06', title: 'Лента · Новая публикация', Component: P06NewPost },
+      { id: 'p05', title: 'Вакансии', Component: P05Jobs },
+      { id: 'p13', title: 'Вакансии · Фильтры', Component: P13Filters },
+      { id: 'p08', title: 'Вакансия', Component: P08Job },
+      { id: 'p12', title: 'Вакансия · Отклик', Component: P12Apply },
+      { id: 'p02', title: 'Документы', Component: P02Docs },
+      { id: 'p11', title: 'Документ', Component: P11Doc },
+      { id: 'p14', title: 'Профиль', Component: P14Profile },
+      { id: 'p09', title: 'Профиль · Сохранённое', Component: P09Saved },
+      { id: 'p10', title: 'Профиль · Уведомления', Component: P10Notifications },
+      { id: 'p03', title: 'Профиль · Входящие', Component: P03Inbox },
+      { id: 'p04', title: 'Боковое меню', Component: P04Drawer },
     ],
   },
 ]

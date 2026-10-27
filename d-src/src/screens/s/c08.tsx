@@ -1,7 +1,6 @@
-import { Check } from 'lucide-react'
+import { Status } from '@/components/app/status'
 import { Footer, Wordmark } from '@/components/app/chrome'
 import { STEPS, useSteps } from '@/components/app/stepper'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
@@ -31,17 +30,13 @@ export function C08Resume({ go }: ScreenProps) {
               <li key={s.n} className="flex min-h-13 items-center gap-3 border-t border-border px-4 py-3 first:border-t-0">
                 <span className={cn('flex-1 text-[15px]', cur && 'font-semibold')}>{s.t}</span>
                 {st === 'done' ? (
-                  <Badge variant="success">
-                    <Check /> готово
-                  </Badge>
+                  <Status kind="ok">готово</Status>
                 ) : st === 'skip' ? (
-                  <Badge variant="warning">пропущено</Badge>
+                  <Status kind="warn">пропущено</Status>
                 ) : cur ? (
-                  <Badge variant="outline" className="border-primary text-primary">
-                    дальше
-                  </Badge>
+                  <Status kind="current">дальше</Status>
                 ) : s.req ? (
-                  <Badge variant="outline">обязательно</Badge>
+                  <Status>обязательно</Status>
                 ) : null}
               </li>
             )

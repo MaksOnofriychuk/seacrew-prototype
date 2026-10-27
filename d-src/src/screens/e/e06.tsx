@@ -27,6 +27,7 @@ export function E06DocTaken({ go }: ScreenProps) {
   return (
     <>
       <ErrorLayout
+      low
         icon={ShieldCheck}
         tone="primary"
         title="Этот документ уже зарегистрирован"

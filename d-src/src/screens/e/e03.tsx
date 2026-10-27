@@ -1,5 +1,5 @@
 import { FileText, IdCard, Loader2, WifiOff } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { Status } from '@/components/app/status'
 import { Button } from '@/components/ui/button'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../registry'
@@ -33,7 +33,7 @@ export function E03Offline({ go }: ScreenProps) {
           <li key={f.name} className="flex items-center gap-4 border-t border-border py-3 first:border-t-0">
             <f.icon className="size-5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
             <span className="min-w-0 flex-1 text-[15px]">{f.name}</span>
-            <Badge variant="success">сохранён</Badge>
+            <Status kind="ok">сохранён</Status>
           </li>
         ))}
       </ul>

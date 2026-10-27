@@ -31,6 +31,7 @@ export function ErrorLayout({
   children,
   actions,
   toast,
+  low = false,
 }: {
   icon: LucideIcon
   tone: Tone
@@ -43,6 +44,8 @@ export function ErrorLayout({
   children?: ReactNode
   actions: ReactNode
   toast?: string | null
+  /** короткий екран без блоку (e04–e06): більший знак, текст опущено ближче до кнопок — без порожнечі посередині */
+  low?: boolean
 }) {
   return (
     <div className="flex h-full flex-col">
@@ -56,8 +59,8 @@ export function ErrorLayout({
           )
         }
       />
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pt-3 pb-4">
-        <Icon className={cn('size-7 shrink-0', TONE[tone])} strokeWidth={1.75} aria-hidden="true" />
+      <div className={cn('flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pt-3 pb-4', low && 'justify-end pb-8')}>
+        <Icon className={cn('shrink-0', low ? 'size-14' : 'size-7', TONE[tone])} strokeWidth={low ? 1.5 : 1.75} aria-hidden="true" />
         <h1 className="mt-4 text-[32px] leading-[1.1] font-semibold tracking-tight text-balance">{title}</h1>
         <p className="mt-3 text-base text-muted-foreground">{text}</p>
         {children}

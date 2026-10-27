@@ -61,7 +61,7 @@ export function S2Personal({ go }: ScreenProps) {
           className={
             f.photo
               ? 'flex size-20 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-2xl font-semibold text-primary'
-              : 'flex size-20 shrink-0 flex-col items-center justify-center gap-0.5 rounded-full border border-dashed border-primary/60 bg-surface text-xs leading-tight font-medium text-primary'
+              : 'flex size-20 shrink-0 flex-col items-center justify-center gap-0.5 rounded-full border border-border bg-surface text-xs leading-tight font-medium text-primary'
           }
         >
           {f.photo ? (

@@ -118,7 +118,7 @@ export function S5Medical({ go }: ScreenProps) {
             type="button"
             disabled={!consent}
             onClick={() => setEdit({ d: { ...EMPTY_DOC } })}
-            className="flex w-full items-center gap-4 rounded-xl border border-dashed border-primary/60 bg-surface px-4 py-4 text-left active:scale-[0.99] disabled:border-border disabled:opacity-60"
+            className="flex w-full items-center gap-4 rounded-xl border border-border bg-surface px-4 py-4 text-left active:scale-[0.99] disabled:border-border disabled:opacity-60"
           >
             <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
               <Plus className="size-5" />

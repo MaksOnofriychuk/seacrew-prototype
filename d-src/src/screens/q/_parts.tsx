@@ -377,7 +377,7 @@ export function ReadinessBlock({ pct, children }: { pct: number; children?: Reac
         <h2 className="text-lg font-semibold">{children ? 'Готовность к анкетам' : 'Профиль заполнен'}</h2>
         <span className={cn('font-mono text-lg font-medium', full ? 'text-success' : 'text-primary')}>{pct} %</span>
       </div>
-      <Bar value={pct} tone={full ? 'success' : 'warning'} />
+      <Bar value={pct} tone={full ? 'success' : 'primary'} />
       {children}
     </section>
   )

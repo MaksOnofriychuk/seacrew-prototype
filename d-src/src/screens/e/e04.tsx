@@ -26,6 +26,7 @@ export function E04RateLimit({ go }: ScreenProps) {
 
   return (
     <ErrorLayout
+      low
       icon={Clock}
       tone="warning"
       title="Слишком много попыток"

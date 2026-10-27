@@ -1,6 +1,6 @@
 import { Clock, FileText, IdCard, Mail } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
-import { Paper } from '@/components/app/paper'
+import { Group } from '@/components/app/group'
 import { Button } from '@/components/ui/button'
 import type { ScreenProps } from './registry'
 
@@ -22,7 +22,7 @@ export function O03Quick({ go }: ScreenProps) {
           <Clock className="size-4 text-primary" /> ≈ 1–2 минуты
         </p>
 
-        <Paper title="Что понадобится" className="mt-8">
+        <Group title="Что понадобится" className="mt-8">
           <ul className="-my-1">
             {ITEMS.map((x) => (
               <li key={x.title} className="flex items-start gap-4 border-t border-border py-5 first:border-t-0 first:pt-2">
@@ -34,7 +34,7 @@ export function O03Quick({ go }: ScreenProps) {
               </li>
             ))}
           </ul>
-        </Paper>
+        </Group>
       </div>
       <Footer>
         <Button size="lg" onClick={() => go('q02')}>

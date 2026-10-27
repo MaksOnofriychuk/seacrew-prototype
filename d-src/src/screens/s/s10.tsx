@@ -1,4 +1,4 @@
-import { Paper } from '@/components/app/paper'
+import { Group } from '@/components/app/group'
 import { StepShell } from '@/components/app/stepper'
 import type { ScreenProps } from '../registry'
 import { SourceTag, TextInput } from '../q/_parts'
@@ -33,7 +33,7 @@ export function S10Education({ go }: ScreenProps) {
       <ScrollParam />
       <AddPanel n={10} title="Загрузите диплом об образовании" sub="ИИ возьмёт учебное заведение, специальность и годы" onUpload={upload} />
 
-      <Paper title="Диплом об образовании">
+      <Group title="Диплом об образовании">
         <div className="flex flex-col gap-4 py-1">
           <XField id="s10-inst" label="Учебное заведение" tag={tag('inst')}>
             <TextInput id="s10-inst" value={f.inst} onChange={(e) => patch({ inst: e.target.value })} placeholder="Одесская морская академия" />
@@ -50,7 +50,7 @@ export function S10Education({ go }: ScreenProps) {
             </XField>
           </div>
         </div>
-      </Paper>
+      </Group>
     </StepShell>
   )
 }

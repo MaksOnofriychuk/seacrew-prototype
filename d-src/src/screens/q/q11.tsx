@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Check, Circle, Clock } from 'lucide-react'
 import { Wordmark } from '@/components/app/chrome'
-import { Paper } from '@/components/app/paper'
+import { Group } from '@/components/app/group'
 import { Button } from '@/components/ui/button'
 import type { ScreenProps } from '../registry'
 import { DOC_TYPES, Footer, Note, Q_KEYS, QSheet, type DocTypeId, useQ } from './_parts'
@@ -40,7 +40,7 @@ export function Q11Resume({ go }: ScreenProps) {
         <h1 className="text-[32px] leading-[1.1] font-semibold tracking-tight">Продолжим регистрацию?</h1>
         <p className="mt-3 text-base text-muted-foreground">Вы начали быструю регистрацию 2 дня назад.</p>
 
-        <Paper title="Быстрая регистрация" className="mt-8">
+        <Group title="Быстрая регистрация" className="mt-8">
           <ul className="-my-1">
             {rows.map(([ok, t, v]) => (
               <li key={t} className="flex items-center gap-3 border-t border-border py-3 first:border-t-0">
@@ -50,7 +50,7 @@ export function Q11Resume({ go }: ScreenProps) {
               </li>
             ))}
           </ul>
-        </Paper>
+        </Group>
 
         <Note icon={Clock} tone="warning" className="mt-4">
           Если не закончить, файлы удалятся через <span className="font-mono font-medium">28</span> <span className="font-medium">дней</span>.

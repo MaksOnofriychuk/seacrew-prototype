@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
+import { Status } from '@/components/app/status'
 import { ChevronRight } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { STEPS, useSteps } from '@/components/app/stepper'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { ScreenProps } from '../registry'
 import { ReadinessBlock } from '../q/_parts'
@@ -45,7 +45,7 @@ export function SxCoreDone({ go }: ScreenProps) {
                   <Icon className="size-5 shrink-0 text-primary" />
                   <span className="flex-1 text-[15px]">{s.t}</span>
                   {done[s.n] ? (
-                    <Badge variant="success">готово</Badge>
+                    <Status kind="ok">готово</Status>
                   ) : (
                     <span className="text-sm text-muted-foreground">
                       ≈ <span className="font-mono">1</span> мин

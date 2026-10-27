@@ -162,7 +162,7 @@ export function Q03Upload({ go }: ScreenProps) {
                   type="button"
                   aria-label="Добавить страницу"
                   onClick={() => setSheet('doc')}
-                  className="flex h-[104px] w-[78px] flex-col items-center justify-center gap-1 rounded-md border border-dashed border-primary/60 bg-surface text-sm text-primary"
+                  className="flex h-[104px] w-[78px] flex-col items-center justify-center gap-1 rounded-md border border-border bg-surface text-sm text-primary"
                 >
                   <Plus className="size-5" />
                   Ещё страница
@@ -227,7 +227,7 @@ function Section({ title, done, extra, children }: { title: string; done: boolea
 
 function Drop({ icon: Icon, title, sub, onClick }: { icon: typeof Plus; title: string; sub: string; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="flex items-center gap-4 rounded-xl border border-dashed border-primary/60 bg-surface px-4 py-4 text-left">
+    <button type="button" onClick={onClick} className="flex items-center gap-4 rounded-xl border border-border bg-surface px-4 py-4 text-left">
       <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
         <Icon className="size-5" />
       </span>

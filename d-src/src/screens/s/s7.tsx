@@ -1,6 +1,6 @@
 import { AlertTriangle, ChevronRight } from 'lucide-react'
+import { Status } from '@/components/app/status'
 import { StepShell, STEPS, useSteps, type StepKind } from '@/components/app/stepper'
-import { Badge } from '@/components/ui/badge'
 import type { ScreenProps } from '../registry'
 import { Note } from '../q/_parts'
 import { ScrollAnchor, STEP_ICON } from './_core-parts'
@@ -31,15 +31,15 @@ export function S7Review({ go }: ScreenProps) {
                   {m.length > 0 && <span className="text-sm text-muted-foreground">{m.map((x) => x.t).join(', ')}</span>}
                 </span>
                 {st === 'done' ? (
-                  <Badge variant="success">готово</Badge>
+                  <Status kind="ok">готово</Status>
                 ) : s.req ? (
-                  <Badge variant="warning">обязательно</Badge>
+                  <Status kind="warn">обязательно</Status>
                 ) : st === 'skip' ? (
-                  <Badge variant="warning">
+                  <Status kind="warn">
                     <span className="font-mono">{m.length}</span> пропущено
-                  </Badge>
+                  </Status>
                 ) : (
-                  <span className="text-sm text-muted-foreground">не заполнено</span>
+                  <Status>не заполнено</Status>
                 )}
                 <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
               </button>

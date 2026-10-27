@@ -158,7 +158,7 @@ export function E07Manual({ go }: ScreenProps) {
             type="button"
             onClick={() => patch({ file: true })}
             className={cn(
-              'mt-3 flex w-full items-center gap-4 rounded-xl border border-dashed bg-surface px-4 py-4 text-left transition-colors active:scale-[0.99]',
+              'mt-3 flex w-full items-center gap-4 rounded-xl border bg-surface px-4 py-4 text-left transition-colors active:scale-[0.99]',
               mark('file') ? 'border-signal' : 'border-border',
             )}
           >
