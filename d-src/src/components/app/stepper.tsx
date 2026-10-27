@@ -50,7 +50,7 @@ export const STEP_HEAD: Record<number, [string, string]> = {
 export const MISS: Record<number, [string, string][]> = {
   2: [['Дата рождения', 'f-birth'], ['Гражданство', 'f-cit'], ['Телефон', 'f-phone']],
   3: [['Документ моряка', 'f-sid']],
-  4: [['Диплом (CoC)', 'f-up4'], ['Сертификаты STCW', 'f-sug4']],
+  4: [['Диплом (CoC)', 'f-up4'], ['Сертификаты STCW', 'f-up4']],
   5: [['Медицинский документ', 'f-up5']],
   6: [['Морской стаж', 'f-up6']],
   8: [['Дополнительные сертификаты', 'f-up8']],

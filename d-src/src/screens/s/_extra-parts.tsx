@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import { Camera, Check, FileText, FolderOpen, Image, Lock, Pencil, Plus, ScanLine, Sparkles, Trash2, X } from 'lucide-react'
+import { Camera, FileText, FolderOpen, Image, Lock, Pencil, ScanLine, Sparkles, Trash2, X } from 'lucide-react'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -164,7 +164,7 @@ export function AddPanel({ n, title, sub, onUpload }: { n: number; title: string
 type ManForm = { name: string; num: string; issue: string; exp: string; noExp: boolean; country: string; file: boolean }
 const COUNTRIES = ['Украина', 'Филиппины', 'Индия', 'Польша'] as const
 
-export function DocStep({ n, upT, upS, sug, recSeq }: { n: number; upT: string; upS: string; sug: string[]; recSeq: string[] }) {
+export function DocStep({ n, upT, upS, recSeq }: { n: number; upT: string; upS: string; recSeq: string[] }) {
   const { bag, setBag, showToast } = useBag()
   const rec = bag<string[]>(`s${n}.rec`, [])
   const added = bag<string[]>(`s${n}.added`, [])
@@ -197,7 +197,6 @@ export function DocStep({ n, upT, upS, sug, recSeq }: { n: number; upT: string; 
     showToast('Сохранено: ' + nm)
   }
 
-  const have = [...rec, ...added]
   const items = [...rec.map((t) => ({ t, ai: true })), ...added.map((t) => ({ t, ai: false }))]
 
   return (
@@ -234,30 +233,6 @@ export function DocStep({ n, upT, upS, sug, recSeq }: { n: number; upT: string; 
           ))}
         </ul>
       )}
-
-      <div id={`f-sug${n}`} className="flex flex-col gap-2.5 pt-1">
-        <h2 className="text-sm text-muted-foreground">Обычно просят агентства</h2>
-        <ChipWrap>
-          {sug.map((x) => {
-            const on = have.includes(x)
-            return (
-              <button
-                key={x}
-                type="button"
-                disabled={on}
-                onClick={() => open(x)}
-                className={cn(
-                  'inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 py-1.5 text-left text-sm transition-colors duration-150 active:scale-[0.97]',
-                  on && 'text-muted-foreground',
-                )}
-              >
-                {on ? <Check className="size-3.5 text-success" /> : <Plus className="size-3.5 text-primary" />}
-                {x}
-              </button>
-            )
-          })}
-        </ChipWrap>
-      </div>
     </>
   )
 }

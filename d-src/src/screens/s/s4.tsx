@@ -1,21 +1,19 @@
 import { useState } from 'react'
-import { Check, FileText, Plus } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import { StepShell } from '@/components/app/stepper'
-import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { FORM_DEFAULTS } from '../q/_parts'
 import { AddPanel, DocForm, docMeta, EMPTY_DOC, RowList, ScrollAnchor, SectionTitle, useBusy, useHashParams, useS, type DocData } from './_core-parts'
 
 // s4 — крок 4 «Дипломы и сертификаты» (docStep у C). Завантажити — ИИ розкладе по типах
 // (у прототипі кожне завантаження дає «Endorsement — 3rd Engineer»), або «Ввести вручную».
-// Чипи «Обычно просят агентства» відкривають ручну форму з назвою. Тап по документу в списку
+// Чипів «Обычно просят агентства» немає (прибрано 27.10). Тап по документу в списку
 // відкриває його форму: для диплома (CoC) після «Должность по диплому» — «Правило STCW» і «Уровень»
 // (правка п. 6). ?form=coc відкриває форму диплома одразу (для скріншотів).
 
 type Item = { id: string; src: 'ai' | 'manual'; coc?: boolean; d: DocData }
 type Edit = { id?: string; coc?: boolean; d: DocData }
 
-const SUG = ['Endorsement', 'Basic Safety Training', 'Advanced Fire Fighting', 'PSCRB', 'Medical First Aid', 'Security Awareness', 'GMDSS']
 const REC = 'Endorsement — 3rd Engineer'
 
 // Диплом, уже розпізнаний ИИ (вигадані значення з C: dip*).
@@ -65,8 +63,6 @@ export function S4Diplomas({ go }: ScreenProps) {
     showToast('Документ удалён')
   }
 
-  const have = (x: string) => items.some((it) => it.d.name === x)
-
   return (
     <StepShell step={4} go={go} optional>
       <ScrollAnchor />
@@ -110,30 +106,6 @@ export function S4Diplomas({ go }: ScreenProps) {
           />
         </>
       )}
-
-      <div id="f-sug4" className="flex flex-col gap-3">
-        <SectionTitle>Обычно просят агентства</SectionTitle>
-        <div className="flex flex-wrap gap-2">
-          {SUG.map((x) => {
-            const on = have(x)
-            return (
-              <button
-                key={x}
-                type="button"
-                disabled={on}
-                onClick={() => setEdit({ d: { ...EMPTY_DOC, name: x } })}
-                className={cn(
-                  'flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium',
-                  on ? 'border-success text-success' : 'border-border bg-surface text-foreground',
-                )}
-              >
-                {on ? <Check className="size-3.5" /> : <Plus className="size-3.5 text-primary" />}
-                {x}
-              </button>
-            )
-          })}
-        </div>
-      </div>
     </StepShell>
   )
 }
