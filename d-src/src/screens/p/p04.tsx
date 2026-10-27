@@ -1,6 +1,8 @@
 import type { ScreenProps } from '../registry'
+import { FeedScreen } from './_feed-screen'
 
-// p04 — заглушка; екран робиться на етапі 7.
-export function P04Drawer(_: ScreenProps) {
-  return <div className="flex h-full items-center justify-center px-6 text-center text-muted-foreground">p04 — в работе</div>
+// p04 — бокове меню: та сама стрічка з відкритим меню (C: S.drawer = true; feedScreen(false)).
+// Закрили меню — переходимо на p01, як у C.
+export function P04Drawer({ go }: ScreenProps) {
+  return <FeedScreen go={go} drawer />
 }

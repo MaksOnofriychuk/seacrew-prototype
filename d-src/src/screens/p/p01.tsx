@@ -1,6 +1,7 @@
 import type { ScreenProps } from '../registry'
+import { FeedScreen } from './_feed-screen'
 
-// p01 — заглушка; екран робиться на етапі 7.
-export function P01Feed(_: ScreenProps) {
-  return <div className="flex h-full items-center justify-center px-6 text-center text-muted-foreground">p01 — в работе</div>
+// p01 — стрічка моряка (C: feedScreen(false)).
+export function P01Feed({ go }: ScreenProps) {
+  return <FeedScreen go={go} />
 }
