@@ -1,5 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { Check, FileText, IdCard, Send, ShieldCheck, UserRound } from 'lucide-react'
+import { Wordmark } from '@/components/app/chrome'
+import { HeroPanel } from '@/components/app/hero-panel'
+import { Paper } from '@/components/app/paper'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { ScreenProps } from './registry'
@@ -44,11 +47,10 @@ export function O01Slides({ go }: ScreenProps) {
   return (
     <div className="flex h-full flex-col">
       {/* Герой: панель із сіткою морської карти і документом на ній */}
-      <section className="relative flex h-[490px] shrink-0 flex-col overflow-hidden bg-hero">
-        <ChartGrid />
+      <HeroPanel className="h-[490px]">
         <div className="relative px-6 pt-[58px]">
           <div className="flex items-center justify-between">
-            <span className="text-xl font-semibold tracking-tight text-primary">Seafolio</span>
+            <Wordmark />
             <Button variant="ghost" className="-mr-2 h-9 px-2 text-primary hover:bg-transparent" onClick={toChoice}>
               Пропустить
             </Button>
@@ -68,8 +70,7 @@ export function O01Slides({ go }: ScreenProps) {
         <div key={i} className={`relative flex flex-1 flex-col justify-center px-6 ${enter}`}>
           {slide.art}
         </div>
-        <span className="relative px-6 pb-3 font-mono text-[11px] text-muted-foreground">46°28′N 30°44′E</span>
-      </section>
+      </HeroPanel>
 
       <div key={`t${i}`} className={`px-6 pt-6 ${enter}`}>
         <h1 className="text-[36px] leading-[1.1] font-semibold tracking-tight text-balance">{slide.title}</h1>
@@ -85,36 +86,7 @@ export function O01Slides({ go }: ScreenProps) {
   )
 }
 
-/* ---------- морська карта: тонка сітка кольору border ---------- */
-
-function ChartGrid() {
-  return (
-    <svg className="absolute inset-0 size-full dark:opacity-50" aria-hidden="true">
-      <defs>
-        <pattern id="chart-minor" width="24" height="24" patternUnits="userSpaceOnUse">
-          <path d="M24 0H0V24" fill="none" stroke="var(--border)" strokeWidth="0.75" />
-        </pattern>
-        <pattern id="chart-major" width="96" height="96" patternUnits="userSpaceOnUse">
-          <rect width="96" height="96" fill="url(#chart-minor)" />
-          <path d="M96 0H0V96" fill="none" stroke="var(--border)" strokeWidth="1.5" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#chart-major)" />
-    </svg>
-  )
-}
-
 /* ---------- «папір»: документи на панелі, лише токени ---------- */
-
-// Смужка-шапка кольору primary — щоб читалось як документ, а не картка.
-function Paper({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="overflow-hidden rounded-xl border border-border bg-background">
-      <div className="bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground">{title}</div>
-      <div className="px-5 py-4">{children}</div>
-    </div>
-  )
-}
 
 function Field({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
@@ -129,7 +101,7 @@ function PaperId() {
   return (
     <Paper title="Seafarer's Identity Document · Ukraine">
       <div className="flex gap-4">
-        <div className="flex h-[92px] w-[74px] shrink-0 items-center justify-center rounded-md bg-card">
+        <div className="flex h-[92px] w-[74px] shrink-0 items-center justify-center rounded-md bg-muted">
           <UserRound className="size-12 text-muted-foreground" strokeWidth={1.25} />
         </div>
         <div className="flex flex-1 flex-col justify-center gap-3">

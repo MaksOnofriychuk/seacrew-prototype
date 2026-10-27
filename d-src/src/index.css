@@ -10,8 +10,12 @@
 
 /* Токени — лише з crew-kb design-brief-crew-style (§3, §3.1). */
 :root {
-  --background: #FFFFFF;
-  --card: #F5F7FA;
+  /* 27.10: білі блоки на світло-сірому фоні (як у Wise/Revolut) */
+  --background: #F3F6FA;
+  --card: #FFFFFF;
+  /* surface — папір, поля, вікна знизу, згруповані списки; muted — заливки всередині них */
+  --surface: #FFFFFF;
+  --muted: #F3F6FA;
   --border: #E3E8EF;
   --foreground: #0F172A;
   --muted-foreground: #5B6B7F;
@@ -20,8 +24,9 @@
   --signal: #C2410C;
   --success: #167A3E;
   --warning: #9A5B00;
-  /* панель героя: primary ~8 % на фоні */
-  --hero: color-mix(in srgb, var(--primary) 8%, var(--background));
+  /* панель героя: primary 6 % на фоні — трохи темніша за фон; сітка карти — помітніша лінія */
+  --hero: color-mix(in srgb, var(--primary) 6%, var(--background));
+  --chart-line: color-mix(in srgb, var(--primary) 14%, var(--hero));
 }
 
 .dark {
@@ -35,7 +40,10 @@
   --signal: #F08A4B;
   --success: #4CC38A;
   --warning: #E2B341;
+  --surface: #0B1220;
+  --muted: #121A2B;
   --hero: var(--card);
+  --chart-line: var(--border);
 }
 
 @theme inline {
@@ -47,15 +55,16 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--foreground);
-  --color-popover: var(--background);
+  --color-popover: var(--surface);
+  --color-surface: var(--surface);
   --color-popover-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--card);
+  --color-secondary: var(--muted);
   --color-secondary-foreground: var(--foreground);
-  --color-muted: var(--card);
+  --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--card);
+  --color-accent: var(--muted);
   --color-accent-foreground: var(--foreground);
   --color-destructive: var(--signal);
   --color-signal: var(--signal);

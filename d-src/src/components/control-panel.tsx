@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
+import { SCENARIOS, useProto, type Scenario } from '@/lib/proto-state'
 import type { Theme } from '@/lib/route'
 import { GROUPS, SCREENS } from '@/screens/registry'
 
@@ -19,6 +20,7 @@ export function ControlPanel({ screen, theme, onScreen, onTheme }: Props) {
   const i = SCREENS.findIndex((s) => s.id === screen)
   const prev = SCREENS[i - 1]
   const next = SCREENS[i + 1]
+  const { state, set } = useProto()
 
   return (
     <aside className="flex w-full flex-col gap-4 bg-background p-5 md:h-full md:w-[300px] md:shrink-0 md:border-r md:border-border">
@@ -54,6 +56,22 @@ export function ControlPanel({ screen, theme, onScreen, onTheme }: Props) {
             Далее <ChevronRight />
           </Button>
         </div>
+      </div>
+      <Separator />
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="scenario">Сценарий</Label>
+        <Select value={state.scenario} onValueChange={(v) => set({ scenario: v as Scenario })}>
+          <SelectTrigger id="scenario" className="h-11 w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SCENARIOS.map(([id, label]) => (
+              <SelectItem key={id} value={id}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <Separator />
       <div className="flex items-center justify-between gap-3">
