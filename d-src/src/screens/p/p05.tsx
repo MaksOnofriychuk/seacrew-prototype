@@ -1,6 +1,8 @@
 import type { ScreenProps } from '../registry'
+import { JobsScreen } from './_app-jobs'
 
-// p05 — заглушка; екран робиться на етапі 8.
-export function P05Jobs(_: ScreenProps) {
-  return <div className="flex h-full items-center justify-center px-6 text-center text-muted-foreground">p05 — в работе</div>
+// p05 — вакансії моряка (jobsScreen у C): пошук, фільтри чипами, «Сохранить поиск»,
+// у рядку — «Подходит по профилю», закладка пише спільний saved.jobs.
+export function P05Jobs({ go }: ScreenProps) {
+  return <JobsScreen go={go} />
 }

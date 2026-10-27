@@ -1,6 +1,8 @@
 import type { ScreenProps } from '../registry'
+import { DocScreen } from './_app-docs'
 
-// p11 — заглушка; екран робиться на етапі 8.
-export function P11Doc(_: ScreenProps) {
-  return <div className="flex h-full items-center justify-center px-6 text-center text-muted-foreground">p11 — в работе</div>
+// p11 — документ (docScreen у C): документ як папір, превʼю зашифроване, дані з документа.
+// «Изменить данные» — поля прямо на папері; правку видно адміністратору. Видалення — з підтвердженням.
+export function P11Doc({ go }: ScreenProps) {
+  return <DocScreen go={go} />
 }

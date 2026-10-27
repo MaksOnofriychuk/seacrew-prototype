@@ -1,23 +1,23 @@
 import { useEffect, useState, type ComponentType, type ReactNode } from 'react'
-import { Bell, Bookmark, Briefcase, ChevronRight, Download, FileText, Globe, Inbox, Moon, ShieldCheck, Ship, UserRound } from 'lucide-react'
+import { Bell, Bookmark, Briefcase, Check, ChevronDown, ChevronRight, CircleCheck, CircleMinus, Download, FileText, Globe, Inbox, Moon, ShieldCheck, Ship, UserRound } from 'lucide-react'
 import { Wordmark } from '@/components/app/chrome'
 import { TabBar, type Tab } from '@/components/app/tab-bar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { AVAIL } from '@/lib/data'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
-import { durShort, FORM_DEFAULTS, months, Note, readiness, ReadinessBlock, useToast, type QForm, useQ } from './_parts'
+import { VOYAGES, vMonths, type Voyage } from '../s/_core-voyage'
+import { durText, FORM_DEFAULTS, Note, readiness, ReadinessBlock, useToast, type QForm, useQ } from './_parts'
+import { AppSheet, MonoNums } from '../p/_app-parts'
 import type { Acct } from './q06'
 
 // q09 — профіль після швидкої реєстрації (profileScreen у C). «Готовность к анкетам» рахуємо лише
 // по полях, які найчастіше потрібні в анкетах. 100 % — додайте ?full=1 до адреси (у C — галочка в панелі).
-const AVAIL: { text: string; variant: 'success' | 'outline'; cls?: string }[] = [
-  // правка п. 8: «Готов выйти сразу» — першим
-  { text: 'Готов выйти сразу', variant: 'success' },
-  { text: 'Готов к контракту с 01.12', variant: 'success' },
-  { text: 'В рейсе до 15.02', variant: 'outline', cls: 'border-primary text-primary' },
-  { text: 'Не ищу работу', variant: 'outline', cls: 'text-muted-foreground' },
-]
+// Статус доступності — спільний список AVAIL (правка п. 8: «Готов выйти сразу» — першим), індекс — bag 'q.avail'.
+// Не плашка, а тихий рядок з іконкою: плашки лишаємо для строків документів.
+const AVAIL_ICON = [CircleCheck, CircleCheck, Ship, CircleMinus]
+const AVAIL_TONE = ['text-success', 'text-success', 'text-primary', 'text-muted-foreground']
 
 const TAB_TO: Record<Tab, string> = { feed: 'p01', vac: 'p05', docs: 'p02', profile: 'q09' }
 
@@ -27,9 +27,12 @@ export function Q09Profile({ go }: ScreenProps) {
   const { toast, toastNode } = useToast()
   const form = bag<{ v: QForm } | null>('q.form', null)?.v ?? FORM_DEFAULTS
   const email = bag<Acct>('q.acct', { email: '', pass: '', pass2: '' }).email || 'you@example.com'
-  const avail = bag('q.avail', 0)
+  const avail = bag('q.avail', 0) % AVAIL.length
+  const [availOpen, setAvailOpen] = useState(false)
   const full = new URLSearchParams(location.hash.split('?')[1]).get('full') === '1'
-  const r = readiness(full)
+  // Медичні, введені на кроці s5, теж рахуються — тоді профіль заповнено на 100 %.
+  const r = readiness(full || bag<unknown[]>('s5.docs', []).length > 0)
+  const savedN = bag<number[]>('saved.jobs', [0, 3]).length + bag<string[]>('saved.posts', []).length
   const dark = document.documentElement.classList.contains('dark')
 
   useEffect(() => {
@@ -41,12 +44,14 @@ export function Q09Profile({ go }: ScreenProps) {
   const last = String(form.last || '')
   const name = `${first} ${last}`.trim() || 'Без имени'
   const initials = ((first[0] ?? '?') + (last[0] ?? '')).toUpperCase()
-  const sea = durShort(months(String(form.per1)) + months(String(form.per2)))
-  const a = AVAIL[avail % AVAIL.length]
+  // Стаж — з тих самих рейсів, що на кроці «Морской стаж» (s6): одна цифра скрізь.
+  const sea = durText(bag<Voyage[]>('s6.voyages', VOYAGES).reduce((s, v) => s + vMonths(v), 0))
+  const AvailIcon = AVAIL_ICON[avail]
 
-  // Тема в D живе в адресі (#q09?t=dark) — перемикаємо її так само, як панель.
+  // Тема в D живе в адресі (#q09?t=dark) — перемикаємо її так само, як панель. Той самий екран і як p14.
   const toggleTheme = () => {
-    location.hash = dark ? '#q09' : '#q09?t=dark'
+    const id = location.hash.replace(/^#/, '').split('?')[0] || 'q09'
+    location.hash = dark ? `#${id}` : `#${id}?t=dark`
   }
 
   return (
@@ -70,11 +75,15 @@ export function Q09Profile({ go }: ScreenProps) {
                 <span className="truncate text-sm text-muted-foreground">{email}</span>
               </div>
             </div>
-            <button type="button" onClick={() => setBag('q.avail', avail + 1)} aria-label={`Статус: ${a.text}. Изменить`} className="mt-4 flex">
-              <Badge variant={a.variant} className={cn('h-8 gap-1.5 px-3 text-sm', a.cls)}>
-                {a.text}
-                <ChevronRight className="size-3.5" />
-              </Badge>
+            <button
+              type="button"
+              onClick={() => setAvailOpen(true)}
+              aria-label={`Статус: ${AVAIL[avail]}. Изменить`}
+              className="mt-4 flex items-center gap-2 rounded-md border border-border bg-surface py-2 pr-3 pl-3 text-[15px] font-medium"
+            >
+              <AvailIcon className={cn('size-4.5', AVAIL_TONE[avail])} />
+              <MonoNums text={AVAIL[avail]} />
+              <ChevronDown className="size-4 text-muted-foreground" />
             </button>
 
             <div className="mt-6">
@@ -96,12 +105,12 @@ export function Q09Profile({ go }: ScreenProps) {
 
             <Group title="Мой профиль">
               <Row icon={UserRound} title="Личные данные" onClick={() => go('s2')} />
-              <Row icon={Ship} title="Морской стаж" value={<span className="font-mono">{sea}</span>} onClick={() => go('s6')} />
+              <Row icon={Ship} title="Морской стаж" value={<MonoNums text={sea} />} onClick={() => go('s6')} />
               <Row icon={Briefcase} title="Должность" value="3rd Engineer" />
               <Row icon={FileText} title="Моё CV" value="PDF" />
             </Group>
             <Group title="Работа">
-              <Row icon={Bookmark} title="Сохранённые вакансии" value={<span className="font-mono">2</span>} onClick={() => go('p09')} />
+              <Row icon={Bookmark} title="Сохранённое" value={<span className="font-mono">{savedN}</span>} onClick={() => go('p09')} />
               <Row icon={Bell} title="Уведомления" value={<Badge className="font-mono">3</Badge>} onClick={() => go('p10')} />
               <Row icon={Inbox} title="Входящие" value={<Badge className="font-mono">1</Badge>} onClick={() => go('p03')} />
             </Group>
@@ -116,6 +125,32 @@ export function Q09Profile({ go }: ScreenProps) {
       </div>
       <TabBar active="profile" onTab={(t) => go(TAB_TO[t])} />
       {toastNode}
+      <AppSheet open={availOpen} onClose={() => setAvailOpen(false)} title="Статус" description="Агентства видят его в вашем профиле.">
+        <div role="radiogroup" aria-label="Статус" className="flex flex-col">
+          {AVAIL.map((t, i) => {
+            const Icon = AVAIL_ICON[i]
+            return (
+              <button
+                key={t}
+                type="button"
+                role="radio"
+                aria-checked={i === avail}
+                onClick={() => {
+                  setBag('q.avail', i)
+                  setAvailOpen(false)
+                }}
+                className="flex min-h-13 items-center gap-3 border-t border-border py-3 text-left first:border-t-0"
+              >
+                <Icon className={cn('size-5 shrink-0', AVAIL_TONE[i])} />
+                <span className="flex-1 text-base">
+                  <MonoNums text={t} />
+                </span>
+                {i === avail && <Check className="size-5 text-primary" strokeWidth={2.5} />}
+              </button>
+            )
+          })}
+        </div>
+      </AppSheet>
     </div>
   )
 }

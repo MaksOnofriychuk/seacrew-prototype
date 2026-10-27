@@ -1,6 +1,8 @@
 import type { ScreenProps } from '../registry'
+import { JobScreen } from './_app-jobs'
 
-// p08 — заглушка; екран робиться на етапі 8.
-export function P08Job(_: ScreenProps) {
-  return <div className="flex h-full items-center justify-center px-6 text-center text-muted-foreground">p08 — в работе</div>
+// p08 — сторінка вакансії (jobScreen у C): вимоги порівнюються з профілем, внизу — закладка й «Откликнуться».
+// Кнопки листування з агентством немає (правка п. 16).
+export function P08Job({ go }: ScreenProps) {
+  return <JobScreen go={go} />
 }

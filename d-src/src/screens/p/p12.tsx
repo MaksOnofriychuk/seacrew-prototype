@@ -1,6 +1,7 @@
 import type { ScreenProps } from '../registry'
+import { JobScreen } from './_app-jobs'
 
-// p12 — заглушка; екран робиться на етапі 8.
-export function P12Apply(_: ScreenProps) {
-  return <div className="flex h-full items-center justify-center px-6 text-center text-muted-foreground">p12 — в работе</div>
+// p12 — p08 з відкритим вікном відгуку: анкета з профілю, чого бракує, супровідний лист.
+export function P12Apply({ go }: ScreenProps) {
+  return <JobScreen go={go} applyOpen />
 }
