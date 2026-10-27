@@ -957,7 +957,7 @@ body.bar-open .bar-toggle .t-open{display:none}body:not(.bar-open) .bar-toggle .
 
   function readHash() {
     var h = (location.hash || '').replace('#', '').split('/');
-    if (h[0] === 'a' || h[0] === 'b' || h[0] === 'c') S.view = h[0];
+    if (h[0] === 'a' || h[0] === 'b' || h[0] === 'c' || h[0] === 'd') S.view = h[0];
     if (h[1]) {
       if (S.view === 'b' && B_SCREENS.some(function (x) { return x[0] === h[1]; })) S.b = h[1];
       if (S.view === 'c' && C_SCREENS.some(function (x) { return x[0] === h[1]; })) S.c = h[1];
@@ -969,7 +969,7 @@ body.bar-open .bar-toggle .t-open{display:none}body:not(.bar-open) .bar-toggle .
   }
 
   function writeHash() {
-    var next = '#' + S.view + (S.view === 'a' ? '' : '/' + (S.view === 'b' ? S.b : S.c));
+    var next = '#' + S.view + (S.view === 'a' || S.view === 'd' ? '' : '/' + (S.view === 'b' ? S.b : S.c));
     if (location.hash !== next) history.replaceState(null, '', next);
   }
 
@@ -2715,11 +2715,15 @@ body.bar-open .bar-toggle .t-open{display:none}body:not(.bar-open) .bar-toggle .
 
   function renderBar() {
     var seg = '<div class="seg">' +
-      [['a', 'A · Текущий прототип'], ['b', 'B · Сейчас в TestFlight'], ['c', 'C · Новая регистрация']].map(function (v) {
+      [['a', 'A · Текущий прототип'], ['b', 'B · Сейчас в TestFlight'], ['c', 'C · Новая регистрация'], ['d', 'D · Новый стиль']].map(function (v) {
         return '<button class="' + (S.view === v[0] ? 'on' : '') + '" data-a="view:' + v[0] + '">' + v[1] + '</button>';
       }).join('') + '</div>';
     if (S.view === 'a') {
       BAR.innerHTML = seg + '<div class="note">Прототип из Claude Design без изменений.</div>';
+      return;
+    }
+    if (S.view === 'd') {
+      BAR.innerHTML = seg + '<div class="note">Экраны вкладки C в новом стиле с правками заказчика. Экран и тема — в панели слева внутри.</div>';
       return;
     }
     var cur = S.view === 'b' ? S.b : S.c;
@@ -2758,6 +2762,10 @@ body.bar-open .bar-toggle .t-open{display:none}body:not(.bar-open) .bar-toggle .
     renderBar();
     if (S.view === 'a') {
       STAGE.innerHTML = '<iframe class="frameA" src="prototype-v1.html" title="Текущий прототип"></iframe>';
+      return;
+    }
+    if (S.view === 'd') {
+      STAGE.innerHTML = '<iframe class="frameA" src="d/index.html" title="Новый стиль"></iframe>';
       return;
     }
     STAGE.innerHTML = S.view === 'b' ? screenB(S.b) : screenC(S.c);

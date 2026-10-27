@@ -1,0 +1,109 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Токени — лише з crew-kb design-brief-crew-style (§3, §3.1). */
+:root {
+  --background: #FFFFFF;
+  --card: #F5F7FA;
+  --border: #E3E8EF;
+  --foreground: #0F172A;
+  --muted-foreground: #5B6B7F;
+  --primary: #1F4E8C;
+  --primary-foreground: #FFFFFF;
+  --signal: #C2410C;
+  --success: #167A3E;
+  --warning: #9A5B00;
+}
+
+.dark {
+  --background: #0B1220;
+  --card: #121A2B;
+  --border: #22304A;
+  --foreground: #E6EBF2;
+  --muted-foreground: #8A98AD;
+  --primary: #6B9BEF;
+  --primary-foreground: #0B1220;
+  --signal: #F08A4B;
+  --success: #4CC38A;
+  --warning: #E2B341;
+}
+
+@theme inline {
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Імена змінних shadcn → наші токени */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--background);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--card);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--card);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--card);
+  --color-accent-foreground: var(--foreground);
+  --color-destructive: var(--signal);
+  --color-signal: var(--signal);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--primary);
+
+  /* Радіуси: кнопки й поля 12, картки 16, вікна знизу 24, чіпи — rounded-full */
+  --radius-md: 12px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+
+  /* Анімації: спокійні, 150–250 мс */
+  --default-transition-duration: 200ms;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-card font-sans text-foreground antialiased;
+  }
+}
+
+/* Перехід між екранами: короткий зсув і проявлення */
+@keyframes screen-in {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes screen-in-back {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: none; }
+}
+.screen-in { animation: screen-in 200ms ease-out both; }
+.screen-in-back { animation: screen-in-back 200ms ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
