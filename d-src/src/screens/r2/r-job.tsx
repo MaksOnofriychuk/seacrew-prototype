@@ -109,7 +109,7 @@ export function RJob({ go }: ScreenProps) {
                   )
                 },
               },
-              { key: 'status', header: 'Статус', width: '130px', cell: (a) => <ApplicationStatusDot s={a.status} /> },
+              { key: 'status', header: 'Статус', width: '156px', cell: (a) => <ApplicationStatusDot s={a.status} /> },
             ]}
             rows={apps}
             rowKey={(a) => a.id}

@@ -8,12 +8,13 @@ import { PageHeader, WebCard } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { AvailabilityDot, StatusDot, WebAvatar } from '@/components/web/status-badge'
 import { ruDate } from '@/lib/data'
-import { ASSIGNMENT_STATUS_LABEL, FORMS, jobById, seafarerById, type Assignment } from '@/lib/data-web'
-import { assignmentsOf, CANDIDATES, conversationOf, monthsText, TODAY } from '@/lib/data-recruiter-1'
+import { ASSIGNMENT_STATUS_LABEL, ASSIGNMENTS, FORMS, jobById, seafarerById, type Assignment } from '@/lib/data-web'
+import { assignmentsOf, CANDIDATES, chatOf, monthsText, msgPreview, TODAY } from '@/lib/data-recruiter-1'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { useGoOr, useSelected, WebDialog } from './_parts'
+import { useR2 } from '../r2/_parts'
+import { IncompleteMark, useSelected, WebDialog } from './_parts'
 
 // r-candidate — картка кандидата (/candidates/[id] у коді): анкети й «Отправить анкету», переписка,
 // коротко про моряка (лише поля з правки №30) і перехід на повний профіль.
@@ -21,21 +22,31 @@ import { useGoOr, useSelected, WebDialog } from './_parts'
 const TONE = { submitted: 'success', in_progress: 'warning', sent: 'primary' } as const
 
 export function RCandidate({ go }: ScreenProps) {
-  const { bag, setBag } = useProto()
-  const goOr = useGoOr(go)
+  const { bag, setBag, showToast } = useProto()
+  const { chats } = useR2()
   const [id] = useSelected('r1.candidate', 'sf01')
   const [, selectSeafarer] = useSelected('r1.seafarer', 'sf01')
   const c = CANDIDATES.find((x) => x.seafarerId === id) ?? CANDIDATES[0]
   const s = seafarerById(c.seafarerId)!
   const job = jobById(c.jobId ?? '')
-  const conv = conversationOf(c)
+  const conv = chatOf(chats, c)
   const key = `r1.sent.${s.id}`
   const sent = bag<Assignment[]>(key, [])
   const forms = [...sent, ...assignmentsOf(s.id)]
   const [sendOpen, setSendOpen] = useState(false)
 
-  const openChat = () => goOr('r-messages', 'Переписка откроется в разделе «Сообщения»')
-  const openForm = () => goOr('r-forms', 'Ответы на анкету откроются в разделе «Формы»')
+  // Переписка й анкети живуть у другій частині вебу (r-chat, r-assignment): відкриваємо саме цього моряка.
+  const openChat = () => {
+    if (!conv) return showToast('Переписка появится, когда моряк ответит на приглашение')
+    setBag('r2.chat', conv.id)
+    setBag('r2.read', [...bag<string[]>('r2.read', []).filter((x) => x !== conv.id), conv.id])
+    go('r-chat')
+  }
+  const openForm = (a: Assignment) => {
+    if (!ASSIGNMENTS.some((x) => x.id === a.id)) return showToast('Моряк ещё не открыл анкету — ответы появятся после отправки')
+    setBag('r2.as', a.id)
+    go('r-assignment')
+  }
 
   return (
     <WebShell variant="recruiter" active="r-candidates" go={go}>
@@ -49,7 +60,10 @@ export function RCandidate({ go }: ScreenProps) {
             <span className="flex items-center gap-4">
               <WebAvatar initials={s.initials} size="lg" className="border border-border bg-surface" />
               <span className="flex flex-col gap-1">
-                {s.name}
+                <span className="flex items-center gap-3">
+                  {s.name}
+                  <IncompleteMark id={s.id} />
+                </span>
                 <span className="text-[15px] font-normal tracking-normal text-muted-foreground">{s.position}</span>
               </span>
             </span>
@@ -82,7 +96,7 @@ export function RCandidate({ go }: ScreenProps) {
                     const f = FORMS.find((x) => x.id === a.formId)!
                     return (
                       <li key={a.id} className="border-t border-border first:border-t-0">
-                        <button type="button" onClick={openForm} className="flex w-full items-center gap-4 px-6 py-3.5 text-left hover:bg-muted">
+                        <button type="button" onClick={() => openForm(a)} className="flex w-full items-center gap-4 px-6 py-3.5 text-left hover:bg-muted">
                           <FileText className="size-4.5 shrink-0 text-primary" />
                           <span className="flex min-w-0 flex-1 flex-col leading-tight">
                             <span className="truncate text-[15px]">{f.title}</span>
@@ -119,7 +133,7 @@ export function RCandidate({ go }: ScreenProps) {
                       </p>
                     ) : (
                       <div key={i} className={cn('flex max-w-[78%] flex-col gap-1 rounded-xl px-3.5 py-2.5 text-sm', m.from === 'me' ? 'self-end bg-primary text-primary-foreground' : 'self-start bg-muted')}>
-                        {m.text}
+                        {msgPreview(m)}
                         <span className={cn('self-end font-mono text-[11px]', m.from === 'me' ? 'text-primary-foreground/70' : 'text-muted-foreground')}>{m.time}</span>
                       </div>
                     ),

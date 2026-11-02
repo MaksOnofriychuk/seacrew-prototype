@@ -13,7 +13,7 @@ import { jobById, ME_RECRUITER, seafarerById, WEB_JOBS, type WebSeafarer } from 
 import { contractsFor, monthsText, TODAY } from '@/lib/data-recruiter-1'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
-import { useInvites, useSelected, WebDialog } from './_parts'
+import { IncompleteMark, useInvites, useSelected, WebDialog } from './_parts'
 
 // r-seafarer — профіль моряка очима рекрутера (правка №30, строго за переліком).
 // Бачить: «Andrii K.», досвід у місяцях, сертифікати, національність, найближчий аеропорт, візи, дипломи,
@@ -77,7 +77,10 @@ export function RSeafarer({ go }: ScreenProps) {
             <span className="flex items-center gap-4">
               <WebAvatar initials={s.initials} size="lg" className="border border-border bg-surface" />
               <span className="flex flex-col gap-1">
-                {s.name}
+                <span className="flex items-center gap-3">
+                  {s.name}
+                  <IncompleteMark id={s.id} />
+                </span>
                 <span className="text-[15px] font-normal tracking-normal text-muted-foreground">
                   {s.position}, {s.fleet} / {s.department}
                 </span>

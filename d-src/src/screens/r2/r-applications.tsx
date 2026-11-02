@@ -8,9 +8,11 @@ import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader, PageTabs } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { ApplicationStatusDot, AvailabilityDot, WebAvatar } from '@/components/web/status-badge'
-import { APPLICATION_STATUS_LABEL, expText, seafarerById, type Application, type ApplicationStatus } from '@/lib/data-web'
+import { APPLICATION_STATUS_LABEL, seafarerById, type Application, type ApplicationStatus } from '@/lib/data-web'
 import type { ScreenProps } from '../registry'
-import { ConfirmDialog, ruDate, useGoOr, useR2 } from './_parts'
+import { monthsText } from '@/lib/data-recruiter-1'
+import { useProto } from '@/lib/proto-state'
+import { ConfirmDialog, ruDate, useR2 } from './_parts'
 
 type Tab = ApplicationStatus | 'all'
 const TABS: ApplicationStatus[] = ['sent', 'waiting', 'match', 'rejected']
@@ -28,7 +30,7 @@ const SEAFARER_SEES: Record<ApplicationStatus, string> = {
 export function RApplications({ go }: ScreenProps) {
   const r = useR2()
   const view = useView()
-  const goOr = useGoOr(go)
+  const { setBag } = useProto()
   const [tab, setTab] = useState<Tab>('all')
   const [q, setQ] = useState('')
   const [job, setJob] = useState('')
@@ -143,15 +145,18 @@ export function RApplications({ go }: ScreenProps) {
                 <Row l="Готовность">
                   <AvailabilityDot a={s.availability} short />
                 </Row>
-                <Row l="Стаж">
-                  <MonoNums text={expText(s.experienceMonths)} />
-                </Row>
-                <Row l="Гражданство">{s.nationality}</Row>
-                <Row l="Английский">
-                  <span className="font-mono">{s.englishLevel}</span>
-                </Row>
+                <Row l="Опыт">{s.experienceMonths === null ? <span className="text-muted-foreground">по контрактам</span> : <MonoNums text={monthsText(s.experienceMonths)} />}</Row>
+                <Row l="Национальность">{s.nationality}</Row>
+                <Row l="Ближайший аэропорт">{s.airport}</Row>
               </dl>
-              <button type="button" onClick={() => goOr(['r-seafarer', 'r-candidate', 'r-candidates'], 'Профиль моряка открывается из «Поиска моряков»')} className="flex items-center gap-2 self-start text-sm font-medium text-primary">
+              <button
+                type="button"
+                onClick={() => {
+                  setBag('r1.seafarer', s.id)
+                  go('r-seafarer')
+                }}
+                className="flex items-center gap-2 self-start text-sm font-medium text-primary"
+              >
                 <UserRound className="size-4" /> Профиль моряка
               </button>
             </div>

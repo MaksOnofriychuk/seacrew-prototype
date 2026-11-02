@@ -6,8 +6,9 @@ import { WebShell } from '@/components/web/shell'
 import { ApplicationStatusDot, StatusDot, WebAvatar } from '@/components/web/status-badge'
 import { ruDate } from '@/lib/data'
 import { APPLICATIONS, ASSIGNMENT_STATUS_LABEL, jobById, seafarerById } from '@/lib/data-web'
-import { assignmentsOf, CANDIDATES, conversationOf, lastActivity, type Candidate } from '@/lib/data-recruiter-1'
+import { assignmentsOf, CANDIDATES, chatOf, lastActivity, type Candidate } from '@/lib/data-recruiter-1'
 import type { ScreenProps } from '../types'
+import { useR2 } from '../r2/_parts'
 import { useSelected } from './_parts'
 
 // r-candidates — моряки, з якими є контакт: відгукнулися на вакансію або підтвердили інтерес до запрошення
@@ -15,6 +16,7 @@ import { useSelected } from './_parts'
 
 export function RCandidates({ go }: ScreenProps) {
   const [, select] = useSelected('r1.candidate', 'sf01')
+  const { chats } = useR2()
 
   const columns: Column<Candidate>[] = [
     {
@@ -81,13 +83,13 @@ export function RCandidates({ go }: ScreenProps) {
       key: 'last',
       header: 'Переписка',
       width: '17%',
-      sortValue: (c) => lastActivity(c).sort,
+      sortValue: (c) => lastActivity(chats, c).sort,
       cell: (c) => {
-        const conv = conversationOf(c)
+        const conv = chatOf(chats, c)
         if (!conv) return <span className="text-muted-foreground">переписки нет</span>
         return (
           <span className="flex items-center gap-2">
-            <span className="font-mono">{lastActivity(c).text}</span>
+            <span className="font-mono">{lastActivity(chats, c).text}</span>
             {conv.unread > 0 && <span className="rounded-full bg-primary px-1.5 font-mono text-xs leading-5 text-primary-foreground" aria-label={`Непрочитанных: ${conv.unread}`}>{conv.unread}</span>}
           </span>
         )

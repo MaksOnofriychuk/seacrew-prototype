@@ -8,7 +8,8 @@ import { FORMS, seafarerById } from '@/lib/data-web'
 import { formTitle, type Chat, type ChatMsg } from '@/lib/data-recruiter-2'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
-import { useGoOr, useR2, type Go } from './_parts'
+import { useProto } from '@/lib/proto-state'
+import { useR2, type Go } from './_parts'
 
 // r-messages і r-chat — повідомлення рекрутера (відп. 111–115, правка №22).
 // Ліворуч список розмов, праворуч — розмова: текст, фото, файли, посилання; «Прочитано» і «в сети».
@@ -144,7 +145,7 @@ const dayLabel = (t: string) => (t.slice(0, 5) === '02.11' ? 'Сегодня' : 
 function Thread({ chat, go }: { chat: Chat; go: Go }) {
   const r = useR2()
   const view = useView()
-  const goOr = useGoOr(go)
+  const { setBag } = useProto()
   const s = seafarerById(chat.seafarerId)!
   const j = r.jobs.find((x) => x.id === chat.jobId)!
   const app = r.apps.find((a) => a.id === chat.id)
@@ -244,7 +245,10 @@ function Thread({ chat, go }: { chat: Chat; go: Go }) {
               <ApplicationStatusDot s={app.status} />
             </button>
           )}
-          <Button variant="outline" size="sm" onClick={() => goOr(['r-seafarer', 'r-candidate', 'r-candidates'], 'Профиль моряка открывается из «Поиска моряков»')}>
+          <Button variant="outline" size="sm" onClick={() => {
+              setBag('r1.seafarer', s.id)
+              go('r-seafarer')
+            }}>
             <UserRound /> Профиль
           </Button>
         </div>
