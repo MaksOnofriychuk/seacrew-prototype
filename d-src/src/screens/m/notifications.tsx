@@ -72,10 +72,15 @@ export function P10Notifications({ go }: ScreenProps) {
         title="Уведомления"
         onBack={() => go('p01')}
         right={
-          <button type="button" aria-label="Настройки уведомлений" onClick={() => {
-            setBag('back.m-notif-settings', 'p10')
-            go('m-notif-settings')
-          }} className="flex size-11 items-center justify-center rounded-md text-primary active:scale-95">
+          <button
+            type="button"
+            aria-label="Настройки уведомлений"
+            onClick={() => {
+              setBag('back.m-notif-settings', 'p10')
+              go('m-notif-settings')
+            }}
+            className="flex size-11 items-center justify-center rounded-md text-primary active:scale-95"
+          >
             <Settings className="size-[22px]" />
           </button>
         }
@@ -94,7 +99,16 @@ export function P10Notifications({ go }: ScreenProps) {
           <ViewState
             empty={
               tab === 'work'
-                ? { icon: Bell, title: 'Предложений пока нет', text: 'Здесь появятся предложения рекрутеров и ответы на отклики. Чем полнее профиль, тем чаще рекрутеры вас находят.', action: <Button variant="outline" className="h-11 text-[15px] text-primary" onClick={() => go('p14')}><UserRound /> Открыть профиль</Button> }
+                ? {
+                    icon: Bell,
+                    title: 'Предложений пока нет',
+                    text: 'Здесь появятся предложения рекрутеров и ответы на отклики. Чем полнее профиль, тем чаще рекрутеры вас находят.',
+                    action: (
+                      <Button variant="outline" className="h-11 text-[15px] text-primary" onClick={() => go('p14')}>
+                        <UserRound /> Открыть профиль
+                      </Button>
+                    ),
+                  }
                 : { icon: Heart, title: 'Пока тихо', text: 'Здесь появятся реакции и ответы на ваши публикации и комментарии.' }
             }
             loading={{ kind: 'list', rows: 5 }}

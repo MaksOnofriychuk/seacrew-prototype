@@ -58,7 +58,7 @@ export const CHATS: Chat[] = [
       { kind: 'day', text: 'Сегодня' },
       { kind: 'link', from: 'them', url: 'bluewave-crewing.example/vessels/aurora-spirit', title: 'MT Aurora Spirit', text: 'Chemical Tanker, 19 800 DWT, 2018', time: '10:02' },
       { kind: 'text', from: 'me', text: 'Спасибо, посмотрю и вернусь сегодня.', time: '10:15' },
-      { kind: 'photo', from: 'me', caption: 'Диплом, первая страница', time: '10:16' },
+      { kind: 'photo', from: 'me', caption: 'Последнее судно, MV Example Star', time: '10:16' },
       { kind: 'file', from: 'them', name: 'Условия контракта.pdf', size: '240 КБ', time: '11:40' },
       { kind: 'form', from: 'them', title: 'Анкета BlueWave Crewing', due: '08.11.2026', time: '11:41' },
     ],

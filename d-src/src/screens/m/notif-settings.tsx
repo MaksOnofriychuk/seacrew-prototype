@@ -17,12 +17,7 @@ export function MNotifSettings({ go }: ScreenProps) {
 
   const group = (tab: 'work' | 'other') =>
     NOTIF_TYPES.filter((t) => t.tab === tab).map((t) => (
-      <SettingsRow
-        key={t.id}
-        title={<label htmlFor={`n-${t.id}`}>{t.title}</label>}
-        sub={t.sub}
-        right={<Switch id={`n-${t.id}`} checked={isOn(t.id)} onCheckedChange={(v) => toggle(t.id, v)} />}
-      />
+      <SettingsRow key={t.id} title={<label htmlFor={`n-${t.id}`}>{t.title}</label>} sub={t.sub} right={<Switch id={`n-${t.id}`} checked={isOn(t.id)} onCheckedChange={(v) => toggle(t.id, v)} />} />
     ))
 
   return (

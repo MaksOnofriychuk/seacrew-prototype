@@ -37,7 +37,7 @@ export function MSupport({ go }: ScreenProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <NavBar title="Поддержка" onBack={() => go(bag<string>('back.m-support', 'p04'))} />
+      <NavBar onBack={() => go(bag<string>('back.m-support', 'p04'))} />
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-2 pb-6">
         <div className="px-2">
           <h1 className="text-[32px] leading-[1.1] font-semibold tracking-tight">Поддержка</h1>
@@ -49,18 +49,22 @@ export function MSupport({ go }: ScreenProps) {
             <SettingsRow
               key={i}
               title={t.title}
-              sub={t.date === 'сегодня' ? 'Отправлено сегодня' : <>Отправлено <span className="font-mono">{t.date}</span></>}
+              sub={
+                t.date === 'сегодня' ? (
+                  'Отправлено сегодня'
+                ) : (
+                  <>
+                    Отправлено <span className="font-mono">{t.date}</span>
+                  </>
+                )
+              }
               right={t.open ? <Status kind="current">ждёт ответа</Status> : <Status kind="ok">решено</Status>}
             />
           ))}
         </SettingsGroup>
 
         <SettingsGroup title="Почта поддержки">
-          <SettingsRow
-            title="support@seafolio.example"
-            onClick={() => showToast('Адрес скопирован')}
-            right={<Copy className="size-4 shrink-0 text-muted-foreground" />}
-          />
+          <SettingsRow title="support@seafolio.example" onClick={() => showToast('Адрес скопирован')} right={<Copy className="size-4 shrink-0 text-muted-foreground" />} />
         </SettingsGroup>
       </div>
       <Footer>
@@ -87,7 +91,10 @@ export function MSupport({ go }: ScreenProps) {
               type="button"
               aria-pressed={topic === t}
               onClick={() => setTopic(t)}
-              className={cn('flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors', topic === t ? 'border-primary bg-muted font-medium text-primary' : 'border-border text-foreground')}
+              className={cn(
+                'flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors',
+                topic === t ? 'border-primary bg-muted font-medium text-primary' : 'border-border text-foreground',
+              )}
             >
               {topic === t && <Check className="size-3.5" strokeWidth={2.5} />}
               {t}

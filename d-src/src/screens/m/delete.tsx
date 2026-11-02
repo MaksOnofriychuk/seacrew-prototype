@@ -62,7 +62,12 @@ export function MDelete({ go }: ScreenProps) {
                 onKeyDown={(e) => e.key === 'Enter' && password && submit()}
                 className="pr-12"
               />
-              <button type="button" aria-label={show ? 'Скрыть пароль' : 'Показать пароль'} onClick={() => setShow(!show)} className="absolute top-0 right-0 flex size-12 items-center justify-center text-muted-foreground">
+              <button
+                type="button"
+                aria-label={show ? 'Скрыть пароль' : 'Показать пароль'}
+                onClick={() => setShow(!show)}
+                className="absolute top-0 right-0 flex size-12 items-center justify-center text-muted-foreground"
+              >
                 {show ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
               </button>
             </div>

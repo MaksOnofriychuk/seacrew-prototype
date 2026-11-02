@@ -27,9 +27,9 @@ function useFields(): { title: string; fields: FieldDef[] }[] {
   const f: QForm = bag<{ v: QForm } | null>('q.form', null)?.v ?? FORM_DEFAULTS
   const email = bag<Acct | null>('q.acct', null)?.email || 'you@example.com'
   const avail = useAvailability().label
-  const profile = 'Из вашего профиля'
-  const sid = 'Из документа «Удостоверение личности моряка»'
-  const coc = 'Из документа «Диплом моряка»'
+  const profile = 'Из профиля'
+  const sid = 'Из удостоверения моряка'
+  const coc = 'Из диплома'
   return [
     {
       title: 'Личные данные',
@@ -51,7 +51,7 @@ function useFields(): { title: string; fields: FieldDef[] }[] {
           ask: 'Есть в профиле и в прежней анкете. Выберите, что отправить:',
           sources: [
             { from: profile, value: 'Одесса, ODS' },
-            { from: 'Из вашего прежнего ответа в анкете Nordline', value: 'Киев, KBP' },
+            { from: 'Из вашей анкеты для Nordline', value: 'Киев, KBP' },
           ],
         },
       ],
@@ -67,7 +67,7 @@ function useFields(): { title: string; fields: FieldDef[] }[] {
           ask: 'Есть в 2 ваших документах. Выберите тот, о котором вопрос:',
           sources: [
             { from: sid, value: String(f.docNum) },
-            { from: 'Из документа «Мореходная книжка»', value: 'MK 004512' },
+            { from: 'Из мореходной книжки', value: 'MK 004512' },
           ],
         },
         { id: 'sidExp', label: 'Паспорт моряка действует до', mono: true, sources: [{ from: sid, value: String(f.docExp) }] },
@@ -130,7 +130,12 @@ export function MForm({ go }: ScreenProps) {
     const bad = [...new Set([...choose, ...missing].map((fd) => fd.id))]
     if (bad.length) {
       setErrors(bad)
-      showToast(`Проверьте ${bad.length} ${bad.length === 1 ? 'поле' : bad.length < 5 ? 'поля' : 'полей'}: ${all.filter((fd) => bad.includes(fd.id)).map((fd) => fd.label).join(', ')}`)
+      showToast(
+        `Проверьте ${bad.length} ${bad.length === 1 ? 'поле' : bad.length < 5 ? 'поля' : 'полей'}: ${all
+          .filter((fd) => bad.includes(fd.id))
+          .map((fd) => fd.label)
+          .join(', ')}`,
+      )
       return
     }
     setReview(true)
@@ -159,56 +164,68 @@ export function MForm({ go }: ScreenProps) {
           <ErrorState title="Не удалось загрузить анкету" />
         ) : (
           <>
-          {/* від кого й до коли */}
-          <div className="flex flex-col gap-1 px-2">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-[15px] font-semibold">BlueWave Crewing</span>
-              {sent ? (
-                <Badge variant="success" className="font-normal">отправлено</Badge>
-              ) : filled ? (
-                <Badge variant="outline" className="font-normal text-muted-foreground">черновик</Badge>
-              ) : (
-                <Badge className="font-normal">новая</Badge>
-              )}
+            {/* від кого й до коли */}
+            <div className="flex flex-col gap-1 px-2">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[15px] font-semibold">BlueWave Crewing</span>
+                {sent ? (
+                  <Badge variant="success" className="font-normal">
+                    отправлено
+                  </Badge>
+                ) : filled ? (
+                  <Badge variant="outline" className="font-normal text-muted-foreground">
+                    черновик
+                  </Badge>
+                ) : (
+                  <Badge className="font-normal">новая</Badge>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Для вакансии {job.t}, {job.ship}. Заполнить до <span className="font-mono">08.11.2026</span>
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Для вакансии {job.t}, {job.ship}. Заполнить до <span className="font-mono">08.11.2026</span>
-            </p>
-          </div>
 
-          {sent ? (
-            <p className="mt-4 flex items-start gap-2 rounded-md bg-card px-4 py-3 text-sm text-muted-foreground">
-              <Check className="mt-0.5 size-4 shrink-0 text-success" strokeWidth={2.5} />
-              <span>
-                <span className="font-medium text-foreground">
-                  Отправлено сегодня в <span className="font-mono">{sentAt}</span>.
-                </span>{' '}
-                Отправленную анкету изменить нельзя.
-              </span>
-            </p>
-          ) : filled ? (
-            <p className="mt-4 flex items-start gap-2 rounded-md bg-card px-4 py-3 text-sm text-muted-foreground">
-              {choose.length ? <CircleAlert className="mt-0.5 size-4 shrink-0 text-warning" /> : <Check className="mt-0.5 size-4 shrink-0 text-success" strokeWidth={2.5} />}
-              <span>
-                <span className="font-medium text-foreground">Заполнено из профиля.</span> Под каждым полем видно, откуда значение.
-                {choose.length > 0 && <> Выберите значение в {choose.length === 1 ? 'одном поле' : `${choose.length} полях`}.</>}
-              </span>
-            </p>
-          ) : null}
+            {sent ? (
+              <p className="mt-4 flex items-start gap-2 rounded-md bg-card px-4 py-3 text-sm text-muted-foreground">
+                <Check className="mt-0.5 size-4 shrink-0 text-success" strokeWidth={2.5} />
+                <span>
+                  <span className="font-medium text-foreground">
+                    Отправлено сегодня в <span className="font-mono">{sentAt}</span>.
+                  </span>{' '}
+                  Отправленную анкету изменить нельзя.
+                </span>
+              </p>
+            ) : filled ? (
+              <p className="mt-4 flex items-start gap-2 rounded-md bg-card px-4 py-3 text-sm text-muted-foreground">
+                {choose.length ? <CircleAlert className="mt-0.5 size-4 shrink-0 text-warning" /> : <Check className="mt-0.5 size-4 shrink-0 text-success" strokeWidth={2.5} />}
+                <span>
+                  <span className="font-medium text-foreground">Заполнено из профиля.</span> Под каждым полем видно, откуда значение.
+                  {choose.length > 0 && <> Выберите значение в {choose.length === 1 ? 'одном поле' : `${choose.length} полях`}.</>}
+                </span>
+              </p>
+            ) : null}
 
-          <div className="mt-4 overflow-hidden rounded-xl border border-border bg-surface">
-            <div className="bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground">Анкета BlueWave Crewing</div>
-            {sections.map((s) => (
-              <section key={s.title} className="border-t border-border px-5 pt-4 pb-5 first-of-type:border-t-0">
-                <h2 className="text-base font-semibold">{s.title}</h2>
-                <div className="mt-3 flex flex-col gap-4">
-                  {s.fields.map((fd) => (
-                    <FormField key={fd.id} fd={fd} a={answers[fd.id]} readOnly={sent} invalid={errors.includes(fd.id)} onChange={(v) => setAnswer(fd.id, { v, src: 'manual' })} onPick={() => setPick(fd)} />
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
+            <div className="mt-4 overflow-hidden rounded-xl border border-border bg-surface">
+              <div className="bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground">Анкета BlueWave Crewing</div>
+              {sections.map((s) => (
+                <section key={s.title} className="border-t border-border px-5 pt-4 pb-5 first-of-type:border-t-0">
+                  <h2 className="text-base font-semibold">{s.title}</h2>
+                  <div className="mt-3 flex flex-col gap-4">
+                    {s.fields.map((fd) => (
+                      <FormField
+                        key={fd.id}
+                        fd={fd}
+                        a={answers[fd.id]}
+                        readOnly={sent}
+                        invalid={errors.includes(fd.id)}
+                        onChange={(v) => setAnswer(fd.id, { v, src: 'manual' })}
+                        onPick={() => setPick(fd)}
+                      />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
           </>
         )}
       </div>
@@ -319,7 +336,12 @@ function FormField({ fd, a, readOnly, invalid, onChange, onPick }: { fd: FieldDe
         />
       )}
       {a && (fd.sources.length > 0 || a.src === 'manual') && (
-        <button type="button" disabled={readOnly || fd.sources.length === 0} onClick={onPick} className="flex items-center gap-1.5 self-start text-left text-sm text-muted-foreground disabled:pointer-events-none">
+        <button
+          type="button"
+          disabled={readOnly || fd.sources.length === 0}
+          onClick={onPick}
+          className="flex items-center gap-1.5 self-start text-left text-sm text-muted-foreground disabled:pointer-events-none"
+        >
           {src ? (
             <>
               <Check className="size-3.5 shrink-0 text-success" strokeWidth={2.5} />
@@ -360,7 +382,13 @@ function SourceSheet({ fd, current, onClose, onPick }: { fd: FieldDef | null; cu
               </button>
             )
           })}
-          <button type="button" role="radio" aria-checked={current?.src === 'manual'} onClick={() => onPick('manual')} className="flex items-center gap-3 border-t border-border px-4 py-3.5 text-left text-base font-medium text-primary">
+          <button
+            type="button"
+            role="radio"
+            aria-checked={current?.src === 'manual'}
+            onClick={() => onPick('manual')}
+            className="flex items-center gap-3 border-t border-border px-4 py-3.5 text-left text-base font-medium text-primary"
+          >
             Ввести вручную
           </button>
         </div>

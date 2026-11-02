@@ -26,6 +26,8 @@ export function MChat({ go, fixed }: ScreenProps & { fixed?: string }) {
   const job = JOBS[chat.job]
   const replied = chat.messages.some((m) => 'from' in m && m.from === 'them')
   const scroller = useRef<HTMLDivElement>(null)
+  // скільки було непрочитаних, коли відкрили чат — для межі «Новые сообщения»
+  const [unreadFrom] = useState(chat.unread > 0 ? chat.messages.length - chat.unread : -1)
 
   useEffect(() => {
     markRead(chat.id)
@@ -43,7 +45,7 @@ export function MChat({ go, fixed }: ScreenProps & { fixed?: string }) {
   return (
     <div className="relative flex h-full flex-col">
       {/* шапка: хто, з якого агентства, онлайн */}
-      <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-2">
+      <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface px-2">
         <button type="button" onClick={() => go('p15')} aria-label="Назад" className="flex size-11 shrink-0 items-center justify-center rounded-md text-primary active:scale-95">
           <ChevronLeft className="size-6" />
         </button>
@@ -53,8 +55,7 @@ export function MChat({ go, fixed }: ScreenProps & { fixed?: string }) {
           <span className="truncate text-[13px] text-muted-foreground">
             {chat.person ? (
               <>
-                {chat.org},{' '}
-                {chat.online ? <span className="text-success">онлайн</span> : (chat.seen ?? 'не в сети')}
+                {chat.org}, {chat.online ? <span className="text-success">онлайн</span> : (chat.seen ?? 'не в сети')}
               </>
             ) : (
               'Рекрутер ещё не ответил'
@@ -63,32 +64,28 @@ export function MChat({ go, fixed }: ScreenProps & { fixed?: string }) {
         </span>
       </div>
 
-      {/* вакансія, про яку чат */}
-      <div className="flex shrink-0 items-center gap-3 border-b border-border bg-surface py-2 pr-3 pl-4">
-        <button type="button" onClick={openJob} className="flex min-w-0 flex-1 items-center gap-2 text-left">
-          <span className="flex min-w-0 flex-col">
-            <span className="truncate text-sm font-medium">
-              {job.t}, {job.ship}
+      {/* вакансія, про яку чат; до відповіді рекрутера її показує заглушка нижче */}
+      {replied && (
+        <div className="flex shrink-0 items-center gap-3 border-b border-border bg-surface py-2 pr-3 pl-4">
+          <button type="button" onClick={openJob} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-medium">
+                {job.t}, {job.ship}
+              </span>
+              <span className="truncate text-[13px] text-muted-foreground">{job.sal}</span>
             </span>
-            <span className="truncate text-[13px] text-muted-foreground">{job.sal}</span>
-          </span>
-          <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-        </button>
-        {replied && (
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </button>
           <Button variant="outline" size="sm" className="h-9 shrink-0 text-primary" onClick={() => setCvOpen(true)}>
             <FileText /> Отправить CV
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto bg-background px-4 pt-3 pb-4">
-        <ViewState
-          empty={{ title: 'Сообщений пока нет', text: 'Напишите первое.' }}
-          error={{ title: 'Не удалось загрузить переписку' }}
-          loading={{ kind: 'cards', rows: 3 }}
-        >
+        <ViewState empty={{ title: 'Сообщений пока нет', text: 'Напишите первое.' }} error={{ title: 'Не удалось загрузить переписку' }} loading={{ kind: 'cards', rows: 3 }}>
           <p className="mb-2 text-center text-xs text-muted-foreground">Переписка хранится полгода</p>
-          <Messages chat={chat} go={go} onJob={openJob} />
+          <Messages chat={chat} go={go} onJob={openJob} unreadFrom={unreadFrom} />
         </ViewState>
       </div>
 
@@ -127,14 +124,13 @@ export function MChatApplied(props: ScreenProps) {
 
 /* ---------- повідомлення ---------- */
 
-function Messages({ chat, go, onJob }: { chat: Chat; go: (id: string) => void; onJob: () => void }) {
+function Messages({ chat, go, onJob, unreadFrom }: { chat: Chat; go: (id: string) => void; onJob: () => void; unreadFrom: number }) {
   const { bag, setBag, showToast } = useProto()
   const formSent = bag<boolean>('form.sent', false)
   const msgs = chat.messages
   const mineIdx = msgs.flatMap((m, i) => ('from' in m && m.from === 'me' ? [i] : []))
   const lastMine = mineIdx.at(-1) ?? -1
   const lastRead = mineIdx.filter((i) => i <= chat.readUpTo).at(-1) ?? -1
-  const unreadFrom = chat.unread > 0 ? msgs.length - chat.unread : -1
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -145,7 +141,18 @@ function Messages({ chat, go, onJob }: { chat: Chat; go: (id: string) => void; o
         return (
           <div key={i} className={cn('flex flex-col', tail && 'mb-1.5')}>
             {i === unreadFrom && <Divider tone="primary">Новые сообщения</Divider>}
-            <Message m={m} chat={chat} go={go} onJob={onJob} formSent={formSent} onToast={showToast} onOpenForm={() => { setBag('chat.sel', chat.id); go('m-form') }} />
+            <Message
+              m={m}
+              chat={chat}
+              go={go}
+              onJob={onJob}
+              formSent={formSent}
+              onToast={showToast}
+              onOpenForm={() => {
+                setBag('chat.sel', chat.id)
+                go('m-form')
+              }}
+            />
             {receipt && (
               <span className="mt-1 flex items-center justify-end gap-1 text-xs text-muted-foreground">
                 {receipt === 'read' ? <CheckCheck className="size-3.5 text-primary" /> : <Check className="size-3.5" />}
@@ -181,7 +188,7 @@ function Message({
     if (m.event === 'applied') return <AppliedCard chat={chat} time={m.time} onJob={onJob} />
     return (
       <Event>
-        {EVENT_TEXT[m.event]} <span className="font-mono">{m.time}</span>
+        {EVENT_TEXT[m.event]} <span className={/\d/.test(m.time) ? 'font-mono' : undefined}>{m.time}</span>
       </Event>
     )
   }
@@ -210,10 +217,7 @@ function Message({
   }
 
   const mine = m.from === 'me'
-  const bubble = cn(
-    'max-w-[80%] rounded-2xl text-[15px] leading-snug',
-    mine ? 'self-end rounded-br-md bg-primary text-primary-foreground' : 'self-start rounded-bl-md border border-border bg-surface',
-  )
+  const bubble = cn('max-w-[80%] rounded-2xl text-[15px] leading-snug', mine ? 'self-end rounded-br-md bg-primary text-primary-foreground' : 'self-start rounded-bl-md border border-border bg-surface')
   const time = <Time className={cn('self-end', mine && 'text-primary-foreground/75')}>{m.time}</Time>
 
   if (m.kind === 'text')
@@ -342,7 +346,12 @@ function Composer({ onText, onPhoto, onFile }: { onText: (t: string) => void; on
   }
   return (
     <div className="flex shrink-0 items-end gap-2 border-t border-border bg-surface px-3 pt-2.5 pb-4">
-      <button type="button" aria-label="Прикрепить фото или файл" onClick={() => setAttach(true)} className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground active:scale-95">
+      <button
+        type="button"
+        aria-label="Прикрепить фото или файл"
+        onClick={() => setAttach(true)}
+        className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground active:scale-95"
+      >
         <Paperclip className="size-5" />
       </button>
       <textarea
@@ -369,8 +378,24 @@ function Composer({ onText, onPhoto, onFile }: { onText: (t: string) => void; on
         <SendHorizontal className="size-5" />
       </button>
       <BottomSheet open={attach} onClose={() => setAttach(false)} title="Прикрепить">
-        <ActionRow icon={Camera} title="Фото" sub="Снять или выбрать из галереи" onClick={() => { setAttach(false); onPhoto() }} />
-        <ActionRow icon={FileText} title="Файл" sub="PDF, документ или изображение" onClick={() => { setAttach(false); onFile() }} />
+        <ActionRow
+          icon={Camera}
+          title="Фото"
+          sub="Снять или выбрать из галереи"
+          onClick={() => {
+            setAttach(false)
+            onPhoto()
+          }}
+        />
+        <ActionRow
+          icon={FileText}
+          title="Файл"
+          sub="PDF, документ или изображение"
+          onClick={() => {
+            setAttach(false)
+            onFile()
+          }}
+        />
         <Button size="lg" variant="ghost" className="mt-3 text-primary" onClick={() => setAttach(false)}>
           Отмена
         </Button>

@@ -1,6 +1,6 @@
 import { Briefcase, MessageSquare } from 'lucide-react'
 import { TabBar } from '@/components/app/tab-bar'
-import { ViewState } from '@/components/app/states'
+import { useView, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { JOBS } from '@/lib/data'
 import { MOBILE_ROUTES } from '@/lib/mobile-routes'
@@ -17,6 +17,7 @@ import { ChatAvatar, preview, useChats } from './_parts'
 export function P15Messages({ go }: ScreenProps) {
   const { setBag } = useProto()
   const { list, unreadTotal } = useChats()
+  const view = useView()
 
   const open = (id: string) => {
     setBag('chat.sel', id)
@@ -53,7 +54,7 @@ export function P15Messages({ go }: ScreenProps) {
                       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                         <span className="flex items-baseline justify-between gap-3">
                           <span className={cn('truncate text-[15px]', unread ? 'font-semibold' : 'font-medium')}>{c.person?.name ?? c.org}</span>
-                          <span className={cn('shrink-0 font-mono text-xs', unread ? 'text-primary' : 'text-muted-foreground')}>{c.time}</span>
+                          <span className={cn('shrink-0 text-xs', /\d/.test(c.time) && 'font-mono', unread ? 'text-primary' : 'text-muted-foreground')}>{c.time}</span>
                         </span>
                         <span className="truncate text-sm text-muted-foreground">
                           {c.person ? `${c.org}, ` : ''}
@@ -65,7 +66,10 @@ export function P15Messages({ go }: ScreenProps) {
                             {p.text}
                           </span>
                           {unread && (
-                            <span aria-label={`непрочитанных: ${c.unread}`} className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[11px] font-medium text-primary-foreground">
+                            <span
+                              aria-label={`непрочитанных: ${c.unread}`}
+                              className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[11px] font-medium text-primary-foreground"
+                            >
                               {c.unread}
                             </span>
                           )}
@@ -80,7 +84,7 @@ export function P15Messages({ go }: ScreenProps) {
           </ViewState>
         </div>
       </div>
-      <TabBar active="msg" go={go} counts={{ msg: unreadTotal }} />
+      <TabBar active="msg" go={go} counts={{ msg: view === 'normal' ? unreadTotal : 0 }} />
     </div>
   )
 }

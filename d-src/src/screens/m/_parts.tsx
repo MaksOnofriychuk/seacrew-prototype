@@ -77,8 +77,7 @@ export function useChats() {
 
   const get = (id: string) => list.find((c) => c.id === id)
   const markRead = (id: string) => !read[id] && setBag('chat.read', { ...read, [id]: true })
-  const send = (id: string, msg: DistributiveOmit<Exclude<ChatMsg, { kind: 'day' }>, 'time'>) =>
-    setBag('chat.sent', { ...sent, [id]: [...(sent[id] ?? []), { ...msg, time: clock() } as ChatMsg] })
+  const send = (id: string, msg: DistributiveOmit<Exclude<ChatMsg, { kind: 'day' }>, 'time'>) => setBag('chat.sent', { ...sent, [id]: [...(sent[id] ?? []), { ...msg, time: clock() } as ChatMsg] })
   const unreadTotal = list.reduce((s, c) => s + c.unread, 0)
 
   return { list, get, markRead, send, unreadTotal }
@@ -105,7 +104,7 @@ export function preview(c: Chat): { text: string; mine: boolean } {
   if (!m) return { text: '', mine: false }
   if (m.kind === 'event') return { text: m.event === 'applied' ? `${EVENT_TEXT.applied} ${JOBS[c.job].t}` : EVENT_TEXT[m.event], mine: false }
   const mine = m.from === 'me'
-  const text = m.kind === 'text' ? m.text : m.kind === 'photo' ? 'Фото' : m.kind === 'file' ? m.name : m.kind === 'link' ? m.url : `Анкета: ${m.title}`
+  const text = m.kind === 'text' ? m.text : m.kind === 'photo' ? 'Фото' : m.kind === 'file' ? m.name : m.kind === 'link' ? m.url : m.title
   return { text, mine }
 }
 
@@ -202,9 +201,5 @@ export function Segmented<T extends string>({ value, onChange, items, label }: {
 
 /** **жирне** у тексті сповіщення → <b>. */
 export function Rich({ text }: { text: string }) {
-  return (
-    <>
-      {text.split(/(\*\*[^*]+\*\*)/).map((p, i) => (p.startsWith('**') ? <b key={i}>{p.slice(2, -2)}</b> : <span key={i}>{p}</span>))}
-    </>
-  )
+  return <>{text.split(/(\*\*[^*]+\*\*)/).map((p, i) => (p.startsWith('**') ? <b key={i}>{p.slice(2, -2)}</b> : <span key={i}>{p}</span>))}</>
 }

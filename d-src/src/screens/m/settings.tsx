@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Bell, Check, FileText, Globe, LifeBuoy, LogOut, Moon, ShieldCheck, Trash2 } from 'lucide-react'
+import { Bell, Check, UserRound, FileText, Globe, LifeBuoy, LogOut, Moon, ShieldCheck, Trash2 } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { NavBar } from '@/components/app/chrome'
 import { MOBILE_ROUTES } from '@/lib/mobile-routes'
@@ -51,11 +51,16 @@ export function MSettings({ go }: ScreenProps) {
         </SettingsGroup>
 
         <SettingsGroup title="Аккаунт">
-          <SettingsRow title="Вы вошли как" sub={<span className="text-[15px] text-foreground">{email}</span>} />
-          <SettingsRow icon={Bell} title="Уведомления" sub="Какие присылать: рабочие и нерабочие" onClick={() => {
-            setBag('back.m-notif-settings', 'm-settings')
-            go('m-notif-settings')
-          }} />
+          <SettingsRow icon={UserRound} title="Вы вошли как" sub={<span className="text-[15px] text-foreground">{email}</span>} />
+          <SettingsRow
+            icon={Bell}
+            title="Уведомления"
+            sub="Какие присылать: рабочие и нерабочие"
+            onClick={() => {
+              setBag('back.m-notif-settings', 'm-settings')
+              go('m-notif-settings')
+            }}
+          />
         </SettingsGroup>
 
         <SettingsGroup title="Помощь">
@@ -103,14 +108,35 @@ export function MSettings({ go }: ScreenProps) {
   )
 }
 
-function ChoiceSheet({ open, title, items, value, onClose, onPick }: { open: boolean; title: string; items: { id: string; label: string }[]; value: string; onClose: () => void; onPick: (id: string) => void }) {
+function ChoiceSheet({
+  open,
+  title,
+  items,
+  value,
+  onClose,
+  onPick,
+}: {
+  open: boolean
+  title: string
+  items: { id: string; label: string }[]
+  value: string
+  onClose: () => void
+  onPick: (id: string) => void
+}) {
   return (
     <BottomSheet open={open} onClose={onClose} title={title}>
       <div role="radiogroup" aria-label={title} className="flex flex-col overflow-hidden rounded-xl border border-border bg-surface">
         {items.map((it) => {
           const on = it.id === value
           return (
-            <button key={it.id} type="button" role="radio" aria-checked={on} onClick={() => onPick(it.id)} className="flex min-h-13 items-center gap-3 border-t border-border px-4 text-left first:border-t-0">
+            <button
+              key={it.id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              onClick={() => onPick(it.id)}
+              className="flex min-h-13 items-center gap-3 border-t border-border px-4 text-left first:border-t-0"
+            >
               <span className={cn('flex-1 text-base', on && 'font-medium')}>{it.label}</span>
               {on && <Check className="size-5 text-primary" strokeWidth={2.25} />}
             </button>
