@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BadgeCheck, Bookmark, Briefcase, Search, SlidersHorizontal, X } from 'lucide-react'
 import { AppHead } from '@/components/app/app-head'
+import { MonoNums } from '@/components/app/mono-nums'
 import { useGate } from '@/components/app/gate-sheet'
 import { ViewState } from '@/components/app/states'
 import { TabBar } from '@/components/app/tab-bar'
@@ -135,7 +136,7 @@ function JobRow({ j, onOpen, onSave }: { j: Job; onOpen: () => void; onSave: () 
   )
 }
 
-// Дати — Plex Mono; словесні значення («как можно скорее») — звичайним шрифтом.
+// Дати й числа — Plex Mono; слова («как можно скорее», «мес») — звичайним шрифтом (у Plex Mono немає кирилиці).
 export function Dateish({ v }: { v: string }) {
-  return /\d/.test(v) ? <span className="font-mono">{v}</span> : <>{v}</>
+  return <MonoNums text={v} />
 }

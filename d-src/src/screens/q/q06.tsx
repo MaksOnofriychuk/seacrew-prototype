@@ -3,10 +3,11 @@ import { CircleAlert, Eye, EyeOff, LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
-import { Field, FlowScreen, Footer, Hint, QSheet, TextInput, Title, useTimers, useToast, useQ } from './_parts'
+import { Field, FlowScreen, Footer, Hint, TextInput, Title, useTimers, useQ } from './_parts'
 
 // q06 — email, пароль, повтор пароля. Сценарій «Email уже занят» — помилка одразу після
-// виходу з поля email (і після «Продолжить») з двома виходами: «Войти» / «Восстановить пароль».
+// виходу з поля email (і після «Продолжить») з двома виходами: «Войти» (o05) / «Восстановить пароль» (o06),
+// email переносимо в обидва екрани.
 export type Acct = { email: string; pass: string; pass2: string }
 
 export const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)
@@ -33,9 +34,7 @@ export function Q06Account({ go }: ScreenProps) {
   const [p2blur, setP2blur] = useState(false)
   const [taken, setTaken] = useState(false)
   const [creating, setCreating] = useState(false)
-  const [login, setLogin] = useState(false)
   const { later } = useTimers()
-  const { toast, toastNode } = useToast()
 
   const isTakenScenario = state.scenario === 'emailTaken'
   const badEmail = !!a.email && !emailOk(a.email) && !emailFocus
@@ -58,9 +57,10 @@ export function Q06Account({ go }: ScreenProps) {
     }, 900)
   }
 
-  const recover = () => {
-    setLogin(false)
-    toast('Ссылка для восстановления отправлена')
+  // Акаунт з цим email уже є — на вхід або відновлення пароля, з тим самим email.
+  const toAuth = (id: 'o05' | 'o06') => {
+    setBag('o.email', a.email.trim())
+    go(id)
   }
 
   const eye = (
@@ -86,34 +86,6 @@ export function Q06Account({ go }: ScreenProps) {
           </Button>
           <Hint>{miss.length && !creating ? `Осталось: ${miss.join(', ')}` : ''}</Hint>
         </Footer>
-      }
-      overlay={
-        <>
-          {toastNode}
-          <QSheet open={login} onClose={() => setLogin(false)} title="Вход">
-            <div className="flex flex-col gap-4">
-              <Field id="q06-login-email" label="Email">
-                <TextInput id="q06-login-email" type="email" placeholder="you@example.com" defaultValue={a.email} />
-              </Field>
-              <Field id="q06-login-pass" label="Пароль">
-                <TextInput id="q06-login-pass" type="password" />
-              </Field>
-              <Button
-                size="lg"
-                className="mt-2"
-                onClick={() => {
-                  if (!a.email) put({ email: 'andrii@example.com' })
-                  go('q09')
-                }}
-              >
-                Войти
-              </Button>
-              <Button size="lg" variant="ghost" className="text-primary" onClick={recover}>
-                Восстановить пароль
-              </Button>
-            </div>
-          </QSheet>
-        </>
       }
     >
       <Title sub="Email и пароль. На почту придёт код подтверждения.">Создайте аккаунт</Title>
@@ -146,10 +118,10 @@ export function Q06Account({ go }: ScreenProps) {
               Этот email уже зарегистрирован
             </p>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" className="h-11" onClick={() => setLogin(true)}>
+              <Button variant="outline" className="h-11" onClick={() => toAuth('o05')}>
                 Войти
               </Button>
-              <Button variant="outline" className="h-11" onClick={recover}>
+              <Button variant="outline" className="h-11" onClick={() => toAuth('o06')}>
                 Восстановить пароль
               </Button>
             </div>

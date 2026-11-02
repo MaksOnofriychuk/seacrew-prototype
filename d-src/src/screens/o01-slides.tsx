@@ -229,7 +229,9 @@ function PaperDeadlines() {
             <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
               <div className="flex w-full items-baseline justify-between gap-3">
                 <span className="text-sm font-medium">{r.name}</span>
-                <span className="font-mono text-sm whitespace-nowrap text-muted-foreground">до {r.until}</span>
+                <span className="text-sm whitespace-nowrap text-muted-foreground">
+                  до <span className="font-mono">{r.until}</span>
+                </span>
               </div>
               {r.badge}
             </div>

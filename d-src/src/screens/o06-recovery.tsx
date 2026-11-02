@@ -24,6 +24,8 @@ export function O06Recovery({ go }: ScreenProps) {
   const [left, setLeft] = useState(RESEND_SEC)
 
   useEffect(() => {
+    // Стани з панелі: поле вже заповнене, як після натискання «Отправить ссылку».
+    if (view === 'error' || view === 'loading') setEmail((e) => e || 'andrii.koval@example.com')
     setFormErr(view === 'error' ? AUTH_ERR.offline : null)
     setBusy(view === 'loading')
     if (view !== 'normal') setSent(false)
@@ -58,7 +60,7 @@ export function O06Recovery({ go }: ScreenProps) {
       <div className="flex h-full flex-col">
         <NavBar onBack={() => setSent(false)} />
         <div className="flex flex-1 flex-col px-6 pt-2">
-          <span className="flex size-12 items-center justify-center rounded-full bg-muted text-primary">
+          <span className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-primary">
             <MailCheck className="size-6" />
           </span>
           <h1 className="mt-5 text-[32px] leading-[1.1] font-semibold tracking-tight">Проверьте почту</h1>

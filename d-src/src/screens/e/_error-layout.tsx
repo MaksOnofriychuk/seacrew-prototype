@@ -1,10 +1,7 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { X, type LucideIcon } from 'lucide-react'
 import { Footer, NavBar, Wordmark } from '@/components/app/chrome'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import { SCREENS } from '../registry'
@@ -31,7 +28,6 @@ export function ErrorLayout({
   onClose,
   children,
   actions,
-  toast,
   low = false,
   brand = false,
 }: {
@@ -45,7 +41,6 @@ export function ErrorLayout({
   onClose?: () => void
   children?: ReactNode
   actions: ReactNode
-  toast?: string | null
   /** короткий екран без блоку (e04–e06): більший знак, текст опущено ближче до кнопок — без порожнечі посередині */
   low?: boolean
   /** без «Назад» і хрестика — «Seafolio» вгорі (e09: з екрана нікуди не піти, лише оновитись) */
@@ -75,8 +70,7 @@ export function ErrorLayout({
         <p className="mt-3 text-base text-muted-foreground">{text}</p>
         {children}
       </div>
-      <Footer className="relative">
-        {toast && <Toast text={toast} />}
+      <Footer>
         {actions}
       </Footer>
     </div>
@@ -96,8 +90,8 @@ export function useSupport(go: (id: string) => void) {
 }
 
 // Три виходи, коли документ не підійшов (e01, e02) — поведінка C: retake, upload-file, c:e07.
-// keepScenario (e02, правка №12): сценарій «Это не документ моряка» лишається — наступне читання
-// покаже блокування e08. Без нього (e01) повторна спроба вдається, як у C.
+// keepScenario: сценарій лишається — наступне читання знову з помилкою: e02 (правка №12) → блокування e08,
+// e01 (відповідь 78) → лише «Ввести вручную». Без нього повторна спроба вдається, як у C.
 export function RetryActions({ go, keepScenario = false }: { go: (id: string) => void; keepScenario?: boolean }) {
   const { set, setBag } = useProto()
   const back = (sheet: 'doc' | null) => {
@@ -119,52 +113,6 @@ export function RetryActions({ go, keepScenario = false }: { go: (id: string) =>
         Ввести вручную
       </Button>
     </>
-  )
-}
-
-// Коротке повідомлення над кнопками; зникає саме за 4 с (як showToast у C).
-function Toast({ text }: { text: string }) {
-  return (
-    <div role="status" className="absolute inset-x-6 bottom-full mb-2 rounded-md bg-foreground px-4 py-3 text-sm text-surface animate-in fade-in-0 slide-in-from-bottom-2 duration-200">
-      {text}
-    </div>
-  )
-}
-
-export function useToast() {
-  const [toast, setToast] = useState<string | null>(null)
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(null), 4000)
-    return () => clearTimeout(t)
-  }, [toast])
-  return [toast, setToast] as const
-}
-
-// Вікно «Вход» — як у o02 (тексти з C, S.sheet === 'login').
-export function LoginSheet({ open, onOpenChange, onLogin, onRecover }: { open: boolean; onOpenChange: (v: boolean) => void; onLogin: () => void; onRecover: () => void }) {
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" showCloseButton={false} className="gap-0 px-6 pt-6 pb-8">
-        <SheetTitle className="text-2xl font-semibold tracking-tight">Вход</SheetTitle>
-        <div className="mt-5 flex flex-col gap-2">
-          <Label htmlFor="e06-email">Email</Label>
-          <Input id="e06-email" type="email" placeholder="you@example.com" className="h-12" />
-        </div>
-        <div className="mt-4 flex flex-col gap-2">
-          <Label htmlFor="e06-pass">Пароль</Label>
-          <Input id="e06-pass" type="password" className="h-12" />
-        </div>
-        <div className="mt-6 flex flex-col gap-3">
-          <Button size="lg" onClick={onLogin}>
-            Войти
-          </Button>
-          <Button size="lg" variant="ghost" className="text-primary" onClick={onRecover}>
-            Восстановить пароль
-          </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
   )
 }
 

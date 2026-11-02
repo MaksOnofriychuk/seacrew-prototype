@@ -1,6 +1,8 @@
 import { useEffect, useState, type ComponentType, type ReactNode } from 'react'
-import { Bookmark, Briefcase, ChevronRight, Download, FileText, Globe, Moon, ShieldCheck, Ship, UserRound } from 'lucide-react'
+import { Bookmark, Briefcase, Check, ChevronRight, Download, FileText, Globe, Moon, ShieldCheck, Ship, UserRound } from 'lucide-react'
+import { BottomSheet } from '@/components/app/bottom-sheet'
 import { Wordmark } from '@/components/app/chrome'
+import { ErrorState, useView } from '@/components/app/states'
 import { TabBar } from '@/components/app/tab-bar'
 import { BellButton } from '@/components/app/top-bar'
 import { Button } from '@/components/ui/button'
@@ -19,12 +21,18 @@ import type { Acct } from './q06'
 // Статус доступності — спільні AvailabilityButton / AvailabilitySheet (правки №1, №15, №19, №20).
 // Не плашка, а тихий рядок з іконкою: плашки лишаємо для строків документів.
 // Правка №16: «Уведомления» — дзвіночок угорі (з лічильником), «Входящие» — вкладка «Сообщения» внизу;
-// рядків у профілі для них немає.
+// рядків у профілі для них немає. Стани з панелі — як у p14: «Загрузка» — заглушка, «Ошибка» — спільний екран помилки.
+// «Язык», «Должность», «Моё CV» — як у p14 (вікно мови, p21, p20).
+
+const LANGS = ['Русский', 'Українська', 'English']
 
 
 export function Q09Profile({ go }: ScreenProps) {
-  const { bag } = useQ()
+  const { bag, setBag } = useQ()
+  const view = useView()
   const [loading, setLoading] = useState(true)
+  const [langOpen, setLangOpen] = useState(false)
+  const lang = bag<string>('dp.lang', 'Русский')
   const { toast, toastNode } = useToast()
   const form = bag<{ v: QForm } | null>('q.form', null)?.v ?? FORM_DEFAULTS
   const email = bag<Acct>('q.acct', { email: '', pass: '', pass2: '' }).email || 'you@example.com'
@@ -60,8 +68,10 @@ export function Q09Profile({ go }: ScreenProps) {
           <Wordmark className="flex-1" />
           <BellButton n={APP_COUNTS.notifications} onClick={() => go(MOBILE_ROUTES.notifications)} />
         </div>
-        {loading ? (
+        {loading || view === 'loading' ? (
           <Skeleton />
+        ) : view === 'error' ? (
+          <ErrorState title="Не удалось загрузить профиль" className="px-0" />
         ) : (
           <div className="screen-in">
             <div className="mt-4 flex items-center gap-4">
@@ -97,14 +107,22 @@ export function Q09Profile({ go }: ScreenProps) {
             <Group title="Мой профиль">
               <Row icon={UserRound} title="Личные данные" onClick={() => go('s2')} />
               <Row icon={Ship} title="Опыт работы" value={<MonoNums text={sea} />} onClick={() => go('s6')} />
-              <Row icon={Briefcase} title="Должность" value="3rd Engineer" />
-              <Row icon={FileText} title="Моё CV" value="PDF" />
+              <Row
+                icon={Briefcase}
+                title="Должность"
+                value="3rd Engineer"
+                onClick={() => {
+                  setBag('dp.field', 'rank')
+                  go('p21')
+                }}
+              />
+              <Row icon={FileText} title="Моё CV" value="PDF" onClick={() => go('p20')} />
             </Group>
             <Group title="Работа">
               <Row icon={Bookmark} title="Сохранённое" value={<span className="font-mono">{savedN}</span>} onClick={() => go('p09')} />
             </Group>
             <Group title="Настройки">
-              <Row icon={Globe} title="Язык" value="Русский" />
+              <Row icon={Globe} title="Язык" value={lang} onClick={() => setLangOpen(true)} />
               <Row icon={Moon} title="Тема" value={dark ? 'Тёмная' : 'Светлая'} onClick={toggleTheme} />
               <Row icon={ShieldCheck} title="Согласия" onClick={() => go('q10')} />
               <Row icon={Download} title="Скачать мои данные" onClick={() => toast('Копию данных отправим на ваш email')} />
@@ -115,6 +133,26 @@ export function Q09Profile({ go }: ScreenProps) {
       <TabBar active="profile" go={go} />
       {toastNode}
       <AvailabilitySheet open={availOpen} onClose={() => setAvailOpen(false)} />
+      <BottomSheet open={langOpen} onClose={() => setLangOpen(false)} title="Язык">
+        <div role="radiogroup" aria-label="Язык" className="flex flex-col">
+          {LANGS.map((l) => (
+            <button
+              key={l}
+              type="button"
+              role="radio"
+              aria-checked={l === lang}
+              onClick={() => {
+                setBag('dp.lang', l)
+                setLangOpen(false)
+              }}
+              className="flex min-h-13 items-center gap-3 border-t border-border py-3 text-left first:border-t-0"
+            >
+              <span className="flex-1 text-base">{l}</span>
+              {l === lang && <Check className="size-5 text-primary" strokeWidth={2.5} />}
+            </button>
+          ))}
+        </div>
+      </BottomSheet>
     </div>
   )
 }

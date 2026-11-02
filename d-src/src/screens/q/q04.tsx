@@ -9,6 +9,7 @@ import { Bar, QSheet, useTimers, useQ } from './_parts'
 // q04 — завантажувач, поки читаємо CV і документи (правка №13: окремого кроку з кнопкою більше немає).
 // Смуга доходить до кінця — і моряк сам потрапляє на «Проверьте данные» (q05). Куди саме — залежить від
 // сценарію в панелі (як startReading у C). Правка №12: другий поспіль «не той документ» → e08.
+// Відповідь 78: друге поспіль нечитабельне фото → e01 лише з «Ввести вручную».
 const TARGET: Partial<Record<Scenario, string>> = { blur: 'e01', notSeafarer: 'e02', offline: 'e03', rate: 'e04', ban: 'e05', docTaken: 'e06' }
 // На якому відсотку читання обривається у сценаріях з помилкою.
 const STOP_AT: Partial<Record<Scenario, number>> = { blur: 45, notSeafarer: 45, offline: 30, rate: 10, ban: 85, docTaken: 85 }
@@ -43,7 +44,12 @@ export function Q04Reading({ go }: ScreenProps) {
     const finish = (): void =>
       later(() => {
         if (paused.current) return finish()
-        if (target === 'q05') setBag('q.wrongDocs', null)
+        if (target === 'q05') {
+          setBag('q.wrongDocs', null)
+          setBag('q.blurTries', null)
+        }
+        // Відповідь замовника 78: друге поспіль нечитабельне фото — e01 пропонує лише ручне введення.
+        if (target === 'e01') setBag('q.blurTries', bag<number>('q.blurTries', 0) + 1)
         go(target)
       }, 350)
     const tick = (): void =>

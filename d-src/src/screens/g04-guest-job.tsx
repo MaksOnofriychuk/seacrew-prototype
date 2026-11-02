@@ -57,8 +57,9 @@ export function G04GuestJob({ go }: ScreenProps) {
                 <span className="text-[15px] font-semibold">{j.co}</span>
                 <span className="flex items-center gap-1 text-sm text-muted-foreground">
                   <BadgeCheck className="size-4 text-success" />
-                  <span className="text-success">Агентство проверено</span>
-                  <span>, {j.ago}</span>
+                  <span>
+                    <span className="text-success">Агентство проверено</span>, {j.ago}
+                  </span>
                 </span>
               </span>
             </div>
