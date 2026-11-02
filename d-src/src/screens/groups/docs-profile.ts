@@ -1,9 +1,12 @@
 import { defineGroups } from '../types'
 import { P02Docs } from '../dp/p02-docs'
 import { P11Doc } from '../dp/p11-doc'
+import { P14Profile } from '../dp/p14-profile'
 import { P18Add } from '../dp/p18-add'
 import { P19Check } from '../dp/p19-check'
-import { P14Profile } from '../p/p14'
+import { P20Cv } from '../dp/p20-cv'
+import { P21Field } from '../dp/p21-field'
+import { P22Experience } from '../dp/p22-experience'
 
 // Документи і профіль (мобілка, етап 5). Екрани — у теці dp.
 export const groups = defineGroups('mobile', [
@@ -15,6 +18,9 @@ export const groups = defineGroups('mobile', [
       { id: 'p19', title: 'Документы · Проверьте документ', Component: P19Check },
       { id: 'p11', title: 'Документ', Component: P11Doc },
       { id: 'p14', title: 'Профиль', Component: P14Profile },
+      { id: 'p21', title: 'Профиль · Изменить поле', Component: P21Field },
+      { id: 'p22', title: 'Профиль · Опыт работы', Component: P22Experience },
+      { id: 'p20', title: 'Профиль · Моё CV (PDF)', Component: P20Cv },
     ],
   },
 ])
