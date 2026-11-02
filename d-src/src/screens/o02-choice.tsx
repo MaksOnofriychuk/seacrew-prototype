@@ -1,19 +1,14 @@
-import { useState } from 'react'
 import { ChevronRight, Eye, ListChecks, Lock, Zap } from 'lucide-react'
 import { Wordmark } from '@/components/app/chrome'
 import { HeroPanel } from '@/components/app/hero-panel'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from './registry'
 
 // o02 — вибір способу. Тексти й порядок — з вкладки C: «Пошагово» рекомендований і перший.
+// Правка №7: «Выберите способ регистрации»; №8: іконки й стрілки всіх трьох варіантів на одній вертикалі.
+// «Войти» веде на окремий екран входу o05.
 export function O02Choice({ go }: ScreenProps) {
-  const [login, setLogin] = useState(false)
-
   return (
     <div className="flex h-full flex-col">
       <HeroPanel className="h-[300px]">
@@ -26,7 +21,7 @@ export function O02Choice({ go }: ScreenProps) {
       </HeroPanel>
 
       <div className="flex flex-1 flex-col px-6 pt-6">
-        <h2 className="text-base font-semibold">Выберите способ</h2>
+        <h2 className="text-base font-semibold">Выберите способ регистрации</h2>
         <div className="mt-3 flex flex-col gap-3">
           <Option
             strong
@@ -49,7 +44,7 @@ export function O02Choice({ go }: ScreenProps) {
         <div className="mt-auto flex flex-col items-center gap-2 pb-4 text-center">
           <p className="text-[15px] text-muted-foreground">
             Уже есть аккаунт?{' '}
-            <button type="button" className="font-semibold text-primary" onClick={() => setLogin(true)}>
+            <button type="button" className="font-semibold text-primary" onClick={() => go('o05')}>
               Войти
             </button>
           </p>
@@ -58,28 +53,6 @@ export function O02Choice({ go }: ScreenProps) {
           </p>
         </div>
       </div>
-
-      <Sheet open={login} onOpenChange={setLogin}>
-        <SheetContent side="bottom" showCloseButton={false} className="gap-0 px-6 pt-6 pb-8">
-          <SheetTitle className="text-2xl font-semibold tracking-tight">Вход</SheetTitle>
-          <div className="mt-5 flex flex-col gap-2">
-            <Label htmlFor="login-email">Email</Label>
-            <Input id="login-email" type="email" placeholder="you@example.com" className="h-12" />
-          </div>
-          <div className="mt-4 flex flex-col gap-2">
-            <Label htmlFor="login-pass">Пароль</Label>
-            <Input id="login-pass" type="password" className="h-12" />
-          </div>
-          <div className="mt-6 flex flex-col gap-3">
-            <Button size="lg" onClick={() => setLogin(false)}>
-              Войти
-            </Button>
-            <Button size="lg" variant="ghost" className="text-primary">
-              Восстановить пароль
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
     </div>
   )
 }
@@ -98,10 +71,11 @@ function Option(p: {
       type="button"
       onClick={p.onClick}
       className={cn(
-        'flex w-full items-center gap-4 rounded-xl px-5 py-4 text-left transition-colors active:scale-[0.99]',
-        p.strong && 'border-2 border-primary bg-surface',
+        // Однакові рамка (2px) і відступи в усіх трьох — іконки й стрілки стоять на одній вертикалі (правка №8).
+        'flex w-full items-center gap-4 rounded-xl border-2 px-5 py-4 text-left transition-colors active:scale-[0.99]',
+        p.strong ? 'border-primary bg-surface' : 'border-transparent',
         !p.strong && !p.plain && 'bg-surface',
-        p.plain && 'px-1 py-2',
+        p.plain && 'py-2',
       )}
     >
       <p.icon className={cn('size-6 shrink-0', p.strong ? 'text-primary' : 'text-muted-foreground')} />
