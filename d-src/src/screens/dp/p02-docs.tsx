@@ -191,7 +191,7 @@ function AddRow({ icon: I, title, sub, onClick }: { icon: Icon; title: string; s
 // «Напомним ещё раз за 90 и 30 дней» — лише ті нагадування (180/90/30), що ще попереду.
 function Reminders({ n }: { n: number }) {
   const left = remindersLeft(n)
-  if (!left.length) return <>Продлите документ, чтобы не пропустить рейс.</>
+  if (!left.length) return <>Продлите документ, чтобы не пропустить контракт.</>
   return (
     <>
       Напомним ещё раз за{' '}
