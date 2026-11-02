@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CircleAlert, Eye, EyeOff, LoaderCircle } from 'lucide-react'
 import { Footer } from '@/components/app/chrome'
-import { StepShell } from '@/components/app/stepper'
+import { StepShell } from './_stepper'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'

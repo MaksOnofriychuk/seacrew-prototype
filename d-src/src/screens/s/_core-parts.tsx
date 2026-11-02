@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react'
 import {
+  Award,
   Camera,
   ChevronRight,
   FileText,
   Flag,
   FolderOpen,
+  Globe,
   GraduationCap,
   HeartPulse,
   IdCard,
@@ -45,6 +47,8 @@ export const STEP_ICON: Record<number, ComponentType<{ className?: string }>> = 
   11: UserRound,
   12: Info,
   13: PenLine,
+  14: Award,
+  15: Globe,
 }
 
 /* ---------- стан ---------- */
@@ -83,7 +87,7 @@ export function maskDate(v: string) {
   return [d.slice(0, 2), d.slice(2, 4), d.slice(4)].filter(Boolean).join('.')
 }
 
-// ММ.ГГГГ для періодів рейсу.
+// ММ.ГГГГ для періодів контракту.
 export function maskMonth(v: string) {
   const d = v.replace(/\D/g, '').slice(0, 6)
   return [d.slice(0, 2), d.slice(2)].filter(Boolean).join('.')
@@ -157,7 +161,23 @@ export function Pick({
 
 // Верх — велика зона: тап запускає розпізнавання. Під нею — джерела: камера, файл, галерея.
 // «Ввести вручную» — тихе посилання під блоком (ховається, коли форма вже відкрита).
-export function AddPanel({ id, title, sub, busy, onUpload, onManual }: { id?: string; title: string; sub: string; busy?: boolean; onUpload: () => void; onManual?: () => void }) {
+export function AddPanel({
+  id,
+  title,
+  sub,
+  busy,
+  manualLabel = 'Ввести вручную',
+  onUpload,
+  onManual,
+}: {
+  id?: string
+  title: string
+  sub?: string
+  busy?: boolean
+  manualLabel?: string
+  onUpload: () => void
+  onManual?: () => void
+}) {
   const sources: [ComponentType<{ className?: string }>, string][] = [
     [Camera, 'Камера'],
     [FolderOpen, 'Файл'],
@@ -172,9 +192,11 @@ export function AddPanel({ id, title, sub, busy, onUpload, onManual }: { id?: st
           </span>
           <span className="flex min-w-0 flex-col gap-0.5">
             <span className="text-[15px] font-medium">{title}</span>
-            <span className="text-sm text-muted-foreground" aria-live="polite">
-              {busy ? 'Распознаём…' : sub}
-            </span>
+            {(busy || sub) && (
+              <span className="text-sm text-muted-foreground" aria-live="polite">
+                {busy ? 'Распознаём…' : sub}
+              </span>
+            )}
           </span>
         </button>
         <div className="grid grid-cols-3 border-t border-border">
@@ -195,7 +217,7 @@ export function AddPanel({ id, title, sub, busy, onUpload, onManual }: { id?: st
       {onManual && (
         <button type="button" onClick={onManual} className="flex items-center gap-2 self-start text-[15px] font-medium text-primary">
           <PenLine className="size-4" />
-          Ввести вручную
+          {manualLabel}
         </button>
       )}
     </div>
@@ -450,7 +472,7 @@ export function docMeta(d: DocData): ReactNode {
 export const LEGAL: [string, string][] = [
   ['Что мы обрабатываем.', 'CV и документы, которые вы загрузите, а также email и данные, которые вы введёте сами.'],
   ['Зачем.', 'Чтобы создать ваш профиль моряка, помогать с работой и защищать платформу от повторных и поддельных аккаунтов.'],
-  ['Как.', 'CV и документы читает ИИ целиком: личные данные, документы, диплом, морской стаж. ИИ-сервисы работают как наши подрядчики. Файлы шифруются.'],
+  ['Как.', 'CV и документы читает ИИ целиком: личные данные, документы, диплом, опыт работы. ИИ-сервисы работают как наши подрядчики. Файлы шифруются.'],
   ['Кто видит.', 'Вы. Агентства — только то, к чему вы откроете доступ. Администратор — для поддержки и безопасности.'],
   [
     'Сколько храним.',

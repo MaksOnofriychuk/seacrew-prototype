@@ -1,15 +1,15 @@
-import { StepShell } from '@/components/app/stepper'
+import { StepShell } from './_stepper'
 import { Badge } from '@/components/ui/badge'
 import type { ScreenProps } from '../registry'
 import { TextInput } from '../q/_parts'
 import { ScrollParam, Section, useBag, XField, XSelect } from './_extra-parts'
 
 // s12 — «Дополнительная информация» (C: step 12): рост, вес, размеры; ближайший аэропорт;
-// близкий человек. Правка п. 13: у близкого человека — «Имя и фамилия», «Кем приходится»,
+// близкий человек. Правка №29: «Особые приметы» (татуировки, шрамы…) у блоці розмірів. Правка п. 13: у близкого человека — «Имя и фамилия», «Кем приходится»,
 // «Телефон», «Email» (необязательно), «Адрес». Адресу самого моряка тут немає.
 
-type Info = { height: string; weight: string; suit: string; shoe: string; airport: string; kinName: string; kinRel: string; kinPhone: string; kinEmail: string; kinAddr: string }
-const EMPTY: Info = { height: '', weight: '', suit: '', shoe: '', airport: '', kinName: '', kinRel: '', kinPhone: '', kinEmail: '', kinAddr: '' }
+type Info = { height: string; weight: string; suit: string; shoe: string; marks: string; airport: string; kinName: string; kinRel: string; kinPhone: string; kinEmail: string; kinAddr: string }
+const EMPTY: Info = { height: '', weight: '', suit: '', shoe: '', marks: '', airport: '', kinName: '', kinRel: '', kinPhone: '', kinEmail: '', kinAddr: '' }
 const SUITS = ['M', 'L', 'XL', 'XXL'] as const
 
 const num = (v: string, n: number) => v.replace(/\D/g, '').slice(0, n)
@@ -38,6 +38,9 @@ export function S12Extra({ go }: ScreenProps) {
             <TextInput id="s12-shoe" mono inputMode="numeric" value={f.shoe} onChange={(e) => patch({ shoe: num(e.target.value, 2) })} placeholder="43" />
           </XField>
         </div>
+        <XField id="s12-marks" label="Особые приметы">
+          <TextInput id="s12-marks" value={f.marks ?? ''} onChange={(e) => patch({ marks: e.target.value })} placeholder="Татуировки, шрамы…" />
+        </XField>
       </Section>
 
       <Section title="Ближайший аэропорт">

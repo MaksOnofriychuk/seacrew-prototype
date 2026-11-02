@@ -1,5 +1,5 @@
 import { Camera, ScanLine } from 'lucide-react'
-import { StepShell } from '@/components/app/stepper'
+import { StepShell } from './_stepper'
 import type { ScreenProps } from '../registry'
 import { Field, TextInput } from '../q/_parts'
 import { maskDate, Pick, ScrollAnchor, useS } from './_core-parts'

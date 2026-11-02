@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Mail } from 'lucide-react'
-import { useSteps } from '@/components/app/stepper'
+import { useSteps } from './_stepper'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'

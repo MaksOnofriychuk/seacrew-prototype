@@ -1,6 +1,6 @@
 import { AlertTriangle, ChevronRight } from 'lucide-react'
 import { Status } from '@/components/app/status'
-import { StepShell, STEPS, useSteps, type StepKind } from '@/components/app/stepper'
+import { StepShell, stepId, STEPS, useSteps, type StepKind } from './_stepper'
 import type { ScreenProps } from '../registry'
 import { Note } from '../q/_parts'
 import { ScrollAnchor, STEP_ICON } from './_core-parts'
@@ -24,7 +24,7 @@ export function S7Review({ go }: ScreenProps) {
           const Icon = STEP_ICON[s.n]
           return (
             <li key={s.n} className="border-t border-border first:border-t-0">
-              <button type="button" onClick={() => go('s' + s.n)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
+              <button type="button" onClick={() => go(stepId(s))} className="flex w-full items-center gap-3 px-4 py-3 text-left">
                 <Icon className="size-5 shrink-0 text-primary" />
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="text-[15px]">{s.t}</span>
