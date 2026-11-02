@@ -7,7 +7,8 @@ import type { ScreenProps } from '../registry'
 import { ActionRow, Bar, DOC_TYPES, FlowScreen, Footer, Hint, otherType, QSheet, Title, useTimers, useToast, type DocTypeId, type DocUpload, type Upload, useQ } from './_parts'
 
 // q03 — CV і один документ моряка на вибір (удостоверение або диплом). Другий документ — за бажанням.
-// Правка п. 4: підпис другої кнопки — «Diploma / CoC | CoP».
+// Правка п. 4: підпис другої кнопки — «Diploma / CoC | CoP». Правка №17: «Сфотографируйте или загрузите
+// страницу с фото и данными.» замість «Края найдутся сами». «Продолжить» → завантажувач q04 (правка №13).
 export function Q03Upload({ go }: ScreenProps) {
   const { state, set, bag, setBag } = useQ()
   const type = state.docType as DocTypeId
@@ -108,9 +109,9 @@ export function Q03Upload({ go }: ScreenProps) {
             open={sheet === 'doc'}
             onClose={() => setSheet(null)}
             title={DOC_TYPES[type].n}
-            description="Снимите страницу с фото и данными. Если на развороте есть другие данные — добавьте её второй страницей."
+            description="Сфотографируйте или загрузите страницу с фото и данными. Если на развороте есть другие данные — добавьте их второй страницей."
           >
-            <ActionRow icon={ScanLine} title="Сканировать документ" sub="Края найдутся сами" onClick={pickDoc} />
+            <ActionRow icon={ScanLine} title="Сканировать документ" onClick={pickDoc} />
             <ActionRow icon={Camera} title="Сфотографировать" sub="При хорошем свете, без бликов" onClick={pickDoc} />
             <ActionRow icon={FolderOpen} title="Выбрать файл" sub="PDF или изображение" onClick={pickDoc} />
             <ActionRow icon={Image} title="Выбрать из галереи" onClick={pickDoc} />
@@ -191,7 +192,7 @@ export function Q03Upload({ go }: ScreenProps) {
             )}
           </div>
         ) : (
-          <Drop icon={ScanLine} title="Сканировать или сфотографировать" sub="Страница с фото и данными" onClick={() => setSheet('doc')} />
+          <Drop icon={ScanLine} title="Добавить документ" sub="Сфотографируйте или загрузите страницу с фото и данными." onClick={() => setSheet('doc')} />
         )}
 
         {docOk &&

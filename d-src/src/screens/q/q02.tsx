@@ -1,15 +1,15 @@
 import { useState } from 'react'
-import { Clock, Lock, ShieldCheck, Sparkles } from 'lucide-react'
+import { Clock, Lock, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { ScreenProps } from '../registry'
 import { CheckRow, FlowScreen, Footer, Hint, QSheet, Title, useQ } from './_parts'
 
 // q02 — згода перед завантаженням файлів. Дві окремі галочки, заздалегідь не відмічені;
 // потрібні обидві. «Подробнее о согласии» — вікно знизу з коротким текстом. Тексти з C.
+// Правка №11: рядка «Защита от повторных аккаунтов» немає — захист працює непомітно (див. e06).
 const ITEMS = [
   { icon: Sparkles, title: 'ИИ прочитает CV и документы', text: 'Возьмём из них всё нужное для профиля' },
   { icon: Lock, title: 'Файлы шифруются', text: 'Видите их вы и те, кому откроете доступ' },
-  { icon: ShieldCheck, title: 'Защита от повторных аккаунтов', text: 'Храним отпечаток номера документа, а не сам номер' },
   { icon: Clock, title: 'Не закончили — удалим', text: 'Через 30 дней файлы удаляются сами' },
 ]
 

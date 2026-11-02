@@ -33,11 +33,11 @@ export const DOC_TYPES = {
 export type DocTypeId = keyof typeof DOC_TYPES
 export const otherType = (t: DocTypeId): DocTypeId => (t === 'sid' ? 'diploma' : 'sid')
 
-// Кроки потоку для смуги прогресу зверху.
-export const FLOW_TOTAL = 6
+// Кроки потоку для смуги прогресу зверху. Правка №13: читання документів — не крок, а завантажувач (q04).
+export const FLOW_TOTAL = 5
 
 // Ключі bag, які належать цьому потоку — «Начать заново» стирає їх усі.
-export const Q_KEYS = ['q.consent', 'q.cv', 'q.doc', 'q.doc2', 'q.form', 'q.manual', 'q.acct', 'q.done', 'q.revoked', 'q.medConsent', 'avail', 'q03.retake', 'q03.sheet']
+export const Q_KEYS = ['q.consent', 'q.cv', 'q.doc', 'q.doc2', 'q.form', 'q.manual', 'q.acct', 'q.done', 'q.revoked', 'q.medConsent', 'avail', 'q03.retake', 'q03.sheet', 'q.wrongDocs']
 
 export type Upload = { st: 'none' | 'up' | 'done'; p: number }
 export type DocUpload = Upload & { pages: number }
@@ -350,6 +350,9 @@ export function durText(n: number) {
   const mo = n % 12
   return [y ? plural(y, 'год', 'года', 'лет') : '', mo ? plural(mo, 'месяц', 'месяца', 'месяцев') : ''].filter(Boolean).join(' ')
 }
+
+// Правка №3: «рейсы» → «контракты».
+export const contractsText = (n: number) => plural(n, 'контракт', 'контракта', 'контрактов')
 
 export function durShort(n: number) {
   const y = Math.floor(n / 12)

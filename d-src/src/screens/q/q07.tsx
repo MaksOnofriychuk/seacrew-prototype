@@ -93,7 +93,7 @@ export function Q07Code({ go }: ScreenProps) {
 
   return (
     <FlowScreen
-      step={6}
+      step={5}
       onBack={() => go('q06')}
       footer={
         <Footer>
