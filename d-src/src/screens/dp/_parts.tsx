@@ -3,7 +3,7 @@ import { ChevronRight, RotateCw, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ME_DEFAULTS, PROFILE_FIELDS, RANK_DEFAULT, type FieldSource, type MeForm, type ProfileField } from '@/lib/data-docs-profile'
+import { ME_DEFAULTS, PROFILE_FIELDS, RANK_DEFAULT, SALARY_PER, type FieldSource, type MeForm, type ProfileField, type Salary } from '@/lib/data-docs-profile'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { FleetValue } from '@/components/app/fleet-picker'
@@ -31,9 +31,26 @@ export function useHashParam(name: string) {
   return v
 }
 
+// Чи темна тема зараз. Клас .dark на <html> ставиться в ефекті вже після рендера екрана —
+// тож стежимо за ним, а не читаємо один раз (інакше «Тема: Светлая» у темній темі).
+export function useDarkClass() {
+  const el = document.documentElement
+  const [dark, setDark] = useState(() => el.classList.contains('dark'))
+  useEffect(() => {
+    const sync = () => setDark(el.classList.contains('dark'))
+    sync()
+    const mo = new MutationObserver(sync)
+    mo.observe(el, { attributes: true, attributeFilter: ['class'] })
+    return () => mo.disconnect()
+  }, [el])
+  return dark
+}
+
 /* ---------- профіль: значення, джерела, правки (bag dp.profile) ---------- */
 
-type Edits = Partial<Record<ProfileField, string>>
+/** Текстові поля профілю (рядок → p21); «Должность» і «Желаемая зарплата» — окремо. */
+export type TextField = Exclude<ProfileField, 'rank' | 'salary'>
+type Edits = Partial<Record<TextField, string>>
 
 export function useProfile() {
   const { bag, setBag } = useDP()
@@ -43,16 +60,18 @@ export function useProfile() {
   const edits = bag<Edits>('dp.profile', {})
   const rank = bag<FleetValue>('dp.rank', RANK_DEFAULT)
 
-  const base: Record<Exclude<ProfileField, 'rank'>, string> = {
+  const salary = bag<Salary | null>('dp.salary', null)
+  const base: Record<TextField, string> = {
     last: String(form.last ?? ''),
     first: String(form.first ?? ''),
     birth: String(form.birth ?? ''),
     cit: String(form.cit ?? ''),
     phone: String(form.phone ?? ''),
     email,
+    marital: '',
   }
-  const value = (k: Exclude<ProfileField, 'rank'>) => (edits[k] !== undefined ? edits[k]! : base[k])
-  const source = (k: Exclude<ProfileField, 'rank'>): FieldSource | null => {
+  const value = (k: TextField) => (edits[k] !== undefined ? edits[k]! : base[k])
+  const source = (k: TextField): FieldSource | null => {
     if (!value(k)) return null
     const def = PROFILE_FIELDS.find((f) => f.k === k)!.src
     if (edits[k] !== undefined) return def === 'doc' || def === 'cv' ? 'edited' : 'you'
@@ -66,9 +85,11 @@ export function useProfile() {
     source,
     rank,
     position: rank.positions[0] ?? '',
+    salary,
+    saveSalary: (v: Salary | null) => setBag('dp.salary', v),
     name: `${first} ${last}`.trim() || 'Без имени',
     initials: ((first[0] ?? '?') + (last[0] ?? '')).toUpperCase(),
-    save: (k: Exclude<ProfileField, 'rank'>, v: string) => setBag('dp.profile', { ...edits, [k]: v }),
+    save: (k: TextField, v: string) => setBag('dp.profile', { ...edits, [k]: v }),
     saveRank: (v: FleetValue) => setBag('dp.rank', v),
   }
 }
@@ -141,6 +162,16 @@ export function maskMonth(v: string) {
 }
 
 /* ---------- текст ---------- */
+
+// «3 500 $ в месяц»: число — моноширинним, з пробілами між тисячами.
+export function SalaryText({ s }: { s: Salary }) {
+  const n = s.amount.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+  return (
+    <span>
+      <span className="font-mono">{n}</span> {s.cur} {SALARY_PER.find((p) => p.id === s.per)?.short}
+    </span>
+  )
+}
 
 export function plural(n: number, one: string, few: string, many: string) {
   const m = n % 10

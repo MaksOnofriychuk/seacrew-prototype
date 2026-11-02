@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileQuestion, Info, Lock, Plus, RotateCw, TriangleAlert, X } from 'lucide-react'
+import { Check, FileQuestion, Info, Lock, Plus, RotateCw, Stamp, TriangleAlert, X } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { Paper } from '@/components/app/paper'
@@ -34,13 +34,15 @@ export function P19Check({ go }: ScreenProps) {
   const [adding, setAdding] = useState<{ label: string; value: string; tried: boolean } | null>(null)
   const [viewing, setViewing] = useState<number | null>(null)
   const [tried, setTried] = useState(false)
+  // Диплом: необов'язкове фото Endorsement (відповідь 75) — коли це окремий аркуш.
+  const [endorse, setEndorse] = useState(false)
   const pages = st.pages
 
   const orig = (f: ReadField) => (manual ? '' : f.value)
   const edited = (f: ReadField) => !manual && vals[f.k] !== f.value
   const lowLeft = read.fields.filter((f) => f.low && !edited(f) && !manual).length
   const dateBad = (f: ReadField) => isDate(f) && !!vals[f.k] && !validDate(vals[f.k])
-  const missing = (f: ReadField) => (f.k === 'num' || f.k === 'name' || f.k === 'country') && !vals[f.k]?.trim()
+  const missing = (f: ReadField) => ((f.k === 'num' && cat !== 'vac') || f.k === 'name' || f.k === 'country') && !vals[f.k]?.trim()
   const problems = read.fields.filter((f) => dateBad(f) || missing(f))
 
   const tag = (f: ReadField) => {
@@ -60,6 +62,7 @@ export function P19Check({ go }: ScreenProps) {
       other,
       pages: Math.max(pages.length, 1),
       manual,
+      endorse: cat === 'dip' && endorse,
     }
     setBag('dp.added', [...bag<AddedDoc[]>('dp.added', []), doc])
     setBag('dp.add', null)
@@ -91,7 +94,8 @@ export function P19Check({ go }: ScreenProps) {
           : null
     : null
 
-  const nav = <NavBar onBack={() => go('p18')} />
+  // Ввели вручну одразу з p02 (тип уже відомий) — назад у документи.
+  const nav = <NavBar onBack={() => go(manual && !pages.length ? 'p02' : 'p18')} />
 
   if (view === 'loading') {
     return (
@@ -153,6 +157,27 @@ export function P19Check({ go }: ScreenProps) {
             <span className="flex items-end pb-0.5 pl-1 text-sm whitespace-nowrap text-muted-foreground">
               <span className="font-mono">{pages.length}</span>&nbsp;{plural(pages.length, 'страница', 'страницы', 'страниц')}
             </span>
+          </div>
+        )}
+
+        {cat === 'dip' && (
+          <div className="mt-4 flex items-center gap-3 rounded-xl border border-border bg-surface py-2.5 pr-1.5 pl-3">
+            <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-full bg-muted', endorse ? 'text-success' : 'text-primary')}>
+              {endorse ? <Check className="size-4.5" strokeWidth={2.5} /> : <Stamp className="size-4.5" />}
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-[15px] font-medium">Endorsement</span>
+              <span className="text-sm text-muted-foreground">{endorse ? 'Фото добавлено' : 'Необязательно'}</span>
+            </span>
+            {endorse ? (
+              <button type="button" aria-label="Убрать фото Endorsement" onClick={() => setEndorse(false)} className="flex size-10 shrink-0 items-center justify-center rounded-md text-muted-foreground">
+                <X className="size-4.5" />
+              </button>
+            ) : (
+              <Button variant="ghost" className="h-10 text-[15px] text-primary" onClick={() => setEndorse(true)}>
+                Добавить фото
+              </Button>
+            )}
           </div>
         )}
 

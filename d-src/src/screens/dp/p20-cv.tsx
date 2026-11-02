@@ -2,15 +2,15 @@ import { useState, type ReactNode } from 'react'
 import { Download, FolderDown, LoaderCircle, Mail, MessageCircle, Send, Share2 } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { Footer, NavBar } from '@/components/app/chrome'
-import { ViewState } from '@/components/app/states'
+import { useView, ViewState } from '@/components/app/states'
 import { useAvailability } from '@/components/app/availability'
 import { Button } from '@/components/ui/button'
-import { CONTRACTS, CV_FILE, CV_UPDATED, EN_CIT, EN_COUNTRY, type Contract } from '@/lib/data-docs-profile'
+import { CV_FILE, CV_UPDATED, EN_CIT, EN_COUNTRY, type Contract } from '@/lib/data-docs-profile'
 import { ruDate } from '@/lib/data'
 import type { ScreenProps } from '../types'
 import { ActionRow, useBusy, useDP, useProfile } from './_parts'
 import { useDocs } from './_docs'
-import { cMonths, durEn } from './_contracts'
+import { cMonths, durEn, useContracts } from './_contracts'
 
 // p20 — «Моё CV · PDF» (відповіді 86–90, бриф S45): CV збирається з профілю, завжди англійською (89),
 // без логотипів (87), поки безкоштовно (86). «Скачать PDF» — файл на телефон; «Поделиться» — куди
@@ -23,6 +23,8 @@ export function P20Cv({ go }: ScreenProps) {
   const { showToast } = useDP()
   const [share, setShare] = useState(false)
   const { busy, run } = useBusy()
+  // Скачати й поділитися можна лише готовим CV.
+  const ready = useView() === 'normal'
 
   const download = () => run(() => showToast(`Сохранено в «Загрузки»: ${CV_FILE}`), 900)
   const shared = (where: string) => {
@@ -33,45 +35,49 @@ export function P20Cv({ go }: ScreenProps) {
   return (
     <div className="relative flex h-full flex-col">
       <NavBar onBack={() => go('p14')} />
-      <ViewState
-        loading={
-          <div className="flex flex-1 flex-col items-start justify-center gap-2 px-6 pb-24" aria-busy="true">
-            <LoaderCircle className="size-6 animate-spin text-primary" />
-            <h1 className="text-[26px] leading-tight font-semibold tracking-tight">Собираем CV</h1>
-            <p className="text-base text-muted-foreground">Берём данные из профиля и документов.</p>
+      <div className="flex min-h-0 flex-1 flex-col">
+        <ViewState
+          loading={
+            <div className="flex flex-1 flex-col items-start justify-center gap-2 px-6 pb-24" aria-busy="true">
+              <LoaderCircle className="size-6 animate-spin text-primary" />
+              <h1 className="text-[26px] leading-tight font-semibold tracking-tight">Собираем CV</h1>
+              <p className="text-base text-muted-foreground">Берём данные из профиля и документов.</p>
+            </div>
+          }
+          error={{ title: 'Не удалось собрать CV', text: 'Проверьте подключение и попробуйте ещё раз.' }}
+          empty={{
+            title: 'CV пока не из чего собрать',
+            text: 'Добавьте документ моряка и опыт работы — CV соберётся само.',
+            action: (
+              <Button size="lg" className="w-auto" onClick={() => go('p14')}>
+                Заполнить профиль
+              </Button>
+            ),
+          }}
+        >
+          <div className="screen-in min-h-0 flex-1 overflow-y-auto pb-6">
+            <div className="px-6 pt-2">
+              <h1 className="text-[32px] leading-[1.1] font-semibold tracking-tight">Моё CV</h1>
+              <p className="mt-3 text-base text-muted-foreground">Собрано из профиля, на английском — так его читают агентства. Измените профиль, и CV обновится само.</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                PDF, <span className="font-mono">2</span> страницы, обновлено <span className="font-mono">{CV_UPDATED}</span>
+              </p>
+            </div>
+            <CvPreview />
           </div>
-        }
-        error={{ title: 'Не удалось собрать CV', text: 'Проверьте подключение и попробуйте ещё раз.' }}
-        empty={{
-          title: 'CV пока не из чего собрать',
-          text: 'Добавьте документ моряка и опыт работы — CV соберётся само.',
-          action: (
-            <Button size="lg" className="w-auto" onClick={() => go('p14')}>
-              Заполнить профиль
-            </Button>
-          ),
-        }}
-      >
-        <div className="screen-in min-h-0 flex-1 overflow-y-auto pb-6">
-          <div className="px-6 pt-2">
-            <h1 className="text-[32px] leading-[1.1] font-semibold tracking-tight">Моё CV</h1>
-            <p className="mt-3 text-base text-muted-foreground">Собрано из профиля, на английском — так его читают агентства. Измените профиль, и CV обновится само.</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              PDF, <span className="font-mono">2</span> страницы, обновлено <span className="font-mono">{CV_UPDATED}</span>
-            </p>
-          </div>
-          <CvPreview />
-        </div>
-      </ViewState>
-      <Footer className="border-t border-border bg-surface pt-4">
-        <Button size="lg" disabled={busy} onClick={download}>
-          {busy ? <LoaderCircle className="animate-spin" /> : <Download />}
-          {busy ? 'Сохраняем…' : 'Скачать PDF'}
-        </Button>
-        <Button size="lg" variant="outline" className="text-primary" onClick={() => setShare(true)}>
-          <Share2 /> Поделиться
-        </Button>
-      </Footer>
+        </ViewState>
+      </div>
+      {ready && (
+        <Footer className="border-t border-border bg-surface pt-4">
+          <Button size="lg" disabled={busy} onClick={download}>
+            {busy ? <LoaderCircle className="animate-spin" /> : <Download />}
+            {busy ? 'Сохраняем…' : 'Скачать PDF'}
+          </Button>
+          <Button size="lg" variant="outline" className="text-primary" onClick={() => setShare(true)}>
+            <Share2 /> Поделиться
+          </Button>
+        </Footer>
+      )}
       <BottomSheet open={share} onClose={() => setShare(false)} title="Поделиться CV" description={CV_FILE}>
         <ActionRow icon={Mail} title="Почта" onClick={() => shared('почта')} />
         <ActionRow icon={MessageCircle} title="WhatsApp" onClick={() => shared('WhatsApp')} />
@@ -151,12 +157,10 @@ function Table({ head, rows }: { head: string[]; rows: ReactNode[][] }) {
 }
 
 function CvPreview() {
-  const { bag } = useDP()
   const p = useProfile()
   const { docs } = useDocs()
   const avail = useAvailability().value
-  const contracts = bag<Contract[]>('dp.contracts', CONTRACTS)
-  const hideTotal = bag<boolean>('dp.hideTotal', false)
+  const { contracts, hideTotal } = useContracts()
   const total = contracts.reduce((s, c) => s + cMonths(c), 0)
   const en = (ru: string) => EN_COUNTRY[ru] ?? ru
   const fv = (d: (typeof docs)[number], k: string) => d.fields.find((f) => f.k === k)?.value ?? ''

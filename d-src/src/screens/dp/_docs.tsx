@@ -1,5 +1,5 @@
-import { BookUser, FileText, Files, GraduationCap, HeartPulse, IdCard, Flag, Stamp } from 'lucide-react'
-import { PASSPORT, READ, VISAS, type AddCat, type OtherField, type ReadField } from '@/lib/data-docs-profile'
+import { BookUser, FileText, Files, GraduationCap, HeartPulse, IdCard, Flag, Stamp, Syringe } from 'lucide-react'
+import { PASSPORT, READ, VACCINES, VISAS, type AddCat, type OtherField, type ReadField } from '@/lib/data-docs-profile'
 import { plural, useDP, useHashParam, useProfile, type Icon } from './_parts'
 
 // Документи моряка для p02, p11, p19, p20: базові (з реєстрації) + додані в застосунку (bag dp.added).
@@ -28,7 +28,7 @@ export function expiry(exp: string | null): { text: string; variant: 'warning' |
 
 /* ---------- модель ---------- */
 
-export type DocGroup = 'sid' | 'passport' | 'visa' | 'dip' | 'flag' | 'med' | 'other' | 'cv'
+export type DocGroup = 'sid' | 'passport' | 'visa' | 'dip' | 'flag' | 'med' | 'vac' | 'other' | 'cv'
 
 export type DocField = { k: string; label: string; value: string; mono?: boolean }
 
@@ -48,6 +48,8 @@ export type Doc = {
   pages: number
   note: string
   photo: string
+  /** диплом: додаткове фото Endorsement (відповідь 75, необов'язкове) */
+  endorse?: boolean
 }
 
 export const GROUPS: { id: DocGroup; title: string; /** показувати порожню групу з рядком «Добавить» */ always: boolean }[] = [
@@ -57,23 +59,24 @@ export const GROUPS: { id: DocGroup; title: string; /** показувати п�
   { id: 'dip', title: 'Дипломы и сертификаты', always: true },
   { id: 'flag', title: 'Подфлажные документы', always: false },
   { id: 'med', title: 'Медицинские', always: true },
+  { id: 'vac', title: 'Прививки', always: true },
   { id: 'other', title: 'Другие документы', always: false },
   { id: 'cv', title: 'CV', always: true },
 ]
 
-const CAT_GROUP: Record<AddCat, DocGroup> = { sid: 'sid', passport: 'passport', visa: 'visa', dip: 'dip', flag: 'flag', other: 'other' }
-const CAT_ICON: Record<AddCat, Icon> = { sid: IdCard, passport: BookUser, visa: Stamp, dip: GraduationCap, flag: Flag, other: Files }
+const CAT_GROUP: Record<AddCat, DocGroup> = { sid: 'sid', passport: 'passport', visa: 'visa', dip: 'dip', flag: 'flag', vac: 'vac', other: 'other' }
+const CAT_ICON: Record<AddCat, Icon> = { sid: IdCard, passport: BookUser, visa: Stamp, dip: GraduationCap, flag: Flag, vac: Syringe, other: Files }
 
 /** Потік «Добавить документ» (p02 → p18 → p19): тип, сторінки (поворот кожної), введення вручну. */
 export type AddState = { cat: AddCat | null; pages: number[]; manual: boolean }
 export const ADD_START: AddState = { cat: null, pages: [0], manual: false }
 
 /** Документ, підтверджений на p19 (bag dp.added). */
-export type AddedDoc = { id: string; cat: AddCat; fields: ReadField[]; other: OtherField[]; pages: number; manual: boolean }
+export type AddedDoc = { id: string; cat: AddCat; fields: ReadField[]; other: OtherField[]; pages: number; manual: boolean; endorse?: boolean }
 
 // Медичний документ, введений на кроці «Медицинские» (s5.docs) або для знімків (?med=1).
 type MedData = { name: string; num: string; issue: string; exp: string; noExp: boolean; country: string }
-const DEMO_MED: { id: string; d: MedData } = {
+export const DEMO_MED: { id: string; d: MedData } = {
   id: 'demo',
   d: { name: 'Медосмотр (PEME)', num: 'MC-0001', issue: '14.11.2024', exp: '14.11.2026', noExp: false, country: 'Украина' },
 }
@@ -100,13 +103,14 @@ function fromAdded(a: AddedDoc): Doc {
     icon: CAT_ICON[a.cat],
     title,
     paper: a.cat === 'visa' ? 'Visa' : a.cat === 'passport' ? 'Passport' : name,
-    sub: a.cat === 'visa' ? f('type') : mask(f('num')),
+    sub: a.cat === 'visa' ? f('type') : a.cat === 'vac' ? f('issue') : mask(f('num')),
     exp: f('exp') || null,
     fields: a.fields.map(({ k, label, value, mono }) => ({ k, label, value, mono })),
     other: a.other,
     pages: a.pages,
     note: a.manual ? 'Данные введены вами. Администратор сверит их с фото документа.' : READ_NOTE,
     photo: 'Заменить фото',
+    endorse: a.endorse,
   }
 }
 
@@ -201,6 +205,26 @@ export function useDocs() {
       note: READ_NOTE,
       photo: 'Заменить фото',
     },
+    // Прививки (відповідь 76) — будь-які; без строку дії.
+    ...VACCINES.map(
+      (v): Doc => ({
+        id: v.id,
+        group: 'vac',
+        icon: Syringe,
+        title: v.name,
+        paper: 'Vaccination',
+        sub: v.issue,
+        exp: null,
+        fields: [
+          { k: 'name', label: 'Прививка', value: v.name },
+          { k: 'issue', label: 'Дата прививки', value: v.issue, mono: true },
+          { k: 'num', label: 'Номер сертификата', value: v.num, mono: true },
+        ],
+        pages: 1,
+        note: READ_NOTE,
+        photo: 'Заменить фото',
+      }),
+    ),
     // Медичні — лише ті, що моряк ввів сам (ИИ їх не читає, ADR-090).
     ...(meds.length ? meds : demoMed ? [DEMO_MED] : []).map(
       (m): Doc => ({
