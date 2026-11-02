@@ -4,7 +4,7 @@ import { Group } from '@/components/app/group'
 import { Button } from '@/components/ui/button'
 import type { ScreenProps } from './registry'
 
-// o03 — що приготувати для швидкого шляху (тексти з C, oPath('q')).
+// o03 — що приготувати для швидкого шляху (тексти з C, oPath('q')); підзаголовок — правка №10.
 const ITEMS = [
   { icon: FileText, title: 'CV', text: 'PDF, Word, фото или скан' },
   { icon: IdCard, title: 'Удостоверение или диплом моряка', text: 'Один документ на выбор' },
@@ -17,7 +17,7 @@ export function O03Quick({ go }: ScreenProps) {
       <NavBar onBack={() => go('o02')} />
       <div className="flex flex-1 flex-col px-6 pt-2">
         <h1 className="text-[32px] leading-[1.1] font-semibold tracking-tight">Быстрая регистрация</h1>
-        <p className="mt-3 text-base text-muted-foreground">Приготовьте файлы — и аккаунт готов за пару минут.</p>
+        <p className="mt-3 text-base text-muted-foreground">Загрузите файлы — и аккаунт готов за пару минут.</p>
         <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
           <Clock className="size-4 text-primary" /> ≈ 1–2 минуты
         </p>
