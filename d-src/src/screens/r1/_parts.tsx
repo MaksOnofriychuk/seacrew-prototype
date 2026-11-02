@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { X } from 'lucide-react'
+import { ArrowLeft, X } from 'lucide-react'
 import { Dialog } from 'radix-ui'
 import { Wordmark } from '@/components/app/chrome'
 import { HeroPanel } from '@/components/app/hero-panel'
@@ -101,13 +101,19 @@ export function WebDialog({
 }
 
 // Вхід і реєстрація — без оболонки кабінету: ліворуч панель з морською сіткою (як в онбордингу), праворуч форма.
-export function AuthLayout({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
+// go — «На сайт» угорі панелі веде на публічну головну (pub-landing).
+export function AuthLayout({ children, aside, go }: { children: ReactNode; aside?: ReactNode; go?: (id: string) => void }) {
   return (
     <div className="flex h-full min-h-0">
       <HeroPanel className="w-[560px] justify-between border-r border-border">
         <div className="relative flex items-center gap-2 px-12 pt-10">
           <Wordmark />
           <span className="text-sm text-muted-foreground">для агентств</span>
+          {go && (
+            <button type="button" onClick={() => go('pub-landing')} className="ml-auto flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+              <ArrowLeft className="size-4" /> На сайт
+            </button>
+          )}
         </div>
         <div className="relative flex flex-col gap-3 px-12 pb-10">{aside}</div>
       </HeroPanel>

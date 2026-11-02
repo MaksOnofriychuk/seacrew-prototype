@@ -16,7 +16,7 @@ const DOCS = {
 
 export function E06DocTaken({ go }: ScreenProps) {
   const { state } = useProto()
-  const support = useSupport(go)
+  const support = useSupport(go, 'e06')
   const doc = DOCS[state.docType]
 
   return (

@@ -7,14 +7,15 @@ import { TabBar } from '@/components/app/tab-bar'
 import { BellButton } from '@/components/app/top-bar'
 import { Button } from '@/components/ui/button'
 import { AvailabilityButton, AvailabilitySheet } from '@/components/app/availability'
-import { APP_COUNTS } from '@/lib/data'
 import { MOBILE_ROUTES } from '@/lib/mobile-routes'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
-import { VOYAGES, vMonths, type Voyage } from '../s/_core-voyage'
+import { byStart, VOYAGES, vMonths, type Voyage } from '../s/_core-voyage'
+import { useDarkClass } from '../dp/_parts'
 import { durText, FORM_DEFAULTS, Note, readiness, ReadinessBlock, useToast, type QForm, useQ } from './_parts'
 import { MonoNums } from '../p/_app-parts'
 import type { Acct } from './q06'
+import { useAppCounts } from '../m/_parts'
 
 // q09 — профіль після швидкої реєстрації (profileScreen у C). «Профиль заполнен на N %» (№21) рахуємо лише
 // по полях, які найчастіше потрібні в анкетах. 100 % — додайте ?full=1 до адреси (у C — галочка в панелі).
@@ -34,6 +35,7 @@ export function Q09Profile({ go }: ScreenProps) {
   const [langOpen, setLangOpen] = useState(false)
   const lang = bag<string>('dp.lang', 'Русский')
   const { toast, toastNode } = useToast()
+  const counts = useAppCounts()
   const form = bag<{ v: QForm } | null>('q.form', null)?.v ?? FORM_DEFAULTS
   const email = bag<Acct>('q.acct', { email: '', pass: '', pass2: '' }).email || 'you@example.com'
   const [availOpen, setAvailOpen] = useState(false)
@@ -41,7 +43,7 @@ export function Q09Profile({ go }: ScreenProps) {
   // Медичні, введені на кроці s5, теж рахуються — тоді профіль заповнено на 100 %.
   const r = readiness(full || bag<unknown[]>('s5.docs', []).length > 0)
   const savedN = bag<number[]>('saved.jobs', [0, 3]).length + bag<string[]>('saved.posts', []).length
-  const dark = document.documentElement.classList.contains('dark')
+  const dark = useDarkClass()
 
   useEffect(() => {
     const id = window.setTimeout(() => setLoading(false), 650)
@@ -53,7 +55,11 @@ export function Q09Profile({ go }: ScreenProps) {
   const name = `${first} ${last}`.trim() || 'Без имени'
   const initials = ((first[0] ?? '?') + (last[0] ?? '')).toUpperCase()
   // Стаж — з тих самих контрактів, що на кроці «Морской стаж» (s6): одна цифра скрізь.
-  const sea = durText(bag<Voyage[]>('s6.voyages', VOYAGES).reduce((s, v) => s + vMonths(v), 0))
+  const voyages = bag<Voyage[]>('s6.voyages', VOYAGES)
+  const sea = durText(voyages.reduce((s, v) => s + vMonths(v), 0))
+  // Підпис під іменем — посада й тип судна з останнього контракту (як у p14).
+  const latest = [...voyages].sort(byStart)[0]
+  const role = latest ? [latest.rank, latest.type].filter(Boolean).join(', ') : ''
 
   // Тема в D живе в адресі (#q09?t=dark) — перемикаємо її так само, як панель. Той самий екран і як p14.
   const toggleTheme = () => {
@@ -66,7 +72,13 @@ export function Q09Profile({ go }: ScreenProps) {
       <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
         <div className="flex h-12 items-center">
           <Wordmark className="flex-1" />
-          <BellButton n={APP_COUNTS.notifications} onClick={() => go(MOBILE_ROUTES.notifications)} />
+          <BellButton
+            n={counts.notifications}
+            onClick={() => {
+              setBag('back.p10', 'q09')
+              go(MOBILE_ROUTES.notifications)
+            }}
+          />
         </div>
         {loading || view === 'loading' ? (
           <Skeleton />
@@ -81,7 +93,7 @@ export function Q09Profile({ go }: ScreenProps) {
                   <span className="truncate">{name}</span>
                   <ShieldCheck className="size-5 shrink-0 text-primary" aria-label="Документ моряка проверен" />
                 </h1>
-                <span className="text-[15px]">3rd Engineer, Chemical Tanker</span>
+                {role && <span className="text-[15px]">{role}</span>}
                 <span className="truncate text-sm text-muted-foreground">{email}</span>
               </div>
             </div>
@@ -130,7 +142,7 @@ export function Q09Profile({ go }: ScreenProps) {
           </div>
         )}
       </div>
-      <TabBar active="profile" go={go} />
+      <TabBar active="profile" go={go} counts={{ msg: counts.messages }} />
       {toastNode}
       <AvailabilitySheet open={availOpen} onClose={() => setAvailOpen(false)} />
       <BottomSheet open={langOpen} onClose={() => setLangOpen(false)} title="Язык">

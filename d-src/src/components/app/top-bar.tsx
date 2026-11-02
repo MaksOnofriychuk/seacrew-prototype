@@ -5,8 +5,8 @@ import { cn } from '@/lib/utils'
 import { Wordmark } from './chrome'
 import { CountBadge } from './count-badge'
 
-// Верхня панель головного екрана (правка №16): Seafolio ліворуч; праворуч — свої кнопки (extra, напр. пошук),
-// дзвіночок «Уведомления» з лічильником і аватар (меню) поруч.
+// Верхня панель головного екрана (правка №16, ТЗ §6): аватар (бокове меню) ліворуч угорі — меню й виїжджає зліва;
+// поруч Seafolio; праворуч — свої кнопки (extra, напр. пошук) і дзвіночок «Уведомления» з лічильником.
 export function MainTopBar({
   onBell,
   onAvatar,
@@ -26,12 +26,12 @@ export function MainTopBar({
 }) {
   return (
     <div className={cn('flex h-10 items-center gap-2', className)}>
-      <Wordmark className="flex-1" />
-      {extra}
-      <BellButton n={notifications} onClick={onBell} />
-      <button type="button" aria-label="Меню" onClick={onAvatar} className="flex size-10 items-center justify-center rounded-full bg-card text-sm font-semibold text-primary">
+      <button type="button" aria-label="Меню" onClick={onAvatar} className="flex size-10 shrink-0 items-center justify-center rounded-full bg-card text-sm font-semibold text-primary active:scale-95">
         {avatar}
       </button>
+      <Wordmark className="flex-1 pl-1" />
+      {extra}
+      <BellButton n={notifications} onClick={onBell} />
     </div>
   )
 }

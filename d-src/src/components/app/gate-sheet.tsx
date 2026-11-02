@@ -20,7 +20,8 @@ export function useGate(go: (id: string) => void, initial: string | null = null)
 export function GateSheet({ go, open, onClose }: { go: (id: string) => void; open: boolean; onClose: () => void }) {
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="bottom" showCloseButton={false} className="gap-0 px-6 pt-6 pb-8">
+      {/* без автофокусу: інакше на «Быстрая регистрация» одразу видно рамку фокусу */}
+      <SheetContent side="bottom" showCloseButton={false} onOpenAutoFocus={(e) => e.preventDefault()} className="gap-0 px-6 pt-6 pb-8">
         <span className="flex size-11 items-center justify-center rounded-full bg-muted text-primary">
           <Lock className="size-5" />
         </span>

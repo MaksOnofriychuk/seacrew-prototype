@@ -127,9 +127,8 @@ export function RTeam({ go }: ScreenProps) {
   ]
 
   return (
-    <WebShell variant="recruiter" active="r-org" go={go}>
+    <WebShell variant="recruiter" active="r-team" go={go}>
       <PageHeader
-        back={{ label: 'Организация', onClick: () => go('r-org') }}
         title={
           <span className="flex items-center gap-3">
             Команда <ExampleMark />

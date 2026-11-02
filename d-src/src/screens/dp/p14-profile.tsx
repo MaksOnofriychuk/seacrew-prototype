@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Banknote, Bookmark, Briefcase, Check, Download, FileText, Globe, HeartPulse, Moon, ShieldCheck, Ship } from 'lucide-react'
+import { Banknote, Bookmark, Briefcase, Check, ChartColumn, Download, FileText, Globe, HeartPulse, Moon, ShieldCheck, Ship, UsersRound } from 'lucide-react'
 import { AvailabilityButton, AvailabilitySheet } from '@/components/app/availability'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { ProfileFillCard } from '@/components/app/profile-fill'
@@ -13,6 +13,7 @@ import { readiness } from '../q/_parts'
 import { Dur, ListGroup, MenuRow, Note, SalaryText, TabHeader, useDP, useDarkClass, useHashParam, useProfile, type TextField } from './_parts'
 import { byStart, cMonths, useContracts } from './_contracts'
 import { daysLeft, DEMO_MED, expiry, useDocs } from './_docs'
+import { useAppCounts } from '../m/_parts'
 
 // p14 — профіль у застосунку. Правка №16: «Уведомления» і «Входящие» тут більше немає — дзвіночок у
 // верхній панелі, повідомлення — вкладка «Сообщения». Правка №21: «Профиль заполнен на N %».
@@ -26,6 +27,11 @@ const LANGS = ['Русский', 'Українська', 'English']
 export function P14Profile({ go }: ScreenProps) {
   const { bag, setBag, showToast } = useDP()
   const p = useProfile()
+  // Премиум-екрани: «Назад» там повертає сюди (back.<id>).
+  const goBack = (id: string) => {
+    setBag('back.' + id, 'p14')
+    go(id)
+  }
   const [availOpen, setAvailOpen] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
   const full = useHashParam('full') === '1'
@@ -33,10 +39,11 @@ export function P14Profile({ go }: ScreenProps) {
   const dark = useDarkClass()
 
   const { docs } = useDocs()
+  const counts = useAppCounts()
   // Медосмотр (ТЗ §8): найближчий строк серед медичних; ?full=1 — демо-медосмотр.
   const med = docs.filter((d) => d.group === 'med').sort((a, b) => (daysLeft(a.exp ?? '') ?? 1e9) - (daysLeft(b.exp ?? '') ?? 1e9))[0] ?? (full ? { id: `med-${DEMO_MED.id}`, exp: DEMO_MED.d.exp } : null)
   // Відсоток — та сама функція, що в q09 і боковому меню: медичні додано → 100 %.
-  const pct = readiness(!!med).pct
+  const pct = readiness(!!med, docs.some((d) => d.group === 'passport')).pct
   const savedN = bag<number[]>('saved.jobs', [0, 3]).length + bag<string[]>('saved.posts', []).length
   // Стаж — з тих самих контрактів, що крок s6 і q09.
   const { contracts } = useContracts()
@@ -123,6 +130,8 @@ export function P14Profile({ go }: ScreenProps) {
         />
         <MenuRow icon={FileText} title="Моё CV" value="PDF" onClick={() => go('p20')} />
         <MenuRow icon={Bookmark} title="Сохранённое" value={<span className="font-mono">{savedN}</span>} onClick={() => go('p09')} />
+        <MenuRow icon={UsersRound} title="Подписки" onClick={() => goBack('pr-following')} />
+        <MenuRow icon={ChartColumn} title="Моя зарплата" onClick={() => goBack('pr-salary')} />
       </ListGroup>
 
       <ListGroup title="Настройки">
@@ -137,14 +146,14 @@ export function P14Profile({ go }: ScreenProps) {
   return (
     <div className="relative flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto pb-6">
-        <TabHeader go={go} />
+        <TabHeader go={go} here="p14" />
         <div className="px-6">
           <ViewState loading={<Skeleton />} error={{ title: 'Не удалось загрузить профиль', className: 'px-0' }} empty={content}>
             {content}
           </ViewState>
         </div>
       </div>
-      <TabBar active="profile" go={go} />
+      <TabBar active="profile" go={go} counts={{ msg: counts.messages }} />
       <AvailabilitySheet open={availOpen} onClose={() => setAvailOpen(false)} />
       <BottomSheet open={langOpen} onClose={() => setLangOpen(false)} title="Язык">
         <div role="radiogroup" aria-label="Язык" className="flex flex-col">

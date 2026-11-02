@@ -360,17 +360,19 @@ export function durShort(n: number) {
   return [y ? `${y} г.` : '', mo ? `${mo} мес.` : ''].filter(Boolean).join(' ')
 }
 
-// Готовність до анкет — як у C після швидкої реєстрації: усе, крім медичних (80 %).
-export function readiness(full: boolean) {
+// Заповненість профілю — ті самі шість розділів «Основного», що на кроках s* (з загранпаспортом, №36):
+// sx, q09, p14 і бокове меню показують одне число. Без медичних — 83 %, з ними — 100 %.
+export function readiness(full: boolean, pass = true) {
   const items: [string, boolean][] = [
     ['Личные данные', true],
     ['Документ моряка', true],
+    ['Загранпаспорт', pass || full],
     ['Диплом', true],
     ['Медицинские', full],
     ['Опыт работы', true],
   ]
   const n = items.filter((x) => x[1]).length
-  return { items, pct: n * 20 }
+  return { items, n, pct: Math.round((n / items.length) * 100) }
 }
 
 // Правка №21: тепер це спільна картка «Профиль заполнен на N %».

@@ -12,12 +12,14 @@ export function FillBar({ value, className }: { value: number; className?: strin
   )
 }
 
-// «Профиль заполнен на 80 %» — заголовок, смуга; під ними — пояснення й дія (children).
+// «Профиль заполнен на 80 %» (моноширинне лише число) — заголовок, смуга; під ними — пояснення й дія (children).
 export function ProfileFillCard({ pct, children, className }: { pct: number; children?: ReactNode; className?: string }) {
   return (
     <section className={cn('flex flex-col gap-3 rounded-xl border border-border bg-card p-5', className)}>
       <h2 className="text-lg font-semibold">
-        Профиль заполнен на <span className={cn('font-mono font-medium', pct >= 100 ? 'text-success' : 'text-primary')}>{pct} %</span>
+        Профиль заполнен на <span className={cn('whitespace-nowrap', pct >= 100 ? 'text-success' : 'text-primary')}>
+          <span className="font-mono font-medium">{pct}</span>{'\u00a0'}%
+        </span>
       </h2>
       <FillBar value={pct} />
       {children}
@@ -30,7 +32,9 @@ export function ProfileFillLine({ pct, onClick, className }: { pct: number; onCl
   return (
     <button type="button" onClick={onClick} className={cn('flex flex-col gap-2 text-left', className)}>
       <span className="text-[15px] font-medium">
-        Профиль заполнен на <span className={cn('font-mono', pct >= 100 ? 'text-success' : 'text-primary')}>{pct} %</span>
+        Профиль заполнен на <span className={cn('whitespace-nowrap', pct >= 100 ? 'text-success' : 'text-primary')}>
+          <span className="font-mono">{pct}</span>{'\u00a0'}%
+        </span>
       </span>
       <FillBar value={pct} />
     </button>

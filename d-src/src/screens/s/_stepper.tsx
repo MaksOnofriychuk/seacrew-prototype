@@ -126,10 +126,14 @@ export function useSteps() {
     setBag('s.done', next)
   }
 
-  // C: done:N — крок завершено; 7 → профіль, 6 → «Вы почти у цели» (sx).
+  // C: done:N — крок завершено; 7 → «Премиум» в кінці онбордингу (pr-paywall, «Пропустить» → профіль q09),
+  // 6 → «Вы почти у цели» (sx).
   const complete = (n: number, go: (id: string) => void) => {
     setDone({ [n]: true, ['skip' + n]: undefined })
-    if (n === 7) return go('q09')
+    if (n === 7) {
+      setBag('pr.paywall.from', null)
+      return go('pr-paywall')
+    }
     go(nextStep(n))
   }
 

@@ -6,7 +6,8 @@ import { useGate } from '@/components/app/gate-sheet'
 import { ViewState } from '@/components/app/states'
 import { TabBar } from '@/components/app/tab-bar'
 import { Badge } from '@/components/ui/badge'
-import { JOBS, type Job } from '@/lib/data'
+import type { Job } from '@/lib/data'
+import { FJ_JOBS, isClosed } from '@/lib/data-feed-jobs'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from './registry'
 
@@ -26,7 +27,8 @@ function GuestJobs({ go, initialGate = null }: ScreenProps & { initialGate?: str
   const { gate, sheet } = useGate(go, initialGate)
   const [q, setQ] = useState('')
   const needle = q.trim().toLowerCase()
-  const list = JOBS.map((j, k) => ({ j, k })).filter(({ j }) => !needle || [j.t, j.ship, j.co].some((s) => s.toLowerCase().includes(needle)))
+  // Ті самі вакансії, що в p05 (№9), без закритих — гість їх не відкриє.
+  const list = FJ_JOBS.map((j, k) => ({ j, k })).filter(({ k }) => !isClosed(k)).filter(({ j }) => !needle || [j.t, j.ship, j.co].some((s) => s.toLowerCase().includes(needle)))
 
   return (
     <div className="flex h-full flex-col">

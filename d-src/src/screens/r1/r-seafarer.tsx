@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { Check, CircleCheck, EyeOff, UserRoundX } from 'lucide-react'
+import { Check, CircleCheck, EyeOff, Link2, UserRoundX } from 'lucide-react'
 import { MonoNums } from '@/components/app/mono-nums'
 import { Paper } from '@/components/app/paper'
 import { ViewState } from '@/components/app/states'
@@ -87,7 +87,15 @@ export function RSeafarer({ go }: ScreenProps) {
               </span>
             </span>
           }
-          actions={actions}
+          actions={
+            <>
+              {/* публічне прев'ю профілю (pub-profile) — те, що бачать за посиланням без входу */}
+              <Button variant="ghost" className="mr-1 h-10 text-primary" onClick={() => go('pub-profile')}>
+                <Link2 /> Публичная ссылка
+              </Button>
+              {actions}
+            </>
+          }
         />
 
         {live && (

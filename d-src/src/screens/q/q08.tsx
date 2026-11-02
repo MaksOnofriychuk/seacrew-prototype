@@ -8,7 +8,7 @@ import { DOC_TYPES, Footer, readiness, ReadinessBlock, type DocTypeId, type QFor
 // q08 — аккаунт створено: файли перенесені до моряка й зашифровані, підтверджене — у профілі.
 // Нижче — прогрес заповнення профілю. Без конфеті й кільця з C: лише статичний знак.
 export function Q08Done({ go }: ScreenProps) {
-  const { state, bag } = useQ()
+  const { state, bag, setBag } = useQ()
   const form = bag<{ v: QForm } | null>('q.form', null)
   const first = String(form?.v.first ?? 'Andrii').trim()
   const r = readiness(false)
@@ -44,7 +44,14 @@ export function Q08Done({ go }: ScreenProps) {
         </div>
       </div>
       <Footer>
-        <Button size="lg" onClick={() => go('q09')}>
+        <Button
+          size="lg"
+          onClick={() => {
+            // кінець швидкої реєстрації → «Премиум» (pr-paywall); «Пропустить» там веде в профіль q09
+            setBag('pr.paywall.from', null)
+            go('pr-paywall')
+          }}
+        >
           Перейти в профиль
         </Button>
       </Footer>

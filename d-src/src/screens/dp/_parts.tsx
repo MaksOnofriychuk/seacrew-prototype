@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import type { FleetValue } from '@/components/app/fleet-picker'
 import { MainTopBar } from '@/components/app/top-bar'
 import { MOBILE_ROUTES } from '@/lib/mobile-routes'
+import { useAppCounts } from '../m/_parts'
 
 // Спільні шматки екранів документів і профілю (етап 5). Лише для теки dp.
 // Свої копії полів, приміток і тривалості — щоб не залежати від тек q і s, які міняють інші агенти.
@@ -335,12 +336,19 @@ export function useBusy() {
 
 /* ---------- шапка вкладки (без «Назад») ---------- */
 
-// Seafolio, дзвіночок «Уведомления» з лічильником, аватар (бокове меню); нижче — великий заголовок і дія праворуч.
-export function TabHeader({ title, go, action }: { title?: string; go: Go; action?: ReactNode }) {
+// Аватар (бокове меню), Seafolio, дзвіночок «Уведомления» з живим лічильником; нижче — великий заголовок і дія праворуч.
+// here — id цього екрана: «Назад» з «Уведомлений» (p10) повертає сюди (як TabHead у p/).
+export function TabHeader({ title, go, action, here }: { title?: string; go: Go; action?: ReactNode; here?: string }) {
   const { initials } = useProfile()
+  const { notifications } = useAppCounts()
+  const { setBag } = useProto()
+  const bell = () => {
+    if (here) setBag('back.p10', here)
+    go(MOBILE_ROUTES.notifications)
+  }
   return (
     <div className="shrink-0 px-6 pt-2">
-      <MainTopBar onAvatar={() => go('p04')} onBell={() => go(MOBILE_ROUTES.notifications)} avatar={initials} />
+      <MainTopBar onAvatar={() => go('p04')} onBell={bell} avatar={initials} notifications={notifications} />
       {title && (
         <div className="mt-3 flex items-center justify-between gap-3">
           <h1 className="text-[32px] leading-tight font-semibold tracking-tight">{title}</h1>

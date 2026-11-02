@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BadgeCheck, Crown, UserPlus, Users } from 'lucide-react'
+import { BadgeCheck, ChevronRight, CreditCard, Crown, UserPlus, Users } from 'lucide-react'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
@@ -91,7 +91,14 @@ export function ROrg({ go }: ScreenProps) {
 
   return (
     <WebShell variant="recruiter" active="r-org" go={go}>
-      <PageHeader title="Организация" />
+      <PageHeader
+        title="Организация"
+        actions={
+          <Button variant="outline" onClick={() => go('r-billing')}>
+            <CreditCard /> Тариф и оплата
+          </Button>
+        }
+      />
       <ViewState loading={{ kind: 'cards' }} empty={{ icon: Users, title: 'Вы не состоите в организации', text: 'Попросите владельца вашей организации снова добавить вас.' }}>
         <div className="mb-8 flex items-center gap-5">
           <span className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-primary text-xl font-semibold text-primary-foreground">{RECRUITER_ORG.short}</span>
@@ -103,6 +110,9 @@ export function ROrg({ go }: ScreenProps) {
                   <BadgeCheck className="size-4" /> Проверена командой Seafolio
                 </span>
               )}
+              <button type="button" onClick={() => go('r-verify')} className="font-medium text-primary hover:underline">
+                Уровни проверки
+              </button>
               <span>
                 {org.city}, {org.country}
               </span>
@@ -157,6 +167,9 @@ export function ROrg({ go }: ScreenProps) {
               </div>
             )}
             <DataTable columns={cols} rows={members} rowKey={(m) => m.id} initialSort={{ key: 'role', dir: 'asc' }} ignoreView />
+            <button type="button" onClick={() => go('r-team')} className="flex items-center gap-1 self-start text-sm font-medium text-primary hover:underline">
+              Вся команда и роли <ChevronRight className="size-4" />
+            </button>
           </div>
         ) : (
           <div className="flex max-w-[720px] flex-col gap-5">

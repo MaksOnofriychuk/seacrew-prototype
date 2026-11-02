@@ -7,7 +7,7 @@ import { ProgressState, ScrollAnchor, STEP_ICON } from './_core-parts'
 
 // s7 — «Проверка». Розділи групами «Основное» / «Дополнительно»; у пропущених — які поля.
 // Тап — перехід у розділ. «Готово» активна, коли заповнені «Аккаунт» і «Документ моряка»;
-// після неї — профіль (q09). Стани панелі: «Загрузка» / «Ошибка» — список розділів (ProgressState).
+// після неї — «Премиум» (pr-paywall), звідти «Пропустить» → профіль (q09). Стани панелі: «Загрузка» / «Ошибка» — список розділів (ProgressState).
 
 export function S7Review({ go }: ScreenProps) {
   const { done, stepState, missingList } = useSteps()

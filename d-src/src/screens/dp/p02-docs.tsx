@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button'
 import type { AddCat } from '@/lib/data-docs-profile'
 import type { ScreenProps } from '../types'
 import { ActionRow, Note, TabHeader, useDP, type Icon } from './_parts'
-import { ADD_START, expiry, GROUPS, useDocs, type AddState, type Doc, type DocGroup } from './_docs'
+import { ADD_START, daysLeft, expiry, GROUPS, remindersLeft, useDocs, type AddState, type Doc, type DocGroup } from './_docs'
+import { useAppCounts } from '../m/_parts'
 
 // p02 — документы. Групи: документ моряка, загранпаспорт і визы (правка №36), дипломи, медичні, CV;
 // «Прививки» з «+» (відповідь 76); «Подфлажные» і «Другие» — лише коли є. Номер прихований, крім останніх цифр; плашка строку — лише
@@ -28,6 +29,7 @@ const ADD_ROW: Partial<Record<DocGroup, { title: string; cat: AddCat }>> = {
 export function P02Docs({ go }: ScreenProps) {
   const { setBag } = useDP()
   const { docs, demoMed } = useDocs()
+  const counts = useAppCounts()
   // Відкрите вікно: тип документа, якщо прийшли з рядка «Добавить визу» тощо.
   const [add, setAdd] = useState<{ cat: AddCat | null } | null>(null)
   const warn = docs.filter((d) => {
@@ -64,7 +66,7 @@ export function P02Docs({ go }: ScreenProps) {
   return (
     <div className="relative flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto pb-6">
-        <TabHeader title="Документы" go={go} action={plus} />
+        <TabHeader title="Документы" go={go} action={plus} here="p02" />
         <ViewState
           loading={{ kind: 'list', rows: 7 }}
           empty={{
@@ -89,7 +91,7 @@ export function P02Docs({ go }: ScreenProps) {
                 <span className="font-medium">
                   {d.title}: {expiry(d.exp)?.text.toLowerCase()}.
                 </span>{' '}
-                Напомним ещё раз за <span className="font-mono">7</span> дней до конца срока.
+                <Reminders n={daysLeft(d.exp ?? '') ?? 0} />
               </Note>
             ))}
             <ul className="mt-5 overflow-hidden rounded-xl border border-border bg-surface">
@@ -124,7 +126,7 @@ export function P02Docs({ go }: ScreenProps) {
           </div>
         </ViewState>
       </div>
-      <TabBar active="docs" go={go} />
+      <TabBar active="docs" go={go} counts={{ msg: counts.messages }} />
       <BottomSheet open={!!add} onClose={() => setAdd(null)} title="Добавить документ" description="Сфотографируйте или загрузите страницу с фото и данными.">
         <ActionRow icon={Camera} title="Сфотографировать" onClick={picked} />
         <ActionRow icon={Image} title="Выбрать из галереи" onClick={picked} />
@@ -183,5 +185,23 @@ function AddRow({ icon: I, title, sub, onClick }: { icon: Icon; title: string; s
         <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
       </button>
     </li>
+  )
+}
+
+// «Напомним ещё раз за 90 и 30 дней» — лише ті нагадування (180/90/30), що ще попереду.
+function Reminders({ n }: { n: number }) {
+  const left = remindersLeft(n)
+  if (!left.length) return <>Продлите документ, чтобы не пропустить рейс.</>
+  return (
+    <>
+      Напомним ещё раз за{' '}
+      {left.map((d, i) => (
+        <span key={d}>
+          {i > 0 && ' и '}
+          <span className="font-mono">{d}</span>
+        </span>
+      ))}{' '}
+      дней до конца срока.
+    </>
   )
 }

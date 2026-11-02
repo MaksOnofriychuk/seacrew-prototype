@@ -14,7 +14,7 @@ import { useBilling } from './_state'
 
 // r-billing — «Тариф и оплата» (відп. 160, 161 — без відповіді замовника: три моделі оплати як ПРИКЛАД:
 // підписка, за вакансію, доступ до бази). Сильний елемент — поточний тариф з використанням лімітів.
-// Неуспішний платіж зверху веде до оплати; «Счета» — r-billing-history. Пункт навігації — «Организация».
+// Неуспішний платіж зверху веде до оплати; «Счета» — r-billing-history. Пункт навігації — «Тариф и оплата».
 export function RBilling({ go }: ScreenProps) {
   const b = useBilling()
   const [switchTo, setSwitchTo] = useState<Plan | null>(null)
@@ -26,9 +26,8 @@ export function RBilling({ go }: ScreenProps) {
   const periodEnd = '2026-11-13'
 
   return (
-    <WebShell variant="recruiter" active="r-org" go={go}>
+    <WebShell variant="recruiter" active="r-billing" go={go}>
       <PageHeader
-        back={{ label: 'Организация', onClick: () => go('r-org') }}
         title={
           <span className="flex items-center gap-3">
             Тариф и оплата <ExampleMark />

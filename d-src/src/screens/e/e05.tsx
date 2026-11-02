@@ -6,7 +6,7 @@ import { ErrorLayout, useSupport } from './_error-layout'
 // e05 — документ у бан-листі (qError('e05') у C). Тон нейтральний, причину не називаємо:
 // тихий сірий знак замість кольору помилки.
 export function E05Banned({ go }: ScreenProps) {
-  const support = useSupport(go)
+  const support = useSupport(go, 'e05')
   return (
     <ErrorLayout
       low

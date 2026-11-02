@@ -14,7 +14,7 @@ export function E04RateLimit({ go }: ScreenProps) {
   const { bag, setBag } = useProto()
   const until = bag<number | null>('e04.until', null)
   const [now, setNow] = useState(() => Date.now())
-  const support = useSupport(go)
+  const support = useSupport(go, 'e04')
 
   useEffect(() => {
     if (until === null) setBag('e04.until', Date.now() + LIMIT_SEC * 1000)

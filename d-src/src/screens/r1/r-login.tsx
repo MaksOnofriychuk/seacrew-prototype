@@ -26,7 +26,7 @@ export function RLogin({ go }: ScreenProps) {
   }
 
   return (
-    <AuthLayout aside={<Pitch />}>
+    <AuthLayout aside={<Pitch />} go={go}>
       <form onSubmit={submit} noValidate className="flex flex-col gap-6">
         <div className="flex flex-col gap-1.5">
           <h1 className="text-[28px] leading-tight font-semibold tracking-tight">Вход</h1>
