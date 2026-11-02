@@ -6,11 +6,15 @@ import { JOBS, type Job } from './data'
 
 // Ще дві вакансії до спільних JOBS: оплата за день і контракт у тижнях — щоб фільтри й сортування було на чому показати.
 const MORE_JOBS: Job[] = [
-  { t: '2nd Engineer', sal: '$6 800 / мес', ship: 'Bulk Carrier', board: '10.01.2027', dur: '6 мес', co: 'Harbor Crew Agency', lg: 'HC', ago: '3 д назад', tags: [],
+  { t: '3rd Engineer', sal: '$4 800 / мес', ship: 'Car Carrier', board: '15.01.2027', dur: '5 ±1 мес', co: 'Fjord Line Crewing', lg: 'FL', ago: '3 д назад', tags: [],
+    vessel: [['Судно', 'MV Northern Lane'], ['Флаг', 'Norway'], ['Автомобилей', '6 500'], ['Построено', '2019']],
+    req: [['Английский — хороший (B1+)', true], ['Диплом 3rd Engineer (III/1)', true], ['Действующий медосмотр', true]],
+    desc: 'Автовоз на линии Северная Европа — Средиземное море. Смена экипажа в Бремерхафене.' },
+  { t: '2nd Engineer', sal: '$6 800 / мес', ship: 'Bulk Carrier', board: '10.01.2027', dur: '6 мес', co: 'Harbor Crew Agency', lg: 'HC', ago: '4 д назад', tags: [],
     vessel: [['Судно', 'MV Grey Heron'], ['Флаг', 'Cyprus'], ['DWT', '58 000'], ['Построено', '2012']],
     req: [['Английский — хороший (B1+)', true], ['Диплом 2nd Engineer (III/2)', false], ['Опыт на Bulk Carrier от 12 мес', false]],
     desc: 'Балкер на линии Средиземное море — Западная Африка. Смена экипажа в Пирее.' },
-  { t: '3rd Engineer', sal: '$170 / день', ship: 'PSV', board: '28.12.2026', dur: '4 недели', co: 'North Sea Offshore Crew', lg: 'NO', ago: '4 д назад', tags: [],
+  { t: '3rd Engineer', sal: '$170 / день', ship: 'PSV', board: '28.12.2026', dur: '4 недели', co: 'North Sea Offshore Crew', lg: 'NO', ago: '5 д назад', tags: [],
     vessel: [['Судно', 'PSV Skagen Light'], ['Флаг', 'Norway'], ['Построено', '2016']],
     req: [['Английский — хороший (B1+)', true], ['Диплом 3rd Engineer (III/1)', true], ['BOSIET', false]],
     desc: 'Офшор, ротация 4 через 4 недели. Вертолёт с базы в Абердине.' },
@@ -26,6 +30,7 @@ export const JOB_META: { fleet: string; dep: string; region: string; weeks: numb
   { fleet: 'Merchant', dep: 'Engine', region: 'ОАЭ', weeks: 17 },
   // відповідь 106: закрита вакансія лишається в «Сохранённом» сірою, поки моряк сам не прибере
   { fleet: 'Merchant', dep: 'Engine', region: 'ОАЭ', weeks: 22, closed: true },
+  { fleet: 'Merchant', dep: 'Engine', region: 'Европа', weeks: 22 },
   { fleet: 'Merchant', dep: 'Engine', region: 'Африка', weeks: 26 },
   { fleet: 'Offshore', dep: 'Engine', region: 'Европа', weeks: 4 },
 ]

@@ -181,7 +181,7 @@ function NumField({ label, prefix, value, onChange, placeholder, className }: { 
 
 function Group({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
-    <fieldset className="flex flex-col gap-2">
+    <fieldset className="flex min-w-0 flex-col gap-2">
       <legend className="mb-2 flex items-baseline gap-2 text-sm font-medium">
         {title}
         {hint && <span className="font-normal text-muted-foreground">{hint}</span>}
