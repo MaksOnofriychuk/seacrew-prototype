@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils'
 import { FeedDrawer } from './_feed-drawer'
 import { FeedItem, MyPostItem } from './_feed-item'
 import { Avatar, hashParam, useMe, useMyPosts } from './_feed-parts'
+import { OfflineBanner, useOffline } from './_app-parts'
+import { useAppCounts } from '../m/_parts'
 
 // Стрічка моряка (C: feedScreen(false)) — спільна для p01 і p04 (p04 — та сама стрічка з відкритим меню).
 // Сильний елемент — закріплена новина Seafolio; решта — тихий білий список з роздільниками.
@@ -28,6 +30,8 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
   const { state, set, setBag } = useProto()
   const me = useMe()
   const { mine } = useMyPosts()
+  const counts = useAppCounts()
+  const offline = useOffline()
   const [drawer, setDrawer] = useState(drawerAtStart || hashParam('drawer') === '1')
   const [searching, setSearching] = useState(hashParam('s') === 'search')
   const [query, setQuery] = useState(hashParam('q') ?? '')
@@ -62,6 +66,29 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
     setQuery('')
   }
 
+  // Без мережі (стан «Ошибка» / сценарій «Нет интернета») — збережена стрічка і плашка вгорі (відповідь 21).
+  const posts = (
+  <div className={cn('flex flex-col gap-3 pb-4', searching && words.length ? 'mt-2' : 'mt-4')}>
+    {pinned && <FeedItem p={pinned} onOpen={openPost} onAuthor={openAuthor} />}
+    {(rest.length > 0 || showMine) && (
+      <div className="mx-4 overflow-hidden rounded-xl border border-border bg-surface">
+        {showMine && mine.map((p) => <MyPostItem key={p.id} p={p} />)}
+        {rest.map((p) => (
+          <FeedItem key={p.id} p={p} onOpen={openPost} onAuthor={openAuthor} words={words} flat={searching} />
+        ))}
+      </div>
+    )}
+    {rest.length === 0 && !showMine && searching && (
+      <div className="px-6 pt-6">
+        <p className="text-lg font-semibold">Ничего не нашли</p>
+        <p className="mt-1 text-[15px] text-muted-foreground">
+          {f === 'all' ? 'Попробуйте другое слово.' : 'Попробуйте другое слово или выберите «Все».'}
+        </p>
+      </div>
+    )}
+  </div>
+  )
+
   return (
     <div className="relative flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -90,9 +117,13 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
         ) : (
           <div className="px-6 pt-2">
             <MainTopBar
-              onBell={() => go(MOBILE_ROUTES.notifications)}
+              onBell={() => {
+                setBag('back.p10', 'p01')
+                go(MOBILE_ROUTES.notifications)
+              }}
               onAvatar={() => setDrawer(true)}
               avatar={me.initials}
+              notifications={counts.notifications}
               extra={
                 <TopBarButton label="Поиск по ленте" onClick={() => setSearching(true)}>
                   <Search className="size-5" />
@@ -104,6 +135,7 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
         )}
 
         <div className={cn('flex flex-col gap-4 px-6', searching ? 'pt-3' : 'pt-4')}>
+          {offline && <OfflineBanner />}
           {!searching && (
             <button
               type="button"
@@ -140,7 +172,8 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
 
         <ViewState
           loading={{ kind: 'cards', rows: 3, className: 'px-4' }}
-          empty={{ icon: Newspaper, title: 'В ленте пока тихо', text: 'Напишите первым — о рейсе, компании или порте.',
+          error={posts}
+          empty={{ icon: Newspaper, title: 'В ленте пока тихо', text: 'Напишите первым — о контракте, компании или порте.',
             action: (
               <Button variant="outline" className="h-11 text-[15px] text-primary" onClick={() => go('p06')}>
                 Написать публикацию
@@ -148,28 +181,10 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
             ),
           }}
         >
-        <div className={cn('flex flex-col gap-3 pb-4', searching && words.length ? 'mt-2' : 'mt-4')}>
-          {pinned && <FeedItem p={pinned} onOpen={openPost} onAuthor={openAuthor} />}
-          {(rest.length > 0 || showMine) && (
-            <div className="mx-4 overflow-hidden rounded-xl border border-border bg-surface">
-              {showMine && mine.map((p) => <MyPostItem key={p.id} p={p} />)}
-              {rest.map((p) => (
-                <FeedItem key={p.id} p={p} onOpen={openPost} onAuthor={openAuthor} words={words} flat={searching} />
-              ))}
-            </div>
-          )}
-          {rest.length === 0 && !showMine && searching && (
-            <div className="px-6 pt-6">
-              <p className="text-lg font-semibold">Ничего не нашли</p>
-              <p className="mt-1 text-[15px] text-muted-foreground">
-                {f === 'all' ? 'Попробуйте другое слово.' : 'Попробуйте другое слово или выберите «Все».'}
-              </p>
-            </div>
-          )}
-        </div>
+        {posts}
         </ViewState>
       </div>
-      <TabBar active="feed" onTab={(t) => (t === 'feed' ? (searching ? closeSearch() : undefined) : go(TAB_TO[t]))} />
+      <TabBar active="feed" counts={{ msg: counts.messages }} onTab={(t) => (t === 'feed' ? (searching ? closeSearch() : undefined) : go(TAB_TO[t]))} />
       <FeedDrawer open={drawer} onClose={closeDrawer} go={go} />
     </div>
   )

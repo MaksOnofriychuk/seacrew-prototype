@@ -1,12 +1,14 @@
 import type { ComponentType, ReactNode } from 'react'
-import { BadgeCheck, Bookmark, Check } from 'lucide-react'
+import { BadgeCheck, Bookmark, Check, WifiOff } from 'lucide-react'
 import { MainTopBar } from '@/components/app/top-bar'
 import { MOBILE_ROUTES } from '@/lib/mobile-routes'
 import { TAB_SCREENS, type Tab } from '@/components/app/tab-bar'
 import { JOBS, type Job } from '@/lib/data'
 import { useProto } from '@/lib/proto-state'
+import { SAVED_JOBS_DEFAULT } from '@/lib/data-feed-jobs'
 import { cn } from '@/lib/utils'
 import { useMe } from './_feed-parts'
+import { useAppCounts } from '../m/_parts'
 import { Dateish, JobTags } from '../g02-guest-jobs'
 
 // Спільні шматки екранів застосунку вкладки D (вакансії, документи, збережене). Лише для теки p.
@@ -23,12 +25,19 @@ export function useApp() {
 }
 
 // Шапка вкладки без «Назад»: Seafolio, дзвіночок, кнопка меню, великий заголовок і (необов'язково) дія праворуч від нього.
-export function TabHead({ title, onMenu, action, go }: { title: string; onMenu: () => void; action?: ReactNode; go?: (id: string) => void }) {
+// here — id цього екрана: «Назад» з «Уведомлений» (p10) повертає сюди.
+export function TabHead({ title, onMenu, action, go, here }: { title: string; onMenu: () => void; action?: ReactNode; go?: (id: string) => void; here?: string }) {
   // аватар з ініціалами — як у шапці стрічки (p01)
   const me = useMe()
+  const { notifications } = useAppCounts()
+  const { setBag } = useProto()
+  const bell = () => {
+    if (here) setBag('back.p10', here)
+    go?.(MOBILE_ROUTES.notifications)
+  }
   return (
     <div className="shrink-0 px-6 pt-2">
-      <MainTopBar onAvatar={onMenu} onBell={() => go?.(MOBILE_ROUTES.notifications)} avatar={me.initials} />
+      <MainTopBar onAvatar={onMenu} onBell={bell} avatar={me.initials} notifications={notifications} />
       <div className="mt-3 flex items-center justify-between gap-3">
         <h1 className="text-[32px] leading-tight font-semibold tracking-tight">{title}</h1>
         {action}
@@ -41,7 +50,7 @@ export function TabHead({ title, onMenu, action, go }: { title: string; onMenu: 
 
 export function useSavedJobs() {
   const { bag, setBag, showToast } = useApp()
-  const saved = bag<number[]>('saved.jobs', [0, 3])
+  const saved = bag<number[]>('saved.jobs', SAVED_JOBS_DEFAULT)
   const isSaved = (k: number) => saved.includes(k)
   const toggle = (k: number) => {
     const on = !isSaved(k)
@@ -150,3 +159,20 @@ export { MonoNums } from '@/components/app/mono-nums'
 
 // Вікно знизу — тепер спільне: components/app/bottom-sheet.
 export { BottomSheet as AppSheet } from '@/components/app/bottom-sheet'
+
+/* ---------- офлайн (відповідь 21) ---------- */
+
+/** Без мережі: стан «Ошибка» з панелі або сценарій «Нет интернета» — показуємо збережене і тиху плашку. */
+export function useOffline() {
+  const { state } = useProto()
+  return state.view === 'error' || state.scenario === 'offline'
+}
+
+export function OfflineBanner({ className }: { className?: string }) {
+  return (
+    <p role="status" className={cn('flex items-center gap-2 rounded-md bg-card px-3 py-2.5 text-sm text-muted-foreground', className)}>
+      <WifiOff className="size-4 shrink-0 text-warning" />
+      Нет сети — показываем сохранённое
+    </p>
+  )
+}

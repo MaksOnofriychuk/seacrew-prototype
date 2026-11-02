@@ -1,5 +1,6 @@
 import { Heart, MessageCircle, Newspaper, ShieldCheck } from 'lucide-react'
 import { NavBar } from '@/components/app/chrome'
+import { MonoNums } from '@/components/app/mono-nums'
 import { EmptyState, ViewState } from '@/components/app/states'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../registry'
@@ -46,7 +47,7 @@ export function P16Author({ go }: ScreenProps) {
               {facts.map(([l, v, mono]) => (
                 <div key={l} className="flex items-baseline justify-between gap-4 border-t border-border py-3.5 first:border-t-0">
                   <dt className="text-[15px] text-muted-foreground">{l}</dt>
-                  <dd className={mono ? 'text-right font-mono text-[15px] font-medium' : 'text-right text-[15px] font-medium'}>{v}</dd>
+                  <dd className="text-right text-[15px] font-medium">{mono ? <MonoNums text={v} /> : v}</dd>
                 </div>
               ))}
             </dl>

@@ -165,7 +165,7 @@ export function Segmented<T extends string>({ label, value, options, onChange, m
 
 function NumField({ label, prefix, value, onChange, placeholder, className }: { label: string; prefix: string; value: string; onChange: (v: string) => void; placeholder: string; className?: string }) {
   return (
-    <label className={cn('flex h-11 items-center gap-2 rounded-md border border-input bg-surface px-3 focus-within:border-primary', className)}>
+    <label className={cn('flex h-11 min-w-0 items-center gap-2 rounded-md border border-input bg-surface px-3 focus-within:border-primary', className)}>
       <span className="text-[15px] text-muted-foreground">{prefix}</span>
       <input
         inputMode="numeric"
@@ -227,7 +227,7 @@ export function FiltersSheet({ open, f, onChange, onClose }: { open: boolean; f:
         <Group title="Зарплата">
           <div className="flex gap-2">
             <NumField label="Зарплата от" prefix="от" value={f.salary} onChange={(salary) => set({ salary })} placeholder="любая" className="flex-1" />
-            <Segmented<Currency> label="Валюта" value={f.cur} onChange={(cur) => set({ cur })} options={[['$', '$'], ['€', '€'], ['£', '£']]} mono className="w-[132px]" />
+            <Segmented<Currency> label="Валюта" value={f.cur} onChange={(cur) => set({ cur })} options={[['$', '$'], ['€', '€'], ['£', '£']]} mono className="w-[132px] shrink-0" />
           </div>
           <Segmented
             label="Период оплаты"

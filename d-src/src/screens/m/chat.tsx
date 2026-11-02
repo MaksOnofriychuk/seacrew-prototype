@@ -3,7 +3,7 @@ import { Camera, Check, CheckCheck, ChevronLeft, ChevronRight, FileText, Link2, 
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
-import { JOBS } from '@/lib/data'
+import { FJ_JOBS as JOBS } from '@/lib/data-feed-jobs'
 import type { Chat, ChatMsg } from '@/lib/data-messages'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
@@ -18,7 +18,7 @@ import { ChatAvatar, EVENT_TEXT, useChats, useSelectedChat } from './_parts'
 // Чат після відгуку, поки рекрутер не відповів: заглушка «Вы откликнулись на вакансию»; першим пише рекрутер (відп. 112).
 
 export function MChat({ go, fixed }: ScreenProps & { fixed?: string }) {
-  const { set, showToast } = useProto()
+  const { set, setBag, showToast } = useProto()
   const { get, markRead, send } = useChats()
   const id = useSelectedChat(fixed)
   const chat = get(id) ?? get('bw')!
@@ -39,6 +39,8 @@ export function MChat({ go, fixed }: ScreenProps & { fixed?: string }) {
 
   const openJob = () => {
     set({ job: chat.job })
+    setBag('job.back', 'm-chat')
+    setBag('chat.sel', chat.id)
     go('p08')
   }
 

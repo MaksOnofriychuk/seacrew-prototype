@@ -1,7 +1,7 @@
 import { useEffect, useState, type ComponentType, type ReactNode } from 'react'
 import { ChevronRight } from 'lucide-react'
-import { JOBS } from '@/lib/data'
-import { CHATS, OFFER, OFFER_CHAT, appliedChat, type Chat, type ChatMsg } from '@/lib/data-messages'
+import { FJ_JOBS as JOBS } from '@/lib/data-feed-jobs'
+import { CHATS, NOTIFS, OFFER, OFFER_CHAT, appliedChat, type Chat, type ChatMsg } from '@/lib/data-messages'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 
@@ -33,8 +33,11 @@ export function useDark() {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
   useEffect(() => {
     const el = document.documentElement
-    const obs = new MutationObserver(() => setDark(el.classList.contains('dark')))
+    const sync = () => setDark(el.classList.contains('dark'))
+    const obs = new MutationObserver(sync)
     obs.observe(el, { attributes: true, attributeFilter: ['class'] })
+    // клас міг з'явитися між першим рендером і підпискою (відкриття за посиланням з t=dark)
+    sync()
     return () => obs.disconnect()
   }, [])
   return dark
@@ -79,8 +82,23 @@ export function useChats() {
   const markRead = (id: string) => !read[id] && setBag('chat.read', { ...read, [id]: true })
   const send = (id: string, msg: DistributiveOmit<Exclude<ChatMsg, { kind: 'day' }>, 'time'>) => setBag('chat.sent', { ...sent, [id]: [...(sent[id] ?? []), { ...msg, time: clock() } as ChatMsg] })
   const unreadTotal = list.reduce((s, c) => s + c.unread, 0)
+  /** чат про вакансію k (є лише після відгуку чи підтвердженої пропозиції) */
+  const forJob = (k: number) => list.find((c) => c.job === k)
 
-  return { list, get, markRead, send, unreadTotal }
+  return { list, get, markRead, send, unreadTotal, forJob }
+}
+
+/** Непрочитані сповіщення (обидві вкладки p10) — те саме число, що на дзвіночку. */
+export function useUnreadNotifs() {
+  const { bag } = useProto()
+  const read = bag<Record<string, boolean>>('notif.read', {})
+  return NOTIFS.filter((n) => n.unread && !read[n.id]).length
+}
+
+/** Лічильники застосунку (правка №16): дзвіночок і вкладка «Сообщения» — живі, з тих самих даних, що p10 і p15. */
+export function useAppCounts() {
+  const { unreadTotal } = useChats()
+  return { messages: unreadTotal, notifications: useUnreadNotifs() }
 }
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never
