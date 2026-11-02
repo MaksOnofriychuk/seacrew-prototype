@@ -1,14 +1,17 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { ArrowUpDown, BadgeCheck, BellRing, Check, Lock, MessageSquare, Plus, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
+import { ArrowUpDown, BadgeCheck, BellRing, Briefcase, Check, ChevronRight, Lock, MessageSquare, Plus, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
-import { EmptyState, ViewState } from '@/components/app/states'
+import { EmptyState, useView, ViewState } from '@/components/app/states'
 import { TabBar } from '@/components/app/tab-bar'
 import { Button } from '@/components/ui/button'
+import { ApplicationStatusDot } from '@/components/web/status-badge'
 import {
   FILTER_DEFAULT,
   FILTER_EMPTY,
   FJ_JOBS,
   isClosed,
+  JOB_VIEWS,
+  MY_APPLICATIONS_DEFAULT,
   SEARCH_LIMIT,
   SEARCH_LIMIT_PREMIUM,
   SEARCHES_DEFAULT,
@@ -16,9 +19,11 @@ import {
   type SavedSearch,
   type SortId,
 } from '@/lib/data-feed-jobs'
+import type { ApplicationStatus } from '@/lib/data-web'
 import { cn } from '@/lib/utils'
 import { Dateish, JobTags } from '../g02-guest-jobs'
-import { AppSheet, plural, SaveButton, TabHead, useApp, useSavedJobs } from './_app-parts'
+import { AppSheet, OfflineBanner, plural, SaveButton, TabHead, useApp, useOffline, useSavedJobs } from './_app-parts'
+import { useAppCounts, useChats } from '../m/_parts'
 import { filterChips, FiltersSheet, JobCard, jobList, sameFilter, SortSheet, sortLabel } from './_jobs-parts'
 
 type Go = (id: string) => void
@@ -34,10 +39,71 @@ export function useSearches() {
   return { searches, setSearches: (next: SavedSearch[]) => setBag('jobs.searches', next) }
 }
 
+/* ---------- мої відгуки (відповідь 98: Отправлено / Ожидание / Метч / Отклонено — як у рекрутера) ---------- */
+
+export type MyApplication = { job: number; status: ApplicationStatus; date: string }
+
+// Відгуки моряка: ті, що вже були (чати ns і mc), і нові з екрана вакансії (bag job.applied) — «Отправлено».
+export function useMyApplications() {
+  const { bag } = useApp()
+  const applied = bag<number[]>('job.applied', [])
+  const fresh: MyApplication[] = applied
+    .filter((k) => !MY_APPLICATIONS_DEFAULT.some((a) => a.job === k))
+    .reverse()
+    .map((k) => ({ job: k, status: 'sent', date: '02.11.2026' }))
+  const list = [...fresh, ...MY_APPLICATIONS_DEFAULT]
+  return { list, statusOf: (k: number) => list.find((a) => a.job === k)?.status ?? null }
+}
+
+// Вкладки під заголовком «Вакансии»: усі (p05) і мої відгуки (p23).
+export function JobsTabs({ active, go }: { active: 'all' | 'mine'; go: Go }) {
+  const { list } = useMyApplications()
+  // стан «Пусто» на p23 — лічильник відгуків теж порожній
+  const none = useView() === 'empty' && active === 'mine'
+  const tabs: ['all' | 'mine', string, string, number | null][] = [
+    ['all', 'Все вакансии', 'p05', null],
+    ['mine', 'Мои отклики', 'p23', none ? null : list.length],
+  ]
+  return (
+    <div role="tablist" aria-label="Вакансии" className="mx-6 mt-3 flex gap-6 border-b border-border">
+      {tabs.map(([id, label, to, n]) => (
+        <button
+          key={id}
+          type="button"
+          role="tab"
+          aria-selected={active === id}
+          onClick={() => active !== id && go(to)}
+          className={cn(
+            '-mb-px flex items-center gap-1.5 border-b-2 pt-1 pb-2.5 text-[15px] font-medium transition-colors',
+            active === id ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground',
+          )}
+        >
+          {label}
+          {n !== null && <span className={cn('font-mono text-sm', active === id ? 'text-primary' : 'text-muted-foreground')}>{n}</span>}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+export function PicksButton({ go }: { go: Go }) {
+  const { searches } = useSearches()
+  const fresh = searches.reduce((n, s) => n + s.fresh, 0)
+  return (
+    <button type="button" onClick={() => go('p17')} className="relative flex h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 text-sm font-medium">
+      <BellRing className="size-4 text-primary" />
+      Подборки
+      {fresh > 0 && <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full border-2 border-background bg-primary" aria-label="Есть новые вакансии" />}
+    </button>
+  )
+}
+
 export function JobsScreen({ go, filtersOpen = false }: { go: Go; filtersOpen?: boolean }) {
   const { bag, setBag, set, showToast } = useApp()
   const { isSaved, toggle } = useSavedJobs()
   const { searches, setSearches } = useSearches()
+  const counts = useAppCounts()
+  const offline = useOffline()
   const f = bag<JobFilter>('jobs.filter', FILTER_DEFAULT)
   const sort = bag<SortId>('jobs.sort', 'new')
   const [q, setQ] = useState('')
@@ -45,11 +111,13 @@ export function JobsScreen({ go, filtersOpen = false }: { go: Go; filtersOpen?: 
   const [sortOpen, setSortOpen] = useState(false)
   const [limit, setLimit] = useState(false)
 
+  const view = useView()
   const list = jobList(f, sort, q)
+  // у станах «Пусто» і «Загрузка» лічильник не показує вакансії, яких на екрані немає
+  const shown = view === 'empty' ? 0 : list.length
   const chips = filterChips(f)
   const setF = (next: JobFilter) => setBag('jobs.filter', next)
   const savedHere = searches.some((s) => sameFilter(s.f, f))
-  const fresh = searches.reduce((n, s) => n + s.fresh, 0)
 
   const closeSheet = () => {
     setSheet(false)
@@ -62,6 +130,44 @@ export function JobsScreen({ go, filtersOpen = false }: { go: Go; filtersOpen?: 
     showToast('Подборка сохранена. Сообщим о новых вакансиях')
   }
 
+  // Без мережі (стан «Ошибка») — той самий збережений список і плашка вгорі (відповідь 21).
+  const results =
+    list.length ? (
+      <ul className="mx-4 mt-2 mb-4 overflow-hidden rounded-xl border border-border bg-surface">
+        {list.map((k) => (
+          <JobCard
+            key={k}
+            k={k}
+            saved={isSaved(k)}
+            onSave={() => toggle(k)}
+            onOpen={() => {
+              set({ job: k })
+              setBag('job.back', 'p05')
+              go('p08')
+            }}
+          />
+        ))}
+      </ul>
+    ) : (
+      <EmptyState
+        icon={SearchX}
+        title="Ничего не нашли"
+        text={q ? 'Проверьте написание или ищите по должности, типу судна, агентству.' : 'Уберите часть фильтров — вакансии найдутся.'}
+        action={
+          <Button
+            variant="outline"
+            className="h-11 text-[15px] text-primary"
+            onClick={() => {
+              setQ('')
+              if (!q) setF(FILTER_EMPTY)
+            }}
+          >
+            {q ? 'Очистить поиск' : 'Сбросить фильтры'}
+          </Button>
+        }
+      />
+    )
+
   return (
     <div className="relative flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -69,15 +175,12 @@ export function JobsScreen({ go, filtersOpen = false }: { go: Go; filtersOpen?: 
           title="Вакансии"
           onMenu={() => go('p04')}
           go={go}
-          action={
-            <button type="button" onClick={() => go('p17')} className="relative flex h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 text-sm font-medium">
-              <BellRing className="size-4 text-primary" />
-              Подборки
-              {fresh > 0 && <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full border-2 border-background bg-primary" aria-label="Есть новые вакансии" />}
-            </button>
-          }
+          here="p05"
+          action={<PicksButton go={go} />}
         />
+        <JobsTabs active="all" go={go} />
         <div className="flex flex-col gap-3 px-6 pt-4">
+          {offline && <OfflineBanner />}
           <div className="flex gap-2">
             <label className="flex h-12 flex-1 items-center gap-2 rounded-md border border-border bg-surface px-3 text-muted-foreground focus-within:border-primary">
               <Search className="size-5" />
@@ -123,7 +226,13 @@ export function JobsScreen({ go, filtersOpen = false }: { go: Go; filtersOpen?: 
           </div>
           <div className="mt-1 flex items-center justify-between gap-3 text-sm text-muted-foreground">
             <span>
-              <span className="font-mono">{list.length}</span> {plural(list.length, 'вакансия', 'вакансии', 'вакансий')}
+              {view === 'loading' ? (
+                'Загружаем…'
+              ) : (
+                <>
+                  <span className="font-mono">{shown}</span> {plural(shown, 'вакансия', 'вакансии', 'вакансий')}
+                </>
+              )}
             </span>
             <button type="button" onClick={() => setSortOpen(true)} className="-mr-1 flex h-9 items-center gap-1.5 px-1 font-medium text-foreground">
               <ArrowUpDown className="size-4 text-muted-foreground" />
@@ -134,45 +243,12 @@ export function JobsScreen({ go, filtersOpen = false }: { go: Go; filtersOpen?: 
         <ViewState
           loading={{ kind: 'list', rows: 4 }}
           empty={{ icon: SearchX, title: 'Пока нет вакансий', text: 'Новые вакансии появляются каждый день. Сохраните поиск — пришлём уведомление.' }}
+          error={results}
         >
-          {list.length ? (
-            <ul className="mx-4 mt-2 mb-4 overflow-hidden rounded-xl border border-border bg-surface">
-              {list.map((k) => (
-                <JobCard
-                  key={k}
-                  k={k}
-                  saved={isSaved(k)}
-                  onSave={() => toggle(k)}
-                  onOpen={() => {
-                    set({ job: k })
-                    setBag('job.back', 'p05')
-                    go('p08')
-                  }}
-                />
-              ))}
-            </ul>
-          ) : (
-            <EmptyState
-              icon={SearchX}
-              title="Ничего не нашли"
-              text={q ? 'Проверьте написание или ищите по должности, типу судна, агентству.' : 'Уберите часть фильтров — вакансии найдутся.'}
-              action={
-                <Button
-                  variant="outline"
-                  className="h-11 text-[15px] text-primary"
-                  onClick={() => {
-                    setQ('')
-                    if (!q) setF(FILTER_EMPTY)
-                  }}
-                >
-                  {q ? 'Очистить поиск' : 'Сбросить фильтры'}
-                </Button>
-              }
-            />
-          )}
+          {results}
         </ViewState>
       </div>
-      <TabBar active="vac" go={go} />
+      <TabBar active="vac" go={go} counts={{ msg: counts.messages }} />
       <FiltersSheet open={sheet} f={f} onChange={setF} onClose={closeSheet} />
       <SortSheet open={sortOpen} value={sort} onChange={(s) => setBag('jobs.sort', s)} onClose={() => setSortOpen(false)} />
       <AppSheet
@@ -209,14 +285,31 @@ export function JobScreen({ go, applyOpen = false }: { go: Go; applyOpen?: boole
   const closed = isClosed(k)
   const back = bag<string>('job.back', 'p05')
   const applied = bag<number[]>('job.applied', [])
-  const isApplied = applied.includes(k)
+  const { statusOf } = useMyApplications()
+  const status = statusOf(k)
+  const chats = useChats()
+  const jobView = useView()
+  // відповідь 126: підписка на компанію — нові вакансії агентства приходять у «Рабочие»
+  const subs = bag<string[]>('company.subs', [])
+  const subscribed = subs.includes(j.co)
 
+  // відповідь 101: лічильник переглядів вакансії
   const facts: [string, string][] = [
     ['Тип судна', j.ship],
     ['Посадка', j.board],
     ['Контракт', j.dur],
-    ['Агентство', j.co],
+    ['Просмотры', String(JOB_VIEWS[k] ?? 0)],
   ]
+
+  const toggleSub = () => {
+    setBag('company.subs', subscribed ? subs.filter((x) => x !== j.co) : [...subs, j.co])
+    showToast(subscribed ? `Вы отписались от ${j.co}` : `Вы подписались на ${j.co}`)
+  }
+  // чат з рекрутером цієї вакансії: уже є (пропозиція, давній відгук) або з'явиться після відгуку
+  const openChat = () => {
+    setBag('chat.sel', chats.forJob(k)?.id ?? `job-${k}`)
+    go('m-chat')
+  }
 
   const closeSheet = () => {
     setSheet(false)
@@ -225,6 +318,10 @@ export function JobScreen({ go, applyOpen = false }: { go: Go; applyOpen?: boole
   // Відповідь 97 і правка №22: одне торкання + підтвердження → чат з рекрутером із заглушкою «Вы откликнулись на вакансию».
   const send = () => {
     setBag('job.applied', [...applied, k])
+    const existing = chats.forJob(k)
+    // з цим рекрутером чат уже є — заглушка «Вы откликнулись на вакансию» додається в нього ж
+    if (existing) chats.send(existing.id, { kind: 'event', event: 'applied' })
+    setBag('chat.sel', existing?.id ?? `job-${k}`)
     setSheet(false)
     showToast('Отклик отправлен')
     go('m-chat')
@@ -238,34 +335,52 @@ export function JobScreen({ go, applyOpen = false }: { go: Go; applyOpen?: boole
     <div className="relative flex h-full flex-col">
       <NavBar title="Вакансия" onBack={() => go(back)} />
       <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
-        {closed ? (
-          <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-            <Lock className="size-4" /> Вакансия закрыта
-          </p>
-        ) : (
-          (j.tags.length > 0 || isApplied) && (
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+        <ViewState
+          loading={{ kind: 'cards', rows: 3, className: 'px-0' }}
+          error={{ title: 'Не удалось загрузить вакансию', className: 'px-0' }}
+          empty={{ icon: SearchX, title: 'Вакансия удалена', className: 'px-0', text: 'Агентство сняло её с публикации. Посмотрите другие.', action: (
+            <Button variant="outline" className="h-11 text-[15px] text-primary" onClick={() => go('p05')}>
+              Смотреть вакансии
+            </Button>
+          ) }}
+        >
+        <>
+        {(closed || j.tags.length > 0 || status) && (
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+            {closed ? (
+              <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                <Lock className="size-4" /> Вакансия закрыта
+              </span>
+            ) : (
               <JobTags tags={j.tags} />
-              {isApplied && (
-                <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Check className="size-4 text-success" strokeWidth={2.5} />
-                  Вы откликнулись
-                </span>
-              )}
-            </div>
-          )
+            )}
+            {status && (
+              <button type="button" onClick={() => go('p23')} className="flex items-center gap-2 text-sm text-muted-foreground">
+                Ваш отклик: <ApplicationStatusDot s={status} />
+              </button>
+            )}
+          </div>
         )}
         <h1 className={cn('mt-3 text-[32px] leading-tight font-semibold tracking-tight', closed && 'text-muted-foreground')}>{j.t}</h1>
         <p className={cn('mt-1 text-[22px] font-semibold', closed ? 'text-muted-foreground' : 'text-primary')}>{j.sal}</p>
 
-        <div className="mt-4 flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-md bg-card font-mono text-sm font-medium text-primary">{j.lg}</span>
-          <span className="flex flex-col">
-            <span className="text-[15px] font-semibold">{j.co}</span>
+        <div className="mt-4 flex items-start gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-card font-mono text-sm font-medium text-primary">{j.lg}</span>
+          <span className="flex min-w-0 flex-1 flex-col">
+            <span className="truncate text-[15px] font-semibold">{j.co}</span>
             <span className="flex items-center gap-1 text-sm text-muted-foreground">
-              <BadgeCheck className="size-4 text-success" />
+              <BadgeCheck className="size-4 shrink-0 text-success" />
               Агентство проверено, {j.ago}
             </span>
+            <button
+              type="button"
+              aria-pressed={subscribed}
+              onClick={toggleSub}
+              className={cn('mt-1 flex h-8 items-center gap-1 self-start text-sm font-medium', subscribed ? 'text-muted-foreground' : 'text-primary')}
+            >
+              {subscribed ? <Check className="size-4 text-success" strokeWidth={2.5} /> : <Plus className="size-4" />}
+              {subscribed ? 'Вы подписаны на компанию' : 'Подписаться на компанию'}
+            </button>
           </span>
         </div>
 
@@ -320,15 +435,18 @@ export function JobScreen({ go, applyOpen = false }: { go: Go; applyOpen?: boole
             )}
           </div>
         </Section>
+        </>
+        </ViewState>
       </div>
+      {jobView === 'normal' && (
       <Footer className="flex-row border-t border-border bg-surface">
         <SaveButton on={isSaved(k)} onClick={() => toggle(k)} className="size-12 border border-border" />
         {closed ? (
           <Button size="lg" variant="outline" className="flex-1 text-muted-foreground" disabled>
             Отклик закрыт
           </Button>
-        ) : isApplied ? (
-          <Button size="lg" variant="outline" className="flex-1 text-primary" onClick={() => go('m-chat')}>
+        ) : status ? (
+          <Button size="lg" variant="outline" className="flex-1 text-primary" onClick={openChat}>
             <MessageSquare className="size-5" />
             Открыть чат с рекрутером
           </Button>
@@ -338,6 +456,7 @@ export function JobScreen({ go, applyOpen = false }: { go: Go; applyOpen?: boole
           </Button>
         )}
       </Footer>
+      )}
       <ApplySheet open={sheet} k={k} onClose={closeSheet} onSend={send} />
     </div>
   )
@@ -383,5 +502,72 @@ function ApplySheet({ open, k, onClose, onSend }: { open: boolean; k: number; on
         </span>
       </div>
     </AppSheet>
+  )
+}
+
+/* ================= p23 — мої відгуки (відповідь 98) ================= */
+
+// Та сама вкладка «Вакансии», друга вкладка зверху. Статуси — як бачить рекрутер (APPLICATIONS у data-web):
+// Отправлено → Ожидание → Метч / Отклонено. Тап — вакансія; там же «Открыть чат с рекрутером».
+export function MyApplicationsScreen({ go }: { go: Go }) {
+  const { set, setBag } = useApp()
+  const { list } = useMyApplications()
+  const counts = useAppCounts()
+
+  const open = (k: number) => {
+    set({ job: k })
+    setBag('job.back', 'p23')
+    go('p08')
+  }
+
+  return (
+    <div className="relative flex h-full flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto pb-6">
+        <TabHead title="Вакансии" onMenu={() => go('p04')} go={go} here="p23" action={<PicksButton go={go} />} />
+        <JobsTabs active="mine" go={go} />
+        <ViewState
+          loading={{ kind: 'list', rows: 3 }}
+          empty={{
+            icon: Briefcase,
+            title: 'Откликов пока нет',
+            text: 'Откликнитесь на вакансию — здесь будет видно, что с откликом, а ответ рекрутера придёт в «Сообщения».',
+            action: (
+              <Button variant="outline" className="h-11 text-[15px] text-primary" onClick={() => go('p05')}>
+                Смотреть вакансии
+              </Button>
+            ),
+          }}
+        >
+          <ul className="mx-4 mt-4 overflow-hidden rounded-xl border border-border bg-surface">
+            {list.map((a) => {
+              const j = FJ_JOBS[a.job]
+              const dim = a.status === 'rejected'
+              return (
+                <li key={a.job} className="border-t border-border first:border-t-0">
+                  <button type="button" onClick={() => open(a.job)} className="flex w-full items-center gap-3 px-5 py-4 text-left active:bg-muted">
+                    <span className="flex min-w-0 flex-1 flex-col gap-1">
+                      <span className={cn('text-[17px] font-semibold', dim && 'text-muted-foreground')}>{j.t}</span>
+                      <span className={cn('text-[15px] font-semibold', dim ? 'text-muted-foreground' : 'text-primary')}>{j.sal}</span>
+                      <span className="truncate text-sm text-muted-foreground">
+                        {j.co}, {j.ship}
+                      </span>
+                      <span className="mt-1 flex items-center justify-between gap-3">
+                        <ApplicationStatusDot s={a.status} />
+                        <span className="text-sm text-muted-foreground">
+                          отклик <span className="font-mono">{a.date}</span>
+                        </span>
+                      </span>
+                    </span>
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+          <p className="mt-3 px-6 text-sm text-muted-foreground">Статус меняет рекрутер. Ответ придёт в «Сообщения».</p>
+        </ViewState>
+      </div>
+      <TabBar active="vac" go={go} counts={{ msg: counts.messages }} />
+    </div>
   )
 }

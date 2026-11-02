@@ -1,9 +1,9 @@
 import { useState, type ComponentType } from 'react'
 import { Bell, Briefcase, Check, Clock, Heart, Mail, MessageCircle, MessageSquare, Settings, UserRound } from 'lucide-react'
 import { NavBar } from '@/components/app/chrome'
-import { ViewState } from '@/components/app/states'
+import { useView, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
-import { JOBS } from '@/lib/data'
+import { FJ_JOBS as JOBS } from '@/lib/data-feed-jobs'
 import { NOTIFS, OFFER, OFFER_CHAT, type AppNotif, type NotifKind } from '@/lib/data-messages'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
@@ -36,7 +36,9 @@ export function P10Notifications({ go }: ScreenProps) {
   const accepted = offers.includes(OFFER.id)
 
   const isNew = (n: AppNotif) => n.unread && !read[n.id]
-  const count = (t: TabId) => NOTIFS.filter((n) => n.tab === t && isNew(n)).length
+  const view = useView()
+  // «Пусто» з панелі — лічильники вкладок теж порожні
+  const count = (t: TabId) => (view === 'empty' ? 0 : NOTIFS.filter((n) => n.tab === t && isNew(n)).length)
   const items = NOTIFS.filter((n) => n.tab === tab && n.kind !== 'offer')
   const fresh = items.filter(isNew)
   const old = items.filter((n) => !isNew(n))
@@ -60,6 +62,7 @@ export function P10Notifications({ go }: ScreenProps) {
   }
   const openOfferJob = () => {
     set({ job: OFFER.job })
+    setBag('job.back', 'p10')
     go('p08')
   }
 
@@ -70,7 +73,7 @@ export function P10Notifications({ go }: ScreenProps) {
     <div className="flex h-full flex-col">
       <NavBar
         title="Уведомления"
-        onBack={() => go('p01')}
+        onBack={() => go(bag<string>('back.p10', 'p01'))}
         right={
           <button
             type="button"

@@ -161,7 +161,7 @@ export type AppNotif = {
 export const NOTIFS: AppNotif[] = [
   { id: 'offer-am', tab: 'work', kind: 'offer', text: '**Ахмед Карими**, Atlas Marine Services, предлагает работу', time: '15 мин', unread: true },
   { id: 'reply-ns', tab: 'work', kind: 'reply', text: '**Nordline Ship Management** ответили на ваш отклик', time: 'вчера', unread: true, to: 'm-chat', chat: 'ns' },
-  { id: 'jobs', tab: 'work', kind: 'jobs', text: '3 новые вакансии по подборке «3rd Engineer, танкеры»', time: '5 ч', unread: false, to: 'p05' },
+  { id: 'jobs', tab: 'work', kind: 'jobs', text: '2 новые вакансии по подборке «3rd Engineer, от $4 000 / мес»', time: '5 ч', unread: false, to: 'p05' },
   { id: 'med', tab: 'work', kind: 'doc', text: '**Медосмотр истекает через 20 дней.** Обновите документ, чтобы не терять предложения.', time: 'вчера', unread: false, to: 'p02' },
   { id: 'conf-bw', tab: 'work', kind: 'confirmed', text: 'Вы подтвердили интерес к предложению **BlueWave Crewing**. Чат — в «Сообщениях»', time: '31.10', unread: false, to: 'm-chat', chat: 'bw' },
   { id: 'cmt', tab: 'other', kind: 'comment', text: '**Марко Петров** ответил на ваш комментарий', time: '2 ч', unread: true, to: 'p07', post: 'u1' },
@@ -183,7 +183,7 @@ export const NOTIF_TYPES: { id: string; tab: 'work' | 'other'; title: string; su
   { id: 'offers', tab: 'work', title: 'Предложения от рекрутеров', sub: 'Рекрутер нашёл вас в базе' },
   { id: 'messages', tab: 'work', title: 'Сообщения от рекрутеров' },
   { id: 'applications', tab: 'work', title: 'Ответы на отклики' },
-  { id: 'docs', tab: 'work', title: 'Сроки документов', sub: 'За 60 и 30 дней до окончания' },
+  { id: 'docs', tab: 'work', title: 'Сроки документов', sub: 'За 180, 90 и 30 дней до окончания' },
   { id: 'jobs', tab: 'work', title: 'Новые вакансии по подборкам' },
   { id: 'social', tab: 'other', title: 'Реакции и комментарии', sub: 'К вашим публикациям и комментариям' },
   { id: 'birthday', tab: 'other', title: 'Поздравления с днём рождения' },

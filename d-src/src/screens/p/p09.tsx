@@ -3,11 +3,12 @@ import { Bookmark, Newspaper } from 'lucide-react'
 import { NavBar } from '@/components/app/chrome'
 import { Button } from '@/components/ui/button'
 import { POSTS, type Post } from '@/lib/data'
+import { SAVED_JOBS_DEFAULT } from '@/lib/data-feed-jobs'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { useToast } from '../q/_parts'
 import { useHashParams } from '../s/_core-parts'
-import { ViewState } from '@/components/app/states'
+import { useView, ViewState } from '@/components/app/states'
 import { Empty, SaveButton, useApp } from './_app-parts'
 import { JobCard } from './_jobs-parts'
 
@@ -23,7 +24,7 @@ export function P09Saved({ go }: ScreenProps) {
   const params = useHashParams()
   const { toast, toastNode } = useToast()
   const tab = bag<TabId>('saved.ui.tab', params.get('tab') === 'posts' ? 'posts' : 'jobs')
-  const jobs = bag<number[]>('saved.jobs', [0, 3])
+  const jobs = bag<number[]>('saved.jobs', SAVED_JOBS_DEFAULT)
   const postIds = bag<string[]>('saved.posts', [])
   const posts = postIds.map((id) => POSTS.find((p) => p.id === id)).filter((p): p is UserOrNews => !!p && p.kind !== 'ad')
 
@@ -41,9 +42,10 @@ export function P09Saved({ go }: ScreenProps) {
     toast('Убрано из сохранённых', () => setBag('saved.posts', postIds))
   }
 
+  const none = useView() === 'empty'
   const tabs: [TabId, string, number][] = [
-    ['jobs', 'Вакансии', jobs.length],
-    ['posts', 'Публикации', posts.length],
+    ['jobs', 'Вакансии', none ? 0 : jobs.length],
+    ['posts', 'Публикации', none ? 0 : posts.length],
   ]
 
   return (

@@ -1,6 +1,7 @@
 // Дані стрічки й вакансій для етапу 4 (вигадані, як у lib/data.ts). Реальних даних немає.
 import { FLEET_EMPTY, type FleetValue } from '@/components/app/fleet-picker'
 import { JOBS, type Job } from './data'
+import type { ApplicationStatus } from './data-web'
 
 /* ---------- вакансії ---------- */
 
@@ -28,14 +29,31 @@ export const JOB_META: { fleet: string; dep: string; region: string; weeks: numb
   { fleet: 'Merchant', dep: 'Engine', region: 'Европа', weeks: 17 },
   { fleet: 'Merchant', dep: 'Engine', region: 'Европа', weeks: 26 },
   { fleet: 'Merchant', dep: 'Engine', region: 'ОАЭ', weeks: 17 },
-  // відповідь 106: закрита вакансія лишається в «Сохранённом» сірою, поки моряк сам не прибере
-  { fleet: 'Merchant', dep: 'Engine', region: 'ОАЭ', weeks: 22, closed: true },
+  // Atlas (3) відкрита: на неї рекрутер надсилає пропозицію в «Уведомлениях» (p10).
+  { fleet: 'Merchant', dep: 'Engine', region: 'ОАЭ', weeks: 22 },
   { fleet: 'Merchant', dep: 'Engine', region: 'Европа', weeks: 22 },
-  { fleet: 'Merchant', dep: 'Engine', region: 'Африка', weeks: 26 },
+  // відповідь 106: закрита вакансія лишається в «Сохранённом» сірою, поки моряк сам не прибере
+  { fleet: 'Merchant', dep: 'Engine', region: 'Африка', weeks: 26, closed: true },
   { fleet: 'Offshore', dep: 'Engine', region: 'Европа', weeks: 4 },
 ]
 
 export const isClosed = (k: number) => !!JOB_META[k]?.closed
+
+/** «Сохранённое» за замовчуванням: відкрита вакансія і закрита (сіра). */
+export const SAVED_JOBS_DEFAULT = [0, 5]
+
+/* ---------- мої відгуки (відповідь 98: статуси для моряка — як у рекрутера, APPLICATIONS у data-web) ---------- */
+
+// Відгуки, що вже є: Nordline відповів (чат ns) — «Ожидание», Meridian ще ні (чат mc) — «Отправлено»,
+// Harbor закрив вакансію — «Отклонено». Нові відгуки з екрана вакансії (bag job.applied) — «Отправлено».
+export const MY_APPLICATIONS_DEFAULT: { job: number; status: ApplicationStatus; date: string }[] = [
+  { job: 2, status: 'sent', date: '02.11.2026' },
+  { job: 1, status: 'waiting', date: '30.10.2026' },
+  { job: 5, status: 'rejected', date: '21.10.2026' },
+]
+
+/** Перегляди вакансії (відповідь 101: лічильник показуємо). Індекси — як у FJ_JOBS. */
+export const JOB_VIEWS = [214, 187, 96, 152, 63, 41, 28]
 
 /* ---------- фільтри (правка №35, відповідь 100) ---------- */
 

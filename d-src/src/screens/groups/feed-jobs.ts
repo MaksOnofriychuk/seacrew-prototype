@@ -9,6 +9,7 @@ import { P12Apply } from '../p/p12'
 import { P13Filters } from '../p/p13'
 import { P16Author } from '../p/p16'
 import { P17Searches } from '../p/p17'
+import { P23Applications } from '../p/p23'
 
 // Стрічка і вакансії (мобілка).
 export const groups = defineGroups('mobile', [
@@ -22,6 +23,7 @@ export const groups = defineGroups('mobile', [
       { id: 'p05', title: 'Вакансии', Component: P05Jobs },
       { id: 'p13', title: 'Вакансии · Фильтры', Component: P13Filters },
       { id: 'p17', title: 'Вакансии · Сохранённые подборки', Component: P17Searches },
+      { id: 'p23', title: 'Вакансии · Мои отклики', Component: P23Applications },
       { id: 'p08', title: 'Вакансия', Component: P08Job },
       { id: 'p12', title: 'Вакансия · Отклик', Component: P12Apply },
       { id: 'p09', title: 'Профиль · Сохранённое', Component: P09Saved },

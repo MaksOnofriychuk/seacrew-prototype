@@ -21,7 +21,7 @@ export function P06NewPost({ go }: ScreenProps) {
   const [photo, setPhoto] = useState(false)
   const [vessel, setVessel] = useState<string | null>(null)
   const [pick, setPick] = useState(false)
-  // Судна — з рейсів профілю (крок «Морской стаж»).
+  // Судна — з контрактів профілю (крок «Опыт работы»).
   const vessels = VOYAGES.map((v) => ({ name: v.vessel, type: v.type }))
 
   const publish = () => {
@@ -53,7 +53,7 @@ export function P06NewPost({ go }: ScreenProps) {
           onChange={(e) => setText(e.target.value)}
           rows={7}
           aria-label="Текст публикации"
-          placeholder="Расскажите о рейсе, компании или задайте вопрос коллегам"
+          placeholder="Расскажите о контракте, компании или задайте вопрос коллегам"
           className="mt-4 w-full resize-none rounded-xl border border-border bg-surface px-4 py-3 text-base leading-relaxed outline-none placeholder:text-muted-foreground focus-visible:border-primary"
         />
 
@@ -88,7 +88,7 @@ export function P06NewPost({ go }: ScreenProps) {
       <Sheet open={pick} onOpenChange={setPick}>
         <SheetContent side="bottom" showCloseButton={false} className="max-h-[88%] gap-0 overflow-y-auto px-6 pt-6 pb-8">
           <SheetTitle className="text-2xl leading-tight font-semibold tracking-tight">Судно</SheetTitle>
-          <SheetDescription className="mt-2 text-base">Из ваших рейсов. Коллеги увидят, о каком судне речь.</SheetDescription>
+          <SheetDescription className="mt-2 text-base">Из ваших контрактов. Коллеги увидят, о каком судне речь.</SheetDescription>
           <ul className="mt-5 flex flex-col">
             {vessels.map((v) => (
               <li key={v.name} className="border-t border-border first:border-t-0">
