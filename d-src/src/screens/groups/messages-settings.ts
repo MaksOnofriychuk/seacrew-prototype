@@ -2,7 +2,7 @@ import { defineGroups } from '../types'
 import { P04Drawer } from '../p/p04'
 import { MChat, MChatApplied } from '../m/chat'
 import { MDelete } from '../m/delete'
-import { MForm } from '../m/form'
+import { MForm, MFormReview, MFormSent } from '../m/form'
 import { MNotifSettings } from '../m/notif-settings'
 import { P10Notifications } from '../m/notifications'
 import { P15Messages } from '../m/p15-messages'
@@ -19,6 +19,8 @@ export const groups = defineGroups('mobile', [
       { id: 'm-chat', title: 'Чат с рекрутером', Component: MChat },
       { id: 'm-chat-applied', title: 'Чат · после отклика', Component: MChatApplied },
       { id: 'm-form', title: 'Анкета от рекрутера', Component: MForm },
+      { id: 'm-form-review', title: 'Анкета · проверка', Component: MFormReview },
+      { id: 'm-form-sent', title: 'Анкета · отправлена', Component: MFormSent },
       { id: 'p10', title: 'Уведомления', Component: P10Notifications },
     ],
   },
