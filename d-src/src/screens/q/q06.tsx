@@ -117,7 +117,7 @@ export function Q06Account({ go }: ScreenProps) {
               <CircleAlert className="size-5 shrink-0" />
               Этот email уже зарегистрирован
             </p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-[1fr_1.5fr] gap-2">
               <Button variant="outline" className="h-11" onClick={() => toAuth('o05')}>
                 Войти
               </Button>
