@@ -23,7 +23,7 @@ import { needsChoice, proofOk, uniqValues, type Answer, type FormState } from '.
 export function sourceText(q: Question, a?: Answer): { text: string; tone: 'auto' | 'edited' | 'manual' } | null {
   if (!a) return null
   if (a.src === 'sugg') return { text: 'Из профиля', tone: 'auto' }
-  if (typeof a.src === 'number') return { text: q.sources[a.src].label, tone: 'auto' }
+  if (typeof a.src === 'number') return { text: q.sources[a.src]?.label ?? 'Из профиля', tone: 'auto' }
   if (a.base !== undefined) return { text: `Изменено. Было: ${q.sources[a.base]?.value}`, tone: 'edited' }
   return { text: 'Вручную', tone: 'manual' }
 }
