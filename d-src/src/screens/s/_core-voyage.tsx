@@ -1,17 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
 import { Trash2 } from 'lucide-react'
+import { FleetPicker, type FleetValue } from '@/components/app/fleet-picker'
 import { Group } from '@/components/app/group'
 import { Button } from '@/components/ui/button'
 import { Field, TextInput } from '../q/_parts'
 import { Dur, maskMonth, Pick } from './_core-parts'
 
-// Рейси для кроку «Морской стаж»: дані, підрахунок і форма рейсу (C: «Рейс вручную»).
+// Контракти для кроку «Опыт работы» (№3, №26: «рейс» → «контракт»): дані, підрахунок і форма
+// контракту. Посада — через Флот → Департамент → Должность (№25), по одному на контракт.
+// Тип і назви полів лишились «voyage» — щоб не ламати екрани, що читають s6.voyages.
 
 export type Voyage = {
   id: string
   vessel: string
   type: string
   flag: string
+  /** флот і департамент (№25); у старих збережених даних можуть бути відсутні */
+  fleet?: string
+  dept?: string
   rank: string
   dwt: string
   from: string // ММ.ГГГГ
@@ -30,6 +36,8 @@ export const VOYAGES: Voyage[] = [
     vessel: 'MV Example Crest',
     type: 'Tanker',
     flag: 'Liberia',
+    fleet: 'Merchant',
+    dept: 'Engine',
     rank: '3rd Engineer',
     dwt: '49 990',
     from: '11.2024',
@@ -42,6 +50,8 @@ export const VOYAGES: Voyage[] = [
     vessel: 'MV Example Star',
     type: 'Container Ship',
     flag: 'Malta',
+    fleet: 'Merchant',
+    dept: 'Engine',
     rank: '3rd Engineer',
     dwt: '19 800',
     from: '02.2024',
@@ -54,6 +64,8 @@ export const VOYAGES: Voyage[] = [
     vessel: 'MV Example Wave',
     type: 'Bulk Carrier',
     flag: 'Panama',
+    fleet: 'Merchant',
+    dept: 'Engine',
     rank: '4th Engineer',
     dwt: '58 000',
     from: '05.2022',
@@ -66,6 +78,8 @@ export const VOYAGES: Voyage[] = [
     vessel: 'MV Example Reef',
     type: 'Tanker',
     flag: 'Marshall Islands',
+    fleet: 'Merchant',
+    dept: 'Engine',
     rank: '4th Engineer',
     dwt: '45 700',
     from: '03.2021',
@@ -75,12 +89,14 @@ export const VOYAGES: Voyage[] = [
   },
 ]
 
-// Рейс, який «знаходить» ИИ у сторінках послужної книжки чи CV.
+// Контракт, який «знаходить» ИИ у сторінках паспорта моряка, послужної книжки чи CV.
 export const FOUND: Voyage = {
   id: 'found',
   vessel: 'MV Example Bay',
   type: 'LPG Carrier',
   flag: 'Malta',
+  fleet: 'Merchant',
+  dept: 'Engine',
   rank: '3rd Engineer',
   dwt: '22 300',
   from: '09.2025',
@@ -94,7 +110,7 @@ const ym = (s: string) => {
   return m ? +m[2] * 12 + +m[1] - 1 : null
 }
 
-// Місяці рейсу, включно з обома крайніми (як months() у C).
+// Місяці контракту, включно з обома крайніми (як months() у C).
 export function vMonths(v: { from: string; to: string }) {
   const a = ym(v.from)
   const b = ym(v.to)
@@ -103,7 +119,7 @@ export function vMonths(v: { from: string; to: string }) {
 
 export const byStart = (a: Voyage, b: Voyage) => (ym(b.from) ?? 0) - (ym(a.from) ?? 0)
 
-// По посадах (порядок — від останнього рейсу), всередині — по типах суден (більший стаж першим).
+// По посадах (порядок — від останнього контракту), всередині — по типах суден (більший стаж першим).
 export function groupByRank(list: Voyage[]) {
   const ranks: {
     rank: string
@@ -128,6 +144,8 @@ const EMPTY: Voyage = {
   vessel: '',
   type: '',
   flag: '',
+  fleet: '',
+  dept: '',
   rank: '',
   dwt: '',
   from: '',
@@ -141,6 +159,8 @@ export function VoyageForm({ initial, onSave, onCancel, onDelete }: { initial?: 
   const put = (p: Partial<Voyage>) => setV((x) => ({ ...x, ...p }))
   const ref = useRef<HTMLDivElement>(null)
   const m = vMonths(v)
+  const fleet: FleetValue = { fleets: v.fleet ? [v.fleet] : [], department: v.dept || null, positions: v.rank ? [v.rank] : [] }
+  const setFleet = (x: FleetValue) => put({ fleet: x.fleets[0] ?? '', dept: x.department ?? '', rank: x.positions[0] ?? '' })
   const datesBad = v.from.length === 7 && v.to.length === 7 && m === 0
   const ok = !!v.vessel.trim() && !!v.rank.trim() && m > 0
 
@@ -162,17 +182,15 @@ export function VoyageForm({ initial, onSave, onCancel, onDelete }: { initial?: 
 
   return (
     <div ref={ref} className="scroll-mt-4">
-      <Group title={v.vessel.trim() || 'Рейс вручную'}>
+      <Group title={v.vessel.trim() || 'Контракт вручную'}>
         <div className="flex flex-col gap-5 py-1">
           {text('vessel', 'Судно', 'MV …')}
           <div className="grid grid-cols-2 gap-3">
             <Pick id="s6-type" label="Тип судна" value={v.type} options={VESSEL_TYPES} onChange={(type) => put({ type })} />
             {text('flag', 'Флаг', 'Malta')}
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            {text('rank', 'Должность', '3rd Engineer')}
-            {text('dwt', 'DWT / GT', '19 800', true)}
-          </div>
+          <FleetPicker value={fleet} onChange={setFleet} className="border-y border-border py-4" />
+          {text('dwt', 'DWT / GT', '19 800', true)}
           <div className="flex flex-col gap-2">
             <div className="grid grid-cols-2 gap-3">
               {month('from', 'Начало')}
@@ -198,13 +216,13 @@ export function VoyageForm({ initial, onSave, onCancel, onDelete }: { initial?: 
               disabled={!ok}
               onClick={() => onSave({ ...v, vessel: v.vessel.trim(), rank: v.rank.trim() })}
             >
-              Сохранить рейс
+              Сохранить контракт
             </Button>
           </div>
           {onDelete && (
             <button type="button" onClick={onDelete} className="-mt-1 flex items-center gap-2 self-start text-sm font-medium text-signal">
               <Trash2 className="size-4" />
-              Удалить рейс
+              Удалить контракт
             </button>
           )}
         </div>

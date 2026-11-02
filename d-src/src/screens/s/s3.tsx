@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { IdCard, Lock, Plus, ShieldAlert, Trash2 } from 'lucide-react'
-import { StepShell } from '@/components/app/stepper'
+import { StepShell } from './_stepper'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -8,7 +8,7 @@ import type { ScreenProps } from '../registry'
 import { DOC_TYPES, otherType, useToast, type DocTypeId } from '../q/_parts'
 import { AddPanel, DocForm, EMPTY_DOC, ScrollAnchor, useBusy, useHashParams, useS, type DocData } from './_core-parts'
 
-// s3 — крок 3 «Документ моряка», обов'язковий. Один із двох: удостоверение або диплом
+// s3 — крок 3 «Документ моряка», обов'язковий. Текст завантаження — правка №17. Один із двох: удостоверение або диплом
 // (правка п. 4: підпис «Diploma / CoC | CoP»); другий — за бажанням. Завантаження — ИИ розпізнає
 // (у прототипі — коротка пауза), або «Ввести вручную»: форма-папір, «Название документа» першим,
 // для диплома — ще «Должность по диплому», «Правило STCW», «Уровень» (правки пп. 5–6).
@@ -103,7 +103,7 @@ export function S3SeafarerDoc({ go }: ScreenProps) {
               )}
             </div>
           ) : form ? null : (
-            <AddPanel title="Загрузите — ИИ распознает" sub="Страница с фото и данными. Края найдутся сами" busy={busy} onUpload={upload} onManual={() => setForm(true)} />
+            <AddPanel title="Сфотографируйте или загрузите страницу с фото и данными." busy={busy} onUpload={upload} onManual={() => setForm(true)} />
           )}
 
           {ban && doc.has && (

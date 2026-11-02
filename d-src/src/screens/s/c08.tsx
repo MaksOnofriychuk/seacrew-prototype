@@ -1,6 +1,6 @@
 import { Status } from '@/components/app/status'
 import { Footer, Wordmark } from '@/components/app/chrome'
-import { STEPS, useSteps } from '@/components/app/stepper'
+import { stepId, STEPS, useSteps } from './_stepper'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
@@ -47,7 +47,7 @@ export function C08Resume({ go }: ScreenProps) {
         </p>
       </div>
       <Footer>
-        <Button size="lg" onClick={() => go('s' + next.n)}>
+        <Button size="lg" onClick={() => go(stepId(next))}>
           Продолжить
         </Button>
         <Button size="lg" variant="ghost" className="text-primary" onClick={() => go('q09')}>

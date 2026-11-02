@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { FileText } from 'lucide-react'
-import { StepShell } from '@/components/app/stepper'
+import { StepShell } from './_stepper'
 import type { ScreenProps } from '../registry'
 import { FORM_DEFAULTS } from '../q/_parts'
 import { AddPanel, DocForm, docMeta, EMPTY_DOC, RowList, ScrollAnchor, SectionTitle, useBusy, useHashParams, useS, type DocData } from './_core-parts'

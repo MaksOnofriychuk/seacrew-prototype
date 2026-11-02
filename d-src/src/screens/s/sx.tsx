@@ -2,22 +2,26 @@ import { useEffect } from 'react'
 import { Status } from '@/components/app/status'
 import { ChevronRight } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
-import { STEPS, useSteps } from '@/components/app/stepper'
+import { PASS, stepId, STEPS, useSteps } from './_stepper'
 import { Button } from '@/components/ui/button'
 import type { ScreenProps } from '../registry'
 import { ReadinessBlock } from '../q/_parts'
-import { STEP_ICON } from './_core-parts'
+import { STEP_ICON, useS } from './_core-parts'
+import { DEMO_PASS } from './s3p'
 
-// sx — «Основное заполнено» (coreDone у C): готовність до анкет і пропозиція заповнити
-// додаткові розділи — або завершити. Кільце з відсотком і салют з C прибрано: лише смуга
-// готовності. У C є «Назад» (на s6), тому знака Seafolio немає.
+// sx — «Вы почти у цели» (правка №27; coreDone у C): «Профиль заполнен на N %» і пропозиція
+// заповнити додаткові розділи — або завершити. У списку «Дополнительно» — новий рядок
+// «Характеристики, промоушены (Promotions / appraisals)». У C є «Назад» (на s6), тому знака Seafolio немає.
 
 export function SxCoreDone({ go }: ScreenProps) {
   const { done, readiness, setDone } = useSteps()
+  const { bag, setBag } = useS()
 
-  // C: demoSteps — відкрили екран напряму: кроки 1 і 3 пройдені, 2 пропущено.
+  // Відкрили екран напряму: основне пройдено, медичні пропущено — профіль заповнений на 83 %.
   useEffect(() => {
-    if (Object.keys(done).length === 0) setDone({ 1: true, 3: true, skip2: true })
+    if (Object.keys(done).length > 0) return
+    setDone({ 1: true, 2: true, 3: true, [PASS]: true, 4: true, 6: true, skip5: true })
+    if (!bag('s3p.pass', null)) setBag('s3p.pass', DEMO_PASS)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const r = readiness()
@@ -28,8 +32,8 @@ export function SxCoreDone({ go }: ScreenProps) {
     <div className="flex h-full flex-col">
       <NavBar onBack={() => go('s6')} />
       <div className="min-h-0 flex-1 overflow-y-auto px-6 pt-1 pb-6">
-        <h1 className="text-[30px] leading-[1.1] font-semibold tracking-tight">Основное заполнено</h1>
-        <p className="mt-2 text-base text-muted-foreground">Профиль готов для анкет агентств. Дополнительные разделы — по желанию, но агентства часто о них спрашивают.</p>
+        <h1 className="text-[30px] leading-[1.1] font-semibold tracking-tight">Вы почти у цели</h1>
+        <p className="mt-2 text-base text-muted-foreground">При достижении 100% у вас появятся больше шансов получить match с HR агентом.</p>
 
         <div className="mt-6">
           <ReadinessBlock pct={r.pct}>{left.length > 0 && <p className="text-sm text-muted-foreground">Осталось: {left.join(', ').toLowerCase()}</p>}</ReadinessBlock>
@@ -41,9 +45,9 @@ export function SxCoreDone({ go }: ScreenProps) {
             const Icon = STEP_ICON[s.n]
             return (
               <li key={s.n} className="border-t border-border first:border-t-0">
-                <button type="button" onClick={() => go('s' + s.n)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
+                <button type="button" onClick={() => go(stepId(s))} className="flex w-full items-center gap-3 px-4 py-3 text-left">
                   <Icon className="size-5 shrink-0 text-primary" />
-                  <span className="flex-1 text-[15px]">{s.t}</span>
+                  <span className="flex-1 text-[15px]">{s.long ?? s.t}</span>
                   {done[s.n] ? (
                     <Status kind="ok">готово</Status>
                   ) : (

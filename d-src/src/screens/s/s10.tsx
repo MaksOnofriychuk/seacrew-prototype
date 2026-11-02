@@ -1,5 +1,5 @@
 import { Group } from '@/components/app/group'
-import { StepShell } from '@/components/app/stepper'
+import { StepShell } from './_stepper'
 import type { ScreenProps } from '../registry'
 import { SourceTag, TextInput } from '../q/_parts'
 import { AddPanel, ScrollParam, useBag, XField } from './_extra-parts'

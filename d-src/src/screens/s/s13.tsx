@@ -1,8 +1,8 @@
-import { StepShell } from '@/components/app/stepper'
+import { StepShell } from './_stepper'
 import type { ScreenProps } from '../registry'
 import { ScrollParam, TextArea, useBag } from './_extra-parts'
 
-// s13 — «Заметки» (C: step 13): одне поле для агентств.
+// s13 — «Заметки» (C: step 13): одне поле для агентств. Правка №30: доступ уже відкритий — «Видят агентства.»
 export function S13Notes({ go }: ScreenProps) {
   const { bag, setBag } = useBag()
   const notes = bag('s13.notes', '')
@@ -15,9 +15,9 @@ export function S13Notes({ go }: ScreenProps) {
           rows={6}
           value={notes}
           onChange={(e) => setBag('s13.notes', e.target.value)}
-          placeholder="Например: не могу выйти в рейс до 1 декабря; рассматриваю только танкеры"
+          placeholder="Например: не могу выйти на контракт до 1 декабря; рассматриваю только танкеры"
         />
-        <p className="text-sm text-muted-foreground">Видят агентства, которым вы откроете доступ.</p>
+        <p className="text-sm text-muted-foreground">Видят агентства.</p>
       </div>
     </StepShell>
   )

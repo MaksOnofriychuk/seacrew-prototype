@@ -1,4 +1,4 @@
-import { StepShell } from '@/components/app/stepper'
+import { StepShell } from './_stepper'
 import type { ScreenProps } from '../registry'
 import { DocStep, ScrollParam } from './_extra-parts'
 
