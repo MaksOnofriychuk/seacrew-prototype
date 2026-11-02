@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { StatusDot } from '@/components/web/status-badge'
 import { IMPORTED_FORM_ID } from '@/lib/data-recruiter-2'
+import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { useR2 } from './_parts'
@@ -22,17 +23,18 @@ const KINDS: { id: Kind; icon: ComponentType<{ className?: string }>; title: str
   { id: 'word', icon: FileType, title: 'Документ Word', text: '.docx до 5 МБ, AI прочитает текст и таблицы', file: 'Anketa_moryaka.docx', size: '210 КБ' },
 ]
 
-type Row = { pdf: string; label: string; page: number; target: string; kind: 'dictionary' | 'free' | 'ignore'; sure: boolean }
+// proof — поле можна вимагати підтвердити документом (ТЗ §9): там, де моряк вводить значення, а не прикладає документ чи підпис.
+type Row = { pdf: string; label: string; page: number; target: string; kind: 'dictionary' | 'free' | 'ignore'; sure: boolean; proof?: boolean }
 const ROWS: Row[] = [
   { pdf: 'surname_1', label: 'Surname', page: 1, target: 'Фамилия', kind: 'dictionary', sure: true },
   { pdf: 'given_names', label: 'Given names', page: 1, target: 'Имя', kind: 'dictionary', sure: true },
-  { pdf: 'dob', label: 'Date of birth', page: 1, target: 'Дата рождения', kind: 'dictionary', sure: true },
-  { pdf: 'NOK_name', label: 'Next of kin', page: 1, target: 'Ближайший родственник', kind: 'dictionary', sure: false },
+  { pdf: 'dob', label: 'Date of birth', page: 1, target: 'Дата рождения', kind: 'dictionary', sure: true, proof: true },
+  { pdf: 'NOK_name', label: 'Next of kin', page: 1, target: 'Ближайший родственник', kind: 'dictionary', sure: false, proof: true },
   { pdf: 'cert_bosiet', label: 'BOSIET certificate', page: 2, target: 'Запрос документа: BOSIET', kind: 'dictionary', sure: true },
   { pdf: 'cert_dp', label: 'DP certificate', page: 2, target: 'Запрос документа: DP', kind: 'dictionary', sure: true },
   { pdf: 'medical_oguk', label: 'OGUK medical', page: 2, target: 'Запрос документа: медицина', kind: 'dictionary', sure: true },
-  { pdf: 'dp_hours', label: 'DP hours', page: 3, target: 'Свой вопрос: число', kind: 'free', sure: true },
-  { pdf: 'dp_class', label: 'DP class', page: 3, target: 'Свой вопрос: выбор', kind: 'free', sure: false },
+  { pdf: 'dp_hours', label: 'DP hours', page: 3, target: 'Свой вопрос: число', kind: 'free', sure: true, proof: true },
+  { pdf: 'dp_class', label: 'DP class', page: 3, target: 'Свой вопрос: выбор', kind: 'free', sure: false, proof: true },
   { pdf: 'declaration_chk', label: 'I confirm the information is true', page: 4, target: 'Согласие', kind: 'dictionary', sure: true },
   { pdf: 'signature', label: 'Signature', page: 4, target: 'Подпись', kind: 'dictionary', sure: true },
   { pdf: 'office_approved', label: 'Office use: approved by', page: 4, target: 'Только агентство: текст', kind: 'free', sure: true },
@@ -57,6 +59,9 @@ export function RFormImport({ go }: ScreenProps) {
   const [clean, setClean] = useState(false)
   const [pages, setPages] = useState([0, 1, 2].map((i) => ({ id: i, turn: 0 })))
   const [confirmed, setConfirmed] = useState<string[]>([])
+  // «Нужно подтверждение документом» — рекрутер ставить позначку вже під час імпорту (ТЗ §9).
+  const [proof, setProof] = useState<string[]>(['dp_hours'])
+  const { setBag } = useProto()
   const timer = useRef<number | undefined>(undefined)
   useEffect(() => () => window.clearTimeout(timer.current), [])
 
@@ -87,7 +92,7 @@ export function RFormImport({ go }: ScreenProps) {
     {
       key: 'pdf',
       header: ai ? 'Поле на бланке' : 'Поле в PDF',
-      width: '28%',
+      width: '22%',
       cell: (x) => (
         <span className="flex flex-col">
           {ai ? <span className="truncate">{x.label}</span> : <span className="truncate font-mono text-[13px]">{x.pdf}</span>}
@@ -97,17 +102,30 @@ export function RFormImport({ go }: ScreenProps) {
         </span>
       ),
     },
-    { key: 'target', header: 'Заполняется из', width: '34%', cell: (x) => <span className={cn(x.kind === 'ignore' && 'text-muted-foreground')}>{x.target}</span> },
+    { key: 'target', header: 'Заполняется из', width: '27%', cell: (x) => <span className={cn(x.kind === 'ignore' && 'text-muted-foreground')}>{x.target}</span> },
     {
       key: 'sure',
       header: 'Предложение',
-      width: '20%',
+      width: '16%',
       cell: (x) => (x.sure || confirmed.includes(x.pdf) ? <StatusDot tone="success">{confirmed.includes(x.pdf) ? 'Подтверждено' : 'Совпадает'}</StatusDot> : <StatusDot tone="warning">Проверьте</StatusDot>),
+    },
+    {
+      key: 'proof',
+      header: 'Нужен документ',
+      width: '15%',
+      cell: (x) =>
+        x.proof ? (
+          <WebCheckbox id={`proof-${x.pdf}`} checked={proof.includes(x.pdf)} onChange={(v) => setProof((p) => (v ? [...p, x.pdf] : p.filter((k) => k !== x.pdf)))}>
+            {proof.includes(x.pdf) ? 'Да' : <span className="text-muted-foreground">Нет</span>}
+          </WebCheckbox>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
     },
     {
       key: 'act',
       header: <span className="sr-only">Действие</span>,
-      width: '18%',
+      width: '20%',
       align: 'right',
       cell: (x) =>
         !x.sure && !confirmed.includes(x.pdf) ? (
@@ -280,7 +298,7 @@ export function RFormImport({ go }: ScreenProps) {
                 Найдено <span className="font-mono">{ROWS.length}</span> полей
               </h2>
               <p className="max-w-[620px] text-sm text-muted-foreground">
-                Проверьте, что означает каждое поле. Предложения — по названиям полей и прошлым анкетам вашего агентства. Подтверждено <span className="font-mono">{ROWS.length - review.length}</span> из <span className="font-mono">{ROWS.length}</span>.
+                Проверьте, что означает каждое поле. Предложения — по названиям полей и прошлым анкетам вашего агентства. Подтверждено <span className="font-mono">{ROWS.length - review.length}</span> из <span className="font-mono">{ROWS.length}</span>. «Нужен документ» — моряк подтвердит значение документом из профиля или приложит фото либо файл.
               </p>
             </div>
             {review.length > 0 && (
@@ -295,6 +313,7 @@ export function RFormImport({ go }: ScreenProps) {
               onClick={() => {
                 r.openForm(IMPORTED_FORM_ID)
                 r.setImportTitle(title.trim())
+                setBag('r2.importProof', proof)
                 go('r-form-edit')
               }}
             >

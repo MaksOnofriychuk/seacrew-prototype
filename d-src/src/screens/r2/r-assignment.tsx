@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Download, FileText, Hourglass, MessageSquare } from 'lucide-react'
+import { Download, FileCheck2, FileText, Hourglass, MessageSquare } from 'lucide-react'
 import { MonoNums } from '@/components/app/mono-nums'
-import { EmptyState, ViewState } from '@/components/app/states'
+import { EmptyState, useView, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { WebField, WebInput, WebSelect, WebTextarea } from '@/components/web/fields'
 import { PageHeader } from '@/components/web/page-header'
@@ -17,13 +17,19 @@ import { ASSIGNMENT_TONE, BlockHead, ruDate, useR2 } from './_parts'
 // вкладення, поля агентства (бачить лише агентство) і заповнений PDF (contract-recruiter-web §4, §5).
 export function RAssignment({ go }: ScreenProps) {
   const r = useR2()
+  const view = useView()
   const a = ASSIGNMENTS.find((x) => x.id === r.assignmentId) ?? ASSIGNMENTS[0]
   const s = seafarerById(a.seafarerId)!
   const form = FORMS.find((x) => x.id === a.formId)!
   const sections = FORM_DEFS[a.formId] ?? []
   const answers = ANSWERS[a.id]
   const submitted = a.status === 'submitted' && !!answers
-  const files = answers ? Object.entries(answers).filter(([, v]) => v.file) : []
+  // Вкладення: файли відповідей і файли, якими моряк підтвердив поля (ТЗ §9), без повторів.
+  const files: { key: string; name: string; size: string; how: string }[] = []
+  for (const [k, v] of Object.entries(answers ?? {})) {
+    if (v.file) files.push({ key: k, name: v.file.name, size: v.file.size, how: SOURCE_LABEL[v.source].toLowerCase() })
+    if (v.proof && !files.some((x) => x.name === v.proof!.file.name)) files.push({ key: k + '.proof', name: v.proof.file.name, size: v.proof.file.size, how: 'подтверждение' })
+  }
   const agency = sections.filter((x) => x.audience === 'AGENCY_ONLY').flatMap((x) => x.fields)
   const [agencyVals, setAgencyVals] = useState<Record<string, string>>({})
   const chat = r.chats.find((c) => c.seafarerId === s.id)
@@ -45,7 +51,7 @@ export function RAssignment({ go }: ScreenProps) {
               <h3 className="mb-2 text-base font-semibold">{sec.title}</h3>
               <dl className="flex flex-col">
                 {sec.fields.map((f) => (
-                  <AnswerRow key={f.id} label={f.label} a={answers[f.id]} onFile={download} />
+                  <AnswerRow key={f.id} label={f.label} a={answers[f.id]} needsProof={f.proof} onFile={download} />
                 ))}
               </dl>
             </section>
@@ -62,16 +68,16 @@ export function RAssignment({ go }: ScreenProps) {
             }
           />
           <ul className="overflow-hidden rounded-xl border border-border bg-surface">
-            {files.map(([k, v]) => (
-              <li key={k} className="flex items-center gap-3 border-t border-border px-4 py-3 first:border-t-0">
+            {files.map((v) => (
+              <li key={v.key} className="flex items-center gap-3 border-t border-border px-4 py-3 first:border-t-0">
                 <FileText className="size-4 shrink-0 text-primary" />
                 <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-sm font-medium">{v.file!.name}</span>
+                  <span className="truncate text-sm font-medium">{v.name}</span>
                   <span className="text-xs text-muted-foreground">
-                    <span className="font-mono">{v.file!.size}</span>, {SOURCE_LABEL[v.source].toLowerCase()}
+                    <span className="font-mono">{v.size}</span>, {v.how}
                   </span>
                 </span>
-                <button type="button" aria-label={`Скачать ${v.file!.name}`} onClick={() => download(v.file!.name)} className="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted">
+                <button type="button" aria-label={`Скачать ${v.name}`} onClick={() => download(v.name)} className="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted">
                   <Download className="size-4" />
                 </button>
               </li>
@@ -130,7 +136,7 @@ export function RAssignment({ go }: ScreenProps) {
                 <MessageSquare /> Написать
               </Button>
             )}
-            {submitted && (
+            {submitted && view === 'normal' && (
               <Button onClick={() => download(`${form.title} — ${s.name}.pdf`)}>
                 <Download /> Скачать заполненный PDF
               </Button>
@@ -145,7 +151,7 @@ export function RAssignment({ go }: ScreenProps) {
   )
 }
 
-function AnswerRow({ label, a, onFile }: { label: string; a?: Answer; onFile: (name: string) => void }) {
+function AnswerRow({ label, a, needsProof, onFile }: { label: string; a?: Answer; needsProof?: boolean; onFile: (name: string) => void }) {
   const lines = a?.value.split('\n') ?? []
   return (
     <div className="grid grid-cols-[220px_minmax(0,1fr)_auto] items-baseline gap-4 border-t border-border py-2.5 first:border-t-0">
@@ -170,6 +176,17 @@ function AnswerRow({ label, a, onFile }: { label: string; a?: Answer; onFile: (n
         ) : (
           <MonoNums text={a.value} />
         )}
+        {a?.proof && (
+          // Поле з позначкою «Нужно подтверждение документом» (ТЗ §9): чим саме підтверджено.
+          <span className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[13px] text-muted-foreground">
+            <FileCheck2 className="size-3.5 shrink-0 text-success" />
+            {a.proof.kind === 'library' ? `Подтверждено документом из профиля: ${a.proof.doc}` : `Подтверждено приложенным файлом: ${a.proof.doc}`}
+            <button type="button" onClick={() => onFile(a.proof!.file.name)} className="font-medium text-primary hover:underline">
+              {a.proof.file.name}
+            </button>
+          </span>
+        )}
+        {needsProof && a && !a.proof && <span className="mt-1.5 block text-[13px] text-warning">Нет подтверждения документом</span>}
       </dd>
       <span className={cn('text-xs whitespace-nowrap', a?.source === 'edited' ? 'text-warning' : 'text-muted-foreground')}>{a ? SOURCE_LABEL[a.source] : ''}</span>
     </div>

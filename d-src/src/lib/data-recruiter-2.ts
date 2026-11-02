@@ -23,7 +23,8 @@ export const JOB_EXTRA: Record<string, JobExtra> = {
 }
 
 export const VESSEL_TYPES_WEB = ['Chemical Tanker', 'Oil Tanker', 'LPG Carrier', 'Bulk Carrier', 'Container Ship', 'PSV', 'AHTS', 'Cruise Ship']
-export const REGIONS = ['Европа', 'Африка', 'ОАЭ', 'Азия'] as const
+// Регіони роботи — лише ті, що назвав замовник (правка №35).
+export const REGIONS = ['Европа', 'Африка', 'ОАЭ'] as const
 export const CURRENCIES = ['$', '€', '£'] as const
 
 /** Нова вакансія, коли рекрутер натискає «Опубликовать» у формі. */
@@ -160,7 +161,12 @@ export type FormField = {
   pdf?: string
   /** поле повторюваної групи */
   repeatable?: boolean
+  /** «Нужно подтверждение документом» (ТЗ §9): значення з підтвердженого документа або вручну + фото чи файл */
+  proof?: boolean
 }
+
+/** Типи полів, які можна вимагати підтвердити документом (ТЗ §9): там, де моряк вводить значення. */
+export const PROOF_TYPES: FieldType[] = ['profile', 'text', 'textarea', 'number', 'date', 'select', 'group']
 
 export type FormSection = { id: string; title: string; audience: Audience; fields: FormField[] }
 
@@ -193,8 +199,8 @@ export const FORM_DEFS: Record<string, FormSection[]> = {
       ],
     },
     {
-      id: 's4', title: 'Морской стаж', audience: 'SEAFARER', fields: [
-        f('service', 'Контракты за 5 лет', 'group', true, { repeatable: true }),
+      id: 's4', title: 'Опыт работы', audience: 'SEAFARER', fields: [
+        f('service', 'Контракты за 5 лет', 'group', true, { repeatable: true, proof: true }),
         f('engines', 'Типы главных двигателей', 'textarea', false),
       ],
     },
@@ -230,7 +236,7 @@ export const FORM_DEFS: Record<string, FormSection[]> = {
     },
     {
       id: 's3', title: 'DP experience', audience: 'SEAFARER', fields: [
-        f('dphours', 'DP hours', 'number', true, { pdf: 'dp_hours' }),
+        f('dphours', 'DP hours', 'number', true, { pdf: 'dp_hours', proof: true }),
         f('dpclass', 'DP class', 'select', true, { pdf: 'dp_class' }),
       ],
     },
@@ -269,7 +275,9 @@ export const SOURCE_LABEL: Record<AnswerSource, string> = {
   upload: 'Загружено',
 }
 
-export type Answer = { value: string; source: AnswerSource; file?: { name: string; size: string } }
+/** Чим моряк підтвердив поле з позначкою «Нужно подтверждение документом»: документ з профілю або прикріплений файл. */
+export type Proof = { kind: 'library' | 'upload'; doc: string; file: { name: string; size: string } }
+export type Answer = { value: string; source: AnswerSource; file?: { name: string; size: string }; proof?: Proof }
 
 export const ANSWERS: Record<string, Record<string, Answer>> = {
   as01: {
@@ -285,7 +293,7 @@ export const ANSWERS: Record<string, Record<string, Answer>> = {
     coc: { value: '3rd Engineer (III/1)', source: 'library', file: { name: 'CoC_III-1.pdf', size: '1,8 МБ' } },
     medical: { value: 'Действует до 30.06.2027', source: 'library', file: { name: 'Medical_ILO.pdf', size: '960 КБ' } },
     bst: { value: 'BST', source: 'upload', file: { name: 'BST_2025.pdf', size: '1,1 МБ' } },
-    service: { value: 'MT Leda, Chemical Tanker, 3rd Engineer, 4 мес.\nMT Corsa, Chemical Tanker, 4th Engineer, 6 мес.\nMV Orion Bay, Bulk Carrier, 4th Engineer, 5 мес.', source: 'profile' },
+    service: { value: 'MT Leda, Chemical Tanker, 3rd Engineer, 4 мес.\nMT Corsa, Chemical Tanker, 4th Engineer, 6 мес.\nMV Orion Bay, Bulk Carrier, 4th Engineer, 5 мес.', source: 'profile', proof: { kind: 'library', doc: 'Паспорт моряка', file: { name: 'Seaman_book.pdf', size: '2,4 МБ' } } },
     engines: { value: 'MAN B&W 6S50MC-C, Wärtsilä RT-flex', source: 'manual' },
     gdpr: { value: 'Согласен', source: 'manual' },
     sign: { value: 'Andrii K., 30.10.2026', source: 'manual' },
@@ -298,7 +306,7 @@ export const ANSWERS: Record<string, Record<string, Answer>> = {
     bosiet: { value: 'BOSIET', source: 'library', file: { name: 'BOSIET_2024.pdf', size: '1,3 МБ' } },
     dp: { value: 'DP Unlimited', source: 'library', file: { name: 'DP_Unlimited.pdf', size: '850 КБ' } },
     oguk: { value: 'До 20.12.2026', source: 'library', file: { name: 'OGUK_medical.jpg', size: '2,1 МБ' } },
-    dphours: { value: '4 120', source: 'manual' },
+    dphours: { value: '4 120', source: 'manual', proof: { kind: 'upload', doc: 'DP logbook', file: { name: 'DP_logbook_p12.jpg', size: '1,6 МБ' } } },
     dpclass: { value: 'DP2', source: 'manual' },
     decl: { value: 'Подтверждено', source: 'manual' },
     sign: { value: 'Janis O., 31.10.2026', source: 'manual' },
