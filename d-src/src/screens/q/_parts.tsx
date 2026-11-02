@@ -37,7 +37,7 @@ export const otherType = (t: DocTypeId): DocTypeId => (t === 'sid' ? 'diploma' :
 export const FLOW_TOTAL = 5
 
 // Ключі bag, які належать цьому потоку — «Начать заново» стирає їх усі.
-export const Q_KEYS = ['q.consent', 'q.cv', 'q.doc', 'q.doc2', 'q.form', 'q.manual', 'q.acct', 'q.done', 'q.revoked', 'q.medConsent', 'avail', 'q03.retake', 'q03.sheet', 'q.wrongDocs']
+export const Q_KEYS = ['q.consent', 'q.cv', 'q.doc', 'q.doc2', 'q.form', 'q.manual', 'q.acct', 'q.done', 'q.revoked', 'q.medConsent', 'avail', 'q03.retake', 'q03.sheet', 'q.wrongDocs', 'q.blurTries']
 
 export type Upload = { st: 'none' | 'up' | 'done'; p: number }
 export type DocUpload = Upload & { pages: number }
@@ -154,7 +154,7 @@ export function TextInput({ mono, invalid, className, ...props }: React.Componen
   return (
     <Input
       aria-invalid={invalid || undefined}
-      className={cn('h-12 px-4 text-base md:text-base', mono && 'font-mono', invalid && 'border-signal', className)}
+      className={cn('h-12 px-4 text-base md:text-base', mono && 'font-mono placeholder:font-sans', invalid && 'border-signal', className)}
       {...props}
     />
   )

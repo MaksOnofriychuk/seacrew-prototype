@@ -104,7 +104,7 @@ export function E07Manual({ go }: ScreenProps) {
                   placeholder="ДД.ММ.ГГГГ"
                   inputMode="numeric"
                   aria-invalid={mark('issue') || undefined}
-                  className="h-12 font-mono text-base"
+                  className="h-12 font-mono text-base placeholder:font-sans"
                 />
               </FormField>
               <FormField id="e07-exp" label="Дата окончания">
@@ -115,7 +115,7 @@ export function E07Manual({ go }: ScreenProps) {
                   placeholder="ДД.ММ.ГГГГ"
                   inputMode="numeric"
                   aria-invalid={mark('exp') || undefined}
-                  className="h-12 font-mono text-base"
+                  className="h-12 font-mono text-base placeholder:font-sans"
                 />
               </FormField>
             </div>
@@ -145,7 +145,7 @@ export function E07Manual({ go }: ScreenProps) {
               <span className="truncate text-[15px] font-medium">Фото документа.jpg</span>
               <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <Lock className="size-3 text-success" aria-hidden="true" />
-                JPG, <span className="font-mono">1,1 МБ</span>
+                JPG, <span className="font-mono">1,1</span> МБ
               </span>
             </span>
             <Button variant="ghost" size="icon-lg" aria-label="Удалить" className="text-muted-foreground" onClick={() => patch({ file: false })}>
