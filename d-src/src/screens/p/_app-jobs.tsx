@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { ArrowUpDown, BadgeCheck, BellRing, Briefcase, Check, ChevronRight, Lock, MessageSquare, Plus, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
+import { ArrowUpDown, BadgeCheck, BellRing, Briefcase, Check, ChevronRight, Crown, Lock, MessageSquare, Plus, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { EmptyState, useView, ViewState } from '@/components/app/states'
 import { TabBar } from '@/components/app/tab-bar'
@@ -23,7 +23,7 @@ import type { ApplicationStatus } from '@/lib/data-web'
 import { cn } from '@/lib/utils'
 import { Dateish, JobTags } from '../g02-guest-jobs'
 import { AppSheet, OfflineBanner, plural, SaveButton, TabHead, useApp, useOffline, useSavedJobs } from './_app-parts'
-import { useAppCounts, useChats } from '../m/_parts'
+import { Segmented, useAppCounts, useChats } from '../m/_parts'
 import { filterChips, FiltersSheet, JobCard, jobList, sameFilter, SortSheet, sortLabel } from './_jobs-parts'
 
 type Go = (id: string) => void
@@ -55,33 +55,30 @@ export function useMyApplications() {
   return { list, statusOf: (k: number) => list.find((a) => a.job === k)?.status ?? null }
 }
 
-// Вкладки під заголовком «Вакансии»: усі (p05) і мої відгуки (p23).
+// Перемикач під заголовком «Вакансии» (той самий, що на pr-recommend): усі (p05), рекомендації (pr-recommend,
+// преміум), мої відгуки (p23).
 export function JobsTabs({ active, go }: { active: 'all' | 'mine'; go: Go }) {
+  const { setBag } = useApp()
   const { list } = useMyApplications()
   // стан «Пусто» на p23 — лічильник відгуків теж порожній
   const none = useView() === 'empty' && active === 'mine'
-  const tabs: ['all' | 'mine', string, string, number | null][] = [
-    ['all', 'Все вакансии', 'p05', null],
-    ['mine', 'Мои отклики', 'p23', none ? null : list.length],
-  ]
+  const to = { all: 'p05', rec: 'pr-recommend', mine: 'p23' } as const
   return (
-    <div role="tablist" aria-label="Вакансии" className="mx-6 mt-3 flex gap-6 border-b border-border">
-      {tabs.map(([id, label, to, n]) => (
-        <button
-          key={id}
-          type="button"
-          role="tab"
-          aria-selected={active === id}
-          onClick={() => active !== id && go(to)}
-          className={cn(
-            '-mb-px flex items-center gap-1.5 border-b-2 pt-1 pb-2.5 text-[15px] font-medium transition-colors',
-            active === id ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground',
-          )}
-        >
-          {label}
-          {n !== null && <span className={cn('font-mono text-sm', active === id ? 'text-primary' : 'text-muted-foreground')}>{n}</span>}
-        </button>
-      ))}
+    <div className="px-6 pt-3">
+      <Segmented<'all' | 'rec' | 'mine'>
+        label="Вакансии"
+        value={active}
+        onChange={(v) => {
+          if (v === active) return
+          if (v === 'rec') setBag('back.pr-recommend', to[active])
+          go(to[v])
+        }}
+        items={[
+          { id: 'all', label: 'Все' },
+          { id: 'rec', label: 'Рекомендации' },
+          { id: 'mine', label: 'Отклики', n: none ? undefined : list.length },
+        ]}
+      />
     </div>
   )
 }
@@ -261,8 +258,16 @@ export function JobsScreen({ go, filtersOpen = false }: { go: Go; filtersOpen?: 
             <Button size="lg" onClick={() => go('p17')}>
               Открыть подборки
             </Button>
-            <Button size="lg" variant="ghost" className="text-primary" onClick={() => setLimit(false)}>
-              Понятно
+            <Button
+              size="lg"
+              variant="ghost"
+              className="text-primary"
+              onClick={() => {
+                setBag('back.pr-lock-searches', 'p05')
+                go('pr-lock-searches')
+              }}
+            >
+              <Crown /> Больше подборок с Премиум
             </Button>
           </>
         }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Bell, Check, UserRound, FileText, Globe, LifeBuoy, LogOut, Moon, ShieldCheck, Trash2 } from 'lucide-react'
+import { Bell, Check, Crown, UserRound, FileText, Globe, LifeBuoy, LogOut, Moon, ShieldCheck, Trash2 } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { NavBar } from '@/components/app/chrome'
 import { MOBILE_ROUTES } from '@/lib/mobile-routes'
@@ -52,6 +52,15 @@ export function MSettings({ go }: ScreenProps) {
 
         <SettingsGroup title="Аккаунт">
           <SettingsRow icon={UserRound} title="Вы вошли как" sub={<span className="text-[15px] text-foreground">{email}</span>} />
+          <SettingsRow
+            icon={Crown}
+            title="Подписка"
+            sub="Премиум, промокод"
+            onClick={() => {
+              setBag('back.pr-status', 'm-settings')
+              go('pr-status')
+            }}
+          />
           <SettingsRow
             icon={Bell}
             title="Уведомления"

@@ -1,5 +1,5 @@
 import { useState, type ComponentType } from 'react'
-import { Bell, Briefcase, Check, Clock, Heart, Mail, MessageCircle, MessageSquare, Settings, UserRound } from 'lucide-react'
+import { Bell, Briefcase, Check, Clock, Crown, Heart, Mail, MessageCircle, MessageSquare, Settings, UserRound } from 'lucide-react'
 import { NavBar } from '@/components/app/chrome'
 import { useView, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
@@ -25,6 +25,7 @@ const ICON: Record<NotifKind, { icon: ComponentType<{ className?: string }>; ton
   doc: { icon: Clock, tone: 'text-warning' },
   comment: { icon: MessageCircle, tone: 'text-primary' },
   like: { icon: Heart, tone: 'text-primary' },
+  premium: { icon: Crown, tone: 'text-primary' },
 }
 
 export function P10Notifications({ go }: ScreenProps) {
@@ -47,6 +48,7 @@ export function P10Notifications({ go }: ScreenProps) {
     setBag('notif.read', { ...read, [n.id]: true })
     if (n.post) setBag('feed.post', n.post)
     if (n.chat) setBag('chat.sel', n.chat)
+    if (n.to) setBag('back.' + n.to, 'p10')
     if (n.to) go(n.to)
   }
   const readAll = () => setBag('notif.read', { ...read, ...Object.fromEntries(NOTIFS.filter((n) => n.tab === tab).map((n) => [n.id, true])) })

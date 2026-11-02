@@ -1,5 +1,5 @@
 import { useState, type ComponentType, type ReactNode } from 'react'
-import { Anchor, ChevronRight, FileText, Files, LifeBuoy, LogOut, Moon, Settings, ShieldCheck, TriangleAlert, UserRound } from 'lucide-react'
+import { Anchor, BarChart3, ChevronRight, Crown, FileText, Files, LifeBuoy, LogOut, MessagesSquare, Moon, Settings, ShieldCheck, TriangleAlert, UserPlus, UserRound, Users, Wallet } from 'lucide-react'
 import { AvailabilityButton, AvailabilitySheet } from '@/components/app/availability'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { ProfileFillLine } from '@/components/app/profile-fill'
@@ -35,6 +35,11 @@ export function SideMenu({ open, onClose, go }: { open: boolean; onClose: () => 
     .filter((x): x is { d: typeof x.d; n: number } => x.n !== null && x.n <= 180)
     .sort((a, b) => a.n - b.n)
     .slice(0, 2)
+  // преміум-екрани (pr-*): «Назад» з них повертає в меню
+  const openPr = (id: string) => {
+    setBag('back.' + id, 'p04')
+    go(id)
+  }
   const openDoc = (id: string) => {
     setBag('doc.sel', id)
     go('p11')
@@ -85,6 +90,14 @@ export function SideMenu({ open, onClose, go }: { open: boolean; onClose: () => 
           <Item icon={Files} label="Мои документы" onClick={() => go(MOBILE_ROUTES.docs)} />
           <Item icon={Anchor} label="Опыт работы" onClick={() => go('p22')} />
           <Item icon={FileText} label="Моё CV · PDF" onClick={() => go('p20')} />
+        </nav>
+        <nav aria-label="Премиум" className="mt-1 flex flex-col border-t border-border pt-1">
+          <Item icon={Crown} label="Премиум" onClick={() => openPr('pr-status')} />
+          <Item icon={Wallet} label="Моя зарплата" onClick={() => openPr('pr-salary')} />
+          <Item icon={BarChart3} label="Аналитика" onClick={() => openPr('pr-analytics')} />
+          <Item icon={Users} label="Подписки" onClick={() => openPr('pr-following')} />
+          <Item icon={MessagesSquare} label="Обсуждения" onClick={() => openPr('pr-groups')} />
+          <Item icon={UserPlus} label="Пригласить коллегу" onClick={() => openPr('pr-invite')} />
         </nav>
         <nav className="mt-1 flex flex-col border-t border-border pt-1">
           <Item icon={Settings} label="Настройки" onClick={() => go('m-settings')} />

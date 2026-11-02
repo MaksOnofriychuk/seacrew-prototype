@@ -142,7 +142,7 @@ export function appliedChat(job: number, org: string, orgShort: string): Chat {
 
 /* ---------- сповіщення (правка №22: «Рабочие» і «Нерабочие») ---------- */
 
-export type NotifKind = 'offer' | 'reply' | 'confirmed' | 'jobs' | 'doc' | 'comment' | 'like'
+export type NotifKind = 'offer' | 'reply' | 'confirmed' | 'jobs' | 'doc' | 'comment' | 'like' | 'premium'
 
 export type AppNotif = {
   id: string
@@ -167,6 +167,8 @@ export const NOTIFS: AppNotif[] = [
   { id: 'cmt', tab: 'other', kind: 'comment', text: '**Марко Петров** ответил на ваш комментарий', time: '2 ч', unread: true, to: 'p07', post: 'u1' },
   { id: 'like1', tab: 'other', kind: 'like', text: '**Ирина Бондарь** и ещё 7 моряков отметили ваш комментарий', time: 'вчера', unread: false, to: 'p07', post: 'u2' },
   { id: 'like2', tab: 'other', kind: 'like', text: '**Олегу Коваленко** понравилась ваша публикация', time: '2 дня', unread: false, to: 'p07', post: 'u3' },
+  // преміум (екрани pr-*): не запит рекрутера — тому в «Нерабочих»
+  { id: 'premium-end', tab: 'other', kind: 'premium', text: '**Премиум закончился.** Продолжить?', time: '3 дня', unread: false, to: 'pr-status-ended' },
 ]
 
 /** Пропозиція рекрутера, яку моряк підтверджує однією кнопкою (відповідь 110: захист від випадкового кліку). */

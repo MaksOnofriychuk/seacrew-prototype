@@ -193,10 +193,11 @@ export function SettingsRow({
   )
 }
 
-// Перемикач вкладок (як у колишніх «Входящих»): дві рівні кнопки з лічильником.
+// Перемикач вкладок (як у колишніх «Входящих»): рівні кнопки з лічильником; три й більше — дрібнішим шрифтом.
 export function Segmented<T extends string>({ value, onChange, items, label }: { value: T; onChange: (v: T) => void; items: { id: T; label: string; n?: number }[]; label: string }) {
+  const many = items.length > 2
   return (
-    <div role="tablist" aria-label={label} className="grid grid-cols-2 gap-1 rounded-md border border-border bg-surface p-1">
+    <div role="tablist" aria-label={label} className="grid gap-1 rounded-md border border-border bg-surface p-1" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
       {items.map((it) => (
         <button
           key={it.id}
@@ -205,7 +206,8 @@ export function Segmented<T extends string>({ value, onChange, items, label }: {
           aria-selected={value === it.id}
           onClick={() => onChange(it.id)}
           className={cn(
-            'flex h-9 items-center justify-center gap-1.5 rounded-[9px] border text-[15px] font-medium transition-colors',
+            'flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-[9px] border font-medium whitespace-nowrap transition-colors',
+            many ? 'text-sm' : 'text-[15px]',
             value === it.id ? 'border-primary bg-muted text-primary' : 'border-transparent text-foreground',
           )}
         >
