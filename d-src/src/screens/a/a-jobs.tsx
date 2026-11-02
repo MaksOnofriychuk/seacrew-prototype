@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Briefcase, Plus } from 'lucide-react'
+import { MonoNums } from '@/components/app/mono-nums'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebInput, WebSelect, WebTextarea } from '@/components/web/fields'
@@ -15,6 +16,9 @@ import { AdminPage, CancelButton, Facts, Mono, Note, SideSheet, dt, useBagState 
 
 const TONE: Record<AJobState, Tone> = { review: 'warning', published: 'success', rejected: 'muted', hidden: 'muted' }
 type Tab = 'review' | 'published' | 'off' | 'all'
+
+/** вакансію від імені Seafolio показуємо як «Команда Seafolio»; від імені агентства — назвою агентства */
+const byLabel = (j: AJob) => (j.byTeam && j.org === 'Seafolio' ? 'Команда Seafolio' : j.org)
 
 const EMPTY_FORM = { org: 'Seafolio', fleet: '', department: '', position: '', vessel: '', amount: '', currency: '$', period: 'месяц', region: '', board: '', duration: '', text: '' }
 
@@ -89,12 +93,12 @@ export function AJobs({ go }: ScreenProps) {
       sortValue: (j) => j.org,
       cell: (j) => (
         <span className="flex flex-col leading-tight">
-          <span className="truncate">{j.byTeam ? 'Команда Seafolio' : j.org}</span>
-          {j.note && <span className="truncate text-sm text-muted-foreground">{j.note}</span>}
+          <span className="truncate">{byLabel(j)}</span>
+          {(j.note || (j.byTeam && j.org !== 'Seafolio')) && <span className="truncate text-sm text-muted-foreground">{j.note ?? 'добавила команда'}</span>}
         </span>
       ),
     },
-    { key: 'salary', header: 'Зарплата', width: '16%', cell: (j) => <span className="font-mono text-[13px]">{j.salary}</span> },
+    { key: 'salary', header: 'Зарплата', width: '16%', cell: (j) => <MonoNums text={j.salary} /> },
     { key: 'board', header: 'Посадка', width: '11%', mono: true, sortValue: (j) => j.board, cell: (j) => dt(j.board) },
     { key: 'cmp', header: 'Жалобы', width: '9%', align: 'right', sortValue: (j) => j.complaints, cell: (j) => <Mono className={j.complaints ? 'text-signal' : 'text-muted-foreground'}>{j.complaints}</Mono> },
     { key: 'state', header: 'Статус', width: '17%', sortValue: (j) => j.state, cell: (j) => <StatusDot tone={TONE[j.state]}>{AJOB_STATE_LABEL[j.state]}</StatusDot> },
@@ -142,7 +146,7 @@ export function AJobs({ go }: ScreenProps) {
         open={!!open}
         onOpenChange={(v) => !v && setOpenId(null)}
         title={open?.position}
-        description={open ? (open.byTeam ? 'Команда Seafolio' : open.org) : undefined}
+        description={open ? byLabel(open) : undefined}
         footer={
           open && (
             <>
@@ -177,7 +181,7 @@ export function AJobs({ go }: ScreenProps) {
                 ['Департамент', open.department],
                 ['Тип судна', open.vesselType],
                 ['Регион', open.region],
-                ['Зарплата', <Mono key="s">{open.salary}</Mono>],
+                ['Зарплата', <MonoNums key="s" text={open.salary} />],
                 ['Контракт', open.duration],
                 ['Посадка', <Mono key="b">{dt(open.board)}</Mono>],
                 ['Размещена', <Mono key="c">{dt(open.created)}</Mono>],
@@ -235,7 +239,7 @@ export function AJobs({ go }: ScreenProps) {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <WebField id="nj-region" label="Регион">
-            <WebSelect id="nj-region" value={f.region} onChange={(v) => setF({ ...f, region: v })} options={['Европа', 'Африка', 'ОАЭ', 'Азия']} />
+            <WebSelect id="nj-region" value={f.region} onChange={(v) => setF({ ...f, region: v })} options={['Европа', 'Африка', 'ОАЭ']} />
           </WebField>
           <WebField id="nj-dur" label="Контракт">
             <WebInput id="nj-dur" value={f.duration} onChange={(e) => setF({ ...f, duration: e.target.value })} placeholder="4 мес. или 6 недель" />

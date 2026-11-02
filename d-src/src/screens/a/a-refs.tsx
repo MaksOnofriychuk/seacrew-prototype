@@ -73,7 +73,7 @@ function TreeView() {
   const where = add === 'dept' ? `во флот ${fleet}` : add === 'pos' ? `в ${fleet} → ${dept}` : ''
 
   return (
-    <ViewState loading={{ kind: 'cards', rows: 1 }} empty={{ icon: BookOpen, title: 'Справочник пуст', text: 'Добавьте первый флот — затем департаменты и должности в нём.' }}>
+    <ViewState loading={<MillerSkeleton />} empty={{ icon: BookOpen, title: 'Справочник пуст', text: 'Добавьте первый флот — затем департаменты и должности в нём.' }}>
       <div className="grid h-[560px] grid-cols-[1fr_1fr_1.3fr] overflow-hidden rounded-xl border border-border bg-surface">
         <MillerCol title="Флот" count={Object.keys(tree).length} onAdd={() => setAdd('fleet')}>
           {Object.keys(tree).map((f) => (
@@ -113,6 +113,29 @@ function TreeView() {
         </WebField>
       </SideSheet>
     </ViewState>
+  )
+}
+
+// Завантаження: ті самі три колонки, у кожній — сірі рядки замість пунктів.
+function MillerSkeleton() {
+  const widths = [['w-24', 'w-20', 'w-28', 'w-16', 'w-24'], ['w-20', 'w-16', 'w-24'], ['w-28', 'w-24', 'w-32', 'w-20', 'w-28', 'w-24']]
+  return (
+    <div aria-busy="true" aria-label="Загрузка" className="grid h-[560px] grid-cols-[1fr_1fr_1.3fr] overflow-hidden rounded-xl border border-border bg-surface">
+      {widths.map((col, i) => (
+        <div key={i} className={cn('flex flex-col', i < 2 && 'border-r border-border')}>
+          <div className="flex h-12 shrink-0 items-center border-b border-border px-5">
+            <span className="block h-3 w-20 rounded-full bg-muted" />
+          </div>
+          <div className="flex flex-col py-1">
+            {col.map((w, j) => (
+              <div key={j} className="flex h-10 items-center px-5">
+                <span className={cn('block h-3 rounded-full bg-muted', w)} />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
 

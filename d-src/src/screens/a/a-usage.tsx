@@ -44,8 +44,8 @@ function DailyBars() {
           </span>
         )}
       </div>
-      <div className="flex justify-between border-t border-border pt-1.5 font-mono text-xs text-muted-foreground">
-        <span>{DAILY_COST[0].day.split('-').reverse().join('.')}</span>
+      <div className="flex justify-between border-t border-border pt-1.5 text-xs text-muted-foreground">
+        <Mono>{DAILY_COST[0].day.split('-').reverse().join('.')}</Mono>
         <span>сегодня</span>
       </div>
     </figure>
@@ -76,7 +76,11 @@ export function AUsage({ go }: ScreenProps) {
     { key: 'fail', header: 'Ошибки по типам', width: '21%', cell: (r) => <span className="text-muted-foreground" title={r.failures}>{r.failures}</span> },
     { key: 'tok', header: 'Токены', width: '15%', align: 'right', sortValue: (r) => r.tokensIn, cell: (r) => <span className="text-sm" title="вход / выход">{k(r.tokensIn)} / {k(r.tokensOut)}</span> },
     { key: 'cost', header: 'Стоимость', width: '11%', align: 'right', sortValue: (r) => r.cost, cell: (r) => (r.tier === 'free' ? <span className="text-muted-foreground">бесплатно</span> : <Mono>{usd(r.cost)}</Mono>) },
-    { key: 'time', header: 'Время', align: 'right', sortValue: (r) => r.avgSec, cell: (r) => <Mono className={r.avgSec > 60 ? 'text-warning' : ''}>{r.avgSec.toString().replace('.', ',')} с</Mono> },
+    { key: 'time', header: 'Время', align: 'right', sortValue: (r) => r.avgSec, cell: (r) => (
+        <span className={r.avgSec > 60 ? 'text-warning' : ''}>
+          <Mono>{r.avgSec.toString().replace('.', ',')}</Mono> с
+        </span>
+      ) },
   ]
 
   return (

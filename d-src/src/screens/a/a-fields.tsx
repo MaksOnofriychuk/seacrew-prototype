@@ -175,7 +175,7 @@ export function AFields({ go }: ScreenProps) {
             {disputed(open) && <Note tone="warning">Моряки чаще переносят значение в другое поле, чем оставляют здесь. Проверьте, то ли поле выбрано.</Note>}
             <Facts
               items={[
-                ['Моряков видели', <Mono key="p">{open.people}</Mono>],
+                ['Моряков с этим полем', <Mono key="p">{open.people}</Mono>],
                 ['Откуда', open.source === 'ai' ? 'Нашёл ИИ' : 'Вписал моряк'],
                 ['Подтвердили', <Mono key="c">{open.confirmed}</Mono>],
                 ['Перенесли в другое поле', <Mono key="r">{open.rejected}</Mono>],

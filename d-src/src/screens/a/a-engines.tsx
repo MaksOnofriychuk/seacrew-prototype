@@ -49,8 +49,8 @@ function Limits({ e, onSave }: { e: Engine; onSave: (patch: Partial<Engine>, wha
   }
   return (
     <div className="flex items-end gap-2 py-1">
-      <LimitInput label="Запусков в день" value={req} onChange={setReq} placeholder="без лимита" />
-      <LimitInput label="USD в день" value={usdL} onChange={setUsd} placeholder="без лимита" />
+      <LimitInput label="Запусков" value={req} onChange={setReq} placeholder="без лимита" />
+      <LimitInput label="USD" value={usdL} onChange={setUsd} placeholder="без лимита" />
       <LimitInput label="Тайм-аут, с" value={to} onChange={setTo} placeholder="60" w="w-16" />
       <Button size="sm" variant={dirty ? 'default' : 'outline'} disabled={!dirty || badTimeout} onClick={save} title={badTimeout ? 'Тайм-аут — от 10 до 300 с' : undefined}>
         Сохранить
@@ -131,11 +131,11 @@ export function AEngines({ go }: ScreenProps) {
           <span>
             <Mono>{e.runs}</Mono> <span className="text-muted-foreground">запусков</span>
           </span>
-          <Mono className="text-sm text-muted-foreground">{e.tier === 'free' ? 'бесплатно' : usd(e.cost)}</Mono>
+          <span className="text-sm text-muted-foreground">{e.tier === 'free' ? 'бесплатно' : <Mono>{usd(e.cost)}</Mono>}</span>
         </span>
       ),
     },
-    { key: 'limits', header: 'Лимиты и тайм-аут', cell: (e) => <Limits key={`${e.id}-${e.reqLimit}-${e.usdLimit}-${e.timeout}`} e={e} onSave={(p, w) => save(e, p, w)} /> },
+    { key: 'limits', header: 'Лимит в сутки и тайм-аут', cell: (e) => <Limits key={`${e.id}-${e.reqLimit}-${e.usdLimit}-${e.timeout}`} e={e} onSave={(p, w) => save(e, p, w)} /> },
   ]
 
   const logCols: Column<EngineChange>[] = [
