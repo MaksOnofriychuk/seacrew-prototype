@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils'
 // Спільний файл не змінюємо (правила етапів); інші екрани його не використовують.
 
 export type StepKind = 'core' | 'extra' | 'final'
-export type StepDef = { n: number; t: string; k: StepKind; req?: boolean; /** id екрана, якщо не 's' + n */ id?: string; /** повна назва для списків */ long?: string }
+export type StepDef = { n: number; t: string; k: StepKind; req?: boolean; /** id екрана, якщо не 's' + n */ id?: string; /** повна назва для списків */ long?: string; /** другий рядок у списку «Дополнительно» (sx) */ sub?: string }
 
 /** Номер кроку «Загранпаспорт и визы» (екран s3p). */
 export const PASS = 15
@@ -34,7 +34,7 @@ export const STEPS: StepDef[] = [
   { n: 11, t: 'О себе', k: 'extra' },
   { n: 12, t: 'Доп. информация', k: 'extra' },
   { n: 13, t: 'Заметки', k: 'extra' },
-  { n: 14, t: 'Характеристики', long: 'Характеристики, промоушены (Promotions / appraisals)', k: 'extra' },
+  { n: 14, t: 'Характеристики', long: 'Характеристики, промоушены', sub: 'Promotions / appraisals', k: 'extra' },
   { n: 7, t: 'Проверка', k: 'final' },
 ]
 

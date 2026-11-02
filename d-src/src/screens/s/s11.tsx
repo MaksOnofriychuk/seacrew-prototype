@@ -14,6 +14,8 @@ import { ScrollParam, Section, TextArea, useBag } from './_extra-parts'
 // Як у C, частина вже вибрана: Merchant → Engine → 3rd Engineer (посада з диплома).
 
 const LEVELS = ['A2', 'B1', 'B2', 'C1'] as const
+// «Коротко о себе» — не більше 1000 символів (відповідь замовника 44).
+const ABOUT_MAX = 1000
 const LANGS = ['Русский', 'Украинский', 'Польский', 'Немецкий', 'Испанский', 'Французский']
 type Lang = { name: string; lvl: string }
 
@@ -72,13 +74,20 @@ export function S11About({ go }: ScreenProps) {
       </Section>
 
       <Section title="Коротко о себе" note="Агентства видят это в начале профиля.">
-        <TextArea
-          aria-label="Коротко о себе"
-          rows={4}
-          value={about}
-          onChange={(e) => setBag('s11.about', e.target.value)}
-          placeholder="Опыт, сильные стороны, чем гордитесь в работе"
-        />
+        <div className="flex flex-col gap-1.5">
+          <TextArea
+            aria-label="Коротко о себе"
+            aria-describedby="s11-about-count"
+            rows={4}
+            maxLength={ABOUT_MAX}
+            value={about}
+            onChange={(e) => setBag('s11.about', e.target.value.slice(0, ABOUT_MAX))}
+            placeholder="Опыт, сильные стороны, чем гордитесь в работе"
+          />
+          <span id="s11-about-count" className={cn('self-end font-mono text-sm', about.length >= ABOUT_MAX ? 'text-warning' : 'text-muted-foreground')}>
+            {about.length} / {ABOUT_MAX}
+          </span>
+        </div>
       </Section>
 
       <QSheet open={langSheet} onClose={() => setLangSheet(false)} title="Добавить язык">

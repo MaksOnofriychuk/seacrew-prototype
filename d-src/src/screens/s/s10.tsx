@@ -31,7 +31,7 @@ export function S10Education({ go }: ScreenProps) {
   return (
     <StepShell step={10} go={go} optional>
       <ScrollParam />
-      <AddPanel n={10} title="Загрузите диплом об образовании" sub="ИИ возьмёт учебное заведение, специальность и годы" onUpload={upload} />
+      <AddPanel n={10} title="Сфотографируйте или загрузите диплом об образовании." sub="Поля ниже заполнятся из документа." onUpload={upload} />
 
       <Group title="Диплом об образовании">
         <div className="flex flex-col gap-4 py-1">

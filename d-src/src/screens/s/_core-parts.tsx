@@ -22,6 +22,7 @@ import {
   UserRound,
 } from 'lucide-react'
 import { Paper } from '@/components/app/paper'
+import { ViewState, type ErrorProps, type LoadingProps } from '@/components/app/states'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -480,3 +481,23 @@ export const LEGAL: [string, string][] = [
   ],
   ['Ваши права.', 'Отозвать согласие, удалить аккаунт и получить копию данных можно в профиле: «Отозвать согласие» и «Скачать мои данные».'],
 ]
+
+/* ---------- стани панелі для екранів зі збереженим прогресом (c08, s7, sx) ---------- */
+
+// «Загрузка» і «Ошибка» — поки підтягуємо збережений прогрес. «Пусто» тут не буває: показуємо звичайний вміст.
+export function ProgressState({ loading, error, children }: { loading?: LoadingProps; error?: ErrorProps; children: ReactNode }) {
+  return (
+    <ViewState
+      empty={children}
+      loading={{ kind: 'list', rows: 6, ...loading, className: cn('px-0 py-0', loading?.className) }}
+      error={{
+        title: 'Не удалось загрузить прогресс',
+        text: 'Заполненное не потерялось. Проверьте подключение и попробуйте ещё раз.',
+        ...error,
+        className: cn('px-0 py-2', error?.className),
+      }}
+    >
+      {children}
+    </ViewState>
+  )
+}

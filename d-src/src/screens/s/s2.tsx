@@ -1,4 +1,5 @@
 import { Camera, ScanLine } from 'lucide-react'
+import { FleetPicker, FLEET_EMPTY, fleetSummary, type FleetValue } from '@/components/app/fleet-picker'
 import { StepShell } from './_stepper'
 import type { ScreenProps } from '../registry'
 import { Field, TextInput } from '../q/_parts'
@@ -8,6 +9,7 @@ import { maskDate, Pick, ScrollAnchor, useS } from './_core-parts'
 // моряка на наступному кроці). Фото — тап по колу (у C — перемикач S.photo). Ім'я і прізвище
 // заповнені вигаданими значеннями з C; решта — порожні. Крок можна пропустити.
 // DOM id f-birth, f-cit, f-phone — для «Показать» у пропущених полях.
+// Должность — правки №2, №25: спільний FleetPicker, Флот → Департамент → Должность, по одному (як у контракті).
 
 type Form = {
   first: string
@@ -15,12 +17,10 @@ type Form = {
   birth: string
   cit: string
   phone: string
-  rank: string
   photo: boolean
 }
 
 const COUNTRIES = ['Украина', 'Филиппины', 'Индия', 'Польша']
-const RANKS = ['3rd Engineer', '2nd Engineer', 'Chief Officer', 'AB Seaman']
 
 export function S2Personal({ go }: ScreenProps) {
   const { bag, setBag, showToast } = useS()
@@ -30,10 +30,10 @@ export function S2Personal({ go }: ScreenProps) {
     birth: '',
     cit: '',
     phone: '',
-    rank: '',
     photo: false,
   })
   const put = (p: Partial<Form>) => setBag('s2.form', { ...f, ...p })
+  const pos = bag<FleetValue>('s2.fleet', FLEET_EMPTY)
   const initials = ((f.first[0] ?? '') + (f.last[0] ?? '')).toUpperCase()
 
   return (
@@ -93,7 +93,13 @@ export function S2Personal({ go }: ScreenProps) {
       <Field id="f-phone" label="Телефон">
         <TextInput id="f-phone" type="tel" mono value={f.phone} placeholder="+380 …" className="placeholder:font-sans" onChange={(e) => put({ phone: e.target.value })} />
       </Field>
-      <Pick id="s2-rank" label="Должность" value={f.rank} options={RANKS} placeholder="Выберите должность" onChange={(rank) => put({ rank })} />
+      <section className="mt-2 flex flex-col gap-4 border-t border-border pt-5">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-lg font-semibold">Должность</h2>
+          <p className="text-sm text-muted-foreground">{pos.positions.length ? fleetSummary(pos) : 'Флот, департамент, затем должность'}</p>
+        </div>
+        <FleetPicker value={pos} onChange={(v) => setBag('s2.fleet', v)} />
+      </section>
     </StepShell>
   )
 }

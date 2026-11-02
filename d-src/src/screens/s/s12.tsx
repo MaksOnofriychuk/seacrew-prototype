@@ -1,5 +1,10 @@
+import { useState } from 'react'
+import { Check, ChevronDown, Search } from 'lucide-react'
+import { BottomSheet } from '@/components/app/bottom-sheet'
 import { StepShell } from './_stepper'
 import { Badge } from '@/components/ui/badge'
+import { AIRPORTS, airportLabel } from '@/lib/data-stepper'
+import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { TextInput } from '../q/_parts'
 import { ScrollParam, Section, useBag, XField, XSelect } from './_extra-parts'
@@ -7,8 +12,21 @@ import { ScrollParam, Section, useBag, XField, XSelect } from './_extra-parts'
 // s12 — «Дополнительная информация» (C: step 12): рост, вес, размеры; ближайший аэропорт;
 // близкий человек. Правка №29: «Особые приметы» (татуировки, шрамы…) у блоці розмірів. Правка п. 13: у близкого человека — «Имя и фамилия», «Кем приходится»,
 // «Телефон», «Email» (необязательно), «Адрес». Адресу самого моряка тут немає.
+// «Ближайший аэропорт» — вибір зі списку з пошуком (відповідь замовника 48); список — lib/data-stepper.
 
-type Info = { height: string; weight: string; suit: string; shoe: string; marks: string; airport: string; kinName: string; kinRel: string; kinPhone: string; kinEmail: string; kinAddr: string }
+type Info = {
+  height: string
+  weight: string
+  suit: string
+  shoe: string
+  marks: string
+  airport: string
+  kinName: string
+  kinRel: string
+  kinPhone: string
+  kinEmail: string
+  kinAddr: string
+}
 const EMPTY: Info = { height: '', weight: '', suit: '', shoe: '', marks: '', airport: '', kinName: '', kinRel: '', kinPhone: '', kinEmail: '', kinAddr: '' }
 const SUITS = ['M', 'L', 'XL', 'XXL'] as const
 
@@ -44,7 +62,7 @@ export function S12Extra({ go }: ScreenProps) {
       </Section>
 
       <Section title="Ближайший аэропорт">
-        <TextInput aria-label="Ближайший аэропорт" value={f.airport} onChange={(e) => patch({ airport: e.target.value })} placeholder="Одесса (ODS)" />
+        <AirportPick value={f.airport} onChange={(airport) => patch({ airport })} />
       </Section>
 
       <Section id="f-kin" title="Близкий человек" note="С кем связаться в экстренном случае.">
@@ -83,5 +101,69 @@ export function S12Extra({ go }: ScreenProps) {
         </XField>
       </Section>
     </StepShell>
+  )
+}
+
+// Поле-кнопка: тап відкриває вікно знизу з пошуком за містом, назвою, країною або кодом.
+function AirportPick({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const [q, setQ] = useState('')
+  const needle = q.trim().toLowerCase()
+  const list = AIRPORTS.filter((a) => !needle || [a.city, a.name ?? '', a.en, a.country, a.code].some((x) => x.toLowerCase().includes(needle)))
+  const close = () => {
+    setOpen(false)
+    setQ('')
+  }
+  return (
+    <>
+      <button
+        type="button"
+        id="s12-airport"
+        aria-haspopup="dialog"
+        onClick={() => setOpen(true)}
+        className="flex h-12 w-full items-center justify-between gap-3 rounded-md border border-input bg-surface px-4 text-left text-base active:scale-[0.99]"
+      >
+        <span className={cn('truncate', !value && 'text-muted-foreground')}>{value || 'Выберите аэропорт'}</span>
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+      </button>
+      <BottomSheet open={open} onClose={close} title="Ближайший аэропорт">
+        <div className="relative">
+          <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+          <TextInput aria-label="Поиск аэропорта" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Город или код, например ODS" className="pl-10" />
+        </div>
+        {list.length ? (
+          <ul className="mt-3 overflow-hidden rounded-xl border border-border">
+            {list.map((a) => {
+              const label = airportLabel(a)
+              const on = value === label
+              return (
+                <li key={a.code} className="border-t border-border first:border-t-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onChange(label)
+                      close()
+                    }}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left active:bg-muted"
+                  >
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className={cn('text-[15px]', on && 'font-semibold')}>
+                        {a.city}
+                        {a.name && <span className="text-muted-foreground">, {a.name}</span>}
+                      </span>
+                      <span className="text-sm text-muted-foreground">{a.country}</span>
+                    </span>
+                    <span className="font-mono text-sm text-muted-foreground">{a.code}</span>
+                    {on && <Check className="size-4 shrink-0 text-primary" />}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        ) : (
+          <p className="mt-4 text-[15px] text-muted-foreground">Ничего не нашли. Проверьте название или код.</p>
+        )}
+      </BottomSheet>
+    </>
   )
 }

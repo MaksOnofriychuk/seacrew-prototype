@@ -3,11 +3,11 @@ import { Status } from '@/components/app/status'
 import { StepShell, stepId, STEPS, useSteps, type StepKind } from './_stepper'
 import type { ScreenProps } from '../registry'
 import { Note } from '../q/_parts'
-import { ScrollAnchor, STEP_ICON } from './_core-parts'
+import { ProgressState, ScrollAnchor, STEP_ICON } from './_core-parts'
 
 // s7 — «Проверка». Розділи групами «Основное» / «Дополнительно»; у пропущених — які поля.
 // Тап — перехід у розділ. «Готово» активна, коли заповнені «Аккаунт» і «Документ моряка»;
-// після неї — профіль (q09).
+// після неї — профіль (q09). Стани панелі: «Загрузка» / «Ошибка» — список розділів (ProgressState).
 
 export function S7Review({ go }: ScreenProps) {
   const { done, stepState, missingList } = useSteps()
@@ -53,15 +53,17 @@ export function S7Review({ go }: ScreenProps) {
   return (
     <StepShell step={7} go={go} canNext={reqOk}>
       <ScrollAnchor />
-      {group('core', 'Основное')}
-      {group('extra', 'Дополнительно')}
-      {reqOk ? (
-        <p className="px-1 text-sm text-muted-foreground">Пропущенное можно заполнить позже из профиля.</p>
-      ) : (
-        <Note icon={AlertTriangle} tone="warning">
-          Чтобы закончить, заполните «Аккаунт» и «Документ моряка».
-        </Note>
-      )}
+      <ProgressState>
+        {group('core', 'Основное')}
+        {group('extra', 'Дополнительно')}
+        {reqOk ? (
+          <p className="px-1 text-sm text-muted-foreground">Пропущенное можно заполнить позже из профиля.</p>
+        ) : (
+          <Note icon={AlertTriangle} tone="warning">
+            Чтобы закончить, заполните «Аккаунт» и «Документ моряка».
+          </Note>
+        )}
+      </ProgressState>
     </StepShell>
   )
 }
