@@ -45,7 +45,7 @@ export const RECRUITER_NAV: NavItem[] = [
   { id: 'r-jobs', label: 'Вакансии', icon: Briefcase },
   { id: 'r-applications', label: 'Отклики', icon: Inbox, count: RECRUITER_COUNTS.applications },
   { id: 'r-messages', label: 'Сообщения', icon: MessageSquare, count: RECRUITER_COUNTS.messages },
-  { id: 'r-forms', label: 'Формы', icon: FileText },
+  { id: 'r-forms', label: 'Анкеты', icon: FileText },
   { id: 'r-org', label: 'Организация', icon: Building2, group: 'Компания' },
   { id: 'r-settings', label: 'Настройки', icon: Settings, group: 'Компания' },
 ]
@@ -58,9 +58,9 @@ export const ADMIN_NAV: NavItem[] = [
   { id: 'a-posts', label: 'Публикации', icon: Newspaper, group: 'Модерация' },
   { id: 'a-refs', label: 'Справочники', icon: BookOpen, group: 'Данные' },
   { id: 'a-fields', label: 'Каталог полей', icon: Database, group: 'Данные' },
-  { id: 'a-engines', label: 'Движки', icon: Cpu, group: 'AI' },
-  { id: 'a-usage', label: 'Расходы AI', icon: Coins, group: 'AI' },
-  { id: 'a-lab', label: 'Лаборатория', icon: FlaskConical, group: 'AI' },
+  { id: 'a-engines', label: 'Движки распознавания', icon: Cpu, group: 'ИИ' },
+  { id: 'a-usage', label: 'Расходы ИИ', icon: Coins, group: 'ИИ' },
+  { id: 'a-lab', label: 'Лаборатория', icon: FlaskConical, group: 'ИИ' },
 ]
 
 export function WebShell({

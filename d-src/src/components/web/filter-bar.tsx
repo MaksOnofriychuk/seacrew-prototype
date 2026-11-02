@@ -74,7 +74,7 @@ export function FilterSelect({
 }) {
   return (
     <Select value={value || ALL} onValueChange={(v) => onChange(v === ALL ? '' : v)}>
-      <SelectTrigger aria-label={label} className={cn('h-10 bg-surface', value && 'border-primary', className)}>
+      <SelectTrigger aria-label={label} className={cn('h-10 data-[size=default]:h-10 bg-surface', value && 'border-primary', className)}>
         <span className="text-muted-foreground">{label}:</span>
         <SelectValue />
       </SelectTrigger>

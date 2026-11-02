@@ -367,7 +367,7 @@ export function readiness(full: boolean) {
     ['Документ моряка', true],
     ['Диплом', true],
     ['Медицинские', full],
-    ['Морской стаж', true],
+    ['Опыт работы', true],
   ]
   const n = items.filter((x) => x[1]).length
   return { items, pct: n * 20 }

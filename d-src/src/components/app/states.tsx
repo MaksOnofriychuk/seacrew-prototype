@@ -41,7 +41,7 @@ export function EmptyState({ icon: I = Inbox, title, text, action, className }: 
   const web = useFrameKind() === 'web'
   return (
     <div className={cn('flex flex-col items-start gap-3', web ? 'mx-auto max-w-[420px] items-center py-16 text-center' : 'px-6 py-10', className)}>
-      <span className="flex size-11 items-center justify-center rounded-full bg-muted text-primary">
+      <span className="flex size-11 items-center justify-center rounded-full border border-border bg-card text-primary">
         <I className="size-5" />
       </span>
       <div className="flex flex-col gap-1">
@@ -67,7 +67,7 @@ export function ErrorState({ title = 'Не удалось загрузить', t
   const retry = useRetry()
   return (
     <div role="alert" className={cn('flex flex-col items-start gap-3', web ? 'mx-auto max-w-[420px] items-center py-16 text-center' : 'px-6 py-10', className)}>
-      <span className="flex size-11 items-center justify-center rounded-full bg-muted text-signal">
+      <span className="flex size-11 items-center justify-center rounded-full border border-border bg-card text-signal">
         <AlertTriangle className="size-5" />
       </span>
       <div className="flex flex-col gap-1">

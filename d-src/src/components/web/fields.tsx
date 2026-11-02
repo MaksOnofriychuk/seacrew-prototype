@@ -58,7 +58,7 @@ export function WebSelect({
 }) {
   return (
     <Select value={value || undefined} onValueChange={onChange}>
-      <SelectTrigger id={id} className={cn('h-10 w-full', className)}>
+      <SelectTrigger id={id} className={cn('h-10 w-full data-[size=default]:h-10', className)}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent position="popper">

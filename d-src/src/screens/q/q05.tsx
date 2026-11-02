@@ -177,7 +177,7 @@ export function Q05Check({ go }: ScreenProps) {
         </div>
       </Paper>
 
-      <Group title="Морской стаж">
+      <Group title="Опыт работы">
         <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3">
           <Ship className="size-5 shrink-0 text-primary" />
           <span className="flex flex-col">

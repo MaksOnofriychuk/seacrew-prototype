@@ -96,7 +96,7 @@ export function Q09Profile({ go }: ScreenProps) {
 
             <Group title="Мой профиль">
               <Row icon={UserRound} title="Личные данные" onClick={() => go('s2')} />
-              <Row icon={Ship} title="Морской стаж" value={<MonoNums text={sea} />} onClick={() => go('s6')} />
+              <Row icon={Ship} title="Опыт работы" value={<MonoNums text={sea} />} onClick={() => go('s6')} />
               <Row icon={Briefcase} title="Должность" value="3rd Engineer" />
               <Row icon={FileText} title="Моё CV" value="PDF" />
             </Group>
