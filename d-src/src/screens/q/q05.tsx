@@ -1,14 +1,16 @@
 import { useEffect } from 'react'
 import { Info, Lock, Ship } from 'lucide-react'
+import { MonoNums } from '@/components/app/mono-nums'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import type { ScreenProps } from '../registry'
-import { CheckRow, DOC_TYPES, durText, Field, FlowScreen, Footer, FORM_DEFAULTS, Hint, months, Note, TextInput, Title, type DocTypeId, type QForm, type TagKind, useQ } from './_parts'
+import { CheckRow, contractsText, DOC_TYPES, durText, Field, FlowScreen, Footer, FORM_DEFAULTS, Hint, months, Note, TextInput, Title, type DocTypeId, type QForm, type TagKind, useQ } from './_parts'
 
 // q05 — перевірка прочитаного. Групи: личные данные, документ моряка, диплом, морской стаж.
 // Правки пп. 5–6: «Название документа» — перше поле в обох документах; у «Диплом» після
 // «Должность по диплому» — «Правило STCW» і «Уровень» (з документа, можна виправити).
+// Правка №14 — новий підзаголовок; №3 — у підсумку стажу «контракты», не «рейсы».
 export const STCW_RULES = ['II/1', 'II/2', 'II/3', 'III/1', 'III/2', 'III/3', 'III/4', 'III/5', 'III/6']
 export const STCW_LEVELS = ['Management', 'Operational', 'Support']
 
@@ -124,13 +126,14 @@ export function Q05Check({ go }: ScreenProps) {
     ? 'Данные документа введены вами вручную — администратор сверит их с фото. Остальное мы взяли из CV.'
     : noName
       ? 'Не удалось прочитать имя — введите его как в документе.'
-      : 'Мы прочитали CV и документы. Проверьте и исправьте, если что-то не так — подтверждённое попадёт в профиль.'
+      : 'Данные из CV и документов уже заполнены. Проверьте их и подтвердите.'
 
   const total = months(s('per1')) + months(s('per2'))
+  const contracts = [1, 2].filter((n) => s(`vessel${n}`).trim() || months(s(`per${n}`))).length
 
   return (
     <FlowScreen
-      step={4}
+      step={3}
       onBack={() => go('q03')}
       footer={
         <Footer className="border-t border-border pt-4">
@@ -179,7 +182,15 @@ export function Q05Check({ go }: ScreenProps) {
           <Ship className="size-5 shrink-0 text-primary" />
           <span className="flex flex-col">
             <span className="text-sm text-muted-foreground">Общий стаж</span>
-            <span className="font-mono text-base font-medium">{durText(total) || '—'}</span>
+            <span className="text-base font-medium">
+              <MonoNums text={durText(total) || '—'} />
+              {contracts > 0 && (
+                <span className="text-muted-foreground">
+                  {' '}
+                  · <MonoNums text={contractsText(contracts)} />
+                </span>
+              )}
+            </span>
           </span>
         </div>
         {[1, 2].map((n) => (

@@ -1,14 +1,15 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { X, type LucideIcon } from 'lucide-react'
-import { Footer, NavBar } from '@/components/app/chrome'
+import { Footer, NavBar, Wordmark } from '@/components/app/chrome'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
+import { SCREENS } from '../registry'
 
-// Спільний каркас екранів помилок e01–e06 (як qError у C):
+// Спільний каркас екранів помилок e01–e09 (як qError у C):
 // невеликий знак ліворуч, заголовок-проблема, пояснення, блок «що робити», дії внизу.
 // Без великого значка в колі по центру — сильний елемент тут заголовок.
 
@@ -32,6 +33,7 @@ export function ErrorLayout({
   actions,
   toast,
   low = false,
+  brand = false,
 }: {
   icon: LucideIcon
   tone: Tone
@@ -46,19 +48,27 @@ export function ErrorLayout({
   toast?: string | null
   /** короткий екран без блоку (e04–e06): більший знак, текст опущено ближче до кнопок — без порожнечі посередині */
   low?: boolean
+  /** без «Назад» і хрестика — «Seafolio» вгорі (e09: з екрана нікуди не піти, лише оновитись) */
+  brand?: boolean
 }) {
   return (
     <div className="flex h-full flex-col">
-      <NavBar
-        onBack={onBack}
-        right={
-          onClose && (
-            <button type="button" onClick={onClose} aria-label="Закрыть" className="flex size-11 items-center justify-center rounded-md text-muted-foreground active:scale-95">
-              <X className="size-6" />
-            </button>
-          )
-        }
-      />
+      {brand ? (
+        <div className="flex h-12 shrink-0 items-center px-6">
+          <Wordmark />
+        </div>
+      ) : (
+        <NavBar
+          onBack={onBack}
+          right={
+            onClose && (
+              <button type="button" onClick={onClose} aria-label="Закрыть" className="flex size-11 items-center justify-center rounded-md text-muted-foreground active:scale-95">
+                <X className="size-6" />
+              </button>
+            )
+          }
+        />
+      )}
       <div className={cn('flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pt-3 pb-4', low && 'justify-end pb-8')}>
         <Icon className={cn('shrink-0', low ? 'size-14' : 'size-7', TONE[tone])} strokeWidth={low ? 1.5 : 1.75} aria-hidden="true" />
         <h1 className="mt-4 text-[32px] leading-[1.1] font-semibold tracking-tight text-balance">{title}</h1>
@@ -78,11 +88,20 @@ export function BlockTitle({ children }: { children: ReactNode }) {
   return <h2 className="mt-8 text-base font-semibold">{children}</h2>
 }
 
+// «Написать в поддержку» (e04, e05, e06, e08): екран підтримки m-support робить інший етап.
+// Поки його немає в реєстрі — коротке повідомлення внизу, щоб кнопка не була мертвою.
+export function useSupport(go: (id: string) => void) {
+  const { showToast } = useProto()
+  return () => (SCREENS.some((s) => s.id === 'm-support') ? go('m-support') : showToast('Открываем чат с поддержкой'))
+}
+
 // Три виходи, коли документ не підійшов (e01, e02) — поведінка C: retake, upload-file, c:e07.
-export function RetryActions({ go }: { go: (id: string) => void }) {
+// keepScenario (e02, правка №12): сценарій «Это не документ моряка» лишається — наступне читання
+// покаже блокування e08. Без нього (e01) повторна спроба вдається, як у C.
+export function RetryActions({ go, keepScenario = false }: { go: (id: string) => void; keepScenario?: boolean }) {
   const { set, setBag } = useProto()
   const back = (sheet: 'doc' | null) => {
-    set({ scenario: 'ok' })
+    if (!keepScenario) set({ scenario: 'ok' })
     setBag('q03.sheet', sheet)
     // q03 показує документ як ще не завантажений (як retake у C)
     setBag('q03.retake', true)

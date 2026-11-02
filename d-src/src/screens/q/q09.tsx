@@ -1,10 +1,12 @@
 import { useEffect, useState, type ComponentType, type ReactNode } from 'react'
-import { Bell, Bookmark, Briefcase, ChevronRight, Download, FileText, Globe, Inbox, Moon, ShieldCheck, Ship, UserRound } from 'lucide-react'
+import { Bookmark, Briefcase, ChevronRight, Download, FileText, Globe, Moon, ShieldCheck, Ship, UserRound } from 'lucide-react'
 import { Wordmark } from '@/components/app/chrome'
 import { TabBar } from '@/components/app/tab-bar'
-import { Badge } from '@/components/ui/badge'
+import { BellButton } from '@/components/app/top-bar'
 import { Button } from '@/components/ui/button'
 import { AvailabilityButton, AvailabilitySheet } from '@/components/app/availability'
+import { APP_COUNTS } from '@/lib/data'
+import { MOBILE_ROUTES } from '@/lib/mobile-routes'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { VOYAGES, vMonths, type Voyage } from '../s/_core-voyage'
@@ -12,10 +14,12 @@ import { durText, FORM_DEFAULTS, Note, readiness, ReadinessBlock, useToast, type
 import { MonoNums } from '../p/_app-parts'
 import type { Acct } from './q06'
 
-// q09 — профіль після швидкої реєстрації (profileScreen у C). «Готовность к анкетам» рахуємо лише
+// q09 — профіль після швидкої реєстрації (profileScreen у C). «Профиль заполнен на N %» (№21) рахуємо лише
 // по полях, які найчастіше потрібні в анкетах. 100 % — додайте ?full=1 до адреси (у C — галочка в панелі).
 // Статус доступності — спільні AvailabilityButton / AvailabilitySheet (правки №1, №15, №19, №20).
 // Не плашка, а тихий рядок з іконкою: плашки лишаємо для строків документів.
+// Правка №16: «Уведомления» — дзвіночок угорі (з лічильником), «Входящие» — вкладка «Сообщения» внизу;
+// рядків у профілі для них немає.
 
 
 export function Q09Profile({ go }: ScreenProps) {
@@ -40,7 +44,7 @@ export function Q09Profile({ go }: ScreenProps) {
   const last = String(form.last || '')
   const name = `${first} ${last}`.trim() || 'Без имени'
   const initials = ((first[0] ?? '?') + (last[0] ?? '')).toUpperCase()
-  // Стаж — з тих самих рейсів, що на кроці «Морской стаж» (s6): одна цифра скрізь.
+  // Стаж — з тих самих контрактів, що на кроці «Морской стаж» (s6): одна цифра скрізь.
   const sea = durText(bag<Voyage[]>('s6.voyages', VOYAGES).reduce((s, v) => s + vMonths(v), 0))
 
   // Тема в D живе в адресі (#q09?t=dark) — перемикаємо її так само, як панель. Той самий екран і як p14.
@@ -53,7 +57,8 @@ export function Q09Profile({ go }: ScreenProps) {
     <div className="relative flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
         <div className="flex h-12 items-center">
-          <Wordmark />
+          <Wordmark className="flex-1" />
+          <BellButton n={APP_COUNTS.notifications} onClick={() => go(MOBILE_ROUTES.notifications)} />
         </div>
         {loading ? (
           <Skeleton />
@@ -97,8 +102,6 @@ export function Q09Profile({ go }: ScreenProps) {
             </Group>
             <Group title="Работа">
               <Row icon={Bookmark} title="Сохранённое" value={<span className="font-mono">{savedN}</span>} onClick={() => go('p09')} />
-              <Row icon={Bell} title="Уведомления" value={<Badge className="font-mono">3</Badge>} onClick={() => go('p10')} />
-              <Row icon={Inbox} title="Входящие" value={<Badge className="font-mono">1</Badge>} onClick={() => go('p03')} />
             </Group>
             <Group title="Настройки">
               <Row icon={Globe} title="Язык" value="Русский" />

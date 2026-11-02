@@ -71,7 +71,7 @@ export function Q06Account({ go }: ScreenProps) {
 
   return (
     <FlowScreen
-      step={5}
+      step={4}
       onBack={() => go('q05')}
       footer={
         <Footer className="border-t border-border pt-4">
