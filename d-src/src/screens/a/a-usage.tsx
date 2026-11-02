@@ -1,0 +1,130 @@
+import { useState } from 'react'
+import { Coins } from 'lucide-react'
+import { ViewState } from '@/components/app/states'
+import { DataTable, type Column } from '@/components/web/data-table'
+import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { BUDGET, DAILY_COST, PHOTOS, USAGE, type Period, type UsageRow } from '@/lib/data-admin'
+import { cn } from '@/lib/utils'
+import type { ScreenProps } from '../types'
+import { AdminPage, Mono, useBagState } from './_parts'
+
+const usd = (n: number) => '$' + n.toFixed(2).replace('.', ',')
+const k = (n: number) => (n >= 1_000_000 ? (n / 1_000_000).toFixed(1).replace('.', ',') + ' млн' : n >= 1000 ? Math.round(n / 1000) + ' тыс.' : String(n))
+
+// Витрати по днях: один ряд, стовпчики від нуля з округленим верхом, підказка на наведенні, лінія денного бюджету.
+function DailyBars() {
+  const [hover, setHover] = useState<number | null>(null)
+  const max = Math.max(BUDGET.daily * 0.5, ...DAILY_COST.map((d) => d.usd))
+  const H = 120
+  return (
+    <figure className="flex min-w-0 flex-1 flex-col gap-2">
+      <figcaption className="text-sm text-muted-foreground">Расходы по дням, последние 14 дней</figcaption>
+      <div className="relative flex items-end gap-[2px]" style={{ height: H }} onMouseLeave={() => setHover(null)}>
+        {DAILY_COST.map((d, i) => (
+          <button
+            type="button"
+            key={d.day}
+            onMouseEnter={() => setHover(i)}
+            onFocus={() => setHover(i)}
+            aria-label={`${d.day.split('-').reverse().join('.')}: ${usd(d.usd)}`}
+            className="group flex h-full flex-1 items-end"
+          >
+            <span
+              className={cn('w-full rounded-t-[4px] transition-colors', i === DAILY_COST.length - 1 ? 'bg-primary' : 'bg-primary/35', hover === i && 'bg-primary')}
+              style={{ height: Math.max(2, (d.usd / max) * H) }}
+            />
+          </button>
+        ))}
+        {hover !== null && (
+          <span
+            className="pointer-events-none absolute -top-2 z-10 -translate-x-1/2 -translate-y-full rounded-md border border-border bg-surface px-2.5 py-1.5 text-sm whitespace-nowrap"
+            style={{ left: `${((hover + 0.5) / DAILY_COST.length) * 100}%` }}
+          >
+            <Mono className="text-muted-foreground">{DAILY_COST[hover].day.split('-').reverse().join('.')}</Mono> <Mono>{usd(DAILY_COST[hover].usd)}</Mono>
+          </span>
+        )}
+      </div>
+      <div className="flex justify-between border-t border-border pt-1.5 font-mono text-xs text-muted-foreground">
+        <span>{DAILY_COST[0].day.split('-').reverse().join('.')}</span>
+        <span>сегодня</span>
+      </div>
+    </figure>
+  )
+}
+
+export function AUsage({ go }: ScreenProps) {
+  const [period, setPeriod] = useBagState<Period>('a.usagePeriod', 'today')
+  const rows = USAGE[period]
+  const photos = PHOTOS[period]
+  const pct = Math.min(100, (BUDGET.spentToday / BUDGET.daily) * 100)
+
+  const columns: Column<UsageRow>[] = [
+    { key: 'label', header: 'Движок', width: '15%', sortValue: (r) => r.label, cell: (r) => <span className="font-medium">{r.label}</span> },
+    { key: 'runs', header: 'Запуски', width: '9%', align: 'right', mono: true, sortValue: (r) => r.runs, cell: (r) => r.runs.toLocaleString('ru') },
+    {
+      key: 'out',
+      header: 'Успех / ошибка / идёт',
+      width: '18%',
+      align: 'right',
+      sortValue: (r) => r.failed,
+      cell: (r) => (
+        <Mono>
+          {r.ok.toLocaleString('ru')} <span className="text-muted-foreground">/</span> <span className={r.failed ? 'text-signal' : ''}>{r.failed}</span> <span className="text-muted-foreground">/</span> {r.running}
+        </Mono>
+      ),
+    },
+    { key: 'fail', header: 'Ошибки по типам', width: '21%', cell: (r) => <span className="text-muted-foreground" title={r.failures}>{r.failures}</span> },
+    { key: 'tok', header: 'Токены', width: '15%', align: 'right', sortValue: (r) => r.tokensIn, cell: (r) => <span className="text-sm" title="вход / выход">{k(r.tokensIn)} / {k(r.tokensOut)}</span> },
+    { key: 'cost', header: 'Стоимость', width: '11%', align: 'right', sortValue: (r) => r.cost, cell: (r) => (r.tier === 'free' ? <span className="text-muted-foreground">бесплатно</span> : <Mono>{usd(r.cost)}</Mono>) },
+    { key: 'time', header: 'Время', align: 'right', sortValue: (r) => r.avgSec, cell: (r) => <Mono className={r.avgSec > 60 ? 'text-warning' : ''}>{r.avgSec.toString().replace('.', ',')} с</Mono> },
+  ]
+
+  return (
+    <AdminPage active="a-usage" go={go}>
+      <PageHeader title="Расходы ИИ" description="Сколько стоили движки распознавания и сколько фото им отправили. Суммы — по нашим данным, из ответов провайдеров." />
+
+      <ViewState loading={{ kind: 'cards', rows: 1 }} empty={{ icon: Coins, title: 'Расходов пока нет', text: 'Цифры появятся после первого распознавания.' }}>
+        <section className="mb-8 flex items-stretch gap-10 rounded-xl border border-border bg-surface px-8 py-6">
+          <div className="flex w-[300px] shrink-0 flex-col justify-between gap-6">
+            <div className="flex flex-col gap-1">
+              <span className="text-sm text-muted-foreground">Потрачено сегодня</span>
+              <span className="font-mono text-[44px] leading-none font-semibold tracking-tight">{usd(BUDGET.spentToday)}</span>
+              <span className="text-[15px] text-muted-foreground">
+                из дневного бюджета <Mono>{usd(BUDGET.daily)}</Mono>
+              </span>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className="h-2 overflow-hidden rounded-full bg-muted" role="meter" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100} aria-label="Дневной бюджет">
+                <span className={cn('block h-full rounded-full', pct > 90 ? 'bg-signal' : pct > 70 ? 'bg-warning' : 'bg-primary')} style={{ width: `${pct}%` }} />
+              </span>
+              <span className="text-sm text-muted-foreground">
+                <Mono>{Math.round(pct)} %</Mono> бюджета, при <Mono>80 %</Mono> придёт письмо
+              </span>
+            </div>
+          </div>
+          <span className="w-px bg-border" aria-hidden="true" />
+          <DailyBars />
+        </section>
+      </ViewState>
+
+      <PageTabs<Period>
+        tabs={[
+          { id: 'today', label: 'Сегодня' },
+          { id: 'week', label: '7 дней' },
+          { id: 'month', label: 'Этот месяц' },
+        ]}
+        value={period}
+        onChange={setPeriod}
+        className="mb-4"
+      />
+      <p className="mb-4 text-[15px]">
+        Фото отправлено движкам: <Mono>{photos.sent.toLocaleString('ru')}</Mono>
+        <span className="text-muted-foreground">
+          {' '}
+          — лимиты: <Mono>30</Mono> на аккаунт, <Mono>10</Mono> на запрос. Все фото потратили аккаунтов: <Mono>{photos.atLimit}</Mono>
+        </span>
+      </p>
+      <DataTable columns={columns} rows={rows} rowKey={(r) => r.id} initialSort={{ key: 'runs', dir: 'desc' }} empty={{ icon: Coins, title: 'За этот период запусков нет', text: 'Выберите другой период.' }} />
+    </AdminPage>
+  )
+}
