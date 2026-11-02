@@ -145,22 +145,8 @@ export function SectionLabel({ children, aside }: { children: ReactNode; aside?:
   )
 }
 
-// Числа й дати всередині тексту — Plex Mono, слова — звичайним шрифтом.
-export function MonoNums({ text }: { text: string }) {
-  return (
-    <>
-      {text.split(/(\d[\d.,/]*)/).map((part, i) =>
-        i % 2 ? (
-          <span key={i} className="font-mono">
-            {part}
-          </span>
-        ) : (
-          part
-        ),
-      )}
-    </>
-  )
-}
+// Числа й дати всередині тексту — тепер спільне: components/app/mono-nums.
+export { MonoNums } from '@/components/app/mono-nums'
 
 // Вікно знизу — тепер спільне: components/app/bottom-sheet.
 export { BottomSheet as AppSheet } from '@/components/app/bottom-sheet'
