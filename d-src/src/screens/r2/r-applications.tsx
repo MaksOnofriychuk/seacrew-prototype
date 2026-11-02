@@ -112,7 +112,7 @@ export function RApplications({ go }: ScreenProps) {
             }
             count={rows.length}
           >
-            <FilterSelect label="Вакансия" value={job} onChange={setJob} options={r.jobs.filter((j) => r.apps.some((a) => a.jobId === j.id)).map((j) => ({ value: j.id, label: `${j.position}, ${j.vesselName}` }))} className="max-w-[300px]" />
+            <FilterSelect label="Вакансия" value={job} onChange={setJob} options={r.jobs.filter((j) => r.apps.some((a) => a.jobId === j.id)).map((j) => ({ value: j.id, label: `${j.position}, ${j.vesselName}` }))} className="max-w-[300px] data-[size=default]:h-10" />
           </FilterBar>
           <DataTable
             columns={columns}
@@ -130,7 +130,7 @@ export function RApplications({ go }: ScreenProps) {
         </div>
 
         {view === 'normal' && (
-          <aside className="flex flex-col rounded-xl border border-border bg-surface">
+          <aside className="sticky top-0 flex flex-col rounded-xl border border-border bg-surface">
             <div className="flex flex-col gap-4 p-5">
               <div className="flex items-center gap-3">
                 <WebAvatar initials={s.initials} size="lg" className="size-12 text-base" />

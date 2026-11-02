@@ -72,6 +72,8 @@ export function useR2() {
     },
     send: (chatId: string, m: ChatMsg) => setBag('r2.sent', { ...sent, [chatId]: [...(sent[chatId] ?? []), m] }),
 
+    importTitle: bag<string>('r2.importTitle', ''),
+    setImportTitle: (t: string) => setBag('r2.importTitle', t),
     formId: bag<string>('r2.form', 'f01'),
     openForm: (id: string) => setBag('r2.form', id),
     assignmentId: bag<string>('r2.as', 'as01'),

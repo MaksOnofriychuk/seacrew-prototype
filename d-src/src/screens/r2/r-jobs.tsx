@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Briefcase, Plus, SearchX } from 'lucide-react'
+import { MonoNums } from '@/components/app/mono-nums'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
@@ -10,7 +11,7 @@ import { FLEETS } from '@/lib/data'
 import { ME_RECRUITER, RECRUITERS, salaryText, type JobStatus, type WebJob } from '@/lib/data-web'
 import { JOB_EXTRA } from '@/lib/data-recruiter-2'
 import type { ScreenProps } from '../registry'
-import { ConfirmDialog, ruDate, useR2 } from './_parts'
+import { ConfirmDialog, plural, ruDate, useR2 } from './_parts'
 
 type Tab = JobStatus | 'all'
 
@@ -44,7 +45,7 @@ export function RJobs({ go }: ScreenProps) {
     {
       key: 'position',
       header: 'Вакансия',
-      width: '27%',
+      width: '24%',
       sortValue: (j) => j.position,
       cell: (j) => (
         <span className="flex flex-col">
@@ -56,27 +57,27 @@ export function RJobs({ go }: ScreenProps) {
         </span>
       ),
     },
-    { key: 'fleet', header: 'Флот', width: '11%', sortValue: (j) => j.fleet, cell: (j) => j.fleet },
-    { key: 'salary', header: 'Зарплата', width: '15%', mono: true, cell: (j) => (j.salary.amount ? salaryText(j) : '—') },
-    { key: 'board', header: 'Посадка', width: '10%', mono: true, sortValue: (j) => j.board, cell: (j) => ruDate(j.board) || '—' },
+    { key: 'fleet', header: 'Флот', width: '10%', sortValue: (j) => j.fleet, cell: (j) => j.fleet },
+    { key: 'salary', header: 'Зарплата', width: '17%', cell: (j) => (j.salary.amount ? <MonoNums text={salaryText(j)} /> : '—') },
+    { key: 'board', header: 'Посадка', width: '11%', mono: true, sortValue: (j) => j.board, cell: (j) => ruDate(j.board) || '—' },
     {
       key: 'apps',
       header: 'Отклики',
-      width: '10%',
+      width: '11%',
       sortValue: (j) => allApps(j.id),
       cell: (j) => (
         <span className="flex items-baseline gap-2">
           <span className="font-mono">{allApps(j.id)}</span>
           {newApps(j.id) > 0 && (
             <span className="text-[13px] text-primary">
-              +<span className="font-mono">{newApps(j.id)}</span> новых
+              +<span className="font-mono">{newApps(j.id)}</span> {plural(newApps(j.id), 'новый', 'новых', 'новых')}
             </span>
           )}
         </span>
       ),
     },
-    { key: 'views', header: 'Просмотры', width: '10%', align: 'right', mono: true, sortValue: (j) => JOB_EXTRA[j.id]?.views ?? 0, cell: (j) => JOB_EXTRA[j.id]?.views ?? 0 },
-    { key: 'status', header: 'Статус', width: '9%', cell: (j) => <JobStatusDot s={j.status} /> },
+    { key: 'views', header: 'Просмотры', width: '9%', align: 'right', mono: true, sortValue: (j) => JOB_EXTRA[j.id]?.views ?? 0, cell: (j) => JOB_EXTRA[j.id]?.views ?? 0 },
+    { key: 'status', header: 'Статус', width: '10%', cell: (j) => <JobStatusDot s={j.status} /> },
     {
       key: 'action',
       header: <span className="sr-only">Действия</span>,
@@ -137,8 +138,8 @@ export function RJobs({ go }: ScreenProps) {
         }
         count={rows.length}
       >
-        <FilterSelect label="Флот" value={fleet} onChange={setFleet} options={[...FLEETS]} />
-        <FilterSelect label="Рекрутер" value={owner} onChange={setOwner} options={RECRUITERS.map((x) => ({ value: x.id, label: x.id === ME_RECRUITER.id ? 'Мои' : x.name }))} />
+        <FilterSelect className="data-[size=default]:h-10" label="Флот" value={fleet} onChange={setFleet} options={[...FLEETS]} />
+        <FilterSelect className="data-[size=default]:h-10" label="Рекрутер" value={owner} onChange={setOwner} options={RECRUITERS.map((x) => ({ value: x.id, label: x.id === ME_RECRUITER.id ? 'Мои' : x.name }))} />
       </FilterBar>
       <DataTable
         columns={columns}

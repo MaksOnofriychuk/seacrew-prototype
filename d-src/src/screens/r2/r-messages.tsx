@@ -15,10 +15,11 @@ import { useGoOr, useR2, type Go } from './_parts'
 // Чат з'являється після відгуку моряка і починається з рядка «Моряк откликнулся на вакансию …».
 
 export function RMessages({ go }: ScreenProps) {
+  const view = useView()
   return (
     <Layout go={go} openId={null}>
       <div className="flex flex-1 items-center justify-center">
-        <EmptyState icon={MessageSquare} title="Выберите разговор" text="Разговор появляется, когда моряк откликается на вакансию или отвечает на ваше предложение." />
+        {view === 'normal' && <EmptyState icon={MessageSquare} title="Выберите разговор" text="Разговор появляется, когда моряк откликается на вакансию или отвечает на ваше предложение." />}
       </div>
     </Layout>
   )
@@ -109,18 +110,18 @@ function ChatRow({ chat, active, onOpen }: { chat: Chat; active: boolean; onOpen
   return (
     <li>
       <button type="button" onClick={onOpen} aria-current={active ? 'true' : undefined} className={cn('flex w-full gap-3 border-l-2 px-6 py-3.5 text-left transition-colors', active ? 'border-primary bg-muted' : 'border-transparent hover:bg-muted')}>
-        <Avatar initials={s.initials} online={chat.online} />
+        <Avatar initials={s.initials} online={chat.online} className="self-start" />
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="flex items-baseline justify-between gap-3">
-            <span className={cn('truncate text-[15px]', chat.unread ? 'font-semibold' : 'font-medium')}>{s.name}</span>
+            <span className={cn('truncate text-[15px]', chat.unread && !active ? 'font-semibold' : 'font-medium')}>{s.name}</span>
             <span className="shrink-0 font-mono text-xs text-muted-foreground">{last.time.slice(0, 5)}</span>
           </span>
           <span className="truncate text-[13px] text-muted-foreground">
             {j?.position}, {j?.vesselName}
           </span>
           <span className="flex items-center justify-between gap-3">
-            <span className={cn('truncate text-sm', chat.unread ? 'text-foreground' : 'text-muted-foreground')}>{lastPreview(last)}</span>
-            {chat.unread > 0 && <span className="shrink-0 rounded-full bg-primary px-1.5 font-mono text-xs leading-5 text-primary-foreground">{chat.unread}</span>}
+            <span className={cn('truncate text-sm', chat.unread && !active ? 'text-foreground' : 'text-muted-foreground')}>{lastPreview(last)}</span>
+            {chat.unread > 0 && !active && <span className="shrink-0 rounded-full bg-primary px-1.5 font-mono text-xs leading-5 text-primary-foreground">{chat.unread}</span>}
           </span>
         </span>
       </button>
@@ -128,9 +129,9 @@ function ChatRow({ chat, active, onOpen }: { chat: Chat; active: boolean; onOpen
   )
 }
 
-function Avatar({ initials, online }: { initials: string; online: boolean }) {
+function Avatar({ initials, online, className }: { initials: string; online: boolean; className?: string }) {
   return (
-    <span className="relative shrink-0">
+    <span className={cn('relative flex shrink-0', className)}>
       <WebAvatar initials={initials} />
       {online && <span className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-surface bg-success" aria-label="В сети" />}
     </span>
@@ -372,7 +373,12 @@ function Bubble({ m, go }: { m: ChatMsg; go: Go }) {
     <div className={cn('flex max-w-[70%] flex-col gap-1.5', mine ? 'items-end self-end' : 'items-start self-start')}>
       {(m.text || m.link) && (
         <div className={cn('flex flex-col gap-1 rounded-2xl px-3.5 py-2', mine ? 'rounded-br-md bg-primary text-primary-foreground' : 'rounded-bl-md bg-surface ring-1 ring-border')}>
-          {m.text && <p className="text-[15px] leading-snug whitespace-pre-wrap">{m.text}</p>}
+          {m.text && (
+            <p className="text-[15px] leading-snug whitespace-pre-wrap">
+              {m.text}
+              {!m.link && <span className="float-right mt-1.5 ml-3">{time}</span>}
+            </p>
+          )}
           {m.link && (
             <button type="button" onClick={() => r.showToast(`Откроется ${m.link!.url}`)} className={cn('flex items-center gap-2 text-left text-[15px] underline underline-offset-2', mine ? 'text-primary-foreground' : 'text-primary')}>
               <Link2 className="size-4 shrink-0" />
@@ -382,7 +388,7 @@ function Bubble({ m, go }: { m: ChatMsg; go: Go }) {
               </span>
             </button>
           )}
-          <span className="self-end">{time}</span>
+          {(m.link || !m.text) && <span className="self-end">{time}</span>}
         </div>
       )}
       {attachment && (

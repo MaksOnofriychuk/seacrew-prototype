@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Eye, Inbox, Pencil } from 'lucide-react'
+import { MonoNums } from '@/components/app/mono-nums'
 import { useView, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/web/data-table'
@@ -29,7 +30,7 @@ export function RJob({ go }: ScreenProps) {
     ['Тип судна', j.vesselType],
     ['Судно', j.vesselName],
     ['Посадка', <span className="font-mono">{ruDate(j.board)}</span>],
-    ['Контракт', j.duration],
+    ['Контракт', <MonoNums text={j.duration} />],
     ['Регион', j.region],
   ]
 
@@ -42,7 +43,9 @@ export function RJob({ go }: ScreenProps) {
     <div className="grid grid-cols-[minmax(0,1fr)_400px] gap-10">
       <div className="flex min-w-0 flex-col gap-8">
         <div>
-          <p className="font-mono text-[28px] leading-tight font-semibold text-primary">{salaryText(j)}</p>
+          <p className="text-[28px] leading-tight font-semibold text-primary">
+            <MonoNums text={salaryText(j)} />
+          </p>
           <dl className="mt-5 grid grid-cols-[repeat(4,minmax(0,1fr))] gap-x-6 gap-y-4 border-t border-border pt-5">
             {facts.map(([l, v]) => (
               <div key={l} className="flex min-w-0 flex-col gap-0.5">

@@ -37,12 +37,7 @@ export function RAssignment({ go }: ScreenProps) {
   ) : (
     <div className="grid grid-cols-[minmax(0,1fr)_340px] items-start gap-8">
       <div className="overflow-hidden rounded-xl border border-border bg-surface">
-        <div className="flex items-center justify-between bg-primary px-6 py-3 text-primary-foreground">
-          <span className="text-[15px] font-semibold">{form.title}</span>
-          <span className="text-sm opacity-80">
-            {s.name}, <span className="font-mono">{ruDate(a.date)}</span>
-          </span>
-        </div>
+        <div className="bg-primary px-6 py-3 text-[15px] font-semibold text-primary-foreground">{form.title}</div>
         {sections
           .filter((x) => x.audience === 'SEAFARER')
           .map((sec) => (
@@ -92,11 +87,11 @@ export function RAssignment({ go }: ScreenProps) {
               {agency.map((f) => (
                 <WebField key={f.id} id={`ag-${f.id}`} label={f.label}>
                   {f.type === 'select' ? (
-                    <WebSelect id={`ag-${f.id}`} value={agencyVals[f.id] ?? ''} onChange={(v) => setAgencyVals((x) => ({ ...x, [f.id]: v }))} options={['Рекомендован', 'В резерв', 'Не подходит']} />
+                    <WebSelect className="data-[size=default]:h-10" id={`ag-${f.id}`} value={agencyVals[f.id] ?? ''} onChange={(v) => setAgencyVals((x) => ({ ...x, [f.id]: v }))} options={['Рекомендован', 'В резерв', 'Не подходит']} />
                   ) : f.type === 'textarea' ? (
                     <WebTextarea id={`ag-${f.id}`} value={agencyVals[f.id] ?? ''} onChange={(e) => setAgencyVals((x) => ({ ...x, [f.id]: e.target.value }))} className="min-h-20" />
                   ) : (
-                    <WebInput id={`ag-${f.id}`} type={f.type === 'date' ? 'date' : 'text'} value={agencyVals[f.id] ?? ''} onChange={(e) => setAgencyVals((x) => ({ ...x, [f.id]: e.target.value }))} className={cn(f.type === 'date' && 'font-mono')} />
+                    <WebInput id={`ag-${f.id}`} type={f.type === 'date' ? 'date' : 'text'} value={agencyVals[f.id] ?? ''} onChange={(e) => setAgencyVals((x) => ({ ...x, [f.id]: e.target.value }))} className={cn(f.type === 'date' && 'font-mono dark:[color-scheme:dark]')} />
                   )}
                 </WebField>
               ))}
@@ -114,14 +109,12 @@ export function RAssignment({ go }: ScreenProps) {
     <WebShell variant="recruiter" active="r-forms" go={go}>
       <PageHeader
         back={{ label: 'Анкеты', onClick: () => go('r-forms') }}
-        title={`${s.name}, ${form.title}`}
+        title={s.name}
+        description={`${s.position}. Ответ на анкету «${form.title}»`}
         meta={
           <>
             <StatusDot tone={ASSIGNMENT_TONE[a.status]}>{ASSIGNMENT_STATUS_LABEL[a.status]}</StatusDot>
-            <span>
-              {a.status === 'submitted' ? 'Получена' : 'Отправлена'} <span className="font-mono">{ruDate(a.date)}</span>
-            </span>
-            <span>{s.position}</span>
+            <span className="font-mono">{ruDate(a.date)}</span>
           </>
         }
         actions={

@@ -22,21 +22,21 @@ const KINDS: { id: Kind; icon: ComponentType<{ className?: string }>; title: str
   { id: 'word', icon: FileType, title: 'Документ Word', text: '.docx до 5 МБ, AI прочитает текст и таблицы', file: 'Anketa_moryaka.docx', size: '210 КБ' },
 ]
 
-type Row = { pdf: string; page: number; target: string; kind: 'dictionary' | 'free' | 'ignore'; sure: boolean }
+type Row = { pdf: string; label: string; page: number; target: string; kind: 'dictionary' | 'free' | 'ignore'; sure: boolean }
 const ROWS: Row[] = [
-  { pdf: 'surname_1', page: 1, target: 'Фамилия', kind: 'dictionary', sure: true },
-  { pdf: 'given_names', page: 1, target: 'Имя', kind: 'dictionary', sure: true },
-  { pdf: 'dob', page: 1, target: 'Дата рождения', kind: 'dictionary', sure: true },
-  { pdf: 'NOK_name', page: 1, target: 'Ближайший родственник', kind: 'dictionary', sure: false },
-  { pdf: 'cert_bosiet', page: 2, target: 'Запрос документа: BOSIET', kind: 'dictionary', sure: true },
-  { pdf: 'cert_dp', page: 2, target: 'Запрос документа: DP', kind: 'dictionary', sure: true },
-  { pdf: 'medical_oguk', page: 2, target: 'Запрос документа: медицина', kind: 'dictionary', sure: true },
-  { pdf: 'dp_hours', page: 3, target: 'Свой вопрос: число', kind: 'free', sure: true },
-  { pdf: 'dp_class', page: 3, target: 'Свой вопрос: выбор', kind: 'free', sure: false },
-  { pdf: 'declaration_chk', page: 4, target: 'Согласие', kind: 'dictionary', sure: true },
-  { pdf: 'signature', page: 4, target: 'Подпись', kind: 'dictionary', sure: true },
-  { pdf: 'office_approved', page: 4, target: 'Только агентство: текст', kind: 'free', sure: true },
-  { pdf: 'barcode_hidden', page: 4, target: 'Пропустить', kind: 'ignore', sure: true },
+  { pdf: 'surname_1', label: 'Surname', page: 1, target: 'Фамилия', kind: 'dictionary', sure: true },
+  { pdf: 'given_names', label: 'Given names', page: 1, target: 'Имя', kind: 'dictionary', sure: true },
+  { pdf: 'dob', label: 'Date of birth', page: 1, target: 'Дата рождения', kind: 'dictionary', sure: true },
+  { pdf: 'NOK_name', label: 'Next of kin', page: 1, target: 'Ближайший родственник', kind: 'dictionary', sure: false },
+  { pdf: 'cert_bosiet', label: 'BOSIET certificate', page: 2, target: 'Запрос документа: BOSIET', kind: 'dictionary', sure: true },
+  { pdf: 'cert_dp', label: 'DP certificate', page: 2, target: 'Запрос документа: DP', kind: 'dictionary', sure: true },
+  { pdf: 'medical_oguk', label: 'OGUK medical', page: 2, target: 'Запрос документа: медицина', kind: 'dictionary', sure: true },
+  { pdf: 'dp_hours', label: 'DP hours', page: 3, target: 'Свой вопрос: число', kind: 'free', sure: true },
+  { pdf: 'dp_class', label: 'DP class', page: 3, target: 'Свой вопрос: выбор', kind: 'free', sure: false },
+  { pdf: 'declaration_chk', label: 'I confirm the information is true', page: 4, target: 'Согласие', kind: 'dictionary', sure: true },
+  { pdf: 'signature', label: 'Signature', page: 4, target: 'Подпись', kind: 'dictionary', sure: true },
+  { pdf: 'office_approved', label: 'Office use: approved by', page: 4, target: 'Только агентство: текст', kind: 'free', sure: true },
+  { pdf: 'barcode_hidden', label: 'Barcode', page: 4, target: 'Пропустить', kind: 'ignore', sure: true },
 ]
 
 const STEPS: { id: Step[]; label: string }[] = [
@@ -69,6 +69,7 @@ export function RFormImport({ go }: ScreenProps) {
   const next = () => {
     setTried(true)
     if (!title.trim() || !kind) return
+    setTried(false)
     if (kind === 'acro') read()
     else setStep('pages')
   }
@@ -89,7 +90,7 @@ export function RFormImport({ go }: ScreenProps) {
       width: '28%',
       cell: (x) => (
         <span className="flex flex-col">
-          <span className="truncate font-mono text-[13px]">{x.pdf}</span>
+          {ai ? <span className="truncate">{x.label}</span> : <span className="truncate font-mono text-[13px]">{x.pdf}</span>}
           <span className="text-[13px] text-muted-foreground">
             Страница <span className="font-mono">{x.page}</span>
           </span>
@@ -169,17 +170,17 @@ export function RFormImport({ go }: ScreenProps) {
           </div>
           <div className="flex flex-col gap-3">
             <span className="text-sm text-muted-foreground">Что можно загрузить</span>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 divide-x divide-border overflow-hidden rounded-xl border border-border bg-surface">
               {KINDS.map((x) => (
                 <button
                   key={x.id}
                   type="button"
                   onClick={() => setKind(x.id)}
                   aria-pressed={kind === x.id}
-                  className={cn('flex flex-col gap-1.5 rounded-xl border bg-surface p-4 text-left transition-colors', kind === x.id ? 'border-primary' : 'border-border hover:border-primary/50')}
+                  className={cn('flex flex-col gap-1.5 p-4 text-left transition-colors', kind === x.id ? 'bg-muted' : 'hover:bg-muted')}
                 >
                   <x.icon className={cn('size-5', kind === x.id ? 'text-primary' : 'text-muted-foreground')} />
-                  <span className="text-sm font-medium">{x.title}</span>
+                  <span className={cn('text-sm font-medium', kind === x.id && 'text-primary')}>{x.title}</span>
                   <span className="text-[13px] text-muted-foreground">{x.text}</span>
                 </button>
               ))}
@@ -293,6 +294,7 @@ export function RFormImport({ go }: ScreenProps) {
             <Button
               onClick={() => {
                 r.openForm(IMPORTED_FORM_ID)
+                r.setImportTitle(title.trim())
                 go('r-form-edit')
               }}
             >

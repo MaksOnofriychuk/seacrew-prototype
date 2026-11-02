@@ -29,7 +29,7 @@ import { FORMS } from '@/lib/data-web'
 import { AUDIENCE_LABEL, FIELD_TYPE_LABEL, FORM_DEFS, formTitle, IMPORTED_FORM_ID, type Audience, type FieldType, type FormField, type FormSection } from '@/lib/data-recruiter-2'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
-import { useR2 } from './_parts'
+import { plural, useR2 } from './_parts'
 
 type Icon = ComponentType<{ className?: string }>
 const TYPE_ICON: Record<FieldType, Icon> = {
@@ -68,7 +68,7 @@ export function RFormEdit({ go }: ScreenProps) {
   const isNew = !FORM_DEFS[id]
   const imported = id === IMPORTED_FORM_ID
   const meta = FORMS.find((x) => x.id === id)
-  const [title, setTitle] = useState(isNew ? '' : formTitle(id))
+  const [title, setTitle] = useState(isNew ? '' : imported ? r.importTitle || formTitle(id) : formTitle(id))
   const [sections, setSections] = useState<FormSection[]>(() => structuredClone(FORM_DEFS[id] ?? [{ id: 's1', title: 'Раздел 1', audience: 'SEAFARER', fields: [] }]))
   const [sel, setSel] = useState<Sel>({ s: sections[0].id, f: sections[0].fields[0]?.id ?? null })
   const [adding, setAdding] = useState<string | null>(null)
@@ -141,7 +141,7 @@ export function RFormEdit({ go }: ScreenProps) {
         <span className="text-[15px] font-semibold">{isNew ? 'Новая анкета' : imported ? 'Распознанная анкета' : 'Конструктор анкеты'}</span>
         {meta && <StatusDot tone={meta.status === 'active' ? 'success' : 'muted'}>{meta.status === 'active' ? 'Опубликована' : 'Черновик'}</StatusDot>}
         <span className="ml-auto text-sm text-muted-foreground">
-          <span className="font-mono">{sections.length}</span> разд., <span className="font-mono">{fieldCount}</span> полей
+          <span className="font-mono">{sections.length}</span> {plural(sections.length, 'раздел', 'раздела', 'разделов')}, <span className="font-mono">{fieldCount}</span> {plural(fieldCount, 'поле', 'поля', 'полей')}
         </span>
         <Button variant="outline" onClick={() => save(false)}>
           Сохранить черновик
@@ -158,7 +158,11 @@ export function RFormEdit({ go }: ScreenProps) {
               <button
                 key={s.id}
                 type="button"
-                onClick={() => setSel({ s: s.id, f: null })}
+                onClick={() => {
+                  setSel({ s: s.id, f: null })
+                  const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                  document.getElementById('sec-' + s.id)?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' })
+                }}
                 className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm', s.id === section.id ? 'bg-muted font-medium text-primary' : 'hover:bg-muted')}
               >
                 <span className="w-4 shrink-0 font-mono text-xs text-muted-foreground">{i + 1}</span>
@@ -196,7 +200,7 @@ export function RFormEdit({ go }: ScreenProps) {
               </div>
               {tried && !title.trim() && <p className="px-6 pt-3 text-sm text-signal">Укажите название анкеты.</p>}
               {sections.map((s) => (
-                <section key={s.id} className={cn('border-t border-border px-6 py-5 first:border-t-0', s.audience === 'AGENCY_ONLY' && 'bg-muted/60')}>
+                <section key={s.id} id={'sec-' + s.id} className={cn('scroll-mt-6 border-t border-border px-6 py-5 first:border-t-0', s.audience === 'AGENCY_ONLY' && 'bg-muted/60')}>
                   <button type="button" onClick={() => setSel({ s: s.id, f: null })} className="flex w-full items-baseline justify-between gap-4 text-left">
                     <h3 className={cn('text-base font-semibold', s.id === section.id && !field && 'text-primary')}>{s.title}</h3>
                     <span className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
@@ -277,16 +281,16 @@ export function RFormEdit({ go }: ScreenProps) {
                   <WebInput id="fe-label" value={field.label} onChange={(e) => putField({ label: e.target.value })} />
                 </WebField>
                 <WebField id="fe-type" label="Тип поля">
-                  <WebSelect id="fe-type" value={field.type} onChange={(t) => putField({ type: t as FieldType })} options={(section.audience === 'AGENCY_ONLY' ? AGENCY_TYPES : ALL_TYPES).map((t) => ({ value: t, label: FIELD_TYPE_LABEL[t] }))} />
+                  <WebSelect className="data-[size=default]:h-10" id="fe-type" value={field.type} onChange={(t) => putField({ type: t as FieldType })} options={(section.audience === 'AGENCY_ONLY' ? AGENCY_TYPES : ALL_TYPES).map((t) => ({ value: t, label: FIELD_TYPE_LABEL[t] }))} />
                 </WebField>
                 {field.type === 'profile' && (
                   <WebField id="fe-key" label="Поле профиля" hint="Подставится из профиля моряка, он может поправить.">
-                    <WebSelect id="fe-key" value={field.profileKey ?? ''} onChange={(profileKey) => putField({ profileKey })} options={PROFILE_KEYS} />
+                    <WebSelect className="data-[size=default]:h-10" id="fe-key" value={field.profileKey ?? ''} onChange={(profileKey) => putField({ profileKey })} options={PROFILE_KEYS} />
                   </WebField>
                 )}
                 {field.type === 'documentRequest' && (
                   <WebField id="fe-cat" label="Категория документа" hint="Приложение предложит подходящий документ моряка.">
-                    <WebSelect id="fe-cat" value={field.category ?? ''} onChange={(category) => putField({ category })} options={DOC_CATEGORIES} />
+                    <WebSelect className="data-[size=default]:h-10" id="fe-cat" value={field.category ?? ''} onChange={(category) => putField({ category })} options={DOC_CATEGORIES} />
                   </WebField>
                 )}
                 {field.pdf && (

@@ -6,6 +6,7 @@ import { PageHeader, PageTabs } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { StatusDot, WebAvatar } from '@/components/web/status-badge'
 import { ASSIGNMENT_STATUS_LABEL, ASSIGNMENTS, FORMS, seafarerById, type Assignment, type WebForm } from '@/lib/data-web'
+import { FORM_DEFS } from '@/lib/data-recruiter-2'
 import type { ScreenProps } from '../registry'
 import { ASSIGNMENT_TONE, ruDate, useR2 } from './_parts'
 
@@ -35,7 +36,7 @@ export function RForms({ go }: ScreenProps) {
       width: '16%',
       cell: (f) => (
         <span className="text-muted-foreground">
-          <span className="font-mono text-foreground">{f.sections}</span> / <span className="font-mono text-foreground">{f.fields}</span>
+          <span className="font-mono text-foreground">{FORM_DEFS[f.id]?.length ?? f.sections}</span> / <span className="font-mono text-foreground">{FORM_DEFS[f.id]?.reduce((n, x) => n + x.fields.length, 0) ?? f.fields}</span>
         </span>
       ),
     },
@@ -109,6 +110,7 @@ export function RForms({ go }: ScreenProps) {
       />
       {tab === 'forms' ? (
         <DataTable
+          key="forms"
           columns={formCols}
           rows={FORMS}
           rowKey={(f) => f.id}
@@ -134,6 +136,7 @@ export function RForms({ go }: ScreenProps) {
         />
       ) : (
         <DataTable
+          key="answers"
           columns={answerCols}
           rows={ASSIGNMENTS}
           rowKey={(a) => a.id}

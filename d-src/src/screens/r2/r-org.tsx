@@ -42,7 +42,7 @@ export function ROrg({ go }: ScreenProps) {
     {
       key: 'name',
       header: 'Участник',
-      width: '34%',
+      width: '26%',
       sortValue: (m) => m.name,
       cell: (m) => (
         <span className="flex items-center gap-3">
@@ -54,11 +54,11 @@ export function ROrg({ go }: ScreenProps) {
         </span>
       ),
     },
-    { key: 'email', header: 'Почта', width: '30%', cell: (m) => <span className="text-muted-foreground">{m.email}</span> },
+    { key: 'email', header: 'Почта', width: '26%', cell: (m) => <span className="text-muted-foreground">{m.email}</span> },
     {
       key: 'role',
       header: 'Роль',
-      width: '14%',
+      width: '12%',
       sortValue: (m) => (m.role === 'owner' ? 0 : 1),
       cell: (m) =>
         m.role === 'owner' ? (
@@ -69,17 +69,17 @@ export function ROrg({ go }: ScreenProps) {
           'Рекрутер'
         ),
     },
-    { key: 'seen', header: 'Был в кабинете', width: '12%', cell: (m) => <span className="text-muted-foreground">{m.lastSeen}</span> },
+    { key: 'seen', header: 'Активность', width: '11%', cell: (m) => <span className="text-muted-foreground">{m.lastSeen}</span> },
     {
       key: 'act',
       header: <span className="sr-only">Действия</span>,
-      width: '10%',
+      width: '25%',
       align: 'right',
       cell: (m) =>
         iAmOwner && m.role !== 'owner' ? (
           <span className="flex justify-end gap-3 text-sm font-medium">
             <button type="button" onClick={() => setAct({ kind: 'owner', who: m })} className="text-primary">
-              Владелец
+              Сделать владельцем
             </button>
             <button type="button" onClick={() => setAct({ kind: 'remove', who: m })} className="text-muted-foreground hover:text-signal">
               Убрать

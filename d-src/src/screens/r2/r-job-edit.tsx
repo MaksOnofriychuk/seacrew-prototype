@@ -10,7 +10,7 @@ import { RECRUITER_ORG, type WebJob } from '@/lib/data-web'
 import { CURRENCIES, emptyJob, JOB_EXTRA, NEW_JOB_ID, REGIONS, VESSEL_TYPES_WEB } from '@/lib/data-recruiter-2'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
-import { ruDate, useR2 } from './_parts'
+import { plural, ruDate, useR2 } from './_parts'
 
 type Key = 'fleet' | 'department' | 'position' | 'vesselType' | 'amount' | 'board' | 'duration'
 const REQUIRED: Key[] = ['fleet', 'department', 'position', 'vesselType', 'amount', 'board', 'duration']
@@ -58,13 +58,13 @@ export function RJobEdit({ go }: ScreenProps) {
             <Block title="Должность">
               <div className="grid grid-cols-3 gap-4">
                 <WebField id="je-fleet" label="Флот" required error={err('fleet')}>
-                  <WebSelect id="je-fleet" value={j.fleet} onChange={(fleet) => put({ fleet, department: '', position: '' })} options={[...FLEETS]} />
+                  <WebSelect className="data-[size=default]:h-10" id="je-fleet" value={j.fleet} onChange={(fleet) => put({ fleet, department: '', position: '' })} options={[...FLEETS]} />
                 </WebField>
                 <WebField id="je-dep" label="Департамент" required error={err('department')}>
-                  <WebSelect id="je-dep" value={j.department} onChange={(department) => put({ department, position: '' })} options={j.fleet ? departmentsFor([j.fleet]) : []} placeholder={j.fleet ? 'Выберите' : 'Сначала флот'} />
+                  <WebSelect className="data-[size=default]:h-10" id="je-dep" value={j.department} onChange={(department) => put({ department, position: '' })} options={j.fleet ? departmentsFor([j.fleet]) : []} placeholder={j.fleet ? 'Выберите' : 'Сначала флот'} />
                 </WebField>
                 <WebField id="je-pos" label="Должность" required error={err('position')}>
-                  <WebSelect id="je-pos" value={j.position} onChange={(position) => put({ position })} options={positionsFor(j.fleet ? [j.fleet] : [], j.department || null)} placeholder={j.department ? 'Выберите' : 'Сначала департамент'} />
+                  <WebSelect className="data-[size=default]:h-10" id="je-pos" value={j.position} onChange={(position) => put({ position })} options={positionsFor(j.fleet ? [j.fleet] : [], j.department || null)} placeholder={j.department ? 'Выберите' : 'Сначала департамент'} />
                 </WebField>
               </div>
             </Block>
@@ -72,7 +72,7 @@ export function RJobEdit({ go }: ScreenProps) {
             <Block title="Судно">
               <div className="grid grid-cols-2 gap-4">
                 <WebField id="je-vt" label="Тип судна" required error={err('vesselType')}>
-                  <WebSelect id="je-vt" value={j.vesselType} onChange={(vesselType) => put({ vesselType })} options={VESSEL_TYPES_WEB} />
+                  <WebSelect className="data-[size=default]:h-10" id="je-vt" value={j.vesselType} onChange={(vesselType) => put({ vesselType })} options={VESSEL_TYPES_WEB} />
                 </WebField>
                 <WebField id="je-vn" label="Название судна" hint="Можно не указывать — моряк увидит только тип">
                   <WebInput id="je-vn" value={j.vesselName} onChange={(e) => put({ vesselName: e.target.value })} placeholder="MT Aurora Spirit" />
@@ -86,7 +86,7 @@ export function RJobEdit({ go }: ScreenProps) {
                   <WebInput id="je-sal" value={j.salary.amount} onChange={(e) => putSalary({ amount: e.target.value })} placeholder="4 200–4 600" className="font-mono" inputMode="numeric" />
                 </WebField>
                 <WebField id="je-cur" label="Валюта">
-                  <WebSelect id="je-cur" value={j.salary.currency} onChange={(currency) => putSalary({ currency: currency as WebJob['salary']['currency'] })} options={[...CURRENCIES]} />
+                  <WebSelect className="data-[size=default]:h-10" id="je-cur" value={j.salary.currency} onChange={(currency) => putSalary({ currency: currency as WebJob['salary']['currency'] })} options={[...CURRENCIES]} />
                 </WebField>
                 <WebField label="Период">
                   <Segmented value={j.salary.period} onChange={(period) => putSalary({ period })} options={[['месяц', 'В месяц'], ['день', 'В день']]} />
@@ -94,13 +94,13 @@ export function RJobEdit({ go }: ScreenProps) {
               </div>
               <div className="mt-4 grid grid-cols-3 gap-4">
                 <WebField id="je-board" label="Дата посадки" required error={err('board')}>
-                  <WebInput id="je-board" type="date" value={j.board} onChange={(e) => put({ board: e.target.value })} className="font-mono" />
+                  <WebInput id="je-board" type="date" value={j.board} onChange={(e) => put({ board: e.target.value })} className="font-mono dark:[color-scheme:dark]" />
                 </WebField>
                 <WebField id="je-dur" label="Длительность контракта" required error={err('duration')}>
                   <WebInput id="je-dur" value={j.duration} onChange={(e) => put({ duration: e.target.value })} placeholder="4 ±1 мес." />
                 </WebField>
                 <WebField id="je-reg" label="Регион">
-                  <WebSelect id="je-reg" value={j.region} onChange={(region) => put({ region: region as WebJob['region'] })} options={[...REGIONS]} />
+                  <WebSelect className="data-[size=default]:h-10" id="je-reg" value={j.region} onChange={(region) => put({ region: region as WebJob['region'] })} options={[...REGIONS]} />
                 </WebField>
               </div>
             </Block>
@@ -127,7 +127,7 @@ export function RJobEdit({ go }: ScreenProps) {
       <footer className="flex h-[72px] shrink-0 items-center gap-3 border-t border-border bg-surface px-8">
         {tried && missing.length > 0 && (
           <span className="text-sm text-signal">
-            Чтобы опубликовать, заполните ещё <span className="font-mono">{missing.length}</span>
+            Чтобы опубликовать, заполните ещё <span className="font-mono">{missing.length}</span> {plural(missing.length, 'поле', 'поля', 'полей')}
           </span>
         )}
         <span className="ml-auto" />
