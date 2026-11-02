@@ -1,33 +1,29 @@
 import { useEffect, useState, type ComponentType, type ReactNode } from 'react'
-import { Bell, Bookmark, Briefcase, Check, ChevronDown, ChevronRight, CircleCheck, CircleMinus, Download, FileText, Globe, Inbox, Moon, ShieldCheck, Ship, UserRound } from 'lucide-react'
+import { Bell, Bookmark, Briefcase, ChevronRight, Download, FileText, Globe, Inbox, Moon, ShieldCheck, Ship, UserRound } from 'lucide-react'
 import { Wordmark } from '@/components/app/chrome'
-import { TabBar, type Tab } from '@/components/app/tab-bar'
+import { TabBar } from '@/components/app/tab-bar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { AVAIL } from '@/lib/data'
+import { AvailabilityButton, AvailabilitySheet } from '@/components/app/availability'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { VOYAGES, vMonths, type Voyage } from '../s/_core-voyage'
 import { durText, FORM_DEFAULTS, Note, readiness, ReadinessBlock, useToast, type QForm, useQ } from './_parts'
-import { AppSheet, MonoNums } from '../p/_app-parts'
+import { MonoNums } from '../p/_app-parts'
 import type { Acct } from './q06'
 
 // q09 — профіль після швидкої реєстрації (profileScreen у C). «Готовность к анкетам» рахуємо лише
 // по полях, які найчастіше потрібні в анкетах. 100 % — додайте ?full=1 до адреси (у C — галочка в панелі).
-// Статус доступності — спільний список AVAIL (правка п. 8: «Готов выйти сразу» — першим), індекс — bag 'q.avail'.
+// Статус доступності — спільні AvailabilityButton / AvailabilitySheet (правки №1, №15, №19, №20).
 // Не плашка, а тихий рядок з іконкою: плашки лишаємо для строків документів.
-const AVAIL_ICON = [CircleCheck, CircleCheck, Ship, CircleMinus]
-const AVAIL_TONE = ['text-success', 'text-success', 'text-primary', 'text-muted-foreground']
 
-const TAB_TO: Record<Tab, string> = { feed: 'p01', vac: 'p05', docs: 'p02', profile: 'q09' }
 
 export function Q09Profile({ go }: ScreenProps) {
-  const { bag, setBag } = useQ()
+  const { bag } = useQ()
   const [loading, setLoading] = useState(true)
   const { toast, toastNode } = useToast()
   const form = bag<{ v: QForm } | null>('q.form', null)?.v ?? FORM_DEFAULTS
   const email = bag<Acct>('q.acct', { email: '', pass: '', pass2: '' }).email || 'you@example.com'
-  const avail = bag('q.avail', 0) % AVAIL.length
   const [availOpen, setAvailOpen] = useState(false)
   const full = new URLSearchParams(location.hash.split('?')[1]).get('full') === '1'
   // Медичні, введені на кроці s5, теж рахуються — тоді профіль заповнено на 100 %.
@@ -46,7 +42,6 @@ export function Q09Profile({ go }: ScreenProps) {
   const initials = ((first[0] ?? '?') + (last[0] ?? '')).toUpperCase()
   // Стаж — з тих самих рейсів, що на кроці «Морской стаж» (s6): одна цифра скрізь.
   const sea = durText(bag<Voyage[]>('s6.voyages', VOYAGES).reduce((s, v) => s + vMonths(v), 0))
-  const AvailIcon = AVAIL_ICON[avail]
 
   // Тема в D живе в адресі (#q09?t=dark) — перемикаємо її так само, як панель. Той самий екран і як p14.
   const toggleTheme = () => {
@@ -75,16 +70,7 @@ export function Q09Profile({ go }: ScreenProps) {
                 <span className="truncate text-sm text-muted-foreground">{email}</span>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setAvailOpen(true)}
-              aria-label={`Статус: ${AVAIL[avail]}. Изменить`}
-              className="mt-4 flex items-center gap-2 rounded-md border border-border bg-surface py-2 pr-3 pl-3 text-[15px] font-medium"
-            >
-              <AvailIcon className={cn('size-4.5', AVAIL_TONE[avail])} />
-              <MonoNums text={AVAIL[avail]} />
-              <ChevronDown className="size-4 text-muted-foreground" />
-            </button>
+            <AvailabilityButton onClick={() => setAvailOpen(true)} className="mt-4" />
 
             <div className="mt-6">
               <ReadinessBlock pct={r.pct}>
@@ -123,34 +109,9 @@ export function Q09Profile({ go }: ScreenProps) {
           </div>
         )}
       </div>
-      <TabBar active="profile" onTab={(t) => go(TAB_TO[t])} />
+      <TabBar active="profile" go={go} />
       {toastNode}
-      <AppSheet open={availOpen} onClose={() => setAvailOpen(false)} title="Статус" description="Агентства видят его в вашем профиле.">
-        <div role="radiogroup" aria-label="Статус" className="flex flex-col">
-          {AVAIL.map((t, i) => {
-            const Icon = AVAIL_ICON[i]
-            return (
-              <button
-                key={t}
-                type="button"
-                role="radio"
-                aria-checked={i === avail}
-                onClick={() => {
-                  setBag('q.avail', i)
-                  setAvailOpen(false)
-                }}
-                className="flex min-h-13 items-center gap-3 border-t border-border py-3 text-left first:border-t-0"
-              >
-                <Icon className={cn('size-5 shrink-0', AVAIL_TONE[i])} />
-                <span className="flex-1 text-base">
-                  <MonoNums text={t} />
-                </span>
-                {i === avail && <Check className="size-5 text-primary" strokeWidth={2.5} />}
-              </button>
-            )
-          })}
-        </div>
-      </AppSheet>
+      <AvailabilitySheet open={availOpen} onClose={() => setAvailOpen(false)} />
     </div>
   )
 }

@@ -19,7 +19,7 @@ export function G01GuestFeed({ go }: ScreenProps) {
   return (
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <AppHead title="Лента" onAvatar={() => gate('profile')} />
+        <AppHead title="Лента" onAvatar={() => gate('profile')} onBell={() => gate('notifications')} notifications={0} />
         <div className="flex flex-col gap-4 px-6 pt-4">
           <GuestNote>
             <b className="font-medium text-foreground">Вы смотрите как гость.</b> Это примеры — настоящие публикации появятся после регистрации.
@@ -68,7 +68,7 @@ export function G01GuestFeed({ go }: ScreenProps) {
           </div>
         </div>
       </div>
-      <TabBar active="feed" onTab={(t) => (t === 'vac' ? go('g02') : t === 'feed' ? undefined : gate(t))} />
+      <TabBar active="feed" counts={{}} onTab={(t) => (t === 'vac' ? go('g02') : t === 'feed' ? undefined : gate(t))} />
       {sheet}
     </div>
   )

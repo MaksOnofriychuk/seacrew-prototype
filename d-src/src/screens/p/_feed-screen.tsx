@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { ImageIcon, Search, X } from 'lucide-react'
-import { Wordmark } from '@/components/app/chrome'
-import { TabBar, type Tab } from '@/components/app/tab-bar'
+import { TAB_SCREENS as TAB_TO } from '@/components/app/tab-bar'
+import { TabBar } from '@/components/app/tab-bar'
+import { MainTopBar, TopBarButton } from '@/components/app/top-bar'
+import { MOBILE_ROUTES } from '@/lib/mobile-routes'
 import { POSTS, type Post } from '@/lib/data'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
@@ -13,7 +15,6 @@ import { Avatar, hashParam, useMe, useMyPosts } from './_feed-parts'
 // Сильний елемент — закріплена новина Seafolio; решта — тихий білий список з роздільниками.
 // Правка п. 16: закладка на кожній публікації, пошук за словами (лупа нагорі), короткий профіль автора.
 
-const TAB_TO: Record<Tab, string> = { feed: 'p01', vac: 'p05', docs: 'p02', profile: 'q09' }
 const FILTERS = [
   ['all', 'Все'],
   ['people', 'Моряки'],
@@ -80,15 +81,16 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
           </div>
         ) : (
           <div className="px-6 pt-2">
-            <div className="flex h-10 items-center gap-2">
-              <Wordmark className="flex-1" />
-              <button type="button" aria-label="Поиск по ленте" onClick={() => setSearching(true)} className="flex size-10 items-center justify-center rounded-full bg-card text-muted-foreground">
-                <Search className="size-5" />
-              </button>
-              <button type="button" aria-label="Меню" onClick={() => setDrawer(true)} className="flex size-10 items-center justify-center rounded-full bg-card text-sm font-semibold text-primary">
-                {me.initials}
-              </button>
-            </div>
+            <MainTopBar
+              onBell={() => go(MOBILE_ROUTES.notifications)}
+              onAvatar={() => setDrawer(true)}
+              avatar={me.initials}
+              extra={
+                <TopBarButton label="Поиск по ленте" onClick={() => setSearching(true)}>
+                  <Search className="size-5" />
+                </TopBarButton>
+              }
+            />
             <h1 className="mt-3 text-[32px] leading-tight font-semibold tracking-tight">Лента</h1>
           </div>
         )}

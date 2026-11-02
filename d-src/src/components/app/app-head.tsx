@@ -1,16 +1,12 @@
 import { Eye, UserRound } from 'lucide-react'
-import { Wordmark } from './chrome'
+import { MainTopBar } from './top-bar'
 
-// Шапка робочого екрана без «Назад»: Seafolio, аватар (меню), великий заголовок.
-export function AppHead({ title, onAvatar }: { title: string; onAvatar: () => void }) {
+// Шапка робочого екрана без «Назад»: Seafolio, дзвіночок і аватар (меню), великий заголовок.
+// Для гостя: аватар — значок людини, дзвіночок без лічильника (notifications={0}).
+export function AppHead({ title, onAvatar, onBell, notifications }: { title: string; onAvatar: () => void; onBell?: () => void; notifications?: number }) {
   return (
     <div className="shrink-0 px-6 pt-2">
-      <div className="flex h-10 items-center justify-between">
-        <Wordmark />
-        <button type="button" aria-label="Меню" onClick={onAvatar} className="flex size-10 items-center justify-center rounded-full bg-card text-muted-foreground">
-          <UserRound className="size-5" />
-        </button>
-      </div>
+      <MainTopBar onAvatar={onAvatar} onBell={onBell ?? onAvatar} notifications={notifications} avatar={<UserRound className="size-5 text-muted-foreground" />} />
       <h1 className="mt-3 text-[32px] leading-tight font-semibold tracking-tight">{title}</h1>
     </div>
   )

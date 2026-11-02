@@ -24,7 +24,7 @@ function GuestJobs({ go, initialGate = null }: ScreenProps & { initialGate?: str
   return (
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <AppHead title="Вакансии" onAvatar={() => gate('profile')} />
+        <AppHead title="Вакансии" onAvatar={() => gate('profile')} onBell={() => gate('notifications')} notifications={0} />
         <div className="flex flex-col gap-4 px-6 pt-4">
           <GuestNote>
             <b className="font-medium text-foreground">Вы смотрите как гость.</b> Это примеры вакансий.
@@ -61,7 +61,7 @@ function GuestJobs({ go, initialGate = null }: ScreenProps & { initialGate?: str
           ))}
         </ul>
       </div>
-      <TabBar active="vac" onTab={(t) => (t === 'feed' ? go('g01') : t === 'vac' ? undefined : gate(t))} />
+      <TabBar active="vac" counts={{}} onTab={(t) => (t === 'feed' ? go('g01') : t === 'vac' ? undefined : gate(t))} />
       {sheet}
     </div>
   )

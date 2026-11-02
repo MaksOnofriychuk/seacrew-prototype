@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 import { Dateish, JobTags } from '../g02-guest-jobs'
 import { FORM_DEFAULTS, Note, durText, readiness, type QForm } from '../q/_parts'
 import { VOYAGES, vMonths, type Voyage } from '../s/_core-voyage'
-import { AppSheet, Empty, JobRow, matchOf, MonoNums, plural, SaveButton, TAB_TO, TabHead, useApp, useSavedJobs } from './_app-parts'
+import { AppSheet, Empty, JobRow, matchOf, MonoNums, plural, SaveButton, TabHead, useApp, useSavedJobs } from './_app-parts'
 
 type Go = (id: string) => void
 
@@ -52,7 +52,7 @@ export function JobsScreen({ go, filtersOpen = false }: { go: Go; filtersOpen?: 
   return (
     <div className="relative flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <TabHead title="Вакансии" onMenu={() => go('p04')} />
+        <TabHead title="Вакансии" onMenu={() => go('p04')} go={go} />
         <div className="flex flex-col gap-4 px-6 pt-4">
           <div className="flex gap-2">
             <label className="flex h-12 flex-1 items-center gap-2 rounded-md border border-border bg-surface px-3 text-muted-foreground focus-within:border-primary">
@@ -130,7 +130,7 @@ export function JobsScreen({ go, filtersOpen = false }: { go: Go; filtersOpen?: 
           </div>
         )}
       </div>
-      <TabBar active="vac" onTab={(t) => (t === 'vac' ? undefined : go(TAB_TO[t]))} />
+      <TabBar active="vac" go={go} />
       <FiltersSheet open={sheet} f={f} onChange={(next) => setBag('jobs.f', next)} onClose={closeSheet} total={JOBS.length} />
     </div>
   )

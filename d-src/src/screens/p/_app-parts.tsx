@@ -1,8 +1,8 @@
 import type { ComponentType, ReactNode } from 'react'
 import { BadgeCheck, Bookmark, Check } from 'lucide-react'
-import { Wordmark } from '@/components/app/chrome'
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
-import type { Tab } from '@/components/app/tab-bar'
+import { MainTopBar } from '@/components/app/top-bar'
+import { MOBILE_ROUTES } from '@/lib/mobile-routes'
+import { TAB_SCREENS, type Tab } from '@/components/app/tab-bar'
 import { JOBS, type Job } from '@/lib/data'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
@@ -13,7 +13,7 @@ import { Dateish, JobTags } from '../g02-guest-jobs'
 
 /* ---------- навігація ---------- */
 
-export const TAB_TO: Record<Tab, string> = { feed: 'p01', vac: 'p05', docs: 'p02', profile: 'q09' }
+export const TAB_TO: Record<Tab, string> = TAB_SCREENS
 
 // useProto, але null у bag теж дає fallback (як useQ / useS).
 export function useApp() {
@@ -22,18 +22,13 @@ export function useApp() {
   return { ...p, bag }
 }
 
-// Шапка вкладки без «Назад»: Seafolio, кнопка меню, великий заголовок і (необов'язково) дія праворуч від нього.
-export function TabHead({ title, onMenu, action }: { title: string; onMenu: () => void; action?: ReactNode }) {
+// Шапка вкладки без «Назад»: Seafolio, дзвіночок, кнопка меню, великий заголовок і (необов'язково) дія праворуч від нього.
+export function TabHead({ title, onMenu, action, go }: { title: string; onMenu: () => void; action?: ReactNode; go?: (id: string) => void }) {
   // аватар з ініціалами — як у шапці стрічки (p01)
   const me = useMe()
   return (
     <div className="shrink-0 px-6 pt-2">
-      <div className="flex h-10 items-center justify-between">
-        <Wordmark />
-        <button type="button" aria-label="Меню" onClick={onMenu} className="flex size-10 items-center justify-center rounded-full bg-card text-sm font-semibold text-primary">
-          {me.initials}
-        </button>
-      </div>
+      <MainTopBar onAvatar={onMenu} onBell={() => go?.(MOBILE_ROUTES.notifications)} avatar={me.initials} />
       <div className="mt-3 flex items-center justify-between gap-3">
         <h1 className="text-[32px] leading-tight font-semibold tracking-tight">{title}</h1>
         {action}
@@ -167,46 +162,5 @@ export function MonoNums({ text }: { text: string }) {
   )
 }
 
-// Вікно знизу: шапка (назва + дія праворуч), прокручуваний вміст, нижня дія завжди на виду.
-// Фокус — на саме вікно, а не на перше поле: інакше клавіатура й рамка фокуса з'являються без запиту.
-export function AppSheet({
-  open,
-  onClose,
-  title,
-  description,
-  aside,
-  footer,
-  children,
-}: {
-  open: boolean
-  onClose: () => void
-  title: ReactNode
-  description?: ReactNode
-  aside?: ReactNode
-  footer?: ReactNode
-  children: ReactNode
-}) {
-  return (
-    <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent
-        side="bottom"
-        showCloseButton={false}
-        className="max-h-[90%] gap-0 p-0 outline-none"
-        onOpenAutoFocus={(e) => {
-          e.preventDefault()
-          ;(e.currentTarget as HTMLElement | null)?.focus()
-        }}
-      >
-        <div className="shrink-0 px-6 pt-6">
-          <div className="flex items-baseline justify-between gap-4">
-            <SheetTitle className="text-2xl leading-tight font-semibold tracking-tight">{title}</SheetTitle>
-            {aside}
-          </div>
-          {description ? <SheetDescription className="mt-2 text-base">{description}</SheetDescription> : <SheetDescription className="sr-only">{typeof title === 'string' ? title : ''}</SheetDescription>}
-        </div>
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pt-5 pb-4 *:shrink-0">{children}</div>
-        {footer && <div className="flex shrink-0 flex-col gap-2 border-t border-border px-6 pt-3 pb-6">{footer}</div>}
-      </SheetContent>
-    </Sheet>
-  )
-}
+// Вікно знизу — тепер спільне: components/app/bottom-sheet.
+export { BottomSheet as AppSheet } from '@/components/app/bottom-sheet'

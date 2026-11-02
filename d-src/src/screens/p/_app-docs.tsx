@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { ActionRow, FORM_DEFAULTS, Note, TextInput, type QForm } from '../q/_parts'
 import { useHashParams, type DocData } from '../s/_core-parts'
-import { AppSheet, plural, TAB_TO, TabHead, useApp } from './_app-parts'
+import { AppSheet, plural, TabHead, useApp } from './_app-parts'
 
 type Go = (id: string) => void
 type Icon = ComponentType<{ className?: string }>
@@ -188,6 +188,7 @@ export function DocsScreen({ go }: { go: Go }) {
         <TabHead
           title="Документы"
           onMenu={() => go('p04')}
+          go={go}
           action={
             <button type="button" aria-label="Добавить документ" onClick={() => setAdd(true)} className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground active:scale-95">
               <Plus className="size-5" strokeWidth={2.25} />
@@ -230,7 +231,7 @@ export function DocsScreen({ go }: { go: Go }) {
           </ul>
         </div>
       </div>
-      <TabBar active="docs" onTab={(t) => (t === 'docs' ? undefined : go(TAB_TO[t]))} />
+      <TabBar active="docs" go={go} />
       <AppSheet open={add} onClose={() => setAdd(false)} title="Добавить документ" description="ИИ прочитает документ, вы проверите данные.">
         <ActionRow icon={ScanLine} title="Сканировать документ" sub="Края найдутся сами" onClick={picked} />
         <ActionRow icon={Camera} title="Сфотографировать" sub="При хорошем свете, без бликов" onClick={picked} />

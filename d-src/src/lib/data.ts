@@ -48,17 +48,83 @@ export const JOBS: Job[] = [
     desc: 'Газовоз, ротация 5 месяцев, бонус за продление.' },
 ]
 
-// Що саме гість хоче зробити — для «Зарегистрируйтесь, чтобы…» (тексти з C).
-export const GATE_TEXT: Record<string, string> = {
-  apply: 'откликнуться на вакансию',
-  msg: 'написать агентству',
-  react: 'ставить отметки и писать комментарии',
-  docs: 'хранить документы',
-  post: 'публиковать',
-  save: 'сохранять вакансии',
-  inbox: 'получать анкеты и сообщения',
-  profile: 'создать профиль',
+// Лічильники в навігації застосунку (правка №16): непрочитані повідомлення й сповіщення.
+export const APP_COUNTS = { messages: 2, notifications: 3 }
+
+/* ---------- статус доступності (правки №1, №15, №19, №20, №23) ---------- */
+
+// Три статуси; «В рейсе до» прибрано. Дату для «Готов к контракту с» моряк вибирає сам.
+export type AvailKind = 'now' | 'from' | 'not'
+export type Availability = { kind: AvailKind; /** ISO yyyy-mm-dd, лише для 'from' */ date?: string }
+
+export const AVAIL_OPTIONS: { kind: AvailKind; label: string }[] = [
+  { kind: 'now', label: 'Готов приступить к работе немедленно' },
+  { kind: 'from', label: 'Готов к контракту с' },
+  { kind: 'not', label: 'Не ищу работу' },
+]
+
+export const AVAIL_DEFAULT: Availability = { kind: 'now' }
+export const AVAIL_DEFAULT_DATE = '2026-12-01'
+
+// '2026-12-01' → '01.12.2026'
+export const ruDate = (iso: string) => iso.split('-').reverse().join('.')
+
+// Повний текст статусу: «Готов к контракту с 01.12.2026».
+export function availLabel(a: Availability) {
+  const base = AVAIL_OPTIONS.find((o) => o.kind === a.kind)!.label
+  return a.kind === 'from' ? `${base} ${ruDate(a.date ?? AVAIL_DEFAULT_DATE)}` : base
 }
 
-// Статус доступності (C: AVAIL) + правка п. 8: «Готов выйти сразу» — першим. Індекс — bag 'q.avail'.
-export const AVAIL = ['Готов выйти сразу', 'Готов к контракту с 01.12', 'В рейсе до 15.02', 'Не ищу работу'] as const
+/* ---------- флот → департамент → посада (правки №2, №25, №35) ---------- */
+
+// Списки — за довідниками KB (40-domains/reference-data: 5 флотів, департаменти, посади з placements).
+// Підписи англійською, від мови інтерфейсу не залежать (правило G1). Остаточні списки замовник допрацює.
+export const FLEETS = ['Merchant', 'Offshore', 'Passenger / Cruise', 'Fishing', 'Onshore / Office'] as const
+export type Fleet = (typeof FLEETS)[number]
+
+// Вторинні департаменти — унизу списку (правило G2).
+export const SECONDARY_DEPARTMENTS = ['Hotel & Entertainment', 'Other']
+
+export const FLEET_TREE: Record<Fleet, Record<string, string[]>> = {
+  Merchant: {
+    Deck: ['Master', 'Chief Officer', '2nd Officer', '3rd Officer', 'Deck Cadet', 'Bosun (Boatswain)', 'AB (Able Seaman)', 'OS (Ordinary Seaman)', 'Pumpman', 'Deck Fitter'],
+    Engine: ['Chief Engineer', '2nd Engineer', '3rd Engineer', '4th Engineer', 'ETO (Electro-Technical Officer)', 'Engine Cadet', 'Fitter', 'Motorman', 'Oiler', 'Wiper'],
+    Catering: ['Chief Cook', 'Cook', 'Messman', 'Steward'],
+  },
+  Offshore: {
+    Deck: ['Master', 'Chief Officer', '2nd Officer', 'DPO (Dynamic Positioning Operator)', 'Senior DPO', 'Bosun (Boatswain)', 'AB (Able Seaman)', 'Crane Operator', 'Rigger', 'HLO (Helicopter Landing Officer)'],
+    Engine: ['Chief Engineer', '2nd Engineer', '3rd Engineer', 'ETO (Electro-Technical Officer)', 'Senior DP Engineer', 'Electrician', 'Mechanic', 'Motorman'],
+    Catering: ['Chief Cook', 'Cook', 'Cook Assistant', 'Steward'],
+    'Safety / HSE': ['Safety Officer', 'HSE Advisor', 'Medic'],
+  },
+  'Passenger / Cruise': {
+    Deck: ['Master', 'Staff Captain', 'Chief Officer', '2nd Officer', '3rd Officer', 'Bosun (Boatswain)', 'AB (Able Seaman)', 'OS (Ordinary Seaman)'],
+    Engine: ['Chief Engineer', 'Staff Chief Engineer', '2nd Engineer', '3rd Engineer', 'ETO (Electro-Technical Officer)', 'Electrician', 'HVAC Technician', 'Plumber', 'Motorman'],
+    Catering: ['Executive Chef', 'Sous Chef', 'Chef de Partie', 'Cook Assistant', 'Galley Utility'],
+    'Hotel & Entertainment': ['Hotel Director', 'Purser', 'Receptionist', 'Cabin Steward', 'Waiter', 'Bartender', 'Entertainment Staff'],
+  },
+  Fishing: {
+    Deck: ['Skipper', 'Mate', 'Bosun (Boatswain)', 'Deckhand', 'Net Maker'],
+    Engine: ['Chief Engineer', '2nd Engineer', 'Motorman'],
+    Catering: ['Cook', 'Cook Assistant'],
+    'Fishing / Processing': ['Factory Manager', 'Fish Processor', 'Freezer Man', 'Quality Controller'],
+  },
+  'Onshore / Office': {
+    Other: ['Port Captain', 'Marine Superintendent', 'Technical Superintendent', 'Crewing Officer'],
+  },
+}
+
+const byAlpha = (a: string, b: string) => a.localeCompare(b, 'en')
+
+// Департаменти вибраних флотів: основні за алфавітом, вторинні внизу.
+export function departmentsFor(fleets: readonly string[]) {
+  const set = new Set(fleets.flatMap((f) => Object.keys(FLEET_TREE[f as Fleet] ?? {})))
+  const all = [...set]
+  return [...all.filter((d) => !SECONDARY_DEPARTMENTS.includes(d)).sort(byAlpha), ...all.filter((d) => SECONDARY_DEPARTMENTS.includes(d)).sort(byAlpha)]
+}
+
+// Посади департаменту у вибраних флотах, без повторів, за алфавітом (одна посада буває в кількох флотах).
+export function positionsFor(fleets: readonly string[], department: string | null) {
+  if (!department) return []
+  return [...new Set(fleets.flatMap((f) => FLEET_TREE[f as Fleet]?.[department] ?? []))].sort(byAlpha)
+}

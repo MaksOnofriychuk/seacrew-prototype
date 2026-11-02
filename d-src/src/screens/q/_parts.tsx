@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react'
 import { ChevronRight } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
+import { ProfileFillCard } from '@/components/app/profile-fill'
 import { StepProgress } from '@/components/app/form-field'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -36,7 +37,7 @@ export const otherType = (t: DocTypeId): DocTypeId => (t === 'sid' ? 'diploma' :
 export const FLOW_TOTAL = 6
 
 // Ключі bag, які належать цьому потоку — «Начать заново» стирає їх усі.
-export const Q_KEYS = ['q.consent', 'q.cv', 'q.doc', 'q.doc2', 'q.form', 'q.manual', 'q.acct', 'q.done', 'q.revoked', 'q.medConsent', 'q.avail', 'q03.retake', 'q03.sheet']
+export const Q_KEYS = ['q.consent', 'q.cv', 'q.doc', 'q.doc2', 'q.form', 'q.manual', 'q.acct', 'q.done', 'q.revoked', 'q.medConsent', 'avail', 'q03.retake', 'q03.sheet']
 
 export type Upload = { st: 'none' | 'up' | 'done'; p: number }
 export type DocUpload = Upload & { pages: number }
@@ -369,16 +370,7 @@ export function readiness(full: boolean) {
   return { items, pct: n * 20 }
 }
 
+// Правка №21: тепер це спільна картка «Профиль заполнен на N %».
 export function ReadinessBlock({ pct, children }: { pct: number; children?: ReactNode }) {
-  const full = pct === 100
-  return (
-    <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-lg font-semibold">{children ? 'Готовность к анкетам' : 'Профиль заполнен'}</h2>
-        <span className={cn('font-mono text-lg font-medium', full ? 'text-success' : 'text-primary')}>{pct} %</span>
-      </div>
-      <Bar value={pct} tone={full ? 'success' : 'primary'} />
-      {children}
-    </section>
-  )
+  return <ProfileFillCard pct={pct}>{children}</ProfileFillCard>
 }
