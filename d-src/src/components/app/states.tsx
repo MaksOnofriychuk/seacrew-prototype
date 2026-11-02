@@ -99,7 +99,11 @@ export function LoadingState({ kind, rows, className }: LoadingProps) {
       {k === 'cards' && (
         <div className="flex flex-col gap-3">
           {Array.from({ length: n }, (_, i) => (
-            <span key={i} className="block h-28 rounded-xl border border-border bg-surface" />
+            <div key={i} className="flex h-28 flex-col justify-center gap-2.5 rounded-xl border border-border bg-surface px-5">
+              <span className={cn(bar, 'h-3.5 bg-muted', i % 2 ? 'w-1/2' : 'w-3/5')} />
+              <span className={cn(bar, 'h-3 w-4/5 bg-muted')} />
+              <span className={cn(bar, 'h-3 w-1/3 bg-muted')} />
+            </div>
           ))}
         </div>
       )}

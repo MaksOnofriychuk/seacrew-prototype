@@ -82,11 +82,18 @@ export function BlockTitle({ children }: { children: ReactNode }) {
   return <h2 className="mt-8 text-base font-semibold">{children}</h2>
 }
 
-// «Написать в поддержку» (e04, e05, e06, e08): екран підтримки m-support робить інший етап.
-// Поки його немає в реєстрі — коротке повідомлення внизу, щоб кнопка не була мертвою.
-export function useSupport(go: (id: string) => void) {
-  const { showToast } = useProto()
-  return () => (SCREENS.some((s) => s.id === 'm-support') ? go('m-support') : showToast('Открываем чат с поддержкой'))
+// «Написать в поддержку» (e04, e05, e06, e08) → m-support; «Назад» там веде на екран помилки (back.m-support).
+// blocked (e08, №12): одразу відкривається лист з темою «Аккаунт заблокирован» — m-support читає ?topic=blocked
+// з адреси, а go() параметрів не передає, тож ставимо адресу самі (тема лишається).
+export function useSupport(go: (id: string) => void, from: string, blocked = false) {
+  const { showToast, setBag } = useProto()
+  return () => {
+    if (!SCREENS.some((s) => s.id === 'm-support')) return showToast('Открываем чат с поддержкой')
+    setBag('back.m-support', from)
+    if (!blocked) return go('m-support')
+    const dark = document.documentElement.classList.contains('dark')
+    location.hash = `#m-support?topic=blocked${dark ? '&t=dark' : ''}`
+  }
 }
 
 // Три виходи, коли документ не підійшов (e01, e02) — поведінка C: retake, upload-file, c:e07.

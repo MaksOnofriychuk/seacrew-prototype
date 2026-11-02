@@ -3,7 +3,7 @@ import { Footer, NavBar } from '@/components/app/chrome'
 import { useGate } from '@/components/app/gate-sheet'
 import { useView, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
-import { JOBS } from '@/lib/data'
+import { FJ_JOBS, isClosed } from '@/lib/data-feed-jobs'
 import { useProto } from '@/lib/proto-state'
 import { Dateish, JobTags } from './g02-guest-jobs'
 import type { ScreenProps } from './registry'
@@ -16,7 +16,7 @@ export function G04GuestJob({ go }: ScreenProps) {
   const { gate, sheet } = useGate(go)
   const view = useView()
   const k = state.job
-  const j = JOBS[k]
+  const j = FJ_JOBS[k] ?? FJ_JOBS[0]
 
   const facts: [string, string][] = [
     ['Тип судна', j.ship],
@@ -102,8 +102,8 @@ export function G04GuestJob({ go }: ScreenProps) {
 
             <Section title="Похожие вакансии" flush>
               <div className="-mx-6 flex gap-3 overflow-x-auto px-6 pb-1">
-                {JOBS.map((x, i) =>
-                  i === k ? null : (
+                {FJ_JOBS.map((x, i) =>
+                  i === k || isClosed(i) ? null : (
                     <button
                       key={i}
                       type="button"

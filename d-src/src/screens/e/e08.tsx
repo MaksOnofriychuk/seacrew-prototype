@@ -7,7 +7,7 @@ import { ErrorLayout, useSupport } from './_error-layout'
 // Розблоковує лише підтримка; після цього лічильник помилок обнуляється. Причину не розписуємо —
 // моряк щойно бачив попередження. Як e05: хрестик — вихід на вибір способу.
 export function E08Blocked({ go }: ScreenProps) {
-  const support = useSupport(go)
+  const support = useSupport(go, 'e08', true)
   return (
     <ErrorLayout
       low

@@ -42,7 +42,7 @@ export function RRegister({ go }: ScreenProps) {
   if (done) return <Pending company={f.company} country={f.country} email={f.email} go={go} />
 
   return (
-    <AuthLayout aside={<Pitch />}>
+    <AuthLayout aside={<Pitch />} go={go}>
       <form onSubmit={submit} noValidate className="flex flex-col gap-6">
         <div className="flex flex-col gap-1.5">
           <h1 className="text-[28px] leading-tight font-semibold tracking-tight">Регистрация компании</h1>
@@ -106,7 +106,7 @@ export function RRegister({ go }: ScreenProps) {
 // Після реєстрації: організація чекає перевірки. Кабінет відкритий, «Позвать на работу» — після перевірки.
 function Pending({ company, country, email, go }: { company: string; country: string; email: string; go: (id: string) => void }) {
   return (
-    <AuthLayout aside={<Pitch />}>
+    <AuthLayout aside={<Pitch />} go={go}>
       <div className="screen-in flex flex-col gap-6">
         <span className="flex size-11 items-center justify-center rounded-full bg-warning/10 text-warning">
           <Clock className="size-5" />

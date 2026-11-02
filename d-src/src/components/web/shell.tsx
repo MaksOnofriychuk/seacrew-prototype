@@ -6,21 +6,29 @@ import {
   Briefcase,
   Building2,
   Coins,
+  CreditCard,
+  Crown,
   Cpu,
   Database,
   FileText,
+  Flag,
   FlaskConical,
   Inbox,
+  Layers,
   MessageSquare,
   Newspaper,
+  Receipt,
   Search,
   Send,
   Settings,
+  ShieldCheck,
+  Ticket,
   UserX,
   Users,
 } from 'lucide-react'
 import { Wordmark } from '@/components/app/chrome'
-import { ADMIN_COUNTS, ME_ADMIN, ME_RECRUITER, RECRUITER_COUNTS, RECRUITER_ORG, RECRUITER_ROLE_LABEL } from '@/lib/data-web'
+import { ADMIN_COUNTS } from '@/lib/data-admin'
+import { ME_ADMIN, ME_RECRUITER, RECRUITER_COUNTS, RECRUITER_ORG, RECRUITER_ROLE_LABEL } from '@/lib/data-web'
 import { cn } from '@/lib/utils'
 import { WebAvatar } from './status-badge'
 
@@ -47,17 +55,26 @@ export const RECRUITER_NAV: NavItem[] = [
   { id: 'r-messages', label: 'Сообщения', icon: MessageSquare, count: RECRUITER_COUNTS.messages },
   { id: 'r-forms', label: 'Анкеты', icon: FileText },
   { id: 'r-org', label: 'Организация', icon: Building2, group: 'Компания' },
+  { id: 'r-team', label: 'Команда', icon: Users, group: 'Компания' },
+  { id: 'r-billing', label: 'Тариф и оплата', icon: CreditCard, group: 'Компания' },
   { id: 'r-settings', label: 'Настройки', icon: Settings, group: 'Компания' },
 ]
 
 export const ADMIN_NAV: NavItem[] = [
   { id: 'a-orgs', label: 'Организации', icon: Building2, count: ADMIN_COUNTS.orgs, group: 'Модерация' },
+  { id: 'a2-verify', label: 'Верификация', icon: ShieldCheck, count: 3, group: 'Модерация' },
   { id: 'a-users', label: 'Пользователи', icon: Users, count: ADMIN_COUNTS.users, group: 'Модерация' },
-  { id: 'a-registrations', label: 'Регистрации и баны', icon: UserX, group: 'Модерация' },
+  { id: 'a-registrations', label: 'Регистрации', icon: UserX, group: 'Модерация' },
   { id: 'a-jobs', label: 'Вакансии', icon: Briefcase, group: 'Модерация' },
   { id: 'a-posts', label: 'Публикации', icon: Newspaper, group: 'Модерация' },
+  { id: 'a2-reports', label: 'Жалобы', icon: Flag, count: 4, group: 'Модерация' },
+  { id: 'a2-subs', label: 'Подписки', icon: Crown, group: 'Деньги' },
+  { id: 'a2-payments', label: 'Платежи', icon: Receipt, group: 'Деньги' },
+  { id: 'a2-promo', label: 'Промокоды', icon: Ticket, group: 'Деньги' },
+  { id: 'a2-plans', label: 'Тарифы компаний', icon: Layers, group: 'Деньги' },
   { id: 'a-refs', label: 'Справочники', icon: BookOpen, group: 'Данные' },
   { id: 'a-fields', label: 'Каталог полей', icon: Database, group: 'Данные' },
+  { id: 'a2-content', label: 'Тексты и рассылки', icon: FileText, group: 'Данные' },
   { id: 'a-engines', label: 'Движки распознавания', icon: Cpu, group: 'ИИ' },
   { id: 'a-usage', label: 'Расходы ИИ', icon: Coins, group: 'ИИ' },
   { id: 'a-lab', label: 'Лаборатория', icon: FlaskConical, group: 'ИИ' },

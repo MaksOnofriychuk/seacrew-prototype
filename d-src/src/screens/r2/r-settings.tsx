@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Check } from 'lucide-react'
+import { Check, ChevronRight, CreditCard, ReceiptText } from 'lucide-react'
 import { PageHeader } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { cn } from '@/lib/utils'
@@ -84,6 +84,28 @@ export function RSettings({ go }: ScreenProps) {
               </Choice>
             ))}
           </div>
+        </Group>
+
+        <Group title="Оплата">
+          <ul className="overflow-hidden rounded-xl border border-border bg-surface">
+            {(
+              [
+                ['r-billing', CreditCard, 'Тариф и оплата', 'План компании, места и способ оплаты'],
+                ['r-billing-history', ReceiptText, 'Счета', 'Все счета и квитанции'],
+              ] as const
+            ).map(([id, Icon, title, sub]) => (
+              <li key={id} className="border-t border-border first:border-t-0">
+                <button type="button" onClick={() => go(id)} className="flex w-full items-center gap-3 px-5 py-3.5 text-left hover:bg-muted">
+                  <Icon className="size-5 shrink-0 text-primary" />
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="text-[15px] font-medium">{title}</span>
+                    <span className="text-sm text-muted-foreground">{sub}</span>
+                  </span>
+                  <ChevronRight className="size-4 text-muted-foreground" />
+                </button>
+              </li>
+            ))}
+          </ul>
         </Group>
       </div>
     </WebShell>

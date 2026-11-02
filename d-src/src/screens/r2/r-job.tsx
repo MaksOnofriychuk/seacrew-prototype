@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { Eye, Inbox, Pencil } from 'lucide-react'
+import { ExternalLink, Eye, Inbox, Pencil } from 'lucide-react'
 import { MonoNums } from '@/components/app/mono-nums'
 import { useView, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
@@ -140,6 +140,11 @@ export function RJob({ go }: ScreenProps) {
         }
         actions={
           <>
+            {j.status === 'open' && (
+              <Button variant="ghost" className="text-primary" onClick={() => go('pub-job')}>
+                <ExternalLink /> Открыть публичную страницу
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={() => {

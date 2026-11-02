@@ -99,7 +99,7 @@ export type WebJob = {
   vesselType: string
   vesselName: string
   salary: { amount: string; currency: '$' | '€' | '£'; period: 'день' | 'месяц' }
-  region: 'Европа' | 'Африка' | 'ОАЭ' | 'Азия'
+  region: 'Европа' | 'Африка' | 'ОАЭ'
   board: string
   /** «4 мес.» / «6 недель» */
   duration: string
@@ -111,7 +111,7 @@ export type WebJob = {
 
 export const WEB_JOBS: WebJob[] = [
   { id: 'j01', position: '3rd Engineer', fleet: 'Merchant', department: 'Engine', vesselType: 'Chemical Tanker', vesselName: 'MT Aurora Spirit', salary: { amount: '4 200–4 600', currency: '$', period: 'месяц' }, region: 'Европа', board: '2026-12-05', duration: '4 ±1 мес.', status: 'open', recruiterId: 'rc1', created: '2026-10-28', description: 'Надёжный судовладелец, смена экипажа в ЕС, интернет на борту.' },
-  { id: 'j02', position: 'Chief Officer', fleet: 'Merchant', department: 'Deck', vesselType: 'Bulk Carrier', vesselName: 'MV Nordic Star', salary: { amount: '8 500', currency: '$', period: 'месяц' }, region: 'Азия', board: '2026-12-20', duration: '6 мес.', status: 'open', recruiterId: 'rc2', created: '2026-10-25', description: 'Supramax, линия Азия — Австралия.' },
+  { id: 'j02', position: 'Chief Officer', fleet: 'Merchant', department: 'Deck', vesselType: 'Bulk Carrier', vesselName: 'MV Nordic Star', salary: { amount: '8 500', currency: '$', period: 'месяц' }, region: 'ОАЭ', board: '2026-12-20', duration: '6 мес.', status: 'open', recruiterId: 'rc2', created: '2026-10-25', description: 'Supramax, линия Персидский залив — Индия.' },
   { id: 'j03', position: 'DPO (Dynamic Positioning Operator)', fleet: 'Offshore', department: 'Deck', vesselType: 'PSV', vesselName: 'Sea Harrier', salary: { amount: '450', currency: '€', period: 'день' }, region: 'Европа', board: '2026-11-25', duration: '4 недели', status: 'open', recruiterId: 'rc1', created: '2026-10-30', description: 'Северное море, ротация 4/4, DP2.' },
   { id: 'j04', position: 'ETO (Electro-Technical Officer)', fleet: 'Offshore', department: 'Engine', vesselType: 'AHTS', vesselName: 'Ocean Titan', salary: { amount: '380', currency: '£', period: 'день' }, region: 'Африка', board: '2027-01-15', duration: '5 недель', status: 'draft', recruiterId: 'rc3', created: '2026-11-01', description: 'Западная Африка, высокое напряжение.' },
   { id: 'j05', position: 'Chief Cook', fleet: 'Merchant', department: 'Catering', vesselType: 'Container Ship', vesselName: 'MV Baltic Way', salary: { amount: '2 900', currency: '$', period: 'месяц' }, region: 'ОАЭ', board: '2026-12-10', duration: '6 мес.', status: 'open', recruiterId: 'rc2', created: '2026-10-21', description: 'Смешанный экипаж 22 человека.' },
@@ -240,7 +240,7 @@ export const ADMIN_ORGS: AdminOrg[] = [
   { id: 'org-qx', name: 'Quick Crew Agency', country: 'ОАЭ', status: 'blocked', members: 2, jobs: 3, created: '2026-10-02' },
 ]
 
-export type UserStatus = 'active' | 'blocked'
+export type UserStatus = 'active' | 'blocked' | 'banned'
 export type AdminUser = {
   id: string
   name: string
@@ -259,12 +259,9 @@ export const ADMIN_USERS: AdminUser[] = [
   { id: 'u02', name: 'Vasyl R.', role: 'seafarer', email: 'va•••@mail.example', status: 'blocked', reason: 'Дважды загружен не документ моряка', wrongDocs: 2, created: '2026-10-30' },
   { id: 'u03', name: 'Kiran P.', role: 'seafarer', email: 'ki•••@mail.example', status: 'active', wrongDocs: 1, created: '2026-11-01' },
   { id: 'u04', name: 'Елена Маринова', role: 'recruiter', email: 'el•••@bluewave-crewing.example', status: 'active', wrongDocs: 0, created: '2026-09-14' },
-  { id: 'u05', name: 'Samir A.', role: 'seafarer', email: 'sa•••@mail.example', status: 'blocked', reason: 'Документ в бан-листе', wrongDocs: 0, created: '2026-10-18' },
+  { id: 'u05', name: 'Samir A.', role: 'seafarer', email: 'sa•••@mail.example', status: 'banned', reason: 'Номер документа в бан-листе', wrongDocs: 0, created: '2026-10-18' },
 ]
 
 /* ---------- лічильники навігації адмінки ---------- */
+// ADMIN_COUNTS — у lib/data-admin.ts: «Пользователи» рахуємо з A_USERS (ті самі, що на a-users).
 
-export const ADMIN_COUNTS = {
-  orgs: ADMIN_ORGS.filter((o) => o.status === 'pending').length,
-  users: ADMIN_USERS.filter((u) => u.status === 'blocked').length,
-}

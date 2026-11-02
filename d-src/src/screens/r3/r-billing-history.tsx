@@ -66,7 +66,7 @@ export function RBillingHistory({ go }: ScreenProps) {
   ]
 
   return (
-    <WebShell variant="recruiter" active="r-org" go={go}>
+    <WebShell variant="recruiter" active="r-billing" go={go}>
       <PageHeader
         back={{ label: 'Тариф и оплата', onClick: () => go('r-billing') }}
         title={

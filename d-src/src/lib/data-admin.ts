@@ -79,6 +79,13 @@ export const A_USERS: AUser[] = [
 
 export const aUser = (id: string) => A_USERS.find((u) => u.id === id) ?? A_USERS[0]
 
+/* ---------- лічильники навігації адмінки ---------- */
+// «Пользователи» — як вкладка «Заблокированные» на a-users (усі, крім активних).
+export const ADMIN_COUNTS = {
+  orgs: ADMIN_ORGS.filter((o) => o.status === 'pending').length,
+  users: A_USERS.filter((u) => u.status !== 'active').length,
+}
+
 /* ---------- кинуті реєстрації, пов'язані акаунти, бан (ADR-087, ADR-086 п. 3.11) ---------- */
 
 export type Attempt = {

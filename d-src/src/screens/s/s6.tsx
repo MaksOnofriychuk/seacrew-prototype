@@ -49,14 +49,15 @@ export function S6SeaService({ go }: ScreenProps) {
     <StepShell step={6} go={go} optional>
       <ScrollAnchor />
       <section className="rounded-xl border border-border bg-surface">
-        <div className="flex items-end justify-between gap-4 px-5 py-4">
-          <div className="flex flex-col gap-1">
+        {/* як у p22: підпис і кількість контрактів в одному рядку, стаж — окремим рядком на всю ширину (не переноситься) */}
+        <div className="flex flex-col gap-1 px-5 py-4">
+          <div className="flex items-baseline justify-between gap-4">
             <span className="text-sm text-muted-foreground">Общий стаж</span>
-            <Dur m={total} long className="text-[26px] leading-tight font-semibold tracking-tight" />
+            <span className="text-sm text-muted-foreground">
+              <span className="font-mono">{list.length}</span> {plural(list.length, 'контракт', 'контракта', 'контрактов')}
+            </span>
           </div>
-          <span className="pb-1 text-sm text-muted-foreground">
-            <span className="font-mono">{list.length}</span> {plural(list.length, 'контракт', 'контракта', 'контрактов')}
-          </span>
+          <Dur m={total} long className="text-[26px] leading-tight font-semibold tracking-tight" />
         </div>
         <label htmlFor="s6-hide" className="flex items-start gap-4 border-t border-border px-5 py-3">
           <span className="flex flex-1 flex-col gap-0.5">

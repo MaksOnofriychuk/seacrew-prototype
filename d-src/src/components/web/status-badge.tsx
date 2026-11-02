@@ -22,7 +22,7 @@ export const APPLICATION_TONE: Record<ApplicationStatus, Tone> = { sent: 'primar
 export const INVITATION_TONE: Record<InvitationStatus, Tone> = { pending: 'warning', accepted: 'success', declined: 'muted' }
 export const JOB_TONE: Record<JobStatus, Tone> = { open: 'success', draft: 'muted', closed: 'muted' }
 export const ORG_TONE: Record<OrgStatus, Tone> = { pending: 'warning', verified: 'success', rejected: 'muted', blocked: 'error' }
-export const USER_TONE: Record<UserStatus, Tone> = { active: 'success', blocked: 'error' }
+export const USER_TONE: Record<UserStatus, Tone> = { active: 'success', blocked: 'error', banned: 'error' }
 
 export const ApplicationStatusDot = ({ s }: { s: ApplicationStatus }) => <StatusDot tone={APPLICATION_TONE[s]}>{APPLICATION_STATUS_LABEL[s]}</StatusDot>
 export const InvitationStatusDot = ({ s }: { s: InvitationStatus }) => <StatusDot tone={INVITATION_TONE[s]}>{INVITATION_STATUS_LABEL[s]}</StatusDot>

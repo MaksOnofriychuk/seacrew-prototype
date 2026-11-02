@@ -16,13 +16,18 @@ export function daysLeft(exp: string) {
   return Math.round((d.getTime() - TODAY.getTime()) / 86400000)
 }
 
-// Строк: плашку показуємо лише для документа, що спливає (за 60 днів — перше нагадування) або вже сплив.
+/** Нагадування про строк — за 180, 90 і 30 днів (як у lib/data.ts і боковому меню). */
+export const REMIND_DAYS = [180, 90, 30]
+/** Які нагадування ще попереду для документа, що спливає через n днів: [90, 30], [30] або []. */
+export const remindersLeft = (n: number) => REMIND_DAYS.filter((d) => d < n)
+
+// Строк: плашку показуємо лише для документа, що спливає (за 180 днів — перше нагадування) або вже сплив.
 export function expiry(exp: string | null): { text: string; variant: 'warning' | 'error' | 'success' } | null {
   if (!exp) return null
   const n = daysLeft(exp)
   if (n === null) return null
   if (n < 0) return { text: 'Срок истёк', variant: 'error' }
-  if (n <= 60) return { text: `Истекает через ${n} ${plural(n, 'день', 'дня', 'дней')}`, variant: 'warning' }
+  if (n <= REMIND_DAYS[0]) return { text: `Истекает через ${n} ${plural(n, 'день', 'дня', 'дней')}`, variant: 'warning' }
   return { text: 'Действует', variant: 'success' }
 }
 
