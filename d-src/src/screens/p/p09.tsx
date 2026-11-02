@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Bookmark, Newspaper } from 'lucide-react'
+import { Bookmark, Columns2, Newspaper } from 'lucide-react'
 import { NavBar } from '@/components/app/chrome'
 import { Button } from '@/components/ui/button'
 import { POSTS, type Post } from '@/lib/data'
@@ -75,6 +75,23 @@ export function P09Saved({ go }: ScreenProps) {
         <div className="mx-4 mt-4">
           {tab === 'jobs' ? (
             jobs.length ? (
+              <>
+              {/* сравнение вакансий — преміум (замок pr-lock-compare) */}
+              {jobs.length > 1 && (
+                <div className="mb-3 flex items-center justify-between gap-3 pl-2">
+                  <span className="text-sm text-muted-foreground">Условия рядом</span>
+                  <Button
+                    variant="outline"
+                    className="h-10 text-[15px] text-primary"
+                    onClick={() => {
+                      setBag('back.pr-lock-compare', 'p09')
+                      go('pr-lock-compare')
+                    }}
+                  >
+                    <Columns2 /> Сравнить
+                  </Button>
+                </div>
+              )}
               <ul className="overflow-hidden rounded-xl border border-border bg-surface">
                 {jobs.map((k) => (
                   <JobCard
@@ -90,6 +107,7 @@ export function P09Saved({ go }: ScreenProps) {
                   />
                 ))}
               </ul>
+              </>
             ) : (
               <Empty
                 icon={Bookmark}

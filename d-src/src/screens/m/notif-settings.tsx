@@ -1,3 +1,4 @@
+import { Lock } from 'lucide-react'
 import { NavBar } from '@/components/app/chrome'
 import { Switch } from '@/components/ui/switch'
 import { NOTIF_TYPES } from '@/lib/data-messages'
@@ -24,7 +25,19 @@ export function MNotifSettings({ go }: ScreenProps) {
     <div className="flex h-full flex-col">
       <NavBar title="Уведомления" onBack={() => go(back)} />
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-3 pb-8">
-        <SettingsGroup title="Рабочие">{group('work')}</SettingsGroup>
+        <SettingsGroup title="Рабочие">
+          {group('work')}
+          {/* преміум: підходящі вакансії одразу, без чекання підборки — замок pr-lock-alerts */}
+          <SettingsRow
+            title="Подходящие вакансии сразу"
+            sub="С Премиум — в момент публикации"
+            right={<Lock className="size-4 shrink-0 text-muted-foreground" aria-label="Премиум" />}
+            onClick={() => {
+              setBag('back.pr-lock-alerts', 'm-notif-settings')
+              go('pr-lock-alerts')
+            }}
+          />
+        </SettingsGroup>
         <SettingsGroup title="Нерабочие">{group('other')}</SettingsGroup>
         <SettingsGroup title="Email" note="Push и уведомления в приложении приходят по всем включённым типам.">
           <SettingsRow

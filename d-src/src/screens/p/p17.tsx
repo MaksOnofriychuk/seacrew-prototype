@@ -1,4 +1,4 @@
-import { BellRing, Trash2 } from 'lucide-react'
+import { BellRing, Crown, Trash2 } from 'lucide-react'
 import { NavBar } from '@/components/app/chrome'
 import { EmptyState, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
@@ -92,8 +92,17 @@ export function P17Searches({ go }: ScreenProps) {
               </ul>
               <div className="mt-4 flex flex-col items-start gap-3 px-6">
                 <p className="text-sm text-muted-foreground">
-                  Сохранено <span className="font-mono">{searches.length}</span> из <span className="font-mono">{SEARCH_LIMIT}</span>. С премиумом — до{' '}
-                  <span className="font-mono">{SEARCH_LIMIT_PREMIUM}</span> подборок.
+                  Сохранено <span className="font-mono">{searches.length}</span> из <span className="font-mono">{SEARCH_LIMIT}</span>.{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBag('back.pr-lock-searches', 'p17')
+                      go('pr-lock-searches')
+                    }}
+                    className="inline-flex items-center gap-1 font-medium text-primary"
+                  >
+                    <Crown className="size-3.5" />С премиумом — до <span className="font-mono">{SEARCH_LIMIT_PREMIUM}</span>
+                  </button>
                 </p>
                 {!full && (
                   <Button variant="outline" className="h-11 text-[15px] text-primary" onClick={() => go('p13')}>

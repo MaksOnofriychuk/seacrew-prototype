@@ -1,7 +1,8 @@
-import { Heart, MessageCircle, Newspaper, ShieldCheck } from 'lucide-react'
+import { Check, Heart, MessageCircle, Newspaper, ShieldCheck, UserPlus } from 'lucide-react'
 import { NavBar } from '@/components/app/chrome'
 import { MonoNums } from '@/components/app/mono-nums'
 import { EmptyState, ViewState } from '@/components/app/states'
+import { Button } from '@/components/ui/button'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../registry'
 import { durText } from '../q/_parts'
@@ -13,11 +14,18 @@ import { AUTHORS, authorByName, Avatar, hashParam, postsBy } from './_feed-parts
 // Загальний стаж іншим морякам видно завжди — «Скрыть общий стаж» (№34) ховає його лише від агентств.
 // ?author=Ирина%20Бондарь — відкрити конкретного автора посиланням.
 export function P16Author({ go }: ScreenProps) {
-  const { bag, setBag } = useProto()
+  const { bag, setBag, showToast } = useProto()
   const name = bag<string>('feed.author', hashParam('author') ?? AUTHORS[0].name)
   const back = bag<string>('feed.author.back', 'p01')
   const a = authorByName(name) ?? AUTHORS[0]
   const posts = postsBy(a.name)
+  // підписка на моряка (преміум-розділ «Подписки», pr-following): його публікації першими в стрічці
+  const follows = bag<string[]>('follow.people', [])
+  const following = follows.includes(a.name)
+  const toggleFollow = () => {
+    setBag('follow.people', following ? follows.filter((x) => x !== a.name) : [...follows, a.name])
+    showToast(following ? `Вы отписались от ${a.name}` : `Вы подписались на ${a.name}`)
+  }
 
   const facts: [string, string, boolean][] = [
     ['Должность', a.rank, false],
@@ -42,6 +50,11 @@ export function P16Author({ go }: ScreenProps) {
                 </p>
               </div>
             </div>
+
+            <Button variant="outline" aria-pressed={following} onClick={toggleFollow} className={following ? 'mt-5 h-11 w-full text-[15px] text-muted-foreground' : 'mt-5 h-11 w-full text-[15px] text-primary'}>
+              {following ? <Check className="text-success" strokeWidth={2.5} /> : <UserPlus />}
+              {following ? 'Вы подписаны' : 'Подписаться'}
+            </Button>
 
             <dl className="mt-6 flex flex-col border-y border-border">
               {facts.map(([l, v, mono]) => (
