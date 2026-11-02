@@ -1,11 +1,14 @@
 import { groups as admin } from './groups/admin'
+import { groups as admin2 } from './groups/admin-2'
 import { groups as docsProfile } from './groups/docs-profile'
 import { groups as feedJobs } from './groups/feed-jobs'
 import { groups as messagesSettings } from './groups/messages-settings'
 import { groups as onboarding } from './groups/onboarding'
+import { groups as premium } from './groups/premium'
 import { groups as quick } from './groups/quick'
 import { groups as recruiter1 } from './groups/recruiter-1'
 import { groups as recruiter2 } from './groups/recruiter-2'
+import { groups as recruiter3 } from './groups/recruiter-3'
 import { groups as stepper } from './groups/stepper'
 import type { Platform, ScreenGroup } from './types'
 
@@ -21,9 +24,12 @@ export const GROUPS: ScreenGroup[] = [
   ...feedJobs,
   ...docsProfile,
   ...messagesSettings,
+  ...premium,
   ...recruiter1,
   ...recruiter2,
+  ...recruiter3,
   ...admin,
+  ...admin2,
 ].filter((g) => g.screens.length > 0)
 
 export const SCREENS = GROUPS.flatMap((g) => g.screens)
