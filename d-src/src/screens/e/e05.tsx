@@ -1,11 +1,12 @@
 import { ShieldOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { ScreenProps } from '../registry'
-import { ErrorLayout } from './_error-layout'
+import { ErrorLayout, useSupport } from './_error-layout'
 
 // e05 — документ у бан-листі (qError('e05') у C). Тон нейтральний, причину не називаємо:
 // тихий сірий знак замість кольору помилки.
 export function E05Banned({ go }: ScreenProps) {
+  const support = useSupport(go)
   return (
     <ErrorLayout
       low
@@ -16,7 +17,7 @@ export function E05Banned({ go }: ScreenProps) {
       onClose={() => go('o02')}
       actions={
         <>
-          <Button size="lg" variant="outline">
+          <Button size="lg" variant="outline" onClick={support}>
             Написать в поддержку
           </Button>
           <Button size="lg" variant="ghost" className="text-primary" onClick={() => go('o02')}>
