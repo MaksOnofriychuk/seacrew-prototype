@@ -103,8 +103,8 @@ export function S6SeaService({ go }: ScreenProps) {
                       <span className="truncate text-[15px] font-medium">{v.vessel}</span>
                       <Dur m={vMonths(v)} className="shrink-0 text-sm" />
                     </span>
-                    <span className="truncate text-sm text-muted-foreground">{[v.fleet, v.type, v.rank].filter(Boolean).join(', ')}</span>
-                    {v.owner && <span className="truncate text-sm text-muted-foreground">{v.owner}</span>}
+                    <span className="truncate text-sm">{[v.fleet, v.dept, v.rank].filter(Boolean).join(' → ')}</span>
+                    <span className="truncate text-sm text-muted-foreground">{[v.type, v.owner].filter(Boolean).join(' · ')}</span>
                     <span className="font-mono text-sm text-muted-foreground">
                       {v.from} – {v.to}
                     </span>

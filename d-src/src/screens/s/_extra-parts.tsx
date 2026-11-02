@@ -226,7 +226,7 @@ export function DocStep({ n, upT, upS, recSeq }: { n: number; upT: string; upS: 
                 <span className="truncate text-[15px] font-medium">{x.t}</span>
                 <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   {x.ai ? <Sparkles className="size-3.5 shrink-0 text-success" /> : <Pencil className="size-3.5 shrink-0 text-warning" />}
-                  {x.ai ? 'Распознано ИИ, проверьте данные' : 'Введено вручную, проверит администратор'}
+                  {x.ai ? 'Распознано, проверьте данные' : 'Введено вручную, проверит администратор'}
                 </span>
               </span>
             </li>

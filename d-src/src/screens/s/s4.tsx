@@ -69,8 +69,8 @@ export function S4Diplomas({ go }: ScreenProps) {
       <div id="f-up4">
         {!edit && (
           <AddPanel
-            title="Загрузите диплом или сертификат"
-            sub="Можно сразу несколько файлов — ИИ разложит по типам"
+            title="Сфотографируйте или загрузите дипломы и сертификаты."
+            sub="Можно несколько файлов сразу."
             busy={busy}
             onUpload={upload}
             onManual={() => setEdit({ d: { ...EMPTY_DOC } })}

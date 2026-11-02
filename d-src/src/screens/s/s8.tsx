@@ -9,12 +9,7 @@ export function S8ExtraCerts({ go }: ScreenProps) {
   return (
     <StepShell step={8} go={go} optional>
       <ScrollParam />
-      <DocStep
-        n={8}
-        upT="Загрузите сертификаты"
-        upS="Фото, скан или PDF — ИИ распознает тип и сроки"
-        recSeq={['ECDIS', 'High Voltage', 'DP Basic']}
-      />
+      <DocStep n={8} upT="Сфотографируйте или загрузите сертификаты." upS="Фото, скан или PDF." recSeq={['ECDIS', 'High Voltage', 'DP Basic']} />
     </StepShell>
   )
 }

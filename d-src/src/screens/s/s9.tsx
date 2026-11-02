@@ -10,7 +10,7 @@ export function S9FlagDocs({ go }: ScreenProps) {
       <ScrollParam />
       <DocStep
         n={9}
-        upT="Загрузите подфлажный документ"
+        upT="Сфотографируйте или загрузите подфлажный документ."
         upS="Паспорт, разрешение на работу или другой документ"
         recSeq={['Liberia Endorsement', 'Panama Endorsement', 'Malta Endorsement']}
       />
