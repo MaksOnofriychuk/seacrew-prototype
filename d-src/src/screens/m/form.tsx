@@ -96,6 +96,16 @@ function shellProps(st: FormState, steps: FStep[], onChat: () => void, toast: (t
   }
 }
 
+// Відповідь 117: AI-заповнення анкети «пока для всех, потом — для премиумов». Тому лише тихий підпис;
+// кнопка працює для всіх. Тап — екран преміуму pr-lock (є в full-proto).
+function PremiumSoon({ go, className }: { go: (id: string) => void; className?: string }) {
+  return (
+    <button type="button" onClick={() => go('pr-lock')} className={'text-sm text-muted-foreground ' + (className ?? '')}>
+      Скоро — в Премиум
+    </button>
+  )
+}
+
 // «Заполнить из профиля» на кожному кроці — та сама картка, що «Заполнить из документа» у s2.
 function AutofillCard({ st, empty }: { st: FormState; empty: boolean }) {
   return (
@@ -159,7 +169,10 @@ function SectionStep({ i, sections, st, go, onChat, toast }: { i: number; sectio
         </Footer>
       }
     >
-      <AutofillCard st={st} empty={view === 'empty'} />
+      <div className="flex flex-col gap-1.5">
+        <AutofillCard st={st} empty={view === 'empty'} />
+        <PremiumSoon go={go} className="self-end px-1" />
+      </div>
       {s.questions.map((q) => (
         <QuestionField key={q.id} q={q} st={st} showError={showErr} go={go} />
       ))}
@@ -351,6 +364,7 @@ function StartView({ sections, st, go, onChat }: { sections: Section[]; st: Form
             >
               <Sparkles /> Заполнить из профиля
             </Button>
+            <PremiumSoon go={go} className="-mt-2 self-center" />
           </>
         ) : (
           <>
@@ -363,6 +377,7 @@ function StartView({ sections, st, go, onChat }: { sections: Section[]; st: Form
             >
               <Sparkles /> Заполнить из профиля
             </Button>
+            <PremiumSoon go={go} className="-mt-1 self-center" />
             <Button size="lg" variant="ghost" className="text-primary" onClick={() => st.setStep(0)}>
               Заполнить вручную
             </Button>
