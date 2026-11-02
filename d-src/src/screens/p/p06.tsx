@@ -45,7 +45,7 @@ export function P06NewPost({ go }: ScreenProps) {
           <Avatar className="bg-card text-primary">{me.initials}</Avatar>
           <span className="flex flex-col">
             <span className="text-[15px] font-semibold">{me.name}</span>
-            <span className="text-sm text-muted-foreground">Видят моряки и агентства</span>
+            <span className="text-sm text-muted-foreground">Эту публикацию будут видеть все.</span>
           </span>
         </div>
         <textarea
