@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Check } from 'lucide-react'
 import { PageHeader } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
@@ -31,14 +31,25 @@ function applyTheme(dark: boolean) {
   location.hash = id + (s ? '?' + s : '')
 }
 
+const isDark = () => document.documentElement.classList.contains('dark')
+
 // r-settings — налаштування вигляду кабінету: мова і тема (ADR-070, apps/web /settings).
 export function RSettings({ go }: ScreenProps) {
   const r = useR2()
   const [lang, setLang] = useState<Lang>('ru')
-  const [theme, setTheme] = useState<Theme>(() => (document.documentElement.classList.contains('dark') ? 'dark' : 'light'))
+  // Вибрана тема стежить за справжньою темою сторінки (її міняє й панель прототипу), тому читаємо клас dark на <html>.
+  const [dark, setDark] = useState(isDark)
+  const [system, setSystem] = useState(false)
+  useEffect(() => {
+    setDark(isDark())
+    const mo = new MutationObserver(() => setDark(isDark()))
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    return () => mo.disconnect()
+  }, [])
+  const theme: Theme = system ? 'system' : dark ? 'dark' : 'light'
 
   const pickTheme = (t: Theme) => {
-    setTheme(t)
+    setSystem(t === 'system')
     applyTheme(t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches))
   }
 

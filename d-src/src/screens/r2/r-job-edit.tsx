@@ -27,6 +27,7 @@ export function RJobEdit({ go }: ScreenProps) {
   const [tried, setTried] = useState(false)
 
   const put = (p: Partial<WebJob>) => setJ((x) => ({ ...x, ...p }))
+  const dur = parseDuration(j.duration)
   const putSalary = (p: Partial<WebJob['salary']>) => setJ((x) => ({ ...x, salary: { ...x.salary, ...p } }))
   const value: Record<Key, string> = { fleet: j.fleet, department: j.department, position: j.position, vesselType: j.vesselType, amount: j.salary.amount, board: j.board, duration: j.duration }
   const missing = REQUIRED.filter((k) => !value[k].trim())
@@ -92,12 +93,17 @@ export function RJobEdit({ go }: ScreenProps) {
                   <Segmented value={j.salary.period} onChange={(period) => putSalary({ period })} options={[['месяц', 'В месяц'], ['день', 'В день']]} />
                 </WebField>
               </div>
-              <div className="mt-4 grid grid-cols-3 gap-4">
+              <div className="mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] gap-4">
                 <WebField id="je-board" label="Дата посадки" required error={err('board')}>
                   <WebInput id="je-board" type="date" value={j.board} onChange={(e) => put({ board: e.target.value })} className="font-mono dark:[color-scheme:dark]" />
                 </WebField>
                 <WebField id="je-dur" label="Длительность контракта" required error={err('duration')}>
-                  <WebInput id="je-dur" value={j.duration} onChange={(e) => put({ duration: e.target.value })} placeholder="4 ±1 мес." />
+                  <div className="flex gap-2">
+                    <WebInput id="je-dur" value={dur.n} onChange={(e) => put({ duration: durationText(e.target.value, dur.unit) })} placeholder="4 ±1" className="w-[88px] shrink-0 font-mono" />
+                    <div className="min-w-0 flex-1">
+                      <Segmented value={dur.unit} onChange={(unit) => put({ duration: durationText(dur.n, unit) })} options={[['m', 'мес.'], ['w', 'нед.']]} />
+                    </div>
+                  </div>
                 </WebField>
                 <WebField id="je-reg" label="Регион">
                   <WebSelect className="data-[size=default]:h-10" id="je-reg" value={j.region} onChange={(region) => put({ region: region as WebJob['region'] })} options={[...REGIONS]} />
@@ -143,6 +149,21 @@ export function RJobEdit({ go }: ScreenProps) {
       </footer>
     </WebShell>
   )
+}
+
+// Тривалість контракту — число й одиниця: місяці або тижні (правка №35: «1 мес / 4 недели»).
+type DurUnit = 'm' | 'w'
+function parseDuration(text: string): { n: string; unit: DurUnit } {
+  const m = text.match(/^(.*?)\s*(мес\.?|недел[яиь]|нед\.?)$/)
+  if (!m) return { n: text, unit: 'm' }
+  return { n: m[1], unit: m[2].startsWith('мес') ? 'm' : 'w' }
+}
+function durationText(n: string, unit: DurUnit) {
+  const v = n.trim()
+  if (!v) return ''
+  if (unit === 'm') return `${v} мес.`
+  const first = Number(v.match(/\d+/)?.[0] ?? 0)
+  return `${v} ${plural(first, 'неделя', 'недели', 'недель')}`
 }
 
 function Block({ title, children }: { title: string; children: ReactNode }) {

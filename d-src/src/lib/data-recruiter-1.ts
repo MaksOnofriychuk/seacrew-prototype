@@ -1,5 +1,6 @@
 // Дані екранів «Веб рекрутера, частина 1» (пошук моряків, профіль, кандидати, запрошення). Усе вигадане.
-import { ASSIGNMENTS, CONVERSATIONS, INVITATIONS, SEAFARERS, type Assignment, type InvitationStatus, type WebSeafarer } from './data-web'
+import { ASSIGNMENTS, INVITATIONS, SEAFARERS, type Assignment, type InvitationStatus, type WebSeafarer } from './data-web'
+import { formTitle, type Chat, type ChatMsg } from './data-recruiter-2'
 
 /** «Сегодня» прототипу — для нових запрошень і анкет. */
 export const TODAY = '2026-11-02'
@@ -80,6 +81,12 @@ export const contractsFor = (id: string) => CONTRACTS[id] ?? []
 /** Стаж для фільтра: загальний, а якщо схований — сума по контрактах (її й так видно по рядках). */
 export const expForFilter = (s: WebSeafarer) => s.experienceMonths ?? contractsFor(s.id).reduce((n, c) => n + c.months, 0)
 
+/* ---------- заповненість профілю (ТЗ §6) ---------- */
+
+// Рекрутер бачить позначку «Профиль неполный», поки профіль моряка не заповнено на 100 %. Решта — 100 %.
+const PROFILE_PCT: Record<string, number> = { sf03: 70, sf08: 60, sf11: 85 }
+export const profilePct = (id: string) => PROFILE_PCT[id] ?? 100
+
 /** «38 мес.» */
 export const monthsText = (m: number) => `${m} мес.`
 
@@ -110,12 +117,21 @@ export const CANDIDATES: Candidate[] = [
   { seafarerId: 'sf10', jobId: 'j01', via: 'application', since: '2026-10-30' },
 ]
 
-export const conversationOf = (c: Candidate) => CONVERSATIONS.find((x) => x.id === c.conversationId)
 export const assignmentsOf = (seafarerId: string): Assignment[] => ASSIGNMENTS.filter((a) => a.seafarerId === seafarerId)
 
+// Переписка кандидата — та сама розмова, що в «Сообщениях» (r-chat, дані частини 2): спершу за вакансією, інакше будь-яка з моряком.
+// Кандидат за запрошенням без розмови (conversationId не задано) переписки ще не має.
+export const chatOf = (chats: Chat[], c: Candidate) =>
+  c.conversationId === undefined && c.via === 'invitation'
+    ? undefined
+    : (chats.find((x) => x.seafarerId === c.seafarerId && x.jobId === c.jobId) ?? chats.find((x) => x.seafarerId === c.seafarerId))
+
+/** Короткий текст повідомлення для прев'ю: текст, а для вкладень — назва. */
+export const msgPreview = (m: ChatMsg) => m.text ?? (m.file ? m.file.name : m.photo ? 'Фото' : m.form ? `Анкета «${formTitle(m.form.formId)}»` : m.link ? m.link.title : '')
+
 /** Останній рух у розмові: «29.10 12:06» → дата для сортування. */
-export function lastActivity(c: Candidate) {
-  const m = conversationOf(c)?.messages.at(-1)
+export function lastActivity(chats: Chat[], c: Candidate) {
+  const m = chatOf(chats, c)?.messages.at(-1)
   if (!m) return { text: '', sort: 0 }
   const [d, t] = m.time.split(' ')
   const [dd, mm] = d.split('.')

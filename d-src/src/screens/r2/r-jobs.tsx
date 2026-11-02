@@ -7,9 +7,10 @@ import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader, PageTabs } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { JobStatusDot } from '@/components/web/status-badge'
-import { FLEETS } from '@/lib/data'
+import { departmentsFor, FLEETS, positionsFor } from '@/lib/data'
 import { ME_RECRUITER, RECRUITERS, salaryText, type JobStatus, type WebJob } from '@/lib/data-web'
 import { JOB_EXTRA } from '@/lib/data-recruiter-2'
+import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { ConfirmDialog, plural, ruDate, useR2 } from './_parts'
 
@@ -21,6 +22,8 @@ export function RJobs({ go }: ScreenProps) {
   const [tab, setTab] = useState<Tab>('open')
   const [q, setQ] = useState('')
   const [fleet, setFleet] = useState('')
+  const [department, setDepartment] = useState('')
+  const [position, setPosition] = useState('')
   const [owner, setOwner] = useState('')
   const [closing, setClosing] = useState<WebJob | null>(null)
 
@@ -30,8 +33,13 @@ export function RJobs({ go }: ScreenProps) {
     .filter((j) => tab === 'all' || j.status === tab)
     .filter((j) => !needle || [j.position, j.vesselName, j.vesselType].some((s) => s.toLowerCase().includes(needle)))
     .filter((j) => !fleet || j.fleet === fleet)
+    .filter((j) => !department || j.department === department)
+    .filter((j) => !position || j.position === position)
     .filter((j) => !owner || j.recruiterId === owner)
-  const filtered = !!(needle || fleet || owner)
+  const filtered = !!(needle || fleet || department || position || owner)
+  // Флот → департамент → должность (№2, №25): кожен наступний список — лише під вибране в попередньому.
+  const departments = departmentsFor(fleet ? [fleet] : FLEETS)
+  const positions = positionsFor(fleet ? [fleet] : FLEETS, department || null)
 
   const newApps = (id: string) => r.apps.filter((a) => a.jobId === id && a.status === 'sent').length
   const allApps = (id: string) => r.apps.filter((a) => a.jobId === id).length
@@ -45,7 +53,7 @@ export function RJobs({ go }: ScreenProps) {
     {
       key: 'position',
       header: 'Вакансия',
-      width: '24%',
+      width: '22%',
       sortValue: (j) => j.position,
       cell: (j) => (
         <span className="flex flex-col">
@@ -58,7 +66,7 @@ export function RJobs({ go }: ScreenProps) {
       ),
     },
     { key: 'fleet', header: 'Флот', width: '10%', sortValue: (j) => j.fleet, cell: (j) => j.fleet },
-    { key: 'salary', header: 'Зарплата', width: '17%', cell: (j) => (j.salary.amount ? <MonoNums text={salaryText(j)} /> : '—') },
+    { key: 'salary', header: 'Зарплата', width: '16%', cell: (j) => (j.salary.amount ? <MonoNums text={salaryText(j)} /> : '—') },
     { key: 'board', header: 'Посадка', width: '11%', mono: true, sortValue: (j) => j.board, cell: (j) => ruDate(j.board) || '—' },
     {
       key: 'apps',
@@ -81,7 +89,7 @@ export function RJobs({ go }: ScreenProps) {
     {
       key: 'action',
       header: <span className="sr-only">Действия</span>,
-      width: '8%',
+      width: '11%',
       align: 'right',
       cell: (j) =>
         j.status === 'open' ? (
@@ -132,13 +140,38 @@ export function RJobs({ go }: ScreenProps) {
             ? () => {
                 setQ('')
                 setFleet('')
+                setDepartment('')
+                setPosition('')
                 setOwner('')
               }
             : undefined
         }
         count={rows.length}
       >
-        <FilterSelect className="data-[size=default]:h-10" label="Флот" value={fleet} onChange={setFleet} options={[...FLEETS]} />
+        <FilterSelect
+          className="data-[size=default]:h-10"
+          label="Флот"
+          value={fleet}
+          onChange={(v) => {
+            setFleet(v)
+            setDepartment('')
+            setPosition('')
+          }}
+          options={[...FLEETS]}
+        />
+        <FilterSelect
+          className="data-[size=default]:h-10"
+          label="Департамент"
+          value={department}
+          onChange={(v) => {
+            setDepartment(v)
+            setPosition('')
+          }}
+          options={departments}
+        />
+        <span className={cn(!department && 'pointer-events-none opacity-50')} title={department ? undefined : 'Сначала выберите департамент'}>
+          <FilterSelect className="data-[size=default]:h-10" label="Должность" value={position} onChange={setPosition} options={positions} />
+        </span>
         <FilterSelect className="data-[size=default]:h-10" label="Рекрутер" value={owner} onChange={setOwner} options={RECRUITERS.map((x) => ({ value: x.id, label: x.id === ME_RECRUITER.id ? 'Мои' : x.name }))} />
       </FilterBar>
       <DataTable

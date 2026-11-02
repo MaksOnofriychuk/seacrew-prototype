@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { Clock } from 'lucide-react'
+import { AlertTriangle, Clock } from 'lucide-react'
+import { useView } from '@/components/app/states'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
 import { WebField, WebInput, WebSelect } from '@/components/web/fields'
@@ -19,6 +20,9 @@ export function RRegister({ go }: ScreenProps) {
   const [f, setF] = useState<Form>(EMPTY)
   const [touched, setTouched] = useState(false)
   const [done, setDone] = useState(false)
+  // Стан з панелі: «Ошибка» — email уже зайнятий, «Загрузка» — кнопка «Регистрируем…».
+  const view = useView()
+  const busy = view === 'loading'
   const set = (k: keyof Form) => (v: string) => setF((s) => ({ ...s, [k]: v }))
 
   const errors: Partial<Record<keyof Form, string>> = {}
@@ -32,7 +36,7 @@ export function RRegister({ go }: ScreenProps) {
   const submit = (e: FormEvent) => {
     e.preventDefault()
     setTouched(true)
-    if (Object.keys(errors).length === 0) setDone(true)
+    if (Object.keys(errors).length === 0 && view === 'normal') setDone(true)
   }
 
   if (done) return <Pending company={f.company} country={f.country} email={f.email} go={go} />
@@ -78,8 +82,15 @@ export function RRegister({ go }: ScreenProps) {
           </div>
         </Paper>
 
-        <Button type="submit" className="h-11 text-[15px]">
-          Зарегистрировать компанию
+        {view === 'error' && (
+          <p role="alert" className="flex items-start gap-2.5 rounded-md border border-signal/40 bg-signal/5 px-3.5 py-3 text-sm">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-signal" />
+            Этот email уже зарегистрирован. Войдите или попросите владельца компании добавить вас.
+          </p>
+        )}
+
+        <Button type="submit" className="h-11 text-[15px]" disabled={busy}>
+          {busy ? 'Регистрируем…' : 'Зарегистрировать компанию'}
         </Button>
         <p className="text-sm text-muted-foreground">
           Уже есть аккаунт?{' '}

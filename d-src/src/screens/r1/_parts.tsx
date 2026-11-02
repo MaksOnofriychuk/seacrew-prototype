@@ -6,7 +6,7 @@ import { HeroPanel } from '@/components/app/hero-panel'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
 import { usePhonePortal } from '@/lib/phone-portal'
 import { useProto } from '@/lib/proto-state'
-import { R1_INVITE_LABEL, R1_INVITES, type R1Invite, type R1InviteStatus } from '@/lib/data-recruiter-1'
+import { profilePct, R1_INVITE_LABEL, R1_INVITES, type R1Invite, type R1InviteStatus } from '@/lib/data-recruiter-1'
 import { cn } from '@/lib/utils'
 import { SCREENS } from '../registry'
 
@@ -33,6 +33,18 @@ export function useInvites() {
     add: (i: Omit<R1Invite, 'id'>) => setBag('r1.invites', [{ ...i, id: `new-${list.length + 1}` }, ...list]),
     setStatus: (id: string, status: R1InviteStatus) => setBag('r1.invites', list.map((i) => (i.id === id ? { ...i, status } : i))),
   }
+}
+
+/** «Профиль неполный» (ТЗ §6): тиха позначка біля імені, поки профіль моряка не заповнено на 100 %. */
+export function IncompleteMark({ id, className }: { id: string; className?: string }) {
+  const pct = profilePct(id)
+  if (pct >= 100) return null
+  return (
+    <span title={`Профиль заполнен на ${pct} %`} className={cn('inline-flex shrink-0 items-center gap-1.5 rounded-full border border-warning/40 px-2 py-0.5 text-xs font-normal tracking-normal whitespace-nowrap text-foreground', className)}>
+      <span className="size-1.5 rounded-full bg-warning" aria-hidden="true" />
+      Профиль неполный
+    </span>
+  )
 }
 
 const INVITE_TONE: Record<R1InviteStatus, Tone> = { pending: 'warning', accepted: 'success', declined: 'muted', cancelled: 'muted' }

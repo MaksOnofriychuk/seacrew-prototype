@@ -6,6 +6,7 @@ import {
   Building2,
   Calendar,
   Camera,
+  FileCheck2,
   FileText,
   Hash,
   ListChecks,
@@ -26,7 +27,8 @@ import { WebCheckbox, WebField, WebInput, WebSelect } from '@/components/web/fie
 import { WebShell } from '@/components/web/shell'
 import { StatusDot } from '@/components/web/status-badge'
 import { FORMS } from '@/lib/data-web'
-import { AUDIENCE_LABEL, FIELD_TYPE_LABEL, FORM_DEFS, formTitle, IMPORTED_FORM_ID, type Audience, type FieldType, type FormField, type FormSection } from '@/lib/data-recruiter-2'
+import { AUDIENCE_LABEL, FIELD_TYPE_LABEL, FORM_DEFS, formTitle, IMPORTED_FORM_ID, PROOF_TYPES, type Audience, type FieldType, type FormField, type FormSection } from '@/lib/data-recruiter-2'
+import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { plural, useR2 } from './_parts'
@@ -50,7 +52,7 @@ const TYPE_ICON: Record<FieldType, Icon> = {
 // Типи, які можна додати; в секції «Только агентство» — лише прості (contract §4).
 const ALL_TYPES = Object.keys(FIELD_TYPE_LABEL) as FieldType[]
 const AGENCY_TYPES: FieldType[] = ['text', 'textarea', 'number', 'date', 'select', 'checkbox', 'file']
-const PROFILE_KEYS = ['Фамилия', 'Имя', 'Дата рождения', 'Гражданство', 'Телефон', 'Аэропорт', 'Ближайший родственник', 'Должность', 'Морской стаж']
+const PROFILE_KEYS = ['Фамилия', 'Имя', 'Дата рождения', 'Гражданство', 'Телефон', 'Аэропорт', 'Ближайший родственник', 'Должность', 'Опыт работы']
 const DOC_CATEGORIES = ['Удостоверение личности', 'Дипломы', 'Сертификаты', 'Медицина', 'Визы']
 
 const AUDIENCE_HINT: Record<Audience, string> = {
@@ -69,7 +71,14 @@ export function RFormEdit({ go }: ScreenProps) {
   const imported = id === IMPORTED_FORM_ID
   const meta = FORMS.find((x) => x.id === id)
   const [title, setTitle] = useState(isNew ? '' : imported ? r.importTitle || formTitle(id) : formTitle(id))
-  const [sections, setSections] = useState<FormSection[]>(() => structuredClone(FORM_DEFS[id] ?? [{ id: 's1', title: 'Раздел 1', audience: 'SEAFARER', fields: [] }]))
+  const { bag } = useProto()
+  // Після імпорту — позначки «Нужно подтверждение документом», які рекрутер поставив на кроці перевірки полів.
+  const importProof = bag<string[] | null>('r2.importProof', null)
+  const [sections, setSections] = useState<FormSection[]>(() => {
+    const base: FormSection[] = structuredClone(FORM_DEFS[id] ?? [{ id: 's1', title: 'Раздел 1', audience: 'SEAFARER', fields: [] }])
+    if (!imported || !importProof) return base
+    return base.map((sec) => ({ ...sec, fields: sec.fields.map((x) => (x.pdf ? { ...x, proof: importProof.includes(x.pdf) } : x)) }))
+  })
   const [sel, setSel] = useState<Sel>({ s: sections[0].id, f: sections[0].fields[0]?.id ?? null })
   const [adding, setAdding] = useState<string | null>(null)
   const [review, setReview] = useState<string[]>(imported ? ['s1.nok', 's3.dpclass'] : [])
@@ -230,6 +239,11 @@ export function RFormEdit({ go }: ScreenProps) {
                                 {x.type === 'profile' && x.profileKey ? `Из профиля: ${x.profileKey}` : x.type === 'documentRequest' && x.category ? `Документ: ${x.category}` : FIELD_TYPE_LABEL[x.type]}
                                 {x.repeatable && ', можно повторять'}
                               </span>
+                              {x.proof && (
+                                <span className="flex items-center gap-1.5 text-[13px] text-primary">
+                                  <FileCheck2 className="size-3.5 shrink-0" /> Подтвердить документом
+                                </span>
+                              )}
                             </span>
                             {check && <StatusDot tone="warning">Проверьте</StatusDot>}
                             {x.pdf && <span className="shrink-0 font-mono text-xs text-muted-foreground">{x.pdf}</span>}
@@ -301,6 +315,14 @@ export function RFormEdit({ go }: ScreenProps) {
                 <WebCheckbox id="fe-req" checked={field.required} onChange={(required) => putField({ required })}>
                   Обязательное
                 </WebCheckbox>
+                {section.audience === 'SEAFARER' && PROOF_TYPES.includes(field.type) && (
+                  <div className="flex flex-col gap-1.5">
+                    <WebCheckbox id="fe-proof" checked={!!field.proof} onChange={(proof) => putField({ proof })}>
+                      Нужно подтверждение документом
+                    </WebCheckbox>
+                    <p className="pl-[26px] text-[13px] text-muted-foreground">Моряк возьмёт значение из подтверждённого документа или введёт сам и приложит фото либо файл. Без этого поле не примется.</p>
+                  </div>
+                )}
                 <div className="mt-auto flex flex-col gap-1 border-t border-border pt-4">
                   <span className="text-sm text-muted-foreground">Заполняет: {AUDIENCE_LABEL[section.audience]}</span>
                   <Button variant="ghost" className="self-start px-0 text-signal hover:bg-transparent" onClick={removeField}>

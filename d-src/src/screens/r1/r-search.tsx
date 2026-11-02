@@ -12,7 +12,7 @@ import { SEAFARERS, type WebSeafarer } from '@/lib/data-web'
 import { AIRPORT_OPTIONS, AVAIL_FILTER, CERT_OPTIONS, EXP_OPTIONS, expForFilter, monthsText, VISA_OPTIONS } from '@/lib/data-recruiter-1'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { useSelected } from './_parts'
+import { IncompleteMark, useSelected } from './_parts'
 
 // r-search — пошук моряків (правка №30; фільтри: флот → департамент → посада за №2, №25; відповіді 108, 136, 142).
 // Рекрутер бачить «Andrii K.» — без прізвища, фото й контактів; аватар — лише ініціали.
@@ -54,14 +54,17 @@ export function RSearch({ go }: ScreenProps) {
     {
       key: 'name',
       header: 'Моряк',
-      width: '19%',
+      width: '29%',
       sortValue: (s) => s.name,
       cell: (s) => (
         <span className="flex items-center gap-3">
           <WebAvatar initials={s.initials} />
           <span className="flex min-w-0 flex-col leading-tight">
             <span className="truncate font-medium">{s.name}</span>
-            <span className="truncate text-[13px] text-muted-foreground">{s.nationality}</span>
+            <span className="flex min-w-0 items-center gap-2 text-[13px] text-muted-foreground">
+              <span className="truncate">{s.nationality}</span>
+              <IncompleteMark id={s.id} className="px-1.5 py-0 text-[11px]" />
+            </span>
           </span>
         </span>
       ),
@@ -69,7 +72,7 @@ export function RSearch({ go }: ScreenProps) {
     {
       key: 'position',
       header: 'Должность',
-      width: '24%',
+      width: '21%',
       sortValue: (s) => s.position,
       cell: (s) => (
         <span className="flex min-w-0 flex-col leading-tight">
@@ -88,8 +91,8 @@ export function RSearch({ go }: ScreenProps) {
       cell: (s) => (s.experienceMonths === null ? <span className="text-muted-foreground">по контрактам</span> : <MonoNums text={monthsText(s.experienceMonths)} />),
     },
     { key: 'avail', header: 'Готовность', width: '15%', sortValue: (s) => ({ now: 0, from: 1, not: 2 })[s.availability.kind] * 1e9 + Number((s.availability.date ?? '').replace(/-/g, '')), cell: (s) => <AvailabilityDot a={s.availability} short /> },
-    { key: 'visas', header: 'Визы', width: '18%', cell: (s) => (s.visas.length ? s.visas.join(', ') : <span className="text-muted-foreground">нет</span>) },
-    { key: 'airport', header: 'Аэропорт', width: '15%', sortValue: (s) => s.airport, cell: (s) => s.airport },
+    { key: 'visas', header: 'Визы', width: '13%', cell: (s) => (s.visas.length ? s.visas.join(', ') : <span className="text-muted-foreground">нет</span>) },
+    { key: 'airport', header: 'Аэропорт', width: '13%', sortValue: (s) => s.airport, cell: (s) => s.airport },
   ]
 
   return (
