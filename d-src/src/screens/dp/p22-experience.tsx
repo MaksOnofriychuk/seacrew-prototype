@@ -3,10 +3,10 @@ import { ChevronRight, EyeOff, Ship } from 'lucide-react'
 import { NavBar } from '@/components/app/chrome'
 import { ViewState } from '@/components/app/states'
 import { Switch } from '@/components/ui/switch'
-import { CONTRACTS, FOUND_CONTRACT, type Contract } from '@/lib/data-docs-profile'
+import { FOUND_CONTRACT, type Contract } from '@/lib/data-docs-profile'
 import type { ScreenProps } from '../types'
 import { Dur, plural, useBusy, useDP } from './_parts'
-import { AddPanel, byStart, cMonths, ContractSheet, groupByPosition } from './_contracts'
+import { AddPanel, byStart, cMonths, ContractSheet, groupByPosition, useContracts } from './_contracts'
 
 // p22 — «Опыт работы» у профілі (бриф S44) — як крок 6 реєстрації: контракти (правка №3), кожен —
 // флот → департамент → посада (№25), «Общий стаж» і «По должностям» рахуються з контрактів.
@@ -17,16 +17,15 @@ import { AddPanel, byStart, cMonths, ContractSheet, groupByPosition } from './_c
 type Edit = { c?: Contract }
 
 export function P22Experience({ go }: ScreenProps) {
-  const { bag, setBag, showToast } = useDP()
-  const contracts = bag<Contract[]>('dp.contracts', CONTRACTS)
-  const hideTotal = bag<boolean>('dp.hideTotal', false)
+  const { showToast } = useDP()
+  // Те саме джерело, що крок s6 і q09: стаж однаковий скрізь.
+  const { contracts, save, hideTotal, setHideTotal } = useContracts()
   const [edit, setEdit] = useState<Edit | null>(null)
   const { busy, run } = useBusy()
 
   const list = [...contracts].sort(byStart)
   const total = list.reduce((s, c) => s + cMonths(c), 0)
   const positions = groupByPosition(list)
-  const save = (next: Contract[]) => setBag('dp.contracts', next)
 
   const upload = () =>
     run(() => {
@@ -60,7 +59,7 @@ export function P22Experience({ go }: ScreenProps) {
             <div className="mt-6 flex flex-col gap-5">
               <div className="flex items-start gap-3 rounded-xl border border-border bg-surface px-4 py-4">
                 <Ship className="mt-0.5 size-5 shrink-0 text-primary" />
-                <p className="text-[15px] text-muted-foreground">Контрактов пока нет. Загрузите страницы послужной книжки или CV — контракты найдутся сами.</p>
+                <p className="text-[15px] text-muted-foreground">Контрактов пока нет. Добавьте их из документа или вручную.</p>
               </div>
               {add}
             </div>
@@ -68,14 +67,14 @@ export function P22Experience({ go }: ScreenProps) {
         >
           <div className="screen-in mt-6 flex flex-col gap-4">
             <section className="overflow-hidden rounded-xl border border-border bg-surface">
-              <div className="flex items-end justify-between gap-4 px-5 pt-4 pb-4">
-                <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 px-5 pt-4 pb-4">
+                <div className="flex items-baseline justify-between gap-4">
                   <span className="text-sm text-muted-foreground">Общий стаж</span>
-                  <Dur m={total} long className="text-[28px] leading-tight font-semibold tracking-tight" />
+                  <span className="text-sm text-muted-foreground">
+                    <span className="font-mono">{list.length}</span> {plural(list.length, 'контракт', 'контракта', 'контрактов')}
+                  </span>
                 </div>
-                <span className="pb-1.5 text-sm text-muted-foreground">
-                  <span className="font-mono">{list.length}</span> {plural(list.length, 'контракт', 'контракта', 'контрактов')}
-                </span>
+                <Dur m={total} long className="text-[26px] leading-tight font-semibold tracking-tight" />
               </div>
               <label htmlFor="p22-hide" className="flex items-start gap-3 border-t border-border px-5 py-4">
                 <span className="flex flex-1 flex-col gap-1">
@@ -89,7 +88,7 @@ export function P22Experience({ go }: ScreenProps) {
                   id="p22-hide"
                   checked={hideTotal}
                   onCheckedChange={(v) => {
-                    setBag('dp.hideTotal', v)
+                    setHideTotal(v)
                     showToast(v ? 'Общий стаж скрыт от агентств' : 'Агентства снова видят общий стаж')
                   }}
                   className="mt-0.5 data-[size=default]:h-6 data-[size=default]:w-10 [&>span]:size-5"

@@ -1,22 +1,25 @@
 import { useState } from 'react'
-import { Bookmark, Briefcase, Check, Download, FileText, Globe, Moon, ShieldCheck, Ship } from 'lucide-react'
+import { Banknote, Bookmark, Briefcase, Check, Download, FileText, Globe, HeartPulse, Moon, ShieldCheck, Ship } from 'lucide-react'
 import { AvailabilityButton, AvailabilitySheet } from '@/components/app/availability'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { ProfileFillCard } from '@/components/app/profile-fill'
 import { ViewState } from '@/components/app/states'
 import { TabBar } from '@/components/app/tab-bar'
 import { Button } from '@/components/ui/button'
-import { CONTRACTS, PROFILE_FIELDS, type Contract } from '@/lib/data-docs-profile'
+import { PROFILE_FIELDS } from '@/lib/data-docs-profile'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { Dur, ListGroup, MenuRow, Note, TabHeader, useDP, useHashParam, useProfile } from './_parts'
-import { byStart, cMonths } from './_contracts'
+import { readiness } from '../q/_parts'
+import { Dur, ListGroup, MenuRow, Note, SalaryText, TabHeader, useDP, useDarkClass, useHashParam, useProfile, type TextField } from './_parts'
+import { byStart, cMonths, useContracts } from './_contracts'
+import { daysLeft, DEMO_MED, expiry, useDocs } from './_docs'
 
 // p14 — профіль у застосунку. Правка №16: «Уведомления» і «Входящие» тут більше немає — дзвіночок у
 // верхній панелі, повідомлення — вкладка «Сообщения». Правка №21: «Профиль заполнен на N %».
 // Статус — спільні AvailabilityButton / AvailabilitySheet (правки №1, №15, №19, №20).
 // Особисті дані — по рядку на поле, тап → p21 «Изменить поле» (gaps №6). «Опыт работы» → p22,
-// «Моё CV» → p20. ?full=1 — профіль заповнено на 100 %.
+// «Моё CV» → p20. «Медосмотр действителен до …» (ТЗ §8), «Желаемая зарплата» і «Семейное положение»
+// (відповіді 46, 134) → p21. Стаж і відсоток — ті самі, що в реєстрації (s6, q09). ?full=1 — 100 %.
 
 const LANGS = ['Русский', 'Українська', 'English']
 
@@ -27,14 +30,26 @@ export function P14Profile({ go }: ScreenProps) {
   const [langOpen, setLangOpen] = useState(false)
   const full = useHashParam('full') === '1'
   const lang = bag<string>('dp.lang', 'Русский')
-  const dark = document.documentElement.classList.contains('dark')
+  const dark = useDarkClass()
 
-  // Медичні, введені на кроці s5, теж рахуються — тоді профіль заповнено на 100 %.
-  const pct = full || bag<unknown[]>('s5.docs', []).length > 0 ? 100 : 80
+  const { docs } = useDocs()
+  // Медосмотр (ТЗ §8): найближчий строк серед медичних; ?full=1 — демо-медосмотр.
+  const med = docs.filter((d) => d.group === 'med').sort((a, b) => (daysLeft(a.exp ?? '') ?? 1e9) - (daysLeft(b.exp ?? '') ?? 1e9))[0] ?? (full ? { id: `med-${DEMO_MED.id}`, exp: DEMO_MED.d.exp } : null)
+  // Відсоток — та сама функція, що в q09 і боковому меню: медичні додано → 100 %.
+  const pct = readiness(!!med).pct
   const savedN = bag<number[]>('saved.jobs', [0, 3]).length + bag<string[]>('saved.posts', []).length
-  const contracts = bag<Contract[]>('dp.contracts', CONTRACTS)
+  // Стаж — з тих самих контрактів, що крок s6 і q09.
+  const { contracts } = useContracts()
   const total = contracts.reduce((s, c) => s + cMonths(c), 0)
   const latest = [...contracts].sort(byStart)[0]
+
+  const openMed = () => {
+    if (!med) return go('s5')
+    if (med.id === `med-${DEMO_MED.id}`) setBag('docs.demoMed', true)
+    setBag('doc.sel', med.id)
+    go('p11')
+  }
+  const medSoon = med?.exp ? expiry(med.exp) : null
 
   const edit = (f: string) => {
     setBag('dp.field', f)
@@ -82,7 +97,7 @@ export function P14Profile({ go }: ScreenProps) {
           <MenuRow
             key={f.k}
             title={<span className="text-muted-foreground">{f.label}</span>}
-            value={<span className={cn('text-foreground', f.mono && 'font-mono')}>{p.value(f.k as Exclude<typeof f.k, 'rank'>) || '—'}</span>}
+            value={p.value(f.k as TextField) ? <span className={cn('text-foreground', f.mono && 'font-mono')}>{p.value(f.k as TextField)}</span> : 'Не указано'}
             onClick={() => edit(f.k)}
           />
         ))}
@@ -91,6 +106,21 @@ export function P14Profile({ go }: ScreenProps) {
       <ListGroup title="Работа">
         <MenuRow icon={Briefcase} title="Должность" value={p.position || 'Не указана'} onClick={() => edit('rank')} />
         <MenuRow icon={Ship} title="Опыт работы" value={<Dur m={total} />} onClick={() => go('p22')} />
+        <MenuRow icon={Banknote} title="Желаемая зарплата" value={p.salary?.amount ? <SalaryText s={p.salary} /> : 'Не указана'} onClick={() => edit('salary')} />
+        <MenuRow
+          icon={HeartPulse}
+          title={
+            med?.exp ? (
+              <>
+                Медосмотр действителен до <span className={cn('font-mono', medSoon && medSoon.variant !== 'success' && 'text-warning')}>{med.exp}</span>
+              </>
+            ) : (
+              'Медосмотр'
+            )
+          }
+          value={med ? undefined : 'Не добавлен'}
+          onClick={openMed}
+        />
         <MenuRow icon={FileText} title="Моё CV" value="PDF" onClick={() => go('p20')} />
         <MenuRow icon={Bookmark} title="Сохранённое" value={<span className="font-mono">{savedN}</span>} onClick={() => go('p09')} />
       </ListGroup>

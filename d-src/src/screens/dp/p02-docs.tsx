@@ -11,7 +11,7 @@ import { ActionRow, Note, TabHeader, useDP, type Icon } from './_parts'
 import { ADD_START, expiry, GROUPS, useDocs, type AddState, type Doc, type DocGroup } from './_docs'
 
 // p02 — документы. Групи: документ моряка, загранпаспорт і визы (правка №36), дипломи, медичні, CV;
-// «Подфлажные» і «Другие» — лише коли є. Номер прихований, крім останніх цифр; плашка строку — лише
+// «Прививки» з «+» (відповідь 76); «Подфлажные» і «Другие» — лише коли є. Номер прихований, крім останніх цифр; плашка строку — лише
 // в документа, що спливає. «+» — вікно «Добавить документ» (текст за правкою №17) → p18.
 // Медичні — окремо, вручну на кроці s5 (ADR-090). ?med=1 показує медичний документ, що спливає.
 
@@ -21,6 +21,7 @@ const ADD_ROW: Partial<Record<DocGroup, { title: string; cat: AddCat }>> = {
   passport: { title: 'Добавить загранпаспорт', cat: 'passport' },
   visa: { title: 'Добавить визу', cat: 'visa' },
   dip: { title: 'Добавить диплом или сертификат', cat: 'dip' },
+  vac: { title: 'Добавить прививку', cat: 'vac' },
   cv: { title: 'Загрузить CV', cat: 'other' },
 }
 
@@ -45,7 +46,14 @@ export function P02Docs({ go }: ScreenProps) {
     go('p18')
   }
   const picked = () => start({ ...ADD_START, cat: add?.cat ?? null })
-  const manual = () => start({ cat: add?.cat ?? null, pages: [], manual: true })
+  // Тип уже відомий (рядок «Добавить визу», «+» у прививках) — одразу до полів; ні — спершу вибір типу на p18.
+  const manual = () => {
+    const cat = add?.cat ?? null
+    if (!cat) return start({ cat, pages: [], manual: true })
+    setBag('dp.add', { cat, pages: [], manual: true })
+    setAdd(null)
+    go('p19')
+  }
 
   const plus = (
     <button type="button" aria-label="Добавить документ" onClick={() => setAdd({ cat: null })} className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground active:scale-95">
@@ -91,7 +99,17 @@ export function P02Docs({ go }: ScreenProps) {
                 const addRow = ADD_ROW[g.id]
                 return (
                   <li key={g.id} className="border-t border-border first:border-t-0">
-                    <h2 className="-mb-1 px-4 pt-3.5 text-sm text-muted-foreground">{g.title}</h2>
+                    {g.id === 'vac' ? (
+                      // Відповідь 76: блок прививок з «+» — додати будь-яку.
+                      <div className="-mb-1 flex items-center justify-between pt-1.5 pr-2 pl-4">
+                        <h2 className="text-sm text-muted-foreground">{g.title}</h2>
+                        <button type="button" aria-label="Добавить прививку" onClick={() => setAdd({ cat: 'vac' })} className="flex size-9 items-center justify-center rounded-full text-primary active:bg-muted/60">
+                          <Plus className="size-5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <h2 className="-mb-1 px-4 pt-3.5 text-sm text-muted-foreground">{g.title}</h2>
+                    )}
                     <ul>
                       {items.map((d) => (
                         <DocRow key={d.id} d={d} onClick={() => open(d.id)} />
@@ -131,6 +149,7 @@ function DocRow({ d, onClick }: { d: Doc; onClick: () => void }) {
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="text-[15px] font-medium">{d.title}</span>
           <span className="text-sm text-muted-foreground">
+            {d.group === 'vac' && 'от '}
             <span className={d.group === 'cv' || d.group === 'visa' ? undefined : 'font-mono'}>{d.sub}</span>
             {d.exp && (
               <>

@@ -4,11 +4,30 @@ import { BottomSheet } from '@/components/app/bottom-sheet'
 import { FleetPicker, type FleetValue } from '@/components/app/fleet-picker'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { VESSEL_TYPES, type Contract } from '@/lib/data-docs-profile'
-import { Dur, Field, maskMonth, TextInput } from './_parts'
+import { CONTRACTS, VESSEL_TYPES, type Contract } from '@/lib/data-docs-profile'
+import { Dur, Field, maskMonth, TextInput, useDP } from './_parts'
 
 // Контракти для «Опыта работы» у профілі (p22) і CV (p20): підрахунок, форма контракту, блок додавання.
 // Власна версія кроку s6 (правки №3, №25, №26, №34) — без імпорту з теки s.
+
+/* ---------- одне джерело з реєстрацією ---------- */
+
+// Контракти й «Скрыть общий стаж» живуть там само, де крок s6 і q09 (bag 's6.voyages', 's6.hideTotal'):
+// стаж у профілі, «Опыте работы», CV і реєстрації — одна цифра. Формат кроку s6: rank, dept.
+type Stored = Omit<Contract, 'position' | 'department' | 'fleet'> & { rank: string; dept?: string; fleet?: string }
+const toContract = ({ rank, dept, fleet, ...v }: Stored): Contract => ({ ...v, fleet: fleet ?? '', department: dept ?? '', position: rank })
+const toStored = ({ position, department, ...c }: Contract): Stored => ({ ...c, rank: position, dept: department })
+
+export function useContracts() {
+  const { bag, setBag } = useDP()
+  const stored = bag<Stored[] | null>('s6.voyages', null)
+  return {
+    contracts: stored ? stored.map(toContract) : CONTRACTS,
+    save: (next: Contract[]) => setBag('s6.voyages', next.map(toStored)),
+    hideTotal: bag<boolean>('s6.hideTotal', false),
+    setHideTotal: (v: boolean) => setBag('s6.hideTotal', v),
+  }
+}
 
 const ym = (s: string) => {
   const m = s.match(/^(\d{2})\.(\d{4})$/)

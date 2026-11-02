@@ -28,7 +28,7 @@ export const ME_DEFAULTS = {
 export type MeForm = typeof ME_DEFAULTS
 
 /** Поля профілю, які можна змінити по одному (gaps №6, profile-edit/[field] у застосунку). */
-export type ProfileField = 'last' | 'first' | 'birth' | 'cit' | 'phone' | 'email' | 'rank'
+export type ProfileField = 'last' | 'first' | 'birth' | 'cit' | 'phone' | 'email' | 'marital' | 'rank' | 'salary'
 
 /** Звідки значення: з документа, з CV, введено вами, або виправлено вами після документа. */
 export type FieldSource = 'doc' | 'cv' | 'you' | 'edited'
@@ -40,6 +40,20 @@ export const PROFILE_FIELDS: { k: ProfileField; label: string; ph: string; mono?
   { k: 'cit', label: 'Гражданство', ph: 'Украина', src: 'doc' },
   { k: 'phone', label: 'Телефон', ph: '+380 …', mono: true, src: 'cv' },
   { k: 'email', label: 'Email', ph: 'name@example.com', src: 'you' },
+  // Відповідь замовника 46: поле анкет — моряк вибирає сам.
+  { k: 'marital', label: 'Семейное положение', ph: '', src: 'you' },
+]
+
+export const MARITAL = ['Не женат / не замужем', 'Женат / замужем', 'В разводе', 'Вдовец / вдова']
+
+/* ---------- желаемая зарплата (відповіді 46, 134) ---------- */
+
+// $ € £, за день або за місяць. Бачать лише агентства; у рейтинг не йде (там — поточна).
+export type Salary = { amount: string; cur: '$' | '€' | '£'; per: 'day' | 'month' }
+export const CURRENCIES: Salary['cur'][] = ['$', '€', '£']
+export const SALARY_PER: { id: Salary['per']; label: string; short: string }[] = [
+  { id: 'month', label: 'за месяц', short: 'в месяц' },
+  { id: 'day', label: 'за день', short: 'в день' },
 ]
 
 /** Документ, з якого прийшли ім'я, дата народження й громадянство. */
@@ -54,6 +68,9 @@ export type Visa = { id: string; country: string; type: string; num: string; iss
 
 export const PASSPORT: Passport = { num: 'FA 102938', country: 'Украина', issue: '03.08.2020', exp: '03.08.2030' }
 
+/** Прививки за замовчуванням (відповідь 76). */
+export const VACCINES = [{ id: 'vac-yf', name: 'Жёлтая лихорадка', num: 'YF 230-118', issue: '05.06.2019' }]
+
 export const VISAS: Visa[] = [
   { id: 'visa-schengen', country: 'Шенгенская зона', type: 'C', num: 'UKR 0071234', issue: '15.04.2026', exp: '14.04.2027' },
   { id: 'visa-uk', country: 'Великобритания', type: 'Visitor', num: 'GB 0083516', issue: '10.12.2024', exp: '10.12.2026' },
@@ -61,7 +78,7 @@ export const VISAS: Visa[] = [
 
 /* ---------- додавання документа (gaps №5, add у застосунку) ---------- */
 
-export type AddCat = 'sid' | 'passport' | 'visa' | 'dip' | 'flag' | 'other'
+export type AddCat = 'sid' | 'passport' | 'visa' | 'dip' | 'flag' | 'vac' | 'other'
 
 export const ADD_CATS: { id: AddCat; label: string; sub?: string }[] = [
   { id: 'sid', label: 'Документ моряка', sub: 'Удостоверение, послужная книжка' },
@@ -69,6 +86,7 @@ export const ADD_CATS: { id: AddCat; label: string; sub?: string }[] = [
   { id: 'visa', label: 'Виза' },
   { id: 'dip', label: 'Диплом или сертификат' },
   { id: 'flag', label: 'Подфлажный документ', sub: 'Паспорт другого флага, разрешение на работу' },
+  { id: 'vac', label: 'Прививка', sub: 'Жёлтая лихорадка и любые другие' },
   { id: 'other', label: 'Другой документ' },
 ]
 
@@ -145,12 +163,22 @@ export const READ: Record<AddCat, { title: string; fields: ReadField[]; other: O
     ],
     other: [{ k: 'cap', label: 'Capacity', value: '3RD ENGINEER' }],
   },
+  // Відповідь 76: блок прививок з «+», будь-які.
+  vac: {
+    title: 'Прививка',
+    fields: [
+      { k: 'name', label: 'Прививка', value: 'Covid-19' },
+      { k: 'issue', label: 'Дата прививки', value: '14.09.2021', mono: true },
+      { k: 'num', label: 'Номер сертификата', value: 'UA-CV-55102', mono: true, low: true },
+    ],
+    other: [{ k: 'vaccine', label: 'Вакцина', value: 'Comirnaty' }],
+  },
   other: {
     title: 'Документ',
     fields: [
-      { k: 'name', label: 'Название документа', value: 'Yellow Fever Vaccination' },
-      { k: 'num', label: 'Номер', value: 'YF 230-118', mono: true },
-      { k: 'issue', label: 'Дата выдачи', value: '05.06.2019', mono: true },
+      { k: 'name', label: 'Название документа', value: 'Ship Security Awareness' },
+      { k: 'num', label: 'Номер', value: 'SSA-2023-0912', mono: true },
+      { k: 'issue', label: 'Дата выдачи', value: '12.09.2023', mono: true },
     ],
     other: [],
   },

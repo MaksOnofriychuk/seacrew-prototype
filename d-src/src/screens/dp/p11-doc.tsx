@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Camera, FolderOpen, Image, Lock, PenLine, Trash2 } from 'lucide-react'
+import { Camera, FolderOpen, Image, Lock, PenLine, Stamp, Trash2 } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { Paper } from '@/components/app/paper'
@@ -21,7 +21,8 @@ export function P11Doc({ go }: ScreenProps) {
   const sel = bag<string>('doc.sel', 'sid')
   const d = docs.find((x) => x.id === sel) ?? docs[0]
   const [edit, setEdit] = useState<Record<string, string> | null>(null)
-  const [sheet, setSheet] = useState<'photo' | 'delete' | null>(null)
+  const [sheet, setSheet] = useState<'photo' | 'endorse' | 'delete' | null>(null)
+  const endorsedIds = bag<string[]>('doc.endorse', [])
 
   if (!d) {
     return (
@@ -37,6 +38,14 @@ export function P11Doc({ go }: ScreenProps) {
   const ex = expiry(d.exp)
   const changed = edits[d.id] ?? {}
   const isFile = d.group === 'cv'
+  // Диплом: основне фото — CoC, і необов'язкове фото Endorsement (відповідь 75).
+  const isDip = d.group === 'dip'
+  const endorsed = !!d.endorse || endorsedIds.includes(d.id)
+  const endorsePicked = () => {
+    setSheet(null)
+    if (!endorsed) setBag('doc.endorse', [...endorsedIds, d.id])
+    showToast(endorsed ? 'Фото Endorsement заменено' : 'Фото Endorsement добавлено')
+  }
 
   const save = () => {
     if (!edit) return
@@ -132,7 +141,14 @@ export function P11Doc({ go }: ScreenProps) {
           {!edit && (
             <>
               <div className="mt-6 overflow-hidden rounded-xl border border-border bg-surface">
-                <MenuRow icon={Camera} title={d.photo} onClick={() => setSheet('photo')} />
+                {isDip ? (
+                  <>
+                    <MenuRow icon={Camera} title={/competency/i.test(d.paper ?? '') ? 'Certificate of Competency (CoC)' : d.photo} onClick={() => setSheet('photo')} />
+                    <MenuRow icon={Stamp} title="Endorsement" value={endorsed ? 'Заменить фото' : 'Добавить фото'} onClick={() => setSheet('endorse')} />
+                  </>
+                ) : (
+                  <MenuRow icon={Camera} title={d.photo} onClick={() => setSheet('photo')} />
+                )}
                 {!isFile && <MenuRow icon={PenLine} title="Изменить данные" onClick={() => setEdit({})} />}
               </div>
               <button type="button" onClick={() => setSheet('delete')} className="mt-6 flex items-center gap-2 px-1 text-[15px] font-medium text-signal">
@@ -157,6 +173,14 @@ export function P11Doc({ go }: ScreenProps) {
         {!isFile && <ActionRow icon={Camera} title="Сфотографировать" onClick={replaced} />}
         {!isFile && <ActionRow icon={Image} title="Выбрать из галереи" onClick={replaced} />}
         <ActionRow icon={FolderOpen} title="Выбрать файл" sub={isFile ? undefined : 'PDF или изображение'} onClick={replaced} />
+        <Button size="lg" variant="ghost" className="mt-3 text-primary" onClick={() => setSheet(null)}>
+          Отмена
+        </Button>
+      </BottomSheet>
+      <BottomSheet open={sheet === 'endorse'} onClose={() => setSheet(null)} title="Фото Endorsement" description="Необязательно. Нужно, если Endorsement — отдельный лист.">
+        <ActionRow icon={Camera} title="Сфотографировать" onClick={endorsePicked} />
+        <ActionRow icon={Image} title="Выбрать из галереи" onClick={endorsePicked} />
+        <ActionRow icon={FolderOpen} title="Выбрать файл" sub="PDF или изображение" onClick={endorsePicked} />
         <Button size="lg" variant="ghost" className="mt-3 text-primary" onClick={() => setSheet(null)}>
           Отмена
         </Button>

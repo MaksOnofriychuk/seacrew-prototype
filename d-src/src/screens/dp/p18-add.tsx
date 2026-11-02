@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Camera, Check, FolderOpen, HeartPulse, Image, LoaderCircle, Plus, RotateCw, Sparkles, Trash2, TriangleAlert } from 'lucide-react'
+import { Camera, Check, FileQuestion, FolderOpen, HeartPulse, Image, LoaderCircle, Plus, RotateCw, Sparkles, Trash2, TriangleAlert } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { useView } from '@/components/app/states'
@@ -19,7 +19,7 @@ import { ADD_START, type AddState } from './_docs'
 const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
 
 export function P18Add({ go }: ScreenProps) {
-  const { bag, setBag } = useDP()
+  const { bag, setBag, state } = useDP()
   const view = useView()
   const later = useLater()
   const stored = bag<AddState | null>('dp.add', null)
@@ -28,12 +28,16 @@ export function P18Add({ go }: ScreenProps) {
   const st: AddState = view === 'empty' && !touched ? { cat: null, pages: [], manual: true } : (stored ?? { ...ADD_START, pages: [0, 0] })
   const put = (p: Partial<AddState>) => {
     setTouched(true)
+    setWrong(false)
     setBag('dp.add', { ...st, ...p })
   }
 
   const [source, setSource] = useState(false)
   const [viewing, setViewing] = useState<number | null>(null)
   const [reading, setReading] = useState<number | null>(null)
+  // Правка №12: «не той документ» (сценарій панелі «Это не документ моряка»). Лічильник — спільний
+  // з реєстрацією (bag q.wrongDocs, як q04 і e02): перший раз — попередження, другий поспіль — e08.
+  const [wrong, setWrong] = useState(false)
   // «Определяем тип…» — коротко після кожної зміни кількості сторінок.
   const [guessing, setGuessing] = useState(false)
   useEffect(() => {
@@ -61,9 +65,19 @@ export function P18Add({ go }: ScreenProps) {
   const recognise = () => {
     if (!canRead) return
     setBag('dp.add', { ...st, cat, manual: false })
+    setWrong(false)
     setReading(1)
     st.pages.forEach((_, i) => later(() => setReading(i + 2), 700 * (i + 1)))
-    later(() => go('p19'), 700 * st.pages.length + 300)
+    later(() => {
+      if (state.scenario !== 'notSeafarer') {
+        setBag('q.wrongDocs', null)
+        return go('p19')
+      }
+      if (bag<number>('q.wrongDocs', 0) >= 1) return go('e08')
+      setBag('q.wrongDocs', 1)
+      setReading(null)
+      setWrong(true)
+    }, 700 * st.pages.length + 300)
   }
   const manual = () => {
     if (!cat) return
@@ -111,6 +125,21 @@ export function P18Add({ go }: ScreenProps) {
         <p className="mt-3 text-base text-muted-foreground">
           Все страницы одного документа, до <span className="font-mono">{MAX_PAGES}</span>.
         </p>
+
+        {wrong && (
+          <div role="alert" className="screen-in mt-5 flex flex-col gap-2 rounded-md border border-border bg-surface px-4 py-3">
+            <p className="flex items-start gap-3 text-[15px] leading-snug">
+              <FileQuestion className="mt-0.5 size-4 shrink-0 text-signal" aria-hidden="true" />
+              <span>
+                <span className="font-medium">Это не документ моряка.</span> Загрузите удостоверение или диплом.
+              </span>
+            </p>
+            <p className="flex items-start gap-3 text-[15px] leading-snug">
+              <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
+              Ещё одна ошибка — и аккаунт будет заблокирован
+            </p>
+          </div>
+        )}
 
         {st.pages.length > 0 ? (
           <div className="-mx-6 mt-6 flex gap-3 overflow-x-auto px-6 pt-2 pb-1">
