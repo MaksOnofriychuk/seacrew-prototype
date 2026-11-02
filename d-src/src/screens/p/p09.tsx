@@ -7,10 +7,13 @@ import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { useToast } from '../q/_parts'
 import { useHashParams } from '../s/_core-parts'
-import { Empty, JobRow, SaveButton, useApp } from './_app-parts'
+import { ViewState } from '@/components/app/states'
+import { Empty, SaveButton, useApp } from './_app-parts'
+import { JobCard } from './_jobs-parts'
 
 // p09 — «Сохранённое» (правка п. 16): одне місце для збереженого, вкладки «Вакансии» і «Публикации».
-// Вакансії — спільний ключ saved.jobs (індекси в JOBS), публікації — saved.posts (id з POSTS, пише стрічка).
+// Вакансії — спільний ключ saved.jobs (індекси в FJ_JOBS), публікації — saved.posts (id з POSTS, пише стрічка).
+// Закрита вакансія лишається сірою з поміткою «Вакансия закрыта», поки моряк сам не прибере (відповідь 106).
 // ?tab=posts відкриває вкладку публікацій, ?posts=demo кладе дві публікації — для знімків.
 type TabId = 'jobs' | 'posts'
 type UserOrNews = Exclude<Post, { kind: 'ad' }>
@@ -66,18 +69,20 @@ export function P09Saved({ go }: ScreenProps) {
           ))}
         </div>
 
+        <ViewState loading={{ kind: 'list', rows: 3 }} empty={{ icon: Bookmark, title: 'Пока ничего не сохранено', text: 'Нажмите на закладку у вакансии или публикации, чтобы вернуться к ней позже.' }}>
         <div className="mx-4 mt-4">
           {tab === 'jobs' ? (
             jobs.length ? (
               <ul className="overflow-hidden rounded-xl border border-border bg-surface">
                 {jobs.map((k) => (
-                  <JobRow
+                  <JobCard
                     key={k}
                     k={k}
                     saved
                     onSave={() => unsaveJob(k)}
                     onOpen={() => {
                       set({ job: k })
+                      setBag('job.back', 'p09')
                       go('p08')
                     }}
                   />
@@ -122,6 +127,7 @@ export function P09Saved({ go }: ScreenProps) {
             />
           )}
         </div>
+        </ViewState>
       </div>
       {toastNode}
     </div>

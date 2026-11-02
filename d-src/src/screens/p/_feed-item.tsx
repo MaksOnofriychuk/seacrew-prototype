@@ -1,15 +1,13 @@
 import { Clock, Heart, ImageIcon, MessageCircle, Pin, Share, ShieldCheck, Ship } from 'lucide-react'
 import { Status } from '@/components/app/status'
 import { Badge } from '@/components/ui/badge'
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import type { Post } from '@/lib/data'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
-import { durText } from '../q/_parts'
-import { authorByName, Avatar, Hl, postsBy, roleText, SaveButton, useLikes, useMe, type MyPost } from './_feed-parts'
+import { Avatar, Hl, roleText, SaveButton, useLikes, useMe, type MyPost } from './_feed-parts'
 
 // Елемент стрічки (на основі FeedItem з g01, для зареєстрованого моряка):
-// закладка на кожній публікації й новині, «Нравится», коментарі, «Поделиться»; тап на автора — короткий профіль.
+// закладка на кожній публікації й новині, «Нравится», коментарі, «Поделиться»; тап на автора — короткий профіль (p16).
 
 type ItemProps = {
   p: Post
@@ -158,72 +156,5 @@ export function MyPostItem({ p }: { p: MyPost }) {
         <Clock className="size-4" /> на проверке у модератора
       </Status>
     </article>
-  )
-}
-
-/* ---------- короткий профіль моряка (правка п. 16) ---------- */
-
-// Лише: фото або ініціали, ім'я, «документ моряка проверен», посада, тип судна, загальний стаж, його публікації.
-// Без документів, контактів, дати народження, статусу доступності, розбивки стажу і без кнопки повідомлень (моряки між собою не переписуються).
-export function AuthorSheet({ name, onClose, onOpenPost }: { name: string | null; onClose: () => void; onOpenPost: (id: string) => void }) {
-  const a = name ? authorByName(name) : undefined
-  const posts = name ? postsBy(name) : []
-  return (
-    <Sheet open={!!a} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="bottom" showCloseButton={false} onOpenAutoFocus={(e) => e.preventDefault()} className="max-h-[88%] gap-0 overflow-y-auto px-6 pt-6 pb-8">
-        {a && (
-          <>
-            <div className="flex items-center gap-4">
-              <Avatar size="lg">{a.av}</Avatar>
-              <div className="flex min-w-0 flex-col gap-1">
-                <SheetTitle className="text-2xl leading-tight font-semibold tracking-tight">{a.name}</SheetTitle>
-                <SheetDescription className="flex items-center gap-1.5 text-sm">
-                  <ShieldCheck className="size-4 shrink-0 text-primary" /> Документ моряка проверен
-                </SheetDescription>
-              </div>
-            </div>
-            <dl className="mt-5 flex flex-col">
-              {(
-                [
-                  ['Должность', a.rank, false],
-                  ['Тип судна', a.ship, false],
-                  ['Общий стаж', durText(a.months), true],
-                ] as const
-              ).map(([l, v, mono]) => (
-                <div key={l} className="flex items-baseline justify-between gap-4 border-t border-border py-3 first:border-t-0">
-                  <dt className="text-[15px] text-muted-foreground">{l}</dt>
-                  <dd className={cn('text-right text-[15px] font-medium', mono && 'font-mono')}>{v}</dd>
-                </div>
-              ))}
-            </dl>
-            <h3 className="mt-6 flex items-baseline gap-2 text-base font-semibold">
-              Публикации <span className="font-mono text-sm font-normal text-muted-foreground">{posts.length}</span>
-            </h3>
-            {posts.length ? (
-              <ul className="mt-2 flex flex-col overflow-hidden rounded-xl bg-muted">
-                {posts.map((p) => (
-                  <li key={p.id} className="border-t border-border first:border-t-0">
-                    <button type="button" onClick={() => onOpenPost(p.id)} className="flex w-full flex-col gap-1 px-4 py-3 text-left">
-                      <span className="line-clamp-3 text-[15px] leading-relaxed">{p.text}</span>
-                      <span className="flex items-center gap-4 text-sm text-muted-foreground">
-                        {p.time}
-                        <span className="flex items-center gap-1" aria-label="Нравится">
-                          <Heart className="size-3.5" /> <span className="font-mono">{p.likes}</span>
-                        </span>
-                        <span className="flex items-center gap-1" aria-label="Комментарии">
-                          <MessageCircle className="size-3.5" /> <span className="font-mono">{p.comments}</span>
-                        </span>
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-2 text-[15px] text-muted-foreground">Публикаций пока нет.</p>
-            )}
-          </>
-        )}
-      </SheetContent>
-    </Sheet>
   )
 }

@@ -7,17 +7,16 @@ import { POSTS } from '@/lib/data'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
-import { AuthorButton, AuthorSheet, PhotoStub } from './_feed-item'
+import { AuthorButton, PhotoStub } from './_feed-item'
 import { Avatar, COMMENTS, hashParam, SaveButton, useLikes, useMe } from './_feed-parts'
 
 // p07 — публікація з коментарями (C: postScreen). «Нравится», коментарі, «Поделиться», закладка.
-// Тап на автора публікації чи коментаря — короткий профіль моряка (правка п. 16).
+// Тап на автора публікації чи коментаря — короткий профіль моряка p16 (правка п. 16).
 // Сильний елемент — сама публікація великим текстом; коментарі — тихий білий список.
 export function P07Post({ go }: ScreenProps) {
   const { bag, setBag, showToast } = useProto()
   const me = useMe()
   const likes = useLikes()
-  const [author, setAuthor] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const input = useRef<HTMLInputElement>(null)
   const scroller = useRef<HTMLDivElement>(null)
@@ -27,6 +26,12 @@ export function P07Post({ go }: ScreenProps) {
   const p = POSTS.find((x) => x.id === id && x.kind !== 'ad') ?? POSTS[1]
   const myComments = bag<Record<string, string[]>>('post.mine', {})
   const own = myComments[p.id] ?? []
+
+  const openAuthor = (name: string) => {
+    setBag('feed.author', name)
+    setBag('feed.author.back', 'p07')
+    go('p16')
+  }
 
   const send = () => {
     const t = draft.trim()
@@ -58,7 +63,7 @@ export function P07Post({ go }: ScreenProps) {
           <>
             <article className="pt-3">
               <div className="flex items-start gap-3">
-                <AuthorButton name={p.name} av={p.av} role={p.role} onAuthor={setAuthor} onPage />
+                <AuthorButton name={p.name} av={p.av} role={p.role} onAuthor={openAuthor} onPage />
                 <span className="pt-0.5 text-sm text-muted-foreground">{p.time}</span>
               </div>
               <p className="mt-4 text-[17px] leading-relaxed">{p.text}</p>
@@ -86,7 +91,7 @@ export function P07Post({ go }: ScreenProps) {
             <h2 className="mt-7 mb-2 text-base font-semibold">Комментарии</h2>
             <ul className="overflow-hidden rounded-xl border border-border bg-surface">
               {COMMENTS.map(([av, name, time, text]) => (
-                <Comment key={name} av={av} name={name} time={time} text={text} onAuthor={() => setAuthor(name)} />
+                <Comment key={name} av={av} name={name} time={time} text={text} onAuthor={() => openAuthor(name)} />
               ))}
               {own.map((text, i) => (
                 <Comment key={i} av={me.initials} name={me.name} time="только что" text={text} />
@@ -111,16 +116,6 @@ export function P07Post({ go }: ScreenProps) {
           </Button>
         </Footer>
       )}
-      <AuthorSheet
-        name={author}
-        onClose={() => setAuthor(null)}
-        onOpenPost={(pid) => {
-          setAuthor(null)
-          setBag('feed.post', pid)
-          setDraft('')
-          scroller.current?.scrollTo({ top: 0 })
-        }}
-      />
     </div>
   )
 }
