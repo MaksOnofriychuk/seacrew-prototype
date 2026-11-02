@@ -6,10 +6,11 @@ import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebSelect } from '@/components/web/fields'
 import { PageHeader, PageTabs } from '@/components/web/page-header'
 import { StatusDot, WebAvatar } from '@/components/web/status-badge'
-import { ATTEMPTS, BANLIST, LINKED, TRACES, TRACE_LABEL, USTATUS_LABEL, type Attempt, type BanEntry, type LinkedGroup } from '@/lib/data-admin'
+import { ATTEMPTS, BANLIST, LINKED, TRACES, TRACE_LABEL, USTATUS_LABEL, type Attempt, type BanEntry, type LinkedGroup, type Trace } from '@/lib/data-admin'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
+import { useUserOverrides } from './a-users'
 import { AdminPage, CancelButton, Mono, Note, SideSheet, dt, useBagState } from './_parts'
 
 type Tab = 'attempts' | 'linked' | 'banlist'
@@ -26,9 +27,34 @@ export function ARegistrations({ go }: ScreenProps) {
   const [tab, setTab] = useBagState<Tab>('a.regTab', 'attempts')
   const [gone, setGone] = useBagState<string[]>('a.attemptsGone', [])
   const [groupState, setGroupState] = useBagState<Record<string, LinkedGroup['state']>>('a.linkedState', {})
+  // сліди груп, забанених тут: потрапляють у бан-лист (ADR-087 п. 3)
+  const [userOver, setUserOver] = useUserOverrides()
+  const [groupBans, setGroupBans] = useBagState<Record<string, BanEntry[]>>('a.linkedBans', {})
   const attempts = ATTEMPTS.filter((a) => !gone.includes(a.id))
   const groups = LINKED.map((g) => ({ ...g, state: groupState[g.id] ?? g.state }))
   const open = groups.filter((g) => g.state === 'new')
+  const banlist = [...Object.values(groupBans).flat(), ...BANLIST]
+
+  const setGroup = (g: LinkedGroup, s: LinkedGroup['state'], reason?: string) => {
+    setGroupState({ ...groupState, [g.id]: s })
+    const entries: BanEntry[] =
+      s === 'banned'
+        ? g.accounts
+            .filter((a) => a.status !== 'deleted')
+            .flatMap((a, i) =>
+              [...new Set<Trace>([...a.traces, 'email'])].map((t) => ({ id: `${g.id}-${i}-${t}`, trace: t, account: a.name, reason: reason ?? '', date: '2026-11-02', who: 'Команда Seafolio', tries: 0 })),
+            )
+            .filter((e) => !BANLIST.some((b) => b.account === e.account && b.trace === e.trace))
+        : []
+    setGroupBans({ ...groupBans, [g.id]: entries })
+    // карточки користувачів (a-user) теж бачать бан групи
+    const ids = g.accounts.filter((a) => a.userId && a.status === 'active').map((a) => a.userId!)
+    if (ids.length) {
+      const next = { ...userOver }
+      for (const id of ids) next[id] = s === 'banned' ? { ...next[id], status: 'banned', reason: reason || 'Бан связанных аккаунтов' } : { ...next[id], status: 'active', reason: undefined }
+      setUserOver(next)
+    }
+  }
 
   return (
     <AdminPage active="a-registrations" go={go}>
@@ -40,14 +66,14 @@ export function ARegistrations({ go }: ScreenProps) {
         tabs={[
           { id: 'attempts', label: 'Незавершённые', count: attempts.length },
           { id: 'linked', label: 'Связанные аккаунты', count: open.length },
-          { id: 'banlist', label: 'Бан-лист', count: BANLIST.length },
+          { id: 'banlist', label: 'Бан-лист', count: banlist.length },
         ]}
         value={tab}
         onChange={setTab}
       />
       {tab === 'attempts' && <Attempts rows={attempts} onDelete={(id) => setGone([...gone, id])} />}
-      {tab === 'linked' && <Linked groups={groups} go={go} onState={(id, s) => setGroupState({ ...groupState, [id]: s })} />}
-      {tab === 'banlist' && <BanList />}
+      {tab === 'linked' && <Linked groups={groups} go={go} onState={setGroup} />}
+      {tab === 'banlist' && <BanList rows={banlist} />}
     </AdminPage>
   )
 }
@@ -132,7 +158,7 @@ function Attempts({ rows, onDelete }: { rows: Attempt[]; onDelete: (id: string) 
   )
 }
 
-function Linked({ groups, go, onState }: { groups: LinkedGroup[]; go: (id: string) => void; onState: (id: string, s: LinkedGroup['state']) => void }) {
+function Linked({ groups, go, onState }: { groups: LinkedGroup[]; go: (id: string) => void; onState: (g: LinkedGroup, s: LinkedGroup['state'], reason?: string) => void }) {
   const view = useView()
   const { showToast } = useProto()
   const [, setUser] = useBagState('a.user', 'u02')
@@ -160,7 +186,7 @@ function Linked({ groups, go, onState }: { groups: LinkedGroup[]; go: (id: strin
       header: 'Совпало',
       width: '30%',
       cell: (g) => (
-        <span className="flex flex-col text-sm leading-tight text-muted-foreground">
+        <span className="flex flex-col text-sm leading-tight whitespace-normal text-muted-foreground">
           {[...new Set(g.accounts.flatMap((a) => a.traces))].map((t) => (
             <span key={t}>{TRACE_SHORT[t]}</span>
           ))}
@@ -226,7 +252,9 @@ function Linked({ groups, go, onState }: { groups: LinkedGroup[]; go: (id: strin
                         <span className="flex min-w-0 flex-col gap-0.5 leading-tight">
                           <span className="truncate font-medium">{a.name}</span>
                           <span className="truncate text-muted-foreground">{a.email}</span>
-                          <span className={cn('text-xs', a.status === 'banned' ? 'text-signal' : 'text-muted-foreground')}>{a.status === 'deleted' ? 'аккаунт удалён' : USTATUS_LABEL[a.status]}</span>
+                          <span className={cn('text-xs', a.status === 'banned' || (sel.state === 'banned' && a.status !== 'deleted') ? 'text-signal' : 'text-muted-foreground')}>
+                            {a.status === 'deleted' ? 'аккаунт удалён' : USTATUS_LABEL[sel.state === 'banned' ? 'banned' : a.status]}
+                          </span>
                           {a.manual && <ManualFlag />}
                         </span>
                       </span>
@@ -245,10 +273,10 @@ function Linked({ groups, go, onState }: { groups: LinkedGroup[]; go: (id: strin
                 <>
                   <span />
                   <span className="flex gap-2">
-                    <Button variant="outline" onClick={() => (onState(sel.id, 'dismissed'), showToast('Отмечено: это разные люди'))}>
+                    <Button variant="outline" onClick={() => (onState(sel, 'dismissed'), showToast('Отмечено: это разные люди'))}>
                       Это разные люди
                     </Button>
-                    <Button variant="destructive" onClick={() => setBan(true)}>
+                    <Button variant="destructive" onClick={() => (setReason(''), setBan(true))}>
                       <Ban /> Забанить все связанные
                     </Button>
                   </span>
@@ -256,7 +284,7 @@ function Linked({ groups, go, onState }: { groups: LinkedGroup[]; go: (id: strin
               ) : (
                 <>
                   <span className="text-sm text-muted-foreground">{sel.state === 'banned' ? 'Все аккаунты группы забанены, следы в бан-листе.' : 'Отмечено как разные люди. Новые совпадения появятся снова.'}</span>
-                  <Button variant="outline" onClick={() => onState(sel.id, 'new')}>
+                  <Button variant="outline" onClick={() => (onState(sel, 'new'), showToast('Группа снова ждёт решения, следы убраны из бан-листа'))}>
                     <ShieldOff /> Вернуть на решение
                   </Button>
                 </>
@@ -278,7 +306,7 @@ function Linked({ groups, go, onState }: { groups: LinkedGroup[]; go: (id: strin
               variant="destructive"
               disabled={!reason}
               onClick={() => {
-                if (sel) onState(sel.id, 'banned')
+                if (sel) onState(sel, 'banned', reason)
                 showToast(`Забанено аккаунтов: ${sel?.accounts.length ?? 0}`)
                 setBan(false)
               }}
@@ -305,7 +333,7 @@ function Linked({ groups, go, onState }: { groups: LinkedGroup[]; go: (id: strin
   )
 }
 
-function BanList() {
+function BanList({ rows }: { rows: BanEntry[] }) {
   const columns: Column<BanEntry>[] = [
     { key: 'trace', header: 'След', width: '18%', cell: (b) => <span className="font-medium">{TRACE_LABEL[b.trace]}</span> },
     { key: 'acc', header: 'Аккаунт', width: '16%', cell: (b) => b.account },
@@ -317,7 +345,7 @@ function BanList() {
   return (
     <>
       <Note className="mb-4">Храним отпечатки, а не сами номера и имена. Бан-лист остаётся и после удаления аккаунта.</Note>
-      <DataTable columns={columns} rows={BANLIST} rowKey={(b) => b.id} empty={{ icon: Ban, title: 'Бан-лист пуст', text: 'Здесь появятся следы забаненных аккаунтов.' }} />
+      <DataTable columns={columns} rows={rows} rowKey={(b) => b.id} empty={{ icon: Ban, title: 'Бан-лист пуст', text: 'Здесь появятся следы забаненных аккаунтов.' }} />
     </>
   )
 }

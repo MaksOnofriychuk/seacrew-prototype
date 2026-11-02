@@ -79,14 +79,14 @@ export function ALabRun({ go }: ScreenProps) {
   const runCols: Column<LabRun>[] = [
     { key: 'e', header: 'Движок', width: '22%', cell: (r) => <span className="font-medium">{r.engine}</span> },
     { key: 's', header: 'Состояние', width: '14%', cell: (r) => <StatusDot tone={r.state === 'ok' ? 'success' : 'error'}>{r.state === 'ok' ? 'Готово' : 'Ошибка'}</StatusDot> },
-    { key: 't', header: 'Время', width: '10%', align: 'right', mono: true, cell: (r) => `${String(r.sec).replace('.', ',')} с` },
+    { key: 't', header: 'Время', width: '10%', align: 'right', cell: (r) => <MonoNums text={`${String(r.sec).replace('.', ',')} с`} /> },
     { key: 'c', header: 'Стоимость', width: '11%', align: 'right', mono: true, cell: (r) => r.cost },
     { key: 'k', header: 'Токены', width: '17%', align: 'right', mono: true, cell: (r) => r.tokens },
     { key: 'r', header: 'Ошибка', cell: (r) => (r.error ? <span className="text-signal" title={r.error}>{r.error}</span> : <span className="text-muted-foreground">—</span>) },
   ]
 
   const cell = (v: string, ok: string) => (
-    <span className={cn(v !== ok && 'text-signal')}>
+    <span className={cn(item.confirmed && v !== ok && 'text-signal')}>
       <MonoNums text={v} />
     </span>
   )
@@ -142,9 +142,9 @@ export function ALabRun({ go }: ScreenProps) {
             <DataTable ignoreView columns={runCols} rows={LAB_RUNS.slice(0, Math.max(1, item.runs))} rowKey={(r) => r.engine} />
             {item.test && (
               <>
-                <SectionTitle aside={<span className="text-sm text-muted-foreground">красным — отличается от подтверждённого</span>}>По полям</SectionTitle>
+                <SectionTitle aside={item.confirmed ? <span className="text-sm text-muted-foreground">красным — отличается от подтверждённого</span> : undefined}>По полям</SectionTitle>
                 {!item.confirmed && <Note tone="warning" className="mb-3">Ещё не подтверждено: сравнивать не с чем.</Note>}
-                <DataTable ignoreView columns={fieldCols} rows={LAB_FIELDS} rowKey={(f) => f.field} />
+                <DataTable ignoreView columns={item.confirmed ? fieldCols : fieldCols.filter((c) => c.key !== 'c')} rows={LAB_FIELDS} rowKey={(f) => f.field} />
               </>
             )}
           </div>
@@ -165,9 +165,9 @@ function Accuracy({ r }: { r: EffRow }) {
         <span className="block h-full rounded-full bg-primary" style={{ width: `${p}%` }} />
       </span>
       <Mono className="w-12 font-medium">{p.toFixed(1).replace('.', ',')} %</Mono>
-      <Mono className="text-sm text-muted-foreground">
-        {r.correct.toLocaleString('ru')} из {r.compared.toLocaleString('ru')}
-      </Mono>
+      <span className="text-sm text-muted-foreground">
+        <Mono>{r.correct.toLocaleString('ru')}</Mono> из <Mono>{r.compared.toLocaleString('ru')}</Mono>
+      </span>
     </span>
   )
 }
@@ -181,7 +181,7 @@ export function ALabEffect({ go }: ScreenProps) {
     { key: 'd', header: 'Документы', width: '10%', align: 'right', mono: true, sortValue: (r) => r.docs, cell: (r) => r.docs },
     { key: 'a', header: 'Верные поля', width: '33%', sortValue: (r) => (r.mock ? -1 : r.correct / r.compared), cell: (r) => <Accuracy r={r} /> },
     { key: 'c', header: 'За документ', width: '11%', align: 'right', mono: true, cell: (r) => r.cost },
-    { key: 't', header: 'Время', width: '9%', align: 'right', mono: true, sortValue: (r) => r.sec, cell: (r) => `${String(r.sec).replace('.', ',')} с` },
+    { key: 't', header: 'Время', width: '9%', align: 'right', sortValue: (r) => r.sec, cell: (r) => <MonoNums text={`${String(r.sec).replace('.', ',')} с`} /> },
     { key: 'm', header: 'Чаще исправляют', cell: (r) => <span className="text-muted-foreground">{r.corrected}</span> },
   ]
 
@@ -237,7 +237,11 @@ export function ALabEffect({ go }: ScreenProps) {
 
       <SectionTitle>По полям</SectionTitle>
       <p className="mb-3 max-w-[720px] text-sm text-muted-foreground">Поля о здоровье и разбивку по полю при меньше чем 5 реальных документах не показываем. Строки списков (стаж, должности) сопоставляются по дате посадки и судну.</p>
-      <DataTable columns={fieldCols} rows={EFFECT_FIELDS} rowKey={(f) => f.field} />
+      {cat === 'Медицинский' ? (
+        <Note>Для медицинских документов разбивку по полям не показываем: это данные о здоровье.</Note>
+      ) : (
+        <DataTable columns={fieldCols} rows={EFFECT_FIELDS} rowKey={(f) => f.field} />
+      )}
 
       <SectionTitle>Совпадение между движками</SectionTitle>
       <DataTable columns={agrCols} rows={AGREEMENT} rowKey={(a) => a.pair} initialSort={{ key: 'r', dir: 'desc' }} />

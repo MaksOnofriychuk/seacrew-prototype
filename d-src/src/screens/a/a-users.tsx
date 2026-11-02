@@ -52,7 +52,7 @@ export function AUsers({ go }: ScreenProps) {
     {
       key: 'role',
       header: 'Кто',
-      width: '20%',
+      width: '18%',
       sortValue: (u) => u.role,
       cell: (u) => (
         <span className="flex flex-col leading-tight">
@@ -64,7 +64,7 @@ export function AUsers({ go }: ScreenProps) {
     {
       key: 'status',
       header: 'Статус',
-      width: '26%',
+      width: '30%',
       sortValue: (u) => u.status,
       cell: (u) => (
         <span className="flex flex-col gap-0.5 leading-tight">
@@ -76,7 +76,7 @@ export function AUsers({ go }: ScreenProps) {
     {
       key: 'wrong',
       header: 'Ошибки',
-      width: '12%',
+      width: '10%',
       align: 'right',
       sortValue: (u) => u.wrongDocs,
       cell: (u) =>

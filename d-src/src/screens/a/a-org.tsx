@@ -159,6 +159,16 @@ export function AOrg({ go }: ScreenProps) {
           </>
         }
       >
+        {act === 'verify' && (
+          <Facts
+            items={[
+              ['Название', o.name],
+              ['Регистрационный номер', <Mono key="r">{o.regNumber}</Mono>],
+              ['Страна', o.country],
+              ['Сайт', o.site],
+            ]}
+          />
+        )}
         {a?.reason && (
           <WebField id="org-reason" label="Причина" hint="Владелец увидит её в письме.">
             <WebTextarea id="org-reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Например: номер не найден в реестре" />
