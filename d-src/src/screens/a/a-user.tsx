@@ -161,14 +161,26 @@ export function AUserScreen({ go }: ScreenProps) {
         open={sheet === 'unblock'}
         onOpenChange={(v) => !v && setSheet(null)}
         title={`Разблокировать ${u.name}?`}
-        description="Счётчик ошибок обнулится, моряк снова сможет загружать документы. Ему придёт уведомление."
+        description={seafarer ? 'Счётчик ошибок обнулится, моряк снова сможет загружать документы. Ему придёт уведомление.' : 'Рекрутер снова войдёт в кабинет. Ему придёт письмо.'}
         footer={
           <>
             <CancelButton onClick={() => setSheet(null)} />
-            <Button onClick={() => patch({ status: 'active', wrongDocs: 0, reason: undefined }, 'Аккаунт разблокирован, счётчик ошибок обнулён')}>Разблокировать</Button>
+            <Button onClick={() => (patch({ status: 'active', wrongDocs: 0, reason: undefined }, seafarer ? 'Аккаунт разблокирован, счётчик ошибок обнулён' : 'Аккаунт разблокирован'), setNote(''))}>Разблокировать</Button>
           </>
         }
-      />
+      >
+        {seafarer && (
+          <Facts
+            items={[
+              ['Ошибок сейчас', <Mono key="n">{u.wrongDocs} из 2</Mono>],
+              ['После разблокировки', <Mono key="z">0 из 2</Mono>],
+            ]}
+          />
+        )}
+        <WebField id="unblock-note" label="Комментарий для команды">
+          <WebTextarea id="unblock-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder={seafarer ? 'Как обратился в поддержку, что проверили' : 'Почему разблокировали'} />
+        </WebField>
+      </SideSheet>
 
       <SideSheet
         open={sheet === 'unban'}
