@@ -60,6 +60,7 @@ function TreeView() {
   const [name, setName] = useState('')
   const [editPos, setEditPos] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
+  const [delPos, setDelPos] = useState<string | null>(null)
   const [pq, setPq] = useState('')
   const [pdir, setPdir] = useState<'asc' | 'desc'>('asc')
   const [psize, setPsize] = useState(10)
@@ -164,6 +165,20 @@ function TreeView() {
       </div>
       <p className="mt-3 text-sm text-muted-foreground">Вторичные департаменты (Hotel & Entertainment, Other) в приложении стоят в конце списка.</p>
 
+      <WebDialog
+        open={delPos !== null}
+        onClose={() => setDelPos(null)}
+        title={`Убрать «${delPos ?? ''}» из списка?`}
+        description="У моряков значение сохранится как есть, но в выборе этой должности больше не будет."
+        footer={
+          <>
+            <CancelButton onClick={() => setDelPos(null)} />
+            <Button variant="destructive" onClick={() => (delPos && (setTree({ ...tree, [fleet]: { ...tree[fleet], [dept]: tree[fleet][dept].filter((x) => x !== delPos) } }), showToast(`Убрано: ${delPos}. У моряков значение сохранится как есть`)), setDelPos(null), setEditPos(null))}>
+              Убрать
+            </Button>
+          </>
+        }
+      />
       <SideSheet
         open={editPos !== null}
         onOpenChange={(v) => !v && setEditPos(null)}
@@ -171,7 +186,7 @@ function TreeView() {
         description={`${fleet} → ${dept}`}
         footer={
           <>
-            <Button variant="ghost" className="mr-auto text-signal" onClick={() => editPos && (setTree({ ...tree, [fleet]: { ...tree[fleet], [dept]: tree[fleet][dept].filter((x) => x !== editPos) } }), showToast(`Убрано: ${editPos}. У моряков значение сохранится как есть`), setEditPos(null))}>
+            <Button variant="ghost" className="mr-auto text-signal" onClick={() => setDelPos(editPos)}>
               Убрать из списка
             </Button>
             <CancelButton onClick={() => setEditPos(null)} />
@@ -276,6 +291,7 @@ function Vessels() {
   const [q, setQ] = useState('')
   const [edit, setEdit] = useState<string | null>(null)
   const [vname, setVname] = useState('')
+  const [delVessel, setDelVessel] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
   const [name, setName] = useState('')
   const [nf, setNf] = useState('')
@@ -314,6 +330,20 @@ function Vessels() {
           { key: 'f', dir: 'asc', label: 'Флот: А — Я' },
         ]}
         onRowClick={(v) => (setEdit(v.name), setVname(v.name))} empty={{ icon: BookOpen, title: 'Типов судов нет', text: 'Добавьте первый тип и выберите, к какому флоту он относится.' }} />
+      <WebDialog
+        open={delVessel !== null}
+        onClose={() => setDelVessel(null)}
+        title={`Убрать «${delVessel ?? ''}»?`}
+        description="Тип судна пропадёт из выбора у моряков и агентств. Нигде не используется, так что вакансии не затронет."
+        footer={
+          <>
+            <CancelButton onClick={() => setDelVessel(null)} />
+            <Button variant="destructive" onClick={() => (delVessel && (setList(list.filter((v) => v.name !== delVessel)), showToast(`Убрано: ${delVessel}`)), setDelVessel(null), setEdit(null))}>
+              Убрать
+            </Button>
+          </>
+        }
+      />
       <SideSheet
         open={edit !== null}
         onOpenChange={(v) => !v && setEdit(null)}
@@ -325,7 +355,7 @@ function Vessels() {
         footer={
           <>
             {!(list.find((v) => v.name === edit)?.jobs) && (
-              <Button variant="ghost" className="mr-auto text-signal" onClick={() => (setList(list.filter((v) => v.name !== edit)), showToast(`Убрано: ${edit}`), setEdit(null))}>
+              <Button variant="ghost" className="mr-auto text-signal" onClick={() => setDelVessel(edit)}>
                 Убрать
               </Button>
             )}
