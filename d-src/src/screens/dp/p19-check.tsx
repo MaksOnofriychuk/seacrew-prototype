@@ -235,9 +235,9 @@ export function P19Check({ go }: ScreenProps) {
                   key={f.k}
                   className={cn(warn && !open && 'bg-warning/10')}
                   title={
-                    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <span className="text-muted-foreground">{f.label}</span>
+                    <span className="flex flex-col items-start gap-1">
                       {rowTag}
+                      <span className="text-muted-foreground">{f.label}</span>
                     </span>
                   }
                   value={empty ? <span className="text-muted-foreground">Не заполнено</span> : <span className={cn('text-foreground', f.mono && 'font-mono')}>{shown}</span>}

@@ -249,11 +249,10 @@ export function QuestionField({
       <ExpandRow
         className={cn('border-t-0', hint && 'bg-warning/10')}
         title={
-          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="text-muted-foreground">
-              {q.label}
-            </span>
+          // Мітка джерела — над назвою поля, однаково в кожному рядку (перевірка 03.11, №50).
+          <span className="flex flex-col items-start gap-1">
             {tag}
+            <span className="text-muted-foreground">{q.label}</span>
           </span>
         }
         value={
