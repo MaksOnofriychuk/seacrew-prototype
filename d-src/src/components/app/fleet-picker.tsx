@@ -60,6 +60,7 @@ export function FleetPicker({
     <div className={cn('grid grid-cols-3 gap-2', className)}>
       <Drop
         label={labels.fleet ?? 'Флот'}
+        align="start"
         note={fleetNote}
         options={FLEETS}
         picked={value.fleets}
@@ -77,6 +78,7 @@ export function FleetPicker({
       />
       <Drop
         label={labels.position ?? 'Должность'}
+        align="end"
         note={posNote}
         options={positions}
         picked={value.positions}
@@ -98,15 +100,17 @@ function Drop({
   multi,
   placeholder,
   disabled,
+  align = 'center',
   onPick,
 }: {
   label: string
   note?: string
-  options: string[]
+  options: readonly string[]
   picked: string[]
   multi?: boolean
   placeholder: string
   disabled?: boolean
+  align?: 'start' | 'center' | 'end'
   onPick: (v: string) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -132,10 +136,12 @@ function Drop({
         </Popover.Trigger>
         <Popover.Portal container={container}>
           <Popover.Content
-            align="center"
+            side="top"
+            align={align}
             sideOffset={4}
             collisionPadding={12}
             collisionBoundary={container}
+            avoidCollisions={false}
             onOpenAutoFocus={(e) => e.preventDefault()}
             className="z-50 max-h-[min(18rem,var(--radix-popover-content-available-height))] w-60 overflow-y-auto rounded-lg border border-border bg-surface p-1 shadow-lg data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
           >

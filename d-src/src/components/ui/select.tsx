@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { usePhonePortal } from "@/lib/phone-portal"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 import { Select as SelectPrimitive } from "radix-ui"
 
@@ -49,15 +50,19 @@ function SelectTrigger({
   )
 }
 
+// У телефоні (мобілка прототипу) усі випадаючі списки відкриваються вгору й лишаються в межах екрана телефона.
 function SelectContent({
   className,
   children,
-  position = "item-aligned",
+  position: positionProp = "item-aligned",
   align = "center",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
+  const phone = usePhonePortal()
+  const position = phone ? "popper" : positionProp
+  const phoneProps = phone ? { side: "top" as const, collisionBoundary: phone, avoidCollisions: false } : {}
   return (
-    <SelectPrimitive.Portal>
+    <SelectPrimitive.Portal container={phone ?? undefined}>
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
@@ -69,6 +74,7 @@ function SelectContent({
         position={position}
         align={align}
         {...props}
+        {...phoneProps}
       >
         <SelectScrollUpButton />
         <SelectPrimitive.Viewport
