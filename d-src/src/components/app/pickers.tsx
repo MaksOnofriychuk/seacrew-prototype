@@ -1,0 +1,408 @@
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { CalendarDays, Check, ChevronDown, Search } from 'lucide-react'
+import { BottomSheet } from '@/components/app/bottom-sheet'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { countryLabel, findCountries } from '@/lib/countries'
+import { clampDate, daysIn, fmtDate, fmtMonth, inRange, MONTHS, MONTHS_SHORT, parseDate, parseMonth, TODAY } from '@/lib/dates'
+import { cn } from '@/lib/utils'
+
+// Поле-кнопка: виглядає як поле вводу, тап відкриває вікно знизу. Вписати руками нічого не можна.
+function PickField({
+  id,
+  value,
+  placeholder,
+  icon,
+  mono,
+  invalid,
+  disabled,
+  className,
+  onOpen,
+}: {
+  className?: string
+  id?: string
+  value: ReactNode
+  placeholder: string
+  icon: ReactNode
+  mono?: boolean
+  invalid?: boolean
+  disabled?: boolean
+  onOpen: () => void
+}) {
+  return (
+    <button
+      type="button"
+      id={id}
+      aria-haspopup="dialog"
+      aria-invalid={invalid || undefined}
+      disabled={disabled}
+      onClick={onOpen}
+      className={cn(
+        'flex h-12 w-full items-center justify-between gap-3 rounded-md border border-input bg-surface px-4 text-left text-base transition-transform active:scale-[0.99] disabled:opacity-50',
+        invalid && 'border-signal',
+        className,
+      )}
+    >
+      <span className={cn('truncate', value ? mono && 'font-mono' : 'text-muted-foreground')}>{value || placeholder}</span>
+      <span className="shrink-0 text-muted-foreground">{icon}</span>
+    </button>
+  )
+}
+
+/* ---------- країна: список з пошуком ---------- */
+
+export function CountryPick({
+  id,
+  value,
+  onChange,
+  title = 'Страна',
+  placeholder = 'Выберите страну',
+  invalid,
+  disabled,
+  className,
+}: {
+  className?: string
+  id?: string
+  value: string
+  onChange: (v: string) => void
+  title?: string
+  placeholder?: string
+  invalid?: boolean
+  disabled?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const [q, setQ] = useState('')
+  const shown = countryLabel(value)
+  const list = findCountries(q)
+  const close = () => {
+    setOpen(false)
+    setQ('')
+  }
+  return (
+    <>
+      <PickField id={id} value={shown} placeholder={placeholder} icon={<ChevronDown className="size-4" />} invalid={invalid} disabled={disabled} className={className} onOpen={() => setOpen(true)} />
+      <BottomSheet open={open} onClose={close} title={title}>
+        <div className="relative">
+          <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input aria-label="Поиск страны" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Название страны" className="h-12 pl-10 text-base md:text-base" />
+        </div>
+        {list.length ? (
+          <ul className="mt-3 overflow-hidden rounded-xl border border-border">
+            {list.map((c) => {
+              const on = shown === c.ru
+              return (
+                <li key={c.ru} className="border-t border-border first:border-t-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onChange(c.ru)
+                      close()
+                    }}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left active:bg-muted"
+                  >
+                    <span className={cn('flex-1 text-[15px]', on && 'font-semibold')}>{c.ru}</span>
+                    <span className="text-sm text-muted-foreground">{c.en}</span>
+                    {on && <Check className="size-4 shrink-0 text-primary" />}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        ) : (
+          <p className="mt-4 text-[15px] text-muted-foreground">Такой страны нет в списке. Проверьте название.</p>
+        )}
+      </BottomSheet>
+    </>
+  )
+}
+
+/* ---------- колонки-барабани ---------- */
+
+type Item = { v: number; label: string; off?: boolean }
+
+// Колонка з прокруткою: вибраний рядок — по центру; недоступні значення тьмяні й не натискаються.
+function Wheel({ label, items, value, onChange, mono }: { label: string; items: Item[]; value: number; onChange: (v: number) => void; mono?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = ref.current?.querySelector<HTMLElement>('[data-on="true"]')
+    el?.scrollIntoView({ block: 'center' })
+  }, [value, items.length])
+  return (
+    <div className="flex min-w-0 flex-1 flex-col">
+      <span className="mb-2 text-center text-sm text-muted-foreground">{label}</span>
+      <div ref={ref} role="listbox" aria-label={label} className="h-56 snap-y overflow-y-auto overscroll-contain rounded-xl border border-border py-[88px]">
+        {items.map((it) => {
+          const on = it.v === value
+          return (
+            <button
+              key={it.v}
+              type="button"
+              role="option"
+              aria-selected={on}
+              data-on={on}
+              disabled={it.off}
+              onClick={() => onChange(it.v)}
+              className={cn(
+                'flex h-12 w-full snap-center items-center justify-center text-base transition-colors',
+                mono && 'font-mono',
+                on ? 'bg-primary/10 font-semibold text-primary' : 'text-foreground',
+                it.off && 'text-muted-foreground/40',
+              )}
+            >
+              {it.label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+const range = (a: number, b: number) => Array.from({ length: Math.max(0, b - a + 1) }, (_, i) => a + i)
+
+function DateWheels({ value, onChange, min, max }: { value: Date; onChange: (d: Date) => void; min?: Date | null; max?: Date | null }) {
+  const y = value.getFullYear()
+  const m = value.getMonth()
+  const yMin = min?.getFullYear() ?? 1940
+  const yMax = max?.getFullYear() ?? TODAY.getFullYear() + 30
+  const set = (yy: number, mm: number, dd: number) => onChange(clampDate(new Date(yy, mm, Math.min(dd, daysIn(yy, mm))), min, max))
+  return (
+    <div className="flex gap-2">
+      <Wheel
+        label="День"
+        mono
+        value={value.getDate()}
+        items={range(1, daysIn(y, m)).map((d) => ({ v: d, label: String(d).padStart(2, '0'), off: !inRange(new Date(y, m, d), min, max) }))}
+        onChange={(d) => set(y, m, d)}
+      />
+      <Wheel
+        label="Месяц"
+        value={m}
+        items={MONTHS.map((label, i) => ({ v: i, label, off: !inRange(new Date(y, i, 1), min && new Date(min.getFullYear(), min.getMonth(), 1), max) }))}
+        onChange={(mm) => set(y, mm, value.getDate())}
+      />
+      <Wheel label="Год" mono value={y} items={range(yMin, yMax).reverse().map((v) => ({ v, label: String(v) }))} onChange={(yy) => set(yy, m, value.getDate())} />
+    </div>
+  )
+}
+
+/* ---------- дата ---------- */
+
+export function DatePick({
+  id,
+  value,
+  onChange,
+  title,
+  min,
+  max,
+  placeholder = 'Выберите дату',
+  invalid,
+  disabled,
+  initial,
+  className,
+}: {
+  className?: string
+  id?: string
+  value: string
+  onChange: (v: string) => void
+  title: string
+  min?: Date | null
+  max?: Date | null
+  placeholder?: string
+  invalid?: boolean
+  disabled?: boolean
+  initial?: Date
+}) {
+  const [open, setOpen] = useState(false)
+  const start = () => clampDate(parseDate(value) ?? initial ?? TODAY, min, max)
+  const [draft, setDraft] = useState(start)
+  const show = () => {
+    setDraft(start())
+    setOpen(true)
+  }
+  return (
+    <>
+      <PickField id={id} value={value} placeholder={placeholder} icon={<CalendarDays className="size-4" />}
+        mono
+        invalid={invalid || (!!parseDate(value) && !inRange(parseDate(value)!, min, max))}
+        disabled={disabled}
+        className={className}
+        onOpen={show}
+      />
+      <BottomSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        title={title}
+        aside={<span className="font-mono text-base text-muted-foreground">{fmtDate(draft)}</span>}
+        footer={
+          <Button
+            className="h-12 text-base"
+            onClick={() => {
+              onChange(fmtDate(draft))
+              setOpen(false)
+            }}
+          >
+            Готово
+          </Button>
+        }
+      >
+        <DateWheels value={draft} onChange={setDraft} min={min} max={max} />
+      </BottomSheet>
+    </>
+  )
+}
+
+/* ---------- період: місяць — місяць ---------- */
+
+type Ym = { y: number; m: number }
+const ymKey = (a: Ym) => a.y * 12 + a.m
+const thisMonth: Ym = { y: TODAY.getFullYear(), m: TODAY.getMonth() }
+
+function MonthWheels({ value, onChange, min, max }: { value: Ym; onChange: (v: Ym) => void; min: Ym; max: Ym }) {
+  const fit = (v: Ym): Ym => (ymKey(v) < ymKey(min) ? min : ymKey(v) > ymKey(max) ? max : v)
+  return (
+    <div className="flex gap-2">
+      <Wheel
+        label="Месяц"
+        value={value.m}
+        items={MONTHS.map((label, i) => ({ v: i, label, off: ymKey({ y: value.y, m: i }) < ymKey(min) || ymKey({ y: value.y, m: i }) > ymKey(max) }))}
+        onChange={(m) => onChange(fit({ y: value.y, m }))}
+      />
+      <Wheel label="Год" mono value={value.y} items={range(min.y, max.y).reverse().map((v) => ({ v, label: String(v) }))} onChange={(y) => onChange(fit({ y, m: value.m }))} />
+    </div>
+  )
+}
+
+const ymText = (v: Ym) => `${MONTHS_SHORT[v.m]} ${v.y}`
+
+// Значення — «ММ.ГГГГ – ММ.ГГГГ». «По» не раніше «с» і не пізніше поточного місяця.
+export function MonthRangePick({
+  id,
+  value,
+  onChange,
+  title = 'Период',
+  placeholder = 'Выберите период',
+  invalid,
+}: {
+  id?: string
+  value: string
+  onChange: (v: string) => void
+  title?: string
+  placeholder?: string
+  invalid?: boolean
+}) {
+  const [a, b] = value.split(/\s*[–-]\s*/)
+  const from0 = parseMonth(a)
+  const to0 = parseMonth(b)
+  const [open, setOpen] = useState(false)
+  const [side, setSide] = useState<'from' | 'to'>('from')
+  const [from, setFrom] = useState<Ym>(from0 ?? { y: thisMonth.y - 1, m: thisMonth.m })
+  const [to, setTo] = useState<Ym>(to0 ?? thisMonth)
+  const earliest: Ym = { y: 1980, m: 0 }
+  const show = () => {
+    setFrom(from0 ?? { y: thisMonth.y - 1, m: thisMonth.m })
+    setTo(to0 ?? thisMonth)
+    setSide('from')
+    setOpen(true)
+  }
+  const setFromFit = (v: Ym) => {
+    setFrom(v)
+    if (ymKey(to) < ymKey(v)) setTo(v)
+  }
+  const shown = from0 && to0 ? `${fmtMonth(from0.y, from0.m)} – ${fmtMonth(to0.y, to0.m)}` : ''
+  const tab = (k: 'from' | 'to', label: string, v: Ym) => (
+    <button
+      type="button"
+      onClick={() => setSide(k)}
+      aria-pressed={side === k}
+      className={cn('flex flex-1 flex-col items-start rounded-xl border px-4 py-2.5 text-left transition-colors', side === k ? 'border-primary bg-primary/10' : 'border-border')}
+    >
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-base font-medium">{ymText(v)}</span>
+    </button>
+  )
+  return (
+    <>
+      <PickField id={id} value={shown} placeholder={placeholder} icon={<CalendarDays className="size-4" />} mono invalid={invalid} onOpen={show} />
+      <BottomSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        title={title}
+        footer={
+          <Button
+            className="h-12 text-base"
+            onClick={() => {
+              onChange(`${fmtMonth(from.y, from.m)} – ${fmtMonth(to.y, to.m)}`)
+              setOpen(false)
+            }}
+          >
+            Готово
+          </Button>
+        }
+      >
+        <div className="mb-4 flex gap-2">
+          {tab('from', 'С', from)}
+          {tab('to', 'По', to)}
+        </div>
+        {side === 'from' ? (
+          <MonthWheels key="from" value={from} onChange={setFromFit} min={earliest} max={thisMonth} />
+        ) : (
+          <MonthWheels key="to" value={to} onChange={setTo} min={from} max={thisMonth} />
+        )}
+      </BottomSheet>
+    </>
+  )
+}
+
+// Один місяць «ММ.ГГГГ» (окремі поля «С» / «По»).
+export function MonthPick({
+  id,
+  value,
+  onChange,
+  title,
+  min,
+  max = thisMonth,
+  placeholder = 'Выберите месяц',
+  invalid,
+}: {
+  id?: string
+  value: string
+  onChange: (v: string) => void
+  title: string
+  min?: Ym | null
+  max?: Ym
+  placeholder?: string
+  invalid?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const lo = min ?? { y: 1980, m: 0 }
+  const [draft, setDraft] = useState<Ym>(parseMonth(value) ?? max)
+  const show = () => {
+    setDraft(parseMonth(value) ?? max)
+    setOpen(true)
+  }
+  return (
+    <>
+      <PickField id={id} value={value} placeholder={placeholder} icon={<CalendarDays className="size-4" />} mono invalid={invalid} onOpen={show} />
+      <BottomSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        title={title}
+        footer={
+          <Button
+            className="h-12 text-base"
+            onClick={() => {
+              onChange(fmtMonth(draft.y, draft.m))
+              setOpen(false)
+            }}
+          >
+            Готово
+          </Button>
+        }
+      >
+        <MonthWheels value={draft} onChange={setDraft} min={lo} max={max} />
+      </BottomSheet>
+    </>
+  )
+}
+

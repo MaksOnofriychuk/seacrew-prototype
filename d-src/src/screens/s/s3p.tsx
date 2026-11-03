@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { CountryPick, DatePick } from '@/components/app/pickers'
+import { BOUNDS } from '@/lib/dates'
 import { Camera, FolderOpen, Image, LoaderCircle, Lock, Pencil, PenLine, Plus, Stamp, Trash2 } from 'lucide-react'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
 import type { ScreenProps } from '../registry'
 import { Field, QSheet, TextInput } from '../q/_parts'
-import { AddPanel, maskDate, RowList, ScrollAnchor, SectionTitle, useBusy, useHashParams, useS } from './_core-parts'
+import { AddPanel, RowList, ScrollAnchor, SectionTitle, useBusy, useHashParams, useS } from './_core-parts'
 import { PASS, StepShell } from './_stepper'
 
 // s3p — «Загранпаспорт и визы» (правка №36), крок «Основного» після документа моряка.
@@ -271,7 +273,7 @@ function DocPaper({
           {visa && (
             <div className="grid grid-cols-2 gap-3">
               <Field id={f('country')} label="Страна">
-                <TextInput id={f('country')} value={d.country} placeholder="США" onChange={(e) => put({ country: e.target.value })} />
+                <CountryPick id={f('country')} title="Страна визы" value={d.country} onChange={(v) => put({ country: v })} />
               </Field>
               <Field id={f('type')} label="Тип визы">
                 <TextInput id={f('type')} value={d.type} placeholder="C1/D" onChange={(e) => put({ type: e.target.value })} />
@@ -283,15 +285,15 @@ function DocPaper({
           </Field>
           {!visa && (
             <Field id={f('country')} label="Страна выдачи">
-              <TextInput id={f('country')} value={d.country} onChange={(e) => put({ country: e.target.value })} />
+              <CountryPick id={f('country')} title="Страна выдачи" value={d.country} onChange={(v) => put({ country: v })} />
             </Field>
           )}
           <div className="grid grid-cols-2 gap-3">
             <Field id={f('issue')} label="Дата выдачи">
-              <TextInput id={f('issue')} mono inputMode="numeric" value={d.issue} placeholder="ДД.ММ.ГГГГ" onChange={(e) => put({ issue: maskDate(e.target.value) })} />
+              <DatePick id={f('issue')} title="Дата выдачи" value={d.issue} onChange={(v) => put({ issue: v })} {...BOUNDS.issue} />
             </Field>
             <Field id={f('exp')} label={visa ? 'Действительна до' : 'Действителен до'}>
-              <TextInput id={f('exp')} mono inputMode="numeric" value={d.exp} placeholder="ДД.ММ.ГГГГ" onChange={(e) => put({ exp: maskDate(e.target.value) })} />
+              <DatePick id={f('exp')} title={visa ? 'Действительна до' : 'Действителен до'} value={d.exp} onChange={(v) => put({ exp: v })} {...BOUNDS.expiry(d.issue)} />
             </Field>
           </div>
 

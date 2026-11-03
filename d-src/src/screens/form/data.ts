@@ -14,7 +14,7 @@ export type Src = { kind: SrcKind; label: string; value: string; /** профі�
 /** Збережена відповідь з іншим написом або розділом — лише пропозиція (ADR-073 п. 16.1). */
 export type Suggestion = { question: string; section: string; org: string; value: string }
 
-export type QKind = 'text' | 'textarea' | 'photo' | 'table' | 'consent' | 'signature'
+export type QKind = 'text' | 'country' | 'date' | 'textarea' | 'photo' | 'table' | 'consent' | 'signature'
 
 export type Question = {
   id: string
@@ -32,6 +32,8 @@ export type Question = {
   /** пояснення у вікні вибору, коли значень кілька */
   ask?: string
   numeric?: boolean
+  /** для kind 'date': допустимі межі (див. BOUNDS у lib/dates) */
+  bound?: 'birth' | 'issue' | 'future'
 }
 
 export type Section = { id: string; title: string; sub: string; questions: Question[] }
@@ -44,7 +46,7 @@ export const CONTRACT_COLS: { key: keyof Omit<ContractRow, 'id'>; label: string;
   { key: 'vessel', label: 'Судно' },
   { key: 'type', label: 'Тип судна' },
   { key: 'rank', label: 'Должность' },
-  { key: 'period', label: 'Период', mono: true, placeholder: 'ММ.ГГГГ – ММ.ГГГГ' },
+  { key: 'period', label: 'Период', mono: true },
   { key: 'engine', label: 'Главный двигатель' },
 ]
 
@@ -81,12 +83,12 @@ export function useFormDef(empty: boolean): Section[] {
       questions: [
         { id: 'last', label: 'Фамилия', kind: 'text', required: true, savable: true, sources: s([{ kind: 'doc', label: sid, value: String(f.last) }]) },
         { id: 'first', label: 'Имя', kind: 'text', required: true, savable: true, sources: s([{ kind: 'doc', label: sid, value: String(f.first) }]) },
-        { id: 'birth', label: 'Дата рождения', kind: 'text', mono: true, required: true, savable: true, placeholder: 'ДД.ММ.ГГГГ', sources: s([{ kind: 'doc', label: sid, value: String(f.birth) }]) },
+        { id: 'birth', label: 'Дата рождения', kind: 'date', bound: 'birth', mono: true, required: true, savable: true, sources: s([{ kind: 'doc', label: sid, value: String(f.birth) }]) },
         // профіль і документ збігаються — підставляємо з профілю (вищий пріоритет), вибору немає
         {
           id: 'cit',
           label: 'Гражданство',
-          kind: 'text',
+          kind: 'country',
           required: true,
           savable: true,
           sources: s([
@@ -161,11 +163,11 @@ export function useFormDef(empty: boolean): Section[] {
         {
           id: 'medical',
           label: 'Медицинский сертификат, действует до',
-          kind: 'text',
+          kind: 'date',
+          bound: 'future',
           mono: true,
           required: true,
           proof: true,
-          placeholder: 'ДД.ММ.ГГГГ',
           sources: s([{ kind: 'profile', label: 'Из профиля, без документа', value: '30.06.2027', unproved: true }]),
         },
         { id: 'bst', label: 'Basic Safety Training', kind: 'text', sources: s([{ kind: 'doc', label: 'Из документа: Сертификат BST', value: 'STCW VI/1, до 15.03.2029' }]) },

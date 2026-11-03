@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
+import { DatePick } from '@/components/app/pickers'
+import { BOUNDS } from '@/lib/dates'
 import { Camera, Clock, EyeOff, FileText, FolderOpen, HeartPulse, Image, Lock, Plus, Trash2 } from 'lucide-react'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { CheckRow, Field, QSheet, TextInput } from '../q/_parts'
-import { maskDate, RowList, ScrollAnchor, useHashParams, useS } from './_core-parts'
+import { RowList, ScrollAnchor, useHashParams, useS } from './_core-parts'
 import { StepShell } from './_stepper'
 
 // s5 — крок 5 «Медицинские документы». ADR-090: ИИ медичні документи не читає.
@@ -189,10 +191,10 @@ function MedForm({ initial, onSave, onCancel, onDelete }: { initial: MedDoc; onS
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field id="s5-from" label="Дата начала">
-              <TextInput id="s5-from" mono inputMode="numeric" value={d.from} placeholder="ДД.ММ.ГГГГ" onChange={(e) => put({ from: maskDate(e.target.value) })} />
+              <DatePick id="s5-from" title="Дата начала" value={d.from} onChange={(from) => put({ from })} {...BOUNDS.issue} />
             </Field>
             <Field id="s5-to" label="Дата конца">
-              <TextInput id="s5-to" mono inputMode="numeric" value={d.to} placeholder="ДД.ММ.ГГГГ" onChange={(e) => put({ to: maskDate(e.target.value) })} />
+              <DatePick id="s5-to" title="Дата конца" value={d.to} onChange={(to) => put({ to })} {...BOUNDS.expiry(d.from)} />
             </Field>
           </div>
           <Field id="s5-place" label="Место выдачи">

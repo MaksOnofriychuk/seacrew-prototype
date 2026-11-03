@@ -1,9 +1,11 @@
 import { Camera, ScanLine } from 'lucide-react'
+import { CountryPick, DatePick } from '@/components/app/pickers'
+import { BOUNDS } from '@/lib/dates'
 import { FleetPicker, FLEET_EMPTY, fleetSummary, type FleetValue } from '@/components/app/fleet-picker'
 import { StepShell } from './_stepper'
 import type { ScreenProps } from '../registry'
 import { Field, TextInput } from '../q/_parts'
-import { maskDate, Pick, ScrollAnchor, useS } from './_core-parts'
+import { ScrollAnchor, useS } from './_core-parts'
 
 // s2 — крок 2 «Личные данные». «Заполнить из документа» — тост (дані візьмемо з документа
 // моряка на наступному кроці). Фото — тап по колу (у C — перемикач S.photo). Ім'я і прізвище
@@ -20,7 +22,6 @@ type Form = {
   photo: boolean
 }
 
-const COUNTRIES = ['Украина', 'Филиппины', 'Индия', 'Польша']
 
 export function S2Personal({ go }: ScreenProps) {
   const { bag, setBag, showToast } = useS()
@@ -85,10 +86,12 @@ export function S2Personal({ go }: ScreenProps) {
         </div>
       </div>
       <Field id="f-birth" label="Дата рождения">
-        <TextInput id="f-birth" mono inputMode="numeric" value={f.birth} placeholder="ДД.ММ.ГГГГ" onChange={(e) => put({ birth: maskDate(e.target.value) })} />
+        <DatePick id="f-birth" title="Дата рождения" value={f.birth} onChange={(birth) => put({ birth })} {...BOUNDS.birth} initial={new Date(1998, 5, 15)} />
       </Field>
       <div id="f-cit">
-        <Pick id="s2-cit" label="Гражданство" value={f.cit} options={COUNTRIES} placeholder="Выберите страну" onChange={(cit) => put({ cit })} />
+        <Field id="s2-cit" label="Гражданство">
+          <CountryPick id="s2-cit" title="Гражданство" value={f.cit} onChange={(cit) => put({ cit })} />
+        </Field>
       </div>
       <Field id="f-phone" label="Телефон">
         <TextInput id="f-phone" type="tel" mono value={f.phone} placeholder="+380 …" className="placeholder:font-sans" onChange={(e) => put({ phone: e.target.value })} />

@@ -1,4 +1,7 @@
 import { useState, type ReactNode } from 'react'
+import { WebDatePick } from '@/components/web/web-pickers'
+import { BOUNDS, isoToRu, ruToIso } from '@/lib/dates'
+
 import { BadgeCheck } from 'lucide-react'
 import { MonoNums } from '@/components/app/mono-nums'
 import { Button } from '@/components/ui/button'
@@ -95,7 +98,7 @@ export function RJobEdit({ go }: ScreenProps) {
               </div>
               <div className="mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] gap-4">
                 <WebField id="je-board" label="Дата посадки" required error={err('board')}>
-                  <WebInput id="je-board" type="date" value={j.board} onChange={(e) => put({ board: e.target.value })} className="font-mono dark:[color-scheme:dark]" />
+                  <WebDatePick id="je-board" value={isoToRu(j.board)} onChange={(v) => put({ board: ruToIso(v) })} {...BOUNDS.future} />
                 </WebField>
                 <WebField id="je-dur" label="Длительность контракта" required error={err('duration')}>
                   <div className="flex gap-2">

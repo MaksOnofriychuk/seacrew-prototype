@@ -1,11 +1,12 @@
 import { useState, type ComponentType } from 'react'
 import { Camera, FolderOpen, Image, LoaderCircle, PenLine, Sparkles, Trash2 } from 'lucide-react'
+import { CountryPick, MonthRangePick } from '@/components/app/pickers'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { FleetPicker, type FleetValue } from '@/components/app/fleet-picker'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CONTRACTS, VESSEL_TYPES, type Contract } from '@/lib/data-docs-profile'
-import { Dur, Field, maskMonth, TextInput, useDP } from './_parts'
+import { Dur, Field, TextInput, useDP } from './_parts'
 
 // Контракти для «Опыта работы» у профілі (p22) і CV (p20): підрахунок, форма контракту, блок додавання.
 // Власна версія кроку s6 (правки №3, №25, №26, №34) — без імпорту з теки s.
@@ -134,7 +135,6 @@ function ContractForm({ initial, onSave, onCancel, onDelete }: { initial?: Contr
   const [c, setC] = useState<Contract>(initial ?? EMPTY)
   const put = (p: Partial<Contract>) => setC((x) => ({ ...x, ...p }))
   const m = cMonths(c)
-  const datesBad = c.from.length === 7 && c.to.length === 7 && m === 0
   const ok = !!c.vessel.trim() && !!c.position && m > 0
   const fleet: FleetValue = { fleets: c.fleet ? [c.fleet] : [], department: c.department || null, positions: c.position ? [c.position] : [] }
 
@@ -143,12 +143,6 @@ function ContractForm({ initial, onSave, onCancel, onDelete }: { initial?: Contr
       <TextInput id={`p22-${k}`} value={c[k]} placeholder={ph} mono={mono} onChange={(e) => put({ [k]: e.target.value })} />
     </Field>
   )
-  const month = (k: 'from' | 'to', label: string) => (
-    <Field id={`p22-${k}`} label={label}>
-      <TextInput id={`p22-${k}`} value={c[k]} placeholder="ММ.ГГГГ" mono inputMode="numeric" invalid={datesBad} onChange={(e) => put({ [k]: maskMonth(e.target.value) })} />
-    </Field>
-  )
-
   return (
     <div className="flex flex-col gap-5 pb-2">
       {text('vessel', 'Судно', 'MV …')}
@@ -172,21 +166,27 @@ function ContractForm({ initial, onSave, onCancel, onDelete }: { initial?: Contr
             </SelectContent>
           </Select>
         </Field>
-        {text('flag', 'Флаг', 'Malta')}
+        <Field id="p22-flag" label="Флаг">
+          <CountryPick id="p22-flag" title="Флаг судна" value={c.flag} onChange={(flag) => put({ flag })} />
+        </Field>
       </div>
       {text('dwt', 'DWT / GT', '19 800', true)}
       <div className="flex flex-col gap-2">
-        <div className="grid grid-cols-2 gap-3">
-          {month('from', 'Начало')}
-          {month('to', 'Окончание')}
-        </div>
-        {datesBad ? (
-          <p className="text-sm text-signal">Окончание раньше начала</p>
-        ) : m > 0 ? (
+        <Field id="p22-period" label="Период">
+          <MonthRangePick
+            id="p22-period"
+            value={c.from && c.to ? `${c.from} – ${c.to}` : ''}
+            onChange={(r) => {
+              const [from, to] = r.split(/\s*–\s*/)
+              put({ from, to })
+            }}
+          />
+        </Field>
+        {m > 0 && (
           <p className="text-sm text-muted-foreground">
             <Dur m={m} long />
           </p>
-        ) : null}
+        )}
       </div>
       {text('owner', 'Судовладелец или агентство', 'Компания')}
       {text('engine', 'Двигатель', 'MAN B&W 6S46, 7 860 kW')}

@@ -1,9 +1,12 @@
 import { useState, type ReactNode } from 'react'
+import { WebDatePick } from '@/components/web/web-pickers'
+import { BOUNDS, isoToRu, ruToIso } from '@/lib/dates'
+
 import { ChevronRight, FileText, UserRoundX } from 'lucide-react'
 import { MonoNums } from '@/components/app/mono-nums'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
-import { WebField, WebInput, WebSelect, WebTextarea } from '@/components/web/fields'
+import { WebField, WebSelect, WebTextarea } from '@/components/web/fields'
 import { PageHeader, WebCard } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { AvailabilityDot, StatusDot, WebAvatar } from '@/components/web/status-badge'
@@ -234,7 +237,7 @@ function SendFormDialog({ name, open, onClose, onSend }: { name: string; open: b
         <WebTextarea id="sf-note" rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Например, что заполнить в первую очередь" />
       </WebField>
       <WebField id="sf-due" label="Заполнить до" hint="Моряк увидит анкету в приложении, а в переписке появится её карточка.">
-        <WebInput id="sf-due" type="date" value={due} onChange={(e) => setDue(e.target.value)} className="w-48 font-mono" />
+        <WebDatePick id="sf-due" value={isoToRu(due)} onChange={(v) => setDue(ruToIso(v))} {...BOUNDS.future} className="w-48" />
       </WebField>
     </WebDialog>
   )

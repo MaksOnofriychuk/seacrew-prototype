@@ -5,7 +5,9 @@ import { FormField } from '@/components/app/form-field'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { CountryPick, DatePick } from '@/components/app/pickers'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { BOUNDS } from '@/lib/dates'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
@@ -16,17 +18,10 @@ import type { ScreenProps } from '../registry'
 // натискання на неактивну підсвічує, чого бракує (як 'blocked' у C).
 
 const DOC_NAMES = ['Удостоверение личности моряка', 'Диплом моряка'] as const
-const COUNTRIES = ['Украина', 'Филиппины', 'Индия', 'Польша']
 
 type Form = { name: string; num: string; issue: string; exp: string; country: string; file: boolean }
 
 const EMPTY: Form = { name: DOC_NAMES[0], num: '', issue: '', exp: '', country: 'Украина', file: false }
-
-// ДД.ММ.ГГГГ: лише цифри, крапки ставимо самі.
-function maskDate(v: string) {
-  const d = v.replace(/\D/g, '').slice(0, 8)
-  return [d.slice(0, 2), d.slice(2, 4), d.slice(4)].filter(Boolean).join('.')
-}
 
 export function E07Manual({ go }: ScreenProps) {
   const { bag, setBag, set } = useProto()
@@ -97,42 +92,15 @@ export function E07Manual({ go }: ScreenProps) {
 
             <div className="grid grid-cols-2 gap-3">
               <FormField id="e07-issue" label="Дата выдачи">
-                <Input
-                    id="e07-issue"
-                  value={f.issue}
-                  onChange={(e) => patch({ issue: maskDate(e.target.value) })}
-                  placeholder="ДД.ММ.ГГГГ"
-                  inputMode="numeric"
-                  aria-invalid={mark('issue') || undefined}
-                  className="h-12 font-mono text-base placeholder:font-sans"
-                />
+                <DatePick id="e07-issue" title="Дата выдачи" value={f.issue} onChange={(issue) => patch({ issue })} invalid={mark('issue')} {...BOUNDS.issue} />
               </FormField>
               <FormField id="e07-exp" label="Дата окончания">
-                <Input
-                    id="e07-exp"
-                  value={f.exp}
-                  onChange={(e) => patch({ exp: maskDate(e.target.value) })}
-                  placeholder="ДД.ММ.ГГГГ"
-                  inputMode="numeric"
-                  aria-invalid={mark('exp') || undefined}
-                  className="h-12 font-mono text-base placeholder:font-sans"
-                />
+                <DatePick id="e07-exp" title="Дата окончания" value={f.exp} onChange={(exp) => patch({ exp })} invalid={mark('exp')} {...BOUNDS.expiry(f.issue)} />
               </FormField>
             </div>
 
             <FormField id="e07-country" label="Страна выдачи">
-              <Select value={f.country} onValueChange={(country) => patch({ country })}>
-                <SelectTrigger id="e07-country" className="w-full text-base data-[size=default]:h-12">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <CountryPick id="e07-country" title="Страна выдачи" value={f.country} onChange={(country) => patch({ country })} />
             </FormField>
           </div>
         </Paper>

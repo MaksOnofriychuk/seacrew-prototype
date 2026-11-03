@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import { DatePick } from '@/components/app/pickers'
+import { BOUNDS } from '@/lib/dates'
 import { CalendarClock, Check, ChevronDown, CircleCheck, CircleMinus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { AVAIL_DEFAULT, AVAIL_DEFAULT_DATE, AVAIL_OPTIONS, availLabel, ruDate, type AvailKind, type Availability } from '@/lib/data'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
@@ -102,10 +103,10 @@ export function AvailabilitySheet({ open, onClose }: { open: boolean; onClose: (
                 {on && <Check className="size-5 text-primary" strokeWidth={2.5} />}
               </button>
               {o.kind === 'from' && on && (
-                <label className="flex flex-col gap-2 pb-4 pl-8">
+                <div className="flex flex-col gap-2 pb-4 pl-8">
                   <span className="text-sm text-muted-foreground">Дата, с которой готовы к контракту</span>
-                  <Input type="date" value={date} min="2026-11-02" onChange={(e) => setDate(e.target.value)} className="h-12 font-mono text-base md:text-base" />
-                </label>
+                  <DatePick title="Готов к контракту с" value={ruDate(date)} onChange={(v) => setDate(v.split('.').reverse().join('-'))} {...BOUNDS.future} initial={new Date(date)} />
+                </div>
               )}
             </div>
           )

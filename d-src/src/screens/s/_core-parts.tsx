@@ -1,3 +1,5 @@
+import { CountryPick, DatePick } from '@/components/app/pickers'
+import { BOUNDS } from '@/lib/dates'
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react'
 import {
   Award,
@@ -78,20 +80,6 @@ export function ScrollAnchor() {
     if (y && box) box.scrollTop = y
   }, [params])
   return <span ref={ref} className="hidden" />
-}
-
-/* ---------- маски дат ---------- */
-
-// ДД.ММ.ГГГГ: лише цифри, крапки ставимо самі.
-export function maskDate(v: string) {
-  const d = v.replace(/\D/g, '').slice(0, 8)
-  return [d.slice(0, 2), d.slice(2, 4), d.slice(4)].filter(Boolean).join('.')
-}
-
-// ММ.ГГГГ для періодів контракту.
-export function maskMonth(v: string) {
-  const d = v.replace(/\D/g, '').slice(0, 6)
-  return [d.slice(0, 2), d.slice(2)].filter(Boolean).join('.')
 }
 
 /* ---------- тривалість: цифри — Plex Mono, слова — звичайним шрифтом ---------- */
@@ -371,17 +359,17 @@ export function DocForm({
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field id={f('issue')} label="Дата выдачи">
-              <TextInput id={f('issue')} mono inputMode="numeric" value={d.issue} placeholder="ДД.ММ.ГГГГ" onChange={(e) => put({ issue: maskDate(e.target.value) })} />
+              <DatePick id={f('issue')} title="Дата выдачи" value={d.issue} onChange={(v) => put({ issue: v })} {...BOUNDS.issue} />
             </Field>
             <Field id={f('exp')} label="Действителен до">
-              <TextInput
+              <DatePick
                 id={f('exp')}
-                mono={!d.noExp}
-                inputMode="numeric"
+                title="Действителен до"
                 disabled={d.noExp}
                 value={d.noExp ? '' : d.exp}
-                placeholder={d.noExp ? 'Бессрочно' : 'ДД.ММ.ГГГГ'}
-                onChange={(e) => put({ exp: maskDate(e.target.value) })}
+                placeholder={d.noExp ? 'Бессрочно' : 'Выберите дату'}
+                onChange={(v) => put({ exp: v })}
+                {...BOUNDS.expiry(d.issue)}
               />
             </Field>
           </div>
@@ -389,7 +377,7 @@ export function DocForm({
             Без срока действия
           </CheckRow>
           <Field id={f('country')} label="Страна выдачи">
-            <TextInput id={f('country')} value={d.country} onChange={(e) => put({ country: e.target.value })} />
+            <CountryPick id={f('country')} value={d.country} onChange={(v) => put({ country: v })} title="Страна выдачи" />
           </Field>
           {coc && (
             <>

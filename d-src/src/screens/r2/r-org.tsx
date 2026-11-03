@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { WebCountrySelect } from '@/components/web/web-pickers'
+
 import { BadgeCheck, ChevronRight, CreditCard, Crown, UserPlus, Users } from 'lucide-react'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
@@ -178,7 +180,7 @@ export function ROrg({ go }: ScreenProps) {
                 <WebInput id="org-name" value={org.name} disabled={!iAmOwner} onChange={(e) => setOrg({ ...org, name: e.target.value })} />
               </WebField>
               <WebField id="org-country" label="Страна">
-                <WebInput id="org-country" value={org.country} disabled={!iAmOwner} onChange={(e) => setOrg({ ...org, country: e.target.value })} />
+                <WebCountrySelect id="org-country" value={org.country} disabled={!iAmOwner} onChange={(country) => setOrg({ ...org, country })} />
               </WebField>
               <WebField id="org-city" label="Город">
                 <WebInput id="org-city" value={org.city} disabled={!iAmOwner} onChange={(e) => setOrg({ ...org, city: e.target.value })} />

@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { WebDatePick } from '@/components/web/web-pickers'
+import { BOUNDS, isoToRu, ruToIso } from '@/lib/dates'
+
 import { Briefcase, Plus } from 'lucide-react'
 import { MonoNums } from '@/components/app/mono-nums'
 import { Button } from '@/components/ui/button'
@@ -246,7 +249,7 @@ export function AJobs({ go }: ScreenProps) {
           </WebField>
         </div>
         <WebField id="nj-board" label="Посадка">
-          <WebInput id="nj-board" type="date" value={f.board} onChange={(e) => setF({ ...f, board: e.target.value })} className="font-mono" />
+          <WebDatePick id="nj-board" value={isoToRu(f.board)} onChange={(v) => setF({ ...f, board: ruToIso(v) })} {...BOUNDS.future} />
         </WebField>
         <WebField id="nj-text" label="Описание">
           <WebTextarea id="nj-text" value={f.text} onChange={(e) => setF({ ...f, text: e.target.value })} placeholder="Судно, линия, условия на борту" />

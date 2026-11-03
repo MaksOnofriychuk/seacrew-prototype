@@ -143,25 +143,6 @@ export function TextInput({ mono, invalid, className, ...props }: React.Componen
   )
 }
 
-// ДД.ММ.ГГГГ: лише цифри, крапки ставимо самі.
-export function maskDate(v: string) {
-  const d = v.replace(/\D/g, '').slice(0, 8)
-  return [d.slice(0, 2), d.slice(2, 4), d.slice(4)].filter(Boolean).join('.')
-}
-
-export function validDate(v: string) {
-  const m = v.match(/^(\d{2})\.(\d{2})\.(\d{4})$/)
-  if (!m) return false
-  const d = new Date(+m[3], +m[2] - 1, +m[1])
-  return d.getFullYear() === +m[3] && d.getMonth() === +m[2] - 1 && d.getDate() === +m[1]
-}
-
-// ММ.ГГГГ для періодів контракту.
-export function maskMonth(v: string) {
-  const d = v.replace(/\D/g, '').slice(0, 6)
-  return [d.slice(0, 2), d.slice(2)].filter(Boolean).join('.')
-}
-
 /* ---------- текст ---------- */
 
 // «3 500 $ в месяц»: число — моноширинним, з пробілами між тисячами.

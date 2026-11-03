@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { CountryPick, DatePick } from '@/components/app/pickers'
+import { BOUNDS } from '@/lib/dates'
 import { Check, FileQuestion, Info, Lock, Plus, RotateCw, Stamp, TriangleAlert, X } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { Footer, NavBar } from '@/components/app/chrome'
@@ -8,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { READ, type AddCat, type OtherField, type ReadField } from '@/lib/data-docs-profile'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { Field, maskDate, Note, PageArt, plural, SourceTag, TextInput, useDP, validDate } from './_parts'
+import { Field, Note, PageArt, plural, SourceTag, TextInput, useDP } from './_parts'
 import { type AddedDoc, type AddState } from './_docs'
 
 // p19 — «Проверьте документ» після додавання в застосунку (gaps №5; extraction/[id] у застосунку).
@@ -41,9 +43,10 @@ export function P19Check({ go }: ScreenProps) {
   const orig = (f: ReadField) => (manual ? '' : f.value)
   const edited = (f: ReadField) => !manual && vals[f.k] !== f.value
   const lowLeft = read.fields.filter((f) => f.low && !edited(f) && !manual).length
-  const dateBad = (f: ReadField) => isDate(f) && !!vals[f.k] && !validDate(vals[f.k])
   const missing = (f: ReadField) => ((f.k === 'num' && cat !== 'vac') || f.k === 'name' || f.k === 'country') && !vals[f.k]?.trim()
-  const problems = read.fields.filter((f) => dateBad(f) || missing(f))
+  const problems = read.fields.filter((f) => missing(f))
+
+  const lowCls = (f: ReadField) => cn(f.low && !edited(f) && !manual && 'border-warning')
 
   const tag = (f: ReadField) => {
     if (manual || !vals[f.k]) return null
@@ -191,26 +194,39 @@ export function P19Check({ go }: ScreenProps) {
           <div className="flex flex-col gap-5 py-1">
             {read.fields.map((f) => {
               const id = `p19-${f.k}`
-              const bad = tried && (dateBad(f) || missing(f))
+              const bad = tried && (missing(f))
               return (
                 <Field
                   key={f.k}
                   id={id}
                   label={f.label}
                   tag={tag(f)}
-                  error={bad ? (dateBad(f) ? 'Введите существующую дату в формате ДД.ММ.ГГГГ.' : 'Заполните это поле.') : null}
+                  error={bad ? 'Заполните это поле.' : null}
                   note={edited(f) && orig(f) ? <>В документе: <span className={cn(f.mono && 'font-mono')}>{orig(f)}</span></> : null}
                 >
-                  <TextInput
-                    id={id}
-                    mono={f.mono}
-                    value={vals[f.k]}
-                    invalid={bad}
-                    inputMode={isDate(f) ? 'numeric' : undefined}
-                    placeholder={isDate(f) ? 'ДД.ММ.ГГГГ' : 'Как в документе'}
-                    className={cn(f.low && !edited(f) && !manual && 'border-warning')}
-                    onChange={(e) => setVals({ ...vals, [f.k]: isDate(f) ? maskDate(e.target.value) : e.target.value })}
-                  />
+                  {isDate(f) ? (
+                    <DatePick
+                      id={id}
+                      title={f.label}
+                      value={vals[f.k]}
+                      invalid={bad}
+                      className={lowCls(f)}
+                      onChange={(v) => setVals({ ...vals, [f.k]: v })}
+                      {...(f.k === 'exp' ? BOUNDS.expiry(vals.issue) : BOUNDS.issue)}
+                    />
+                  ) : f.k === 'country' ? (
+                    <CountryPick id={id} title={f.label} value={vals[f.k]} invalid={bad} className={lowCls(f)} onChange={(v) => setVals({ ...vals, [f.k]: v })} />
+                  ) : (
+                    <TextInput
+                      id={id}
+                      mono={f.mono}
+                      value={vals[f.k]}
+                      invalid={bad}
+                      placeholder="Как в документе"
+                      className={lowCls(f)}
+                      onChange={(e) => setVals({ ...vals, [f.k]: e.target.value })}
+                    />
+                  )}
                 </Field>
               )
             })}

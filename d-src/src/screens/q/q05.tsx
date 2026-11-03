@@ -4,6 +4,8 @@ import { MonoNums } from '@/components/app/mono-nums'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { CountryPick, DatePick, MonthRangePick } from '@/components/app/pickers'
+import { BOUNDS } from '@/lib/dates'
 import type { ScreenProps } from '../registry'
 import { CheckRow, contractsText, DOC_TYPES, durText, Field, FlowScreen, Footer, FORM_DEFAULTS, Hint, months, Note, TextInput, Title, type DocTypeId, type QForm, type TagKind, useQ } from './_parts'
 
@@ -66,21 +68,21 @@ export function Q05Check({ go }: ScreenProps) {
 
   const text = (k: string, label: string, o: { ph?: string; mono?: boolean; ac?: string; need?: boolean } = {}) => (
     <Field id={`q05-${k}`} label={label} tag={tag(k)}>
-      <TextInput
-        id={`q05-${k}`}
-        value={s(k)}
-        placeholder={o.ph}
-        autoComplete={o.ac}
-        mono={o.mono}
-        inputMode={o.mono && o.ph === 'ДД.ММ.ГГГГ' ? 'numeric' : undefined}
-        invalid={o.need && !s(k).trim()}
-        onChange={(e) => put(k, e.target.value)}
-      />
+      <TextInput id={`q05-${k}`} value={s(k)} placeholder={o.ph} autoComplete={o.ac} mono={o.mono} invalid={o.need && !s(k).trim()} onChange={(e) => put(k, e.target.value)} />
     </Field>
   )
-  const date = (k: string, label: string, need?: boolean) => text(k, label, { ph: 'ДД.ММ.ГГГГ', mono: true, need })
+  const date = (k: string, label: string, b: { min?: Date | null; max?: Date | null }, need?: boolean) => (
+    <Field id={`q05-${k}`} label={label} tag={tag(k)}>
+      <DatePick id={`q05-${k}`} title={label} value={s(k)} invalid={need && !s(k).trim()} onChange={(val) => put(k, val)} {...b} />
+    </Field>
+  )
+  const country = (k: string, label: string) => (
+    <Field id={`q05-${k}`} label={label} tag={tag(k)}>
+      <CountryPick id={`q05-${k}`} title={label} value={s(k)} onChange={(val) => put(k, val)} />
+    </Field>
+  )
 
-  const exp = (k: string, nk: string) => {
+  const exp = (k: string, nk: string, issueKey: string) => {
     const off = !!v[nk]
     return (
       <div className="flex flex-col gap-3">
@@ -89,7 +91,7 @@ export function Q05Check({ go }: ScreenProps) {
             <TextInput id={`q05-${k}`} value="" placeholder="Без срока действия" disabled />
           </Field>
         ) : (
-          date(k, 'Действителен до')
+          date(k, 'Действителен до', BOUNDS.expiry(s(issueKey)))
         )}
         <CheckRow id={`q05-${nk}`} checked={off} onChange={(c) => put(nk, c)}>
           Без срока действия
@@ -149,8 +151,8 @@ export function Q05Check({ go }: ScreenProps) {
       <Group title="Личные данные">
         {text('first', 'Имя', { ph: 'Как в документе', ac: 'given-name', need: true })}
         {text('last', 'Фамилия', { ph: 'Как в документе', ac: 'family-name', need: true })}
-        {date('birth', 'Дата рождения', true)}
-        {text('cit', 'Гражданство')}
+        {date('birth', 'Дата рождения', BOUNDS.birth, true)}
+        {country('cit', 'Гражданство')}
         {text('phone', 'Телефон', { ph: '+380 …', mono: true })}
       </Group>
 
@@ -158,9 +160,9 @@ export function Q05Check({ go }: ScreenProps) {
         <div className="flex flex-col gap-5 py-1">
           {text('docName', 'Название документа')}
           {text('docNum', 'Номер документа', { mono: true, need: true })}
-          {date('docIssue', 'Дата выдачи')}
-          {exp('docExp', 'docNoExp')}
-          {text('docCountry', 'Страна выдачи')}
+          {date('docIssue', 'Дата выдачи', BOUNDS.issue)}
+          {exp('docExp', 'docNoExp', 'docIssue')}
+          {country('docCountry', 'Страна выдачи')}
         </div>
       </Paper>
 
@@ -168,9 +170,9 @@ export function Q05Check({ go }: ScreenProps) {
         <div className="flex flex-col gap-5 py-1">
           {text('dipName', 'Название документа')}
           {text('dipNum', 'Номер диплома', { mono: true })}
-          {date('dipIssue', 'Дата выдачи')}
-          {exp('dipExp', 'dipNoExp')}
-          {text('dipCountry', 'Страна выдачи')}
+          {date('dipIssue', 'Дата выдачи', BOUNDS.issue)}
+          {exp('dipExp', 'dipNoExp', 'dipIssue')}
+          {country('dipCountry', 'Страна выдачи')}
           {text('dipRank', 'Должность по диплому')}
           {pick('dipStcw', 'Правило STCW', STCW_RULES, true)}
           {pick('dipLevel', 'Уровень', STCW_LEVELS)}
@@ -196,12 +198,10 @@ export function Q05Check({ go }: ScreenProps) {
         {[1, 2].map((n) => (
           <div key={n} className={`flex flex-col gap-4 ${n > 1 ? 'border-t border-border pt-5' : ''}`}>
             {text(`vessel${n}`, 'Судно')}
-            <div className="grid grid-cols-[1fr_1.2fr] gap-3">
-              {text(`rank${n}`, 'Должность')}
-              <Field id={`q05-per${n}`} label="Период" note={durText(months(s(`per${n}`)))}>
-                <TextInput id={`q05-per${n}`} mono value={s(`per${n}`)} className="px-3 text-sm md:text-sm" onChange={(e) => put(`per${n}`, e.target.value)} />
-              </Field>
-            </div>
+            {text(`rank${n}`, 'Должность')}
+            <Field id={`q05-per${n}`} label="Период" note={durText(months(s(`per${n}`)))}>
+              <MonthRangePick id={`q05-per${n}`} value={s(`per${n}`)} onChange={(val) => put(`per${n}`, val)} />
+            </Field>
           </div>
         ))}
       </Group>

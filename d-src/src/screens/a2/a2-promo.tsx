@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { WebDatePick } from '@/components/web/web-pickers'
+import { BOUNDS, isoToRu, ruToIso } from '@/lib/dates'
+
 import { Gift, Plus, Ticket, Users } from 'lucide-react'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
@@ -302,7 +305,7 @@ export function A2Promo({ go }: ScreenProps) {
           Без лимита
         </WebCheckbox>
         <WebField id="pc-until" label="Действует до" hint="Оставьте пустым — код будет бессрочным.">
-          <WebInput id="pc-until" type="date" value={f.until} onChange={(e) => setF({ ...f, until: e.target.value })} className="font-mono" />
+          <WebDatePick id="pc-until" value={isoToRu(f.until)} onChange={(v) => setF({ ...f, until: ruToIso(v) })} {...BOUNDS.future} clearable className="w-48" />
         </WebField>
         <WebField id="pc-aud" label="Для кого">
           <WebSelect id="pc-aud" value={f.audience} onChange={(v) => setF({ ...f, audience: v as Promo['audience'] })} options={[{ value: 'new', label: AUDIENCE.new }, { value: 'all', label: AUDIENCE.all }]} />

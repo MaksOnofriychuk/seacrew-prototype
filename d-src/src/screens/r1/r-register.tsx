@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react'
+import { WebCountrySelect } from '@/components/web/web-pickers'
+
 import { AlertTriangle, Clock } from 'lucide-react'
 import { useView } from '@/components/app/states'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
-import { WebField, WebInput, WebSelect } from '@/components/web/fields'
+import { WebField, WebInput } from '@/components/web/fields'
 import type { ScreenProps } from '../types'
 import { AuthLayout, Pitch } from './_parts'
 
@@ -11,7 +13,6 @@ import { AuthLayout, Pitch } from './_parts'
 // створює користувача, організацію без verifiedAt і членство «Владелец»). Після — «организация на проверке»:
 // кабінет працює, а звати моряків можна лише після перевірки (ORGANIZATION_NOT_VERIFIED).
 
-const COUNTRIES = ['Болгария', 'Великобритания', 'Греция', 'Кипр', 'Латвия', 'Мальта', 'Нидерланды', 'Норвегия', 'ОАЭ', 'Польша', 'Румыния', 'Сингапур', 'Украина', 'Филиппины']
 
 type Form = { name: string; email: string; password: string; company: string; country: string; city: string; site: string }
 const EMPTY: Form = { name: '', email: '', password: '', company: '', country: '', city: '', site: '' }
@@ -70,7 +71,7 @@ export function RRegister({ go }: ScreenProps) {
             </WebField>
             <div className="grid grid-cols-2 gap-3">
               <WebField id="reg-country" label="Страна" required error={err('country')}>
-                <WebSelect id="reg-country" value={f.country} onChange={set('country')} options={COUNTRIES} />
+                <WebCountrySelect id="reg-country" value={f.country} onChange={set('country')} />
               </WebField>
               <WebField id="reg-city" label="Город">
                 <WebInput id="reg-city" value={f.city} onChange={(e) => set('city')(e.target.value)} />

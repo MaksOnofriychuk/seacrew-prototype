@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { CountryPick, DatePick } from '@/components/app/pickers'
+import { BOUNDS } from '@/lib/dates'
 import { Check, FileCheck, Info, Trash2 } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { FleetPicker, type FleetValue } from '@/components/app/fleet-picker'
@@ -7,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { CURRENCIES, MARITAL, PROFILE_DOC, PROFILE_FIELDS, SALARY_PER, type ProfileField, type Salary } from '@/lib/data-docs-profile'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { maskDate, Note, SourceTag, TextInput, useDP, useHashParam, useProfile, validDate, type TextField } from './_parts'
+import { Note, SourceTag, TextInput, useDP, useHashParam, useProfile, type TextField } from './_parts'
 
 // p21 — «Изменить поле»: одне поле профілю (gaps №6; profile-edit/[field] у застосунку).
 // Значення з документа можна змінити: тоді наступні документи його не перезапишуть, лише запропонують
@@ -17,14 +19,12 @@ import { maskDate, Note, SourceTag, TextInput, useDP, useHashParam, useProfile, 
 // #p21?f=birth | last | first | cit | phone | email | marital | rank | salary.
 
 const ERR: Partial<Record<TextField, string>> = {
-  birth: 'Введите существующую дату в формате ДД.ММ.ГГГГ.',
   phone: 'Введите номер с кодом страны, например +380 …',
   email: 'Введите email, например name@example.com.',
 }
 
 const valid = (k: TextField, v: string) => {
   if (!v) return true
-  if (k === 'birth') return validDate(v)
   if (k === 'phone') return v.replace(/\D/g, '').length >= 9
   if (k === 'email') return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
   return true
@@ -86,19 +86,25 @@ function TextEditor({ k, go }: { k: TextField; go: ScreenProps['go'] }) {
       <div className="screen-in min-h-0 flex-1 overflow-y-auto px-6 pt-2 pb-6">
         <h1 className="text-[32px] leading-[1.1] font-semibold tracking-tight">{def.label}</h1>
         <div className="mt-5 flex flex-col gap-2">
+          {k === 'birth' ? (
+            <DatePick id="p21-input" title={def.label} value={text} onChange={setText} {...BOUNDS.birth} initial={new Date(1998, 5, 15)} />
+          ) : k === 'cit' ? (
+            <CountryPick id="p21-input" title={def.label} value={text} onChange={setText} />
+          ) : (
           <TextInput
-            id="p21-input"
-            aria-label={def.label}
-            autoFocus
-            mono={def.mono}
-            value={text}
-            invalid={bad}
-            placeholder={def.ph}
-            inputMode={k === 'birth' ? 'numeric' : k === 'phone' ? 'tel' : k === 'email' ? 'email' : undefined}
-            autoComplete={k === 'email' ? 'email' : k === 'phone' ? 'tel' : undefined}
-            onChange={(e) => setText(k === 'birth' ? maskDate(e.target.value) : e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && save(text)}
-          />
+              id="p21-input"
+              aria-label={def.label}
+              autoFocus
+              mono={def.mono}
+              value={text}
+              invalid={bad}
+              placeholder={def.ph}
+              inputMode={k === 'phone' ? 'tel' : k === 'email' ? 'email' : undefined}
+              autoComplete={k === 'email' ? 'email' : k === 'phone' ? 'tel' : undefined}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && save(text)}
+            />
+          )}
           {bad && <p className="text-sm text-signal">{ERR[k]}</p>}
           {src && (
             <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">

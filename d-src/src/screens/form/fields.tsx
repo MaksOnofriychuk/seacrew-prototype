@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { AlertTriangle, Camera, Check, ChevronDown, CircleAlert, FileCheck2, FileText, FolderOpen, PenLine, Plus, ShieldCheck, X } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
+import { CountryPick, DatePick, MonthRangePick } from '@/components/app/pickers'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { BOUNDS } from '@/lib/dates'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import { CheckRow, TextInput } from '../q/_parts'
-import { maskDate } from '../s/_core-parts'
 import { plural } from '../s/_stepper'
 import { TextArea } from '../s/_extra-parts'
 import { CONTRACT_COLS, FORM_ORG, rowMissing, type ContractRow, type Question } from './data'
@@ -96,6 +97,19 @@ export function QuestionField({ q, st, showError, readOnly, go }: { q: Question;
         </button>
       ) : q.kind === 'textarea' ? (
         <TextArea id={`fi-${q.id}`} value={a?.v ?? ''} placeholder={q.placeholder} readOnly={readOnly} onChange={(e) => st.type(q, e.target.value)} />
+      ) : q.kind === 'country' ? (
+        <CountryPick id={`fi-${q.id}`} title={q.label} value={a?.v ?? ''} invalid={!!err} disabled={readOnly} onChange={(v) => st.type(q, v)} />
+      ) : q.kind === 'date' ? (
+        <DatePick
+          id={`fi-${q.id}`}
+          title={q.label}
+          value={a?.v ?? ''}
+          invalid={!!err}
+          disabled={readOnly}
+          initial={q.bound === 'birth' ? new Date(1998, 5, 15) : undefined}
+          onChange={(v) => st.type(q, v)}
+          {...BOUNDS[q.bound ?? 'issue']}
+        />
       ) : (
         <TextInput
           id={`fi-${q.id}`}
@@ -104,9 +118,9 @@ export function QuestionField({ q, st, showError, readOnly, go }: { q: Question;
           placeholder={q.placeholder}
           readOnly={readOnly}
           invalid={!!err}
-          inputMode={q.numeric || q.placeholder === 'ДД.ММ.ГГГГ' ? 'numeric' : undefined}
+          inputMode={q.numeric ? 'numeric' : undefined}
           className={cn(q.mono && 'placeholder:font-sans', readOnly && 'bg-muted')}
-          onChange={(e) => st.type(q, q.placeholder === 'ДД.ММ.ГГГГ' ? maskDate(e.target.value) : e.target.value)}
+          onChange={(e) => st.type(q, e.target.value)}
         />
       )}
 
@@ -398,14 +412,18 @@ function RowSheet({ edit, onClose, onSave, onDelete }: { edit: { i: number; row:
               <Label htmlFor={`row-${c.key}`} className="text-[15px] font-medium">
                 {c.label}
               </Label>
-              <TextInput
-                id={`row-${c.key}`}
-                mono={c.mono}
-                value={cur[c.key]}
-                placeholder={c.placeholder}
-                className={cn(c.mono && 'placeholder:font-sans', !cur[c.key] && 'border-warning')}
-                onChange={(e) => setRow({ ...cur, [c.key]: e.target.value })}
-              />
+              {c.key === 'period' ? (
+                <MonthRangePick id={`row-${c.key}`} value={cur.period} onChange={(v) => setRow({ ...cur, period: v })} />
+              ) : (
+                <TextInput
+                  id={`row-${c.key}`}
+                  mono={c.mono}
+                  value={cur[c.key]}
+                  placeholder={c.placeholder}
+                  className={cn(c.mono && 'placeholder:font-sans', !cur[c.key] && 'border-warning')}
+                  onChange={(e) => setRow({ ...cur, [c.key]: e.target.value })}
+                />
+              )}
             </div>
           ))}
         </div>

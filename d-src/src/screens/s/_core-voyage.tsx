@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { CountryPick, MonthRangePick } from '@/components/app/pickers'
 import { Trash2 } from 'lucide-react'
 import { FleetPicker, type FleetValue } from '@/components/app/fleet-picker'
 import { Group } from '@/components/app/group'
 import { Button } from '@/components/ui/button'
 import { Field, TextInput } from '../q/_parts'
-import { Dur, maskMonth, Pick } from './_core-parts'
+import { Dur, Pick } from './_core-parts'
 
 // Контракти для кроку «Опыт работы» (№3, №26: «рейс» → «контракт»): дані, підрахунок і форма
 // контракту. Посада — через Флот → Департамент → Должность (№25), по одному на контракт.
@@ -161,7 +162,6 @@ export function VoyageForm({ initial, onSave, onCancel, onDelete }: { initial?: 
   const m = vMonths(v)
   const fleet: FleetValue = { fleets: v.fleet ? [v.fleet] : [], department: v.dept || null, positions: v.rank ? [v.rank] : [] }
   const setFleet = (x: FleetValue) => put({ fleet: x.fleets[0] ?? '', dept: x.department ?? '', rank: x.positions[0] ?? '' })
-  const datesBad = v.from.length === 7 && v.to.length === 7 && m === 0
   const ok = !!v.vessel.trim() && !!v.rank.trim() && m > 0
 
   useEffect(() => {
@@ -174,12 +174,6 @@ export function VoyageForm({ initial, onSave, onCancel, onDelete }: { initial?: 
       <TextInput id={`s6-${k}`} value={v[k]} placeholder={ph} mono={mono} className={mono ? 'placeholder:font-sans' : undefined} onChange={(e) => put({ [k]: e.target.value })} />
     </Field>
   )
-  const month = (k: 'from' | 'to', label: string) => (
-    <Field id={`s6-${k}`} label={label}>
-      <TextInput id={`s6-${k}`} value={v[k]} placeholder="ММ.ГГГГ" mono inputMode="numeric" invalid={datesBad} onChange={(e) => put({ [k]: maskMonth(e.target.value) })} />
-    </Field>
-  )
-
   return (
     <div ref={ref} className="scroll-mt-4">
       <Group title={v.vessel.trim() || 'Контракт вручную'}>
@@ -187,22 +181,28 @@ export function VoyageForm({ initial, onSave, onCancel, onDelete }: { initial?: 
           {text('vessel', 'Судно', 'MV …')}
           <div className="grid grid-cols-2 gap-3">
             <Pick id="s6-type" label="Тип судна" value={v.type} options={VESSEL_TYPES} onChange={(type) => put({ type })} />
-            {text('flag', 'Флаг', 'Malta')}
+            <Field id="s6-flag" label="Флаг">
+              <CountryPick id="s6-flag" title="Флаг судна" value={v.flag} onChange={(flag) => put({ flag })} />
+            </Field>
           </div>
           <FleetPicker value={fleet} onChange={setFleet} className="border-y border-border py-4" />
           {text('dwt', 'DWT / GT', '19 800', true)}
           <div className="flex flex-col gap-2">
-            <div className="grid grid-cols-2 gap-3">
-              {month('from', 'Начало')}
-              {month('to', 'Окончание')}
-            </div>
-            {datesBad ? (
-              <p className="text-sm text-signal">Окончание раньше начала</p>
-            ) : m > 0 ? (
+            <Field id="s6-period" label="Период">
+              <MonthRangePick
+                id="s6-period"
+                value={v.from && v.to ? `${v.from} – ${v.to}` : ''}
+                onChange={(r) => {
+                  const [from, to] = r.split(/\s*–\s*/)
+                  put({ from, to })
+                }}
+              />
+            </Field>
+            {m > 0 && (
               <p className="text-sm text-muted-foreground">
                 <Dur m={m} long />
               </p>
-            ) : null}
+            )}
           </div>
           {text('owner', 'Судовладелец или агентство', 'Компания')}
           {text('engine', 'Двигатель', 'MAN B&W 6S46, 7 860 kW')}

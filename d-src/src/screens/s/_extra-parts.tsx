@@ -1,4 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { CountryPick, DatePick } from '@/components/app/pickers'
+import { BOUNDS } from '@/lib/dates'
 import { Camera, FileText, FolderOpen, Image, Lock, Pencil, ScanLine, Sparkles, Trash2, X } from 'lucide-react'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
@@ -115,14 +117,6 @@ export function ChipWrap({ children }: { children: ReactNode }) {
   return <div className="flex flex-wrap gap-2">{children}</div>
 }
 
-/* ---------- дати ---------- */
-
-// ДД.ММ.ГГГГ: лише цифри, крапки ставимо самі (як у e07).
-export function maskDate(v: string) {
-  const d = v.replace(/\D/g, '').slice(0, 8)
-  return [d.slice(0, 2), d.slice(2, 4), d.slice(4)].filter(Boolean).join('.')
-}
-
 /* ---------- додавання документа: розпізнати ІІ або ввести вручну (addPanel у C) ---------- */
 
 export function AddPanel({ n, title, sub, onUpload }: { n: number; title: string; sub: string; onUpload: () => void }) {
@@ -162,7 +156,6 @@ export function AddPanel({ n, title, sub, onUpload }: { n: number; title: string
 /* ---------- крок з документами: s8, s9 (docStep у C) ---------- */
 
 type ManForm = { name: string; num: string; issue: string; exp: string; noExp: boolean; country: string; file: boolean }
-const COUNTRIES = ['Украина', 'Филиппины', 'Индия', 'Польша'] as const
 
 export function DocStep({ n, upT, upS, recSeq }: { n: number; upT: string; upS: string; recSeq: string[] }) {
   const { bag, setBag, showToast } = useBag()
@@ -260,18 +253,17 @@ function ManualForm({ n, f, patch, close, save }: { n: number; f: ManForm; patch
         </XField>
         <div className="grid grid-cols-2 gap-3">
           <XField id={id('issue')} label="Дата выдачи">
-            <TextInput id={id('issue')} mono inputMode="numeric" value={f.issue} onChange={(e) => patch({ issue: maskDate(e.target.value) })} placeholder="ДД.ММ.ГГГГ" />
+            <DatePick id={id('issue')} title="Дата выдачи" value={f.issue} onChange={(issue) => patch({ issue })} {...BOUNDS.issue} />
           </XField>
           <XField id={id('exp')} label="Действителен до">
-            <TextInput
+            <DatePick
               id={id('exp')}
-              mono
-              inputMode="numeric"
+              title="Действителен до"
               disabled={f.noExp}
               value={f.noExp ? '' : f.exp}
-              onChange={(e) => patch({ exp: maskDate(e.target.value) })}
-              placeholder={f.noExp ? 'Бессрочно' : 'ДД.ММ.ГГГГ'}
-              className={f.noExp ? 'placeholder:font-sans' : undefined}
+              onChange={(exp) => patch({ exp })}
+              placeholder={f.noExp ? 'Бессрочно' : 'Выберите дату'}
+              {...BOUNDS.expiry(f.issue)}
             />
           </XField>
         </div>
@@ -279,7 +271,7 @@ function ManualForm({ n, f, patch, close, save }: { n: number; f: ManForm; patch
           Без срока действия
         </CheckRow>
         <XField id={id('country')} label="Страна выдачи">
-          <XSelect id={id('country')} value={f.country} onChange={(country) => patch({ country })} options={COUNTRIES} />
+          <CountryPick id={id('country')} title="Страна выдачи" value={f.country} onChange={(country) => patch({ country })} />
         </XField>
 
         {f.file ? (
