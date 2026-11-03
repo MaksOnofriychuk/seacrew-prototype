@@ -351,7 +351,7 @@ function ProofBox({ q, st, invalid, wrong, onAttach }: { q: Question; st: FormSt
       <p className="flex items-start gap-2 text-sm">
         <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
         <span>
-          {fromProfile ? 'В профиле это введено без документа.' : 'Значение введено вручную.'} Агентство просит подтверждение — прикрепите фото, файл или документ из профиля.
+          {fromProfile ? 'В профиле это введено без документа.' : 'Значение введено вручную.'} Прикрепите подтверждение.
         </span>
       </p>
       {wrong && (
@@ -360,15 +360,16 @@ function ProofBox({ q, st, invalid, wrong, onAttach }: { q: Question; st: FormSt
           <span>Ещё одна ошибка — и аккаунт будет заблокирован</span>
         </div>
       )}
-      <div className="flex gap-2">
-        <Button size="sm" variant="outline" className="flex-1 text-primary" onClick={() => onAttach('photo')}>
+      {/* Три кнопки в сітку на всю ширину — без виходу за межі блоку (перевірка 03.11, №49). */}
+      <div className="grid grid-cols-3 gap-2">
+        <Button size="sm" variant="outline" className="h-14 min-w-0 flex-col gap-1 px-1 text-[13px] text-primary" onClick={() => onAttach('photo')}>
           <Camera /> Фото
         </Button>
-        <Button size="sm" variant="outline" className="flex-1 text-primary" onClick={() => onAttach('file')}>
+        <Button size="sm" variant="outline" className="h-14 min-w-0 flex-col gap-1 px-1 text-[13px] text-primary" onClick={() => onAttach('file')}>
           <FolderOpen /> Файл
         </Button>
-        <Button size="sm" variant="outline" className="flex-1 text-primary" onClick={() => setDocs(true)}>
-          <FileCheck2 /> Из документов
+        <Button size="sm" variant="outline" className="h-14 min-w-0 flex-col gap-1 px-1 text-[13px] text-primary" onClick={() => setDocs(true)}>
+          <FileCheck2 /> Документ
         </Button>
       </div>
       <SourceSheet
