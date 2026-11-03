@@ -1,5 +1,5 @@
 import { useState, type ComponentType } from 'react'
-import { Bell, Briefcase, Check, Clock, Crown, Heart, Mail, MessageCircle, MessageSquare, Settings, UserRound } from 'lucide-react'
+import { Bell, Briefcase, Check, ClipboardList, Clock, Crown, Heart, Mail, MessageCircle, MessageSquare, Settings, UserRound } from 'lucide-react'
 import { NavBar } from '@/components/app/chrome'
 import { useView, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
@@ -20,6 +20,7 @@ type TabId = 'work' | 'other'
 const ICON: Record<NotifKind, { icon: ComponentType<{ className?: string }>; tone: string }> = {
   offer: { icon: Mail, tone: 'text-primary' },
   reply: { icon: MessageSquare, tone: 'text-primary' },
+  form: { icon: ClipboardList, tone: 'text-primary' },
   confirmed: { icon: Check, tone: 'text-success' },
   jobs: { icon: Briefcase, tone: 'text-primary' },
   doc: { icon: Clock, tone: 'text-warning' },

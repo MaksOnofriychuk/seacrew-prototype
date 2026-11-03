@@ -142,7 +142,7 @@ export function appliedChat(job: number, org: string, orgShort: string): Chat {
 
 /* ---------- сповіщення (правка №22: «Рабочие» і «Нерабочие») ---------- */
 
-export type NotifKind = 'offer' | 'reply' | 'confirmed' | 'jobs' | 'doc' | 'comment' | 'like' | 'premium'
+export type NotifKind = 'offer' | 'reply' | 'form' | 'confirmed' | 'jobs' | 'doc' | 'comment' | 'like' | 'premium'
 
 export type AppNotif = {
   id: string
@@ -160,6 +160,8 @@ export type AppNotif = {
 
 export const NOTIFS: AppNotif[] = [
   { id: 'offer-am', tab: 'work', kind: 'offer', text: '**Ахмед Карими**, Atlas Marine Services, предлагает работу', time: '15 мин', unread: true },
+  // анкета від агентства (перевірка прототипу 03.11): тап — одразу анкета, «Назад» — чат з агентством
+  { id: 'form-bw', tab: 'work', kind: 'form', text: '**BlueWave Crewing** прислали анкету. Заполнить до 08.11.2026', time: '11:41', unread: true, to: 'm-form', chat: 'bw' },
   { id: 'reply-ns', tab: 'work', kind: 'reply', text: '**Nordline Ship Management** ответили на ваш отклик', time: 'вчера', unread: true, to: 'm-chat', chat: 'ns' },
   { id: 'jobs', tab: 'work', kind: 'jobs', text: '2 новые вакансии по подборке «3rd Engineer, от $4 000 / мес»', time: '5 ч', unread: false, to: 'p05' },
   { id: 'med', tab: 'work', kind: 'doc', text: '**Медосмотр истекает через 20 дней.** Обновите документ, чтобы не терять предложения.', time: 'вчера', unread: false, to: 'p02' },
@@ -185,6 +187,7 @@ export const NOTIF_TYPES: { id: string; tab: 'work' | 'other'; title: string; su
   { id: 'offers', tab: 'work', title: 'Предложения от рекрутеров', sub: 'Рекрутер нашёл вас в базе' },
   { id: 'messages', tab: 'work', title: 'Сообщения от рекрутеров' },
   { id: 'applications', tab: 'work', title: 'Ответы на отклики' },
+  { id: 'forms', tab: 'work', title: 'Анкеты от агентств', sub: 'Агентство прислало анкету и срок' },
   { id: 'docs', tab: 'work', title: 'Сроки документов', sub: 'За 180, 90 и 30 дней до окончания' },
   { id: 'jobs', tab: 'work', title: 'Новые вакансии по подборкам' },
   { id: 'social', tab: 'other', title: 'Реакции и комментарии', sub: 'К вашим публикациям и комментариям' },
