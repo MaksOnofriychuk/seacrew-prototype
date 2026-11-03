@@ -1,3 +1,4 @@
+import { P14Profile } from '../dp/p14-profile'
 import { defineGroups } from '../types'
 import { E01NotRead } from '../e/e01'
 import { E02NotSeafarer } from '../e/e02'
@@ -15,7 +16,6 @@ import { Q05Check } from '../q/q05'
 import { Q06Account } from '../q/q06'
 import { Q07Code } from '../q/q07'
 import { Q08Done } from '../q/q08'
-import { Q09Profile } from '../q/q09'
 import { Q10Consents } from '../q/q10'
 import { Q11Resume } from '../q/q11'
 
@@ -31,7 +31,7 @@ export const groups = defineGroups('mobile', [
       { id: 'q06', title: '4. Аккаунт', Component: Q06Account },
       { id: 'q07', title: '5. Код из письма', Component: Q07Code },
       { id: 'q08', title: '6. Аккаунт создан', Component: Q08Done },
-      { id: 'q09', title: '7. Профиль', Component: Q09Profile },
+      { id: 'q09', title: '7. Профиль (тот же, что p14)', Component: P14Profile },
       { id: 'q10', title: 'Профиль · Согласия', Component: Q10Consents },
       { id: 'q11', title: 'Незаконченная регистрация', Component: Q11Resume },
       { id: 'e01', title: 'Ошибка: документ не прочитан', Component: E01NotRead },
