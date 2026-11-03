@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { Coins } from 'lucide-react'
 import { ViewState } from '@/components/app/states'
 import { DataTable, type Column } from '@/components/web/data-table'
+import { FilterBar } from '@/components/web/filter-bar'
 import { WebSelect } from '@/components/web/fields'
 import { PageHeader } from '@/components/web/page-header'
 import { BUDGET, DAILY_COST, PHOTOS, USAGE, type Period, type UsageRow } from '@/lib/data-admin'
+import { EARLIER_COST } from '@/lib/data-admin-53-h'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { AdminPage, Mono, PeriodFilter, useBagState } from './_parts'
+import { AdminPage, AdminTabs, Mono, PeriodFilter, useBagState } from './_parts'
 
 const usd = (n: number) => '$' + n.toFixed(2).replace('.', ',')
 const kfmt = (n: number) => (n >= 1_000_000 ? (n / 1_000_000).toFixed(1).replace('.', ',') + ' млн' : n >= 1000 ? Math.round(n / 1000) + ' тыс.' : String(n))
@@ -53,7 +55,59 @@ function DailyBars() {
   )
 }
 
+type DayRow = { day: string; usd: number }
+const ALL_DAYS: DayRow[] = [...EARLIER_COST, ...DAILY_COST]
+const dayRu = (d: string) => d.split('-').reverse().join('.') + '.2026'
+
+// Розхід по днях: довгий список — з пагінацією й сортуванням; бюджет дня і частка від нього.
+function DaysTable() {
+  const [q, setQ] = useState('')
+  const rows = ALL_DAYS.filter((d) => !q.trim() || dayRu(d.day).includes(q.trim()))
+  const cols: Column<DayRow>[] = [
+    { key: 'day', header: 'День', width: '22%', mono: true, sortValue: (d) => d.day, cell: (d) => dayRu(d.day) },
+    { key: 'usd', header: 'Потрачено', width: '18%', align: 'right', mono: true, sortValue: (d) => d.usd, cell: (d) => usd(d.usd) },
+    {
+      key: 'pct',
+      header: 'От дневного бюджета',
+      width: '30%',
+      sortValue: (d) => d.usd,
+      cell: (d) => {
+        const p = Math.min(100, (d.usd / BUDGET.daily) * 100)
+        return (
+          <span className="flex items-center gap-3">
+            <span className="h-1.5 w-32 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+              <span className={cn('block h-full rounded-full', p > 90 ? 'bg-signal' : p > 70 ? 'bg-warning' : 'bg-primary')} style={{ width: `${p}%` }} />
+            </span>
+            <Mono>{Math.round((d.usd / BUDGET.daily) * 100)} %</Mono>
+          </span>
+        )
+      },
+    },
+    { key: 'note', header: 'Заметка', cell: (d) => (d.usd / BUDGET.daily >= 0.8 ? <span className="text-warning">письмо о бюджете</span> : <span className="text-muted-foreground">—</span>) },
+  ]
+  return (
+    <>
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'День, например 28.10' }} onReset={q ? () => setQ('') : undefined} count={rows.length} />
+      <DataTable
+        columns={cols}
+        rows={rows}
+        rowKey={(d) => d.day}
+        initialSort={{ key: 'day', dir: 'desc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'day', dir: 'desc', label: 'День: сначала новые' },
+          { key: 'day', dir: 'asc', label: 'День: сначала старые' },
+          { key: 'usd', dir: 'desc', label: 'Расход: сначала больше' },
+          { key: 'usd', dir: 'asc', label: 'Расход: сначала меньше' },
+        ]}
+        empty={{ icon: Coins, title: 'Такого дня нет', text: 'Измените запрос.' }}
+      />
+    </>
+  )
+}
+
 export function AUsage({ go }: ScreenProps) {
+  const [tab, setTab] = useState<'engines' | 'days'>('engines')
   const [period, setPeriod] = useBagState<Period | 'custom'>('a.usagePeriod', 'today')
   const [from, setFrom] = useBagState('a.usageFrom', '')
   const [to, setTo] = useBagState('a.usageTo', '')
@@ -119,24 +173,42 @@ export function AUsage({ go }: ScreenProps) {
         </section>
       </ViewState>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <span className="text-sm text-muted-foreground">Период:</span>
-        <WebSelect
-          value={period}
-          onChange={(v) => setPeriod(v as Period | 'custom')}
-          options={[{ value: 'today', label: 'Сегодня' }, { value: 'week', label: '7 дней' }, { value: 'month', label: 'Этот месяц' }, { value: 'custom', label: 'Свой период' }]}
-          className="w-44"
-        />
-        {period === 'custom' && <PeriodFilter label="Даты" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />}
-      </div>
-      <p className="mb-4 text-[15px]">
-        Фото отправлено движкам: <Mono>{photos.sent.toLocaleString('ru')}</Mono>
-        <span className="text-muted-foreground">
-          {' '}
-          — лимиты: <Mono>30</Mono> на аккаунт, <Mono>10</Mono> на запрос. Все фото потратили аккаунтов: <Mono>{photos.atLimit}</Mono>
-        </span>
-      </p>
-      <DataTable columns={columns} rows={rows} rowKey={(r) => r.id} initialSort={{ key: 'runs', dir: 'desc' }} empty={{ icon: Coins, title: 'За этот период запусков нет', text: 'Выберите другой период.' }} />
+      <AdminTabs<'engines' | 'days'> tabs={[{ id: 'engines', label: 'По движкам', count: rows.length }, { id: 'days', label: 'По дням', count: ALL_DAYS.length }]} value={tab} onChange={setTab} />
+      {tab === 'days' && <DaysTable />}
+      {tab === 'engines' && (
+        <>
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <span className="text-sm text-muted-foreground">Период:</span>
+          <WebSelect
+            value={period}
+            onChange={(v) => setPeriod(v as Period | 'custom')}
+            options={[{ value: 'today', label: 'Сегодня' }, { value: 'week', label: '7 дней' }, { value: 'month', label: 'Этот месяц' }, { value: 'custom', label: 'Свой период' }]}
+            className="w-44"
+          />
+          {period === 'custom' && <PeriodFilter label="Даты" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />}
+        </div>
+        <p className="mb-4 text-[15px]">
+          Фото отправлено движкам: <Mono>{photos.sent.toLocaleString('ru')}</Mono>
+          <span className="text-muted-foreground">
+            {' '}
+            — лимиты: <Mono>30</Mono> на аккаунт, <Mono>10</Mono> на запрос. Все фото потратили аккаунтов: <Mono>{photos.atLimit}</Mono>
+          </span>
+        </p>
+        <DataTable
+          columns={columns}
+          rows={rows}
+          rowKey={(r) => r.id}
+          initialSort={{ key: 'runs', dir: 'desc' }}
+          sortOptions={[
+            { key: 'runs', dir: 'desc', label: 'Запуски: сначала больше' },
+            { key: 'cost', dir: 'desc', label: 'Стоимость: сначала дороже' },
+            { key: 'out', dir: 'desc', label: 'Ошибки: сначала больше' },
+            { key: 'time', dir: 'desc', label: 'Время: сначала дольше' },
+            { key: 'label', dir: 'asc', label: 'Движок: А — Я' },
+          ]}
+          empty={{ icon: Coins, title: 'За этот период запусков нет', text: 'Выберите другой период.' }} />
+        </>
+      )}
     </AdminPage>
   )
 }

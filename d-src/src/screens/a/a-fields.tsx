@@ -7,7 +7,8 @@ import { WebField, WebSelect } from '@/components/web/fields'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
-import { CATALOG, KNOWN_FIELDS, SYN_STATE_LABEL, type CatalogField, type SynState } from '@/lib/data-admin'
+import { KNOWN_FIELDS, SYN_STATE_LABEL, type CatalogField, type SynState } from '@/lib/data-admin'
+import { ALL_CATALOG as CATALOG } from '@/lib/data-admin-53-h'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
 import { AdminPage, AdminTabs, Facts, Mono, Note, SideSheet, useBagState } from './_parts'
@@ -64,7 +65,7 @@ export function AFields({ go }: ScreenProps) {
       sortValue: (f) => f.label,
       cell: (f) => (
         <span className="flex items-baseline gap-2">
-          <span className="truncate font-medium">{f.label}</span>
+          <span className="truncate font-medium" title={f.label}>{f.label}</span>
           <Mono className="text-xs text-muted-foreground">{f.lang}</Mono>
         </span>
       ),
@@ -110,7 +111,7 @@ export function AFields({ go }: ScreenProps) {
         description="Названия полей из подтверждённых документов — без значений. Синоним раскладывает такое поле в известное поле профиля; в инструкцию для ИИ каталог не попадает."
       />
 
-      <div className="mb-6 flex items-end gap-6 rounded-xl border border-border bg-surface px-6 py-4">
+      <div className="mb-5 flex items-end gap-6 rounded-xl border border-border bg-surface px-5 py-3">
         <WebField id="syn-n" label="Подтвердили моряков" className="w-40 shrink-0">
           <WebSelect id="syn-n" value={String(n)} onChange={(v) => setN(Number(v))} options={Array.from({ length: 20 }, (_, i) => String(i + 1))} />
         </WebField>
@@ -139,6 +140,15 @@ export function AFields({ go }: ScreenProps) {
         onRowClick={(f) => (setOpenId(f.id), setTarget(f.target ?? ''))}
         selectedKey={openId ?? undefined}
         initialSort={{ key: 'people', dir: 'desc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'people', dir: 'desc', label: 'Моряков: сначала больше' },
+          { key: 'people', dir: 'asc', label: 'Моряков: сначала меньше' },
+          { key: 'label', dir: 'asc', label: 'Название: А — Я' },
+          { key: 'doc', dir: 'asc', label: 'Документ: А — Я' },
+          { key: 'votes', dir: 'desc', label: 'Подтверждения: сначала больше' },
+          { key: 'state', dir: 'asc', label: 'Синоним: по состоянию' },
+        ]}
         empty={{ icon: Database, title: tab === 'disputed' ? 'Спорных синонимов нет' : 'Полей пока нет', text: 'Названия появятся, когда моряки подтвердят первые документы.' }}
       />
 

@@ -1,13 +1,16 @@
 import { useState, type ReactNode } from 'react'
-import { BookOpen, ChevronRight, Plus } from 'lucide-react'
+import { ArrowDownAZ, ArrowUpAZ, BookOpen, ChevronLeft, ChevronRight, Plus, Search, X } from 'lucide-react'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebInput, WebSelect } from '@/components/web/fields'
-import { FilterBar } from '@/components/web/filter-bar'
+import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
-import { FLEETS, FLEET_TREE, SECONDARY_DEPARTMENTS, type Fleet } from '@/lib/data'
-import { OTHER_ENTRIES, VESSEL_TYPES, type OtherEntry } from '@/lib/data-admin'
+import { FLEETS, SECONDARY_DEPARTMENTS } from '@/lib/data'
+import { type OtherEntry } from '@/lib/data-admin'
+import { ALL_OTHER, ALL_VESSELS, buildTree53 } from '@/lib/data-admin-53-h'
+import { WebDialog } from '@/components/web/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
@@ -15,13 +18,17 @@ import { AdminPage, AdminTabs, CancelButton, Mono, WebMultiSelect, SideSheet, dt
 
 type Tab = 'tree' | 'vessels' | 'other'
 type Tree = Record<string, Record<string, string[]>>
+const TREE53: Tree = buildTree53()
+const VESSEL_TYPES = ALL_VESSELS
+const OTHER_ENTRIES = ALL_OTHER
+const SIZES = [10, 20, 50]
 
 const sortDepts = (ds: string[]) => [...ds.filter((d) => !SECONDARY_DEPARTMENTS.includes(d)).sort(), ...ds.filter((d) => SECONDARY_DEPARTMENTS.includes(d))]
 
 export function ARefs({ go }: ScreenProps) {
   const [others] = useBagState<string[]>('a.otherDone', [])
   const pending = OTHER_ENTRIES.filter((o) => !others.includes(o.id)).length
-  const [tree] = useBagState<Tree>('a.tree', FLEET_TREE as Tree)
+  const [tree] = useBagState<Tree>('a.tree', TREE53)
   const [vessels] = useBagState('a.vessels', VESSEL_TYPES)
   const [tab, setTab] = useBagState<Tab>('a.refsTab', 'tree')
   return (
@@ -46,15 +53,24 @@ export function ARefs({ go }: ScreenProps) {
 // Три колонки, як у виборі на телефоні: флот → департамент → посада.
 function TreeView() {
   const { showToast } = useProto()
-  const [tree, setTree] = useBagState<Tree>('a.tree', FLEET_TREE as Tree)
+  const [tree, setTree] = useBagState<Tree>('a.tree', TREE53)
   const [fleet, setFleet] = useState<string>('Merchant')
   const [dept, setDept] = useState<string>('Engine')
   const [add, setAdd] = useState<'fleet' | 'dept' | 'pos' | null>(null)
   const [name, setName] = useState('')
   const [editPos, setEditPos] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
+  const [pq, setPq] = useState('')
+  const [pdir, setPdir] = useState<'asc' | 'desc'>('asc')
+  const [psize, setPsize] = useState(10)
+  const [ppage, setPpage] = useState(0)
   const depts = sortDepts(Object.keys(tree[fleet] ?? {}))
-  const positions = [...(tree[fleet]?.[dept] ?? [])].sort()
+  const allPos = [...(tree[fleet]?.[dept] ?? [])].sort((a, b) => (pdir === 'asc' ? a.localeCompare(b) : b.localeCompare(a)))
+  const found = pq.trim() ? allPos.filter((p) => p.toLowerCase().includes(pq.trim().toLowerCase())) : allPos
+  const pages = Math.max(1, Math.ceil(found.length / psize))
+  const cur = Math.min(ppage, pages - 1)
+  const positions = found.slice(cur * psize, (cur + 1) * psize)
+  const pick = (f: string, d: string) => (setFleet(f), setDept(d), setPq(''), setPpage(0))
 
   const save = () => {
     const n = name.trim()
@@ -78,22 +94,72 @@ function TreeView() {
 
   return (
     <ViewState loading={<MillerSkeleton />} empty={{ icon: BookOpen, title: 'Справочник пуст', text: 'Добавьте первый флот — затем департаменты и должности в нём.' }}>
-      <div className="grid h-[560px] grid-cols-[1fr_1fr_1.3fr] overflow-hidden rounded-xl border border-border bg-surface">
+      <div className="grid h-[620px] grid-cols-[1fr_1fr_1.4fr] overflow-hidden rounded-xl border border-border bg-surface">
         <MillerCol title="Флот" count={Object.keys(tree).length} onAdd={() => setAdd('fleet')}>
           {Object.keys(tree).map((f) => (
-            <Item key={f} label={f} hint={`${Object.values(tree[f]).flat().length}`} active={f === fleet} chevron onClick={() => (setFleet(f), setDept(sortDepts(Object.keys(tree[f]))[0] ?? ''))} />
+            <Item key={f} label={f} hint={`${Object.values(tree[f]).flat().length}`} active={f === fleet} chevron onClick={() => pick(f, sortDepts(Object.keys(tree[f]))[0] ?? '')} />
           ))}
         </MillerCol>
         <MillerCol title="Департамент" count={depts.length} onAdd={() => setAdd('dept')}>
           {depts.map((d) => (
-            <Item key={d} label={d} hint={`${tree[fleet][d].length}`} active={d === dept} chevron muted={SECONDARY_DEPARTMENTS.includes(d)} onClick={() => setDept(d)} />
+            <Item key={d} label={d} hint={`${tree[fleet][d].length}`} active={d === dept} chevron muted={SECONDARY_DEPARTMENTS.includes(d)} onClick={() => pick(fleet, d)} />
           ))}
         </MillerCol>
-        <MillerCol title="Должность" count={positions.length} onAdd={dept ? () => setAdd('pos') : undefined} last>
+        <MillerCol
+          title="Должность"
+          count={found.length}
+          onAdd={dept ? () => setAdd('pos') : undefined}
+          last
+          toolbar={
+            <div className="flex items-center gap-2 border-b border-border px-3 py-2">
+              <label className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-md border border-border bg-surface px-2.5 focus-within:border-primary">
+                <Search className="size-4 shrink-0 text-muted-foreground" />
+                <input value={pq} onChange={(e) => (setPq(e.target.value), setPpage(0))} placeholder="Найти должность" aria-label="Найти должность" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+                {pq && (
+                  <button type="button" aria-label="Очистить" onClick={() => setPq('')} className="text-muted-foreground">
+                    <X className="size-4" />
+                  </button>
+                )}
+              </label>
+              <Button variant="outline" size="icon" aria-label={pdir === 'asc' ? 'Сортировка: А — Я' : 'Сортировка: Я — А'} title={pdir === 'asc' ? 'Сортировка: А — Я' : 'Сортировка: Я — А'} onClick={() => setPdir(pdir === 'asc' ? 'desc' : 'asc')}>
+                {pdir === 'asc' ? <ArrowDownAZ /> : <ArrowUpAZ />}
+              </Button>
+            </div>
+          }
+          footer={
+            found.length > SIZES[0] ? (
+              <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-2 text-sm">
+                <Select value={String(psize)} onValueChange={(x) => (setPsize(Number(x)), setPpage(0))}>
+                  <SelectTrigger size="sm" aria-label="Сколько строк показывать" className="w-[96px] bg-surface font-mono">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SIZES.map((n) => (
+                      <SelectItem key={n} value={String(n)} className="font-mono">
+                        по {n}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="font-mono text-muted-foreground">
+                  {cur * psize + 1}–{Math.min((cur + 1) * psize, found.length)} из {found.length}
+                </span>
+                <span className="flex">
+                  <button type="button" aria-label="Предыдущая страница" disabled={cur === 0} onClick={() => setPpage(cur - 1)} className="flex size-8 items-center justify-center rounded-md hover:bg-muted disabled:opacity-40 disabled:hover:bg-transparent">
+                    <ChevronLeft className="size-4" />
+                  </button>
+                  <button type="button" aria-label="Следующая страница" disabled={cur === pages - 1} onClick={() => setPpage(cur + 1)} className="flex size-8 items-center justify-center rounded-md hover:bg-muted disabled:opacity-40 disabled:hover:bg-transparent">
+                    <ChevronRight className="size-4" />
+                  </button>
+                </span>
+              </div>
+            ) : undefined
+          }
+        >
           {positions.map((p) => (
             <Item key={p} label={p} onClick={() => (setEditPos(p), setNewName(p))} />
           ))}
-          {!positions.length && <p className="px-5 py-4 text-sm text-muted-foreground">{dept ? 'Должностей пока нет.' : 'Выберите департамент.'}</p>}
+          {!positions.length && <p className="px-5 py-4 text-sm text-muted-foreground">{!dept ? 'Выберите департамент.' : pq ? 'Ничего не найдено. Измените запрос.' : 'Должностей пока нет.'}</p>}
         </MillerCol>
       </div>
       <p className="mt-3 text-sm text-muted-foreground">Вторичные департаменты (Hotel & Entertainment, Other) в приложении стоят в конце списка.</p>
@@ -149,7 +215,7 @@ function TreeView() {
 function MillerSkeleton() {
   const widths = [['w-24', 'w-20', 'w-28', 'w-16', 'w-24'], ['w-20', 'w-16', 'w-24'], ['w-28', 'w-24', 'w-32', 'w-20', 'w-28', 'w-24']]
   return (
-    <div aria-busy="true" aria-label="Загрузка" className="grid h-[560px] grid-cols-[1fr_1fr_1.3fr] overflow-hidden rounded-xl border border-border bg-surface">
+    <div aria-busy="true" aria-label="Загрузка" className="grid h-[620px] grid-cols-[1fr_1fr_1.4fr] overflow-hidden rounded-xl border border-border bg-surface">
       {widths.map((col, i) => (
         <div key={i} className={cn('flex flex-col', i < 2 && 'border-r border-border')}>
           <div className="flex h-12 shrink-0 items-center border-b border-border px-5">
@@ -168,7 +234,7 @@ function MillerSkeleton() {
   )
 }
 
-function MillerCol({ title, count, onAdd, last, children }: { title: string; count: number; onAdd?: () => void; last?: boolean; children: ReactNode }) {
+function MillerCol({ title, count, onAdd, last, toolbar, footer, children }: { title: string; count: number; onAdd?: () => void; last?: boolean; toolbar?: ReactNode; footer?: ReactNode; children: ReactNode }) {
   return (
     <div className={cn('flex min-h-0 flex-col', !last && 'border-r border-border')}>
       <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border pr-2 pl-5">
@@ -181,7 +247,9 @@ function MillerCol({ title, count, onAdd, last, children }: { title: string; cou
           </Button>
         )}
       </div>
+      {toolbar}
       <div className="min-h-0 flex-1 overflow-y-auto py-1">{children}</div>
+      {footer}
     </div>
   )
 }
@@ -232,7 +300,20 @@ function Vessels() {
           <Plus /> Добавить тип
         </Button>
       </FilterBar>
-      <DataTable columns={columns} rows={rows} rowKey={(v) => v.name} onRowClick={(v) => (setEdit(v.name), setVname(v.name))} empty={{ icon: BookOpen, title: 'Типов судов нет', text: 'Добавьте первый тип и выберите, к какому флоту он относится.' }} />
+      <DataTable
+        columns={columns}
+        rows={rows}
+        rowKey={(v) => v.name}
+        pageSizes={SIZES}
+        initialSort={{ key: 'n', dir: 'asc' }}
+        sortOptions={[
+          { key: 'n', dir: 'asc', label: 'Название: А — Я' },
+          { key: 'n', dir: 'desc', label: 'Название: Я — А' },
+          { key: 'j', dir: 'desc', label: 'Вакансии: сначала больше' },
+          { key: 'j', dir: 'asc', label: 'Вакансии: сначала меньше' },
+          { key: 'f', dir: 'asc', label: 'Флот: А — Я' },
+        ]}
+        onRowClick={(v) => (setEdit(v.name), setVname(v.name))} empty={{ icon: BookOpen, title: 'Типов судов нет', text: 'Добавьте первый тип и выберите, к какому флоту он относится.' }} />
       <SideSheet
         open={edit !== null}
         onOpenChange={(v) => !v && setEdit(null)}
@@ -290,7 +371,10 @@ function Others() {
   const [done, setDone] = useBagState<string[]>('a.otherDone', [])
   const [replace, setReplace] = useState<OtherEntry | null>(null)
   const [target, setTarget] = useState('')
-  const rows = OTHER_ENTRIES.filter((o) => !done.includes(o.id))
+  const [q, setQ] = useState('')
+  const [kind, setKind] = useState('')
+  const [reject, setReject] = useState<OtherEntry | null>(null)
+  const rows = OTHER_ENTRIES.filter((o) => !done.includes(o.id)).filter((o) => !kind || o.list === kind).filter((o) => !q.trim() || `${o.text} ${o.context}`.toLowerCase().includes(q.trim().toLowerCase()))
   const finish = (id: string, toast: string) => {
     setDone([...done, id])
     showToast(toast)
@@ -299,7 +383,7 @@ function Others() {
   const options = (o: OtherEntry) => {
     if (o.list === 'Тип судна') return VESSEL_TYPES.map((v) => v.name)
     const [f, d] = o.context.split(' → ')
-    return [...(FLEET_TREE[f as Fleet]?.[d] ?? [])].sort()
+    return [...(TREE53[f]?.[d] ?? [])].sort()
   }
 
   const columns: Column<OtherEntry>[] = [
@@ -315,9 +399,9 @@ function Others() {
         </span>
       ),
     },
-    { key: 'c', header: 'Где', width: '24%', cell: (o) => <span className="text-muted-foreground">{o.context}</span> },
-    { key: 'p', header: 'Моряков', width: '10%', align: 'right', mono: true, sortValue: (o) => o.people, cell: (o) => o.people },
-    { key: 'd', header: 'Впервые', width: '12%', mono: true, sortValue: (o) => o.first, cell: (o) => dt(o.first) },
+    { key: 'c', header: 'Где', width: '31%', sortValue: (o) => o.context, cell: (o) => <span className="text-muted-foreground" title={o.context}>{o.context}</span> },
+    { key: 'p', header: 'Моряков', width: '9%', align: 'right', mono: true, sortValue: (o) => o.people, cell: (o) => o.people },
+    { key: 'd', header: 'Впервые', width: '11%', mono: true, sortValue: (o) => o.first, cell: (o) => dt(o.first) },
     {
       key: 'a',
       header: '',
@@ -330,7 +414,7 @@ function Others() {
           <Button variant="ghost" size="sm" onClick={() => (setReplace(o), setTarget(''))}>
             Заменить
           </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => finish(o.id, `«${o.text}» отклонено`)}>
+          <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setReject(o)}>
             Отклонить
           </Button>
         </span>
@@ -341,7 +425,38 @@ function Others() {
   return (
     <>
       <p className="mb-4 max-w-[720px] text-[15px] text-muted-foreground">Если нужного пункта нет, моряк выбирает «Other» и вписывает своё. Добавьте пункт в справочник или замените на существующий — у моряков значение обновится само.</p>
-      <DataTable columns={columns} rows={rows} rowKey={(o) => o.id} initialSort={{ key: 'p', dir: 'desc' }} empty={{ icon: BookOpen, title: 'Всё разобрано', text: 'Новые «Other» от моряков появятся здесь.' }} />
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Что вписали или где' }} onReset={q || kind ? () => (setQ(''), setKind('')) : undefined} count={rows.length}>
+        <FilterSelect label="Список" value={kind} onChange={setKind} options={['Должность', 'Тип судна']} />
+      </FilterBar>
+      <DataTable
+        columns={columns}
+        rows={rows}
+        rowKey={(o) => o.id}
+        initialSort={{ key: 'p', dir: 'desc' }}
+        pageSizes={SIZES}
+        sortOptions={[
+          { key: 'p', dir: 'desc', label: 'Моряков: сначала больше' },
+          { key: 'p', dir: 'asc', label: 'Моряков: сначала меньше' },
+          { key: 'd', dir: 'desc', label: 'Впервые: сначала новые' },
+          { key: 'd', dir: 'asc', label: 'Впервые: сначала старые' },
+          { key: 't', dir: 'asc', label: 'Текст: А — Я' },
+          { key: 'c', dir: 'asc', label: 'Где: А — Я' },
+        ]}
+        empty={{ icon: BookOpen, title: 'Всё разобрано', text: 'Новые «Other» от моряков появятся здесь.' }} />
+      <WebDialog
+        open={!!reject}
+        onClose={() => setReject(null)}
+        title={`Отклонить «${reject?.text ?? ''}»?`}
+        description={reject ? `У ${reject.people} моряков значение останется как вписано, в справочник оно не попадёт.` : undefined}
+        footer={
+          <>
+            <CancelButton onClick={() => setReject(null)} />
+            <Button variant="destructive" onClick={() => (reject && finish(reject.id, `«${reject.text}» отклонено`), setReject(null))}>
+              Отклонить
+            </Button>
+          </>
+        }
+      />
       <SideSheet
         open={!!replace}
         onOpenChange={(v) => !v && setReplace(null)}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Cpu, History } from 'lucide-react'
+import { Check, Cpu, History } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { DataTable, type Column } from '@/components/web/data-table'
@@ -7,7 +7,8 @@ import { WebField, WebSelect } from '@/components/web/fields'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
-import { ENGINES, ENGINE_CHANGES, ENGINE_STATE_LABEL, POLICY_LABEL, type Engine, type EngineChange, type EngineState } from '@/lib/data-admin'
+import { ENGINES, ENGINE_STATE_LABEL, POLICY_LABEL, type Engine, type EngineChange, type EngineState } from '@/lib/data-admin'
+import { ALL_ENGINE_CHANGES } from '@/lib/data-admin-53-h'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
@@ -20,7 +21,7 @@ const now = () => '2026-11-02 ' + new Date().toTimeString().slice(0, 5)
 const NONE = 'none'
 
 // Лимит выбирается из ряда значений, а не вводится (правило 4); если сохранено другое число, оно тоже в списке.
-function LimitPick({ label, value, onChange, steps, none, unit = '', w = 'w-[100px]' }: { label: string; value: string; onChange: (v: string) => void; steps: number[]; none: string; unit?: string; w?: string }) {
+function LimitPick({ label, value, onChange, steps, none, unit = '', w = 'w-[108px]' }: { label: string; value: string; onChange: (v: string) => void; steps: number[]; none: string; unit?: string; w?: string }) {
   const v = value || NONE
   const all = [...new Set([...steps, ...(value ? [Number(value)] : [])])].sort((a, b) => a - b)
   return (
@@ -51,12 +52,12 @@ function Limits({ e, onSave }: { e: Engine; onSave: (patch: Partial<Engine>, wha
     onSave({ reqLimit: num(req), usdLimit: num(usdL), timeout: num(to) }, what)
   }
   return (
-    <div className="flex items-end gap-2 py-1">
-      <LimitPick label="Запусков" value={req} onChange={setReq} steps={[50, 100, 200, 500, 1000, 2000, 5000]} none="Без лимита" />
-      <LimitPick label="USD" value={usdL} onChange={setUsd} steps={[1, 2, 5, 10, 20, 50, 100]} none="Без лимита" />
-      <LimitPick label="Тайм-аут" value={to} onChange={setTo} steps={[30, 60, 90, 120, 180, 300]} none="Стандарт" unit=" с" w="w-[100px]" />
-      <Button size="sm" variant={dirty ? 'default' : 'outline'} disabled={!dirty} onClick={save}>
-        Сохранить
+    <div className="flex items-end gap-1.5 py-1">
+      <LimitPick label="Запусков" value={req} onChange={setReq} steps={[50, 100, 200, 500, 1000, 2000, 5000]} none="Безлимит" />
+      <LimitPick label="USD" value={usdL} onChange={setUsd} steps={[1, 2, 5, 10, 20, 50, 100]} none="Безлимит" />
+      <LimitPick label="Тайм-аут" value={to} onChange={setTo} steps={[30, 60, 90, 120, 180, 300]} none="Стандарт" unit=" с" w="w-[108px]" />
+      <Button size="sm" variant={dirty ? 'default' : 'outline'} disabled={!dirty} onClick={save} title="Сохранить лимиты" aria-label="Сохранить лимиты">
+        <Check />
       </Button>
     </div>
   )
@@ -65,13 +66,14 @@ function Limits({ e, onSave }: { e: Engine; onSave: (patch: Partial<Engine>, wha
 export function AEngines({ go }: ScreenProps) {
   const { showToast } = useProto()
   const [engines, setEngines] = useBagState<Engine[]>('a.engines', ENGINES)
-  const [log, setLog] = useBagState<EngineChange[]>('a.engineLog', ENGINE_CHANGES)
+  const [log, setLog] = useBagState<EngineChange[]>('a.engineLog', ALL_ENGINE_CHANGES)
   const [docs, setDocs] = useBagState('a.engineDocs', 'claude-sonnet')
   const [blanks, setBlanks] = useBagState('a.engineBlanks', 'gpt-vision')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [eng, setEng] = useState('')
-  const logRows = log.filter((c) => (!eng || c.engine === eng) && inPeriod(c.when, from, to))
+  const [lq, setLq] = useState('')
+  const logRows = log.filter((c) => (!eng || c.engine === eng) && inPeriod(c.when, from, to) && (!lq.trim() || `${c.who} ${c.what}`.toLowerCase().includes(lq.trim().toLowerCase())))
 
   const write = (engine: string, what: string[]) => setLog([...what.map((w, i) => ({ id: `n${Date.now()}${i}`, when: now(), who: 'admin@seafolio.example', engine, what: w })), ...log])
 
@@ -101,22 +103,22 @@ export function AEngines({ go }: ScreenProps) {
     {
       key: 'engine',
       header: 'Движок',
-      width: '19%',
+      width: '20%',
       sortValue: (e) => e.label,
       cell: (e) => (
         <span className="flex flex-col leading-tight">
-          <span className="truncate font-medium">
+          <span className="truncate font-medium" title={e.label}>
             {e.label}
             {(e.id === docs || e.id === blanks) && <span className="ml-2 text-xs font-normal text-primary">{e.id === docs ? 'документы' : 'бланки'}</span>}
           </span>
-          <span className="truncate text-sm text-muted-foreground">{POLICY_LABEL[e.policy]}</span>
+          <span className="truncate text-sm text-muted-foreground" title={POLICY_LABEL[e.policy]}>{POLICY_LABEL[e.policy]}</span>
         </span>
       ),
     },
-    { key: 'state', header: 'Состояние', width: '20%', sortValue: (e) => e.state, cell: (e) => <StatusDot tone={TONE[e.state]}>{ENGINE_STATE_LABEL[e.state]}</StatusDot> },
+    { key: 'state', header: 'Состояние', width: '19%', sortValue: (e) => e.state, cell: (e) => <StatusDot tone={TONE[e.state]}>{ENGINE_STATE_LABEL[e.state]}</StatusDot> },
     {
       key: 'on',
-      header: 'Включён',
+      header: 'Вкл.',
       width: '6%',
       cell: (e) => (
         <Switch
@@ -131,7 +133,7 @@ export function AEngines({ go }: ScreenProps) {
     {
       key: 'today',
       header: 'Сегодня',
-      width: '10%',
+      width: '11%',
       sortValue: (e) => e.runs,
       cell: (e) => (
         <span className="flex flex-col leading-tight">
@@ -147,9 +149,9 @@ export function AEngines({ go }: ScreenProps) {
 
   const logCols: Column<EngineChange>[] = [
     { key: 'when', header: 'Когда', width: '18%', mono: true, sortValue: (c) => c.when, cell: (c) => dt(c.when) },
-    { key: 'who', header: 'Кто', width: '24%', cell: (c) => <span className="text-muted-foreground">{c.who}</span> },
-    { key: 'engine', header: 'Движок', width: '20%', cell: (c) => label(c.engine) },
-    { key: 'what', header: 'Что изменилось', cell: (c) => c.what },
+    { key: 'who', header: 'Кто', width: '24%', sortValue: (c) => c.who, cell: (c) => <span className="text-muted-foreground">{c.who}</span> },
+    { key: 'engine', header: 'Движок', width: '20%', sortValue: (c) => label(c.engine), cell: (c) => label(c.engine) },
+    { key: 'what', header: 'Что изменилось', sortValue: (c) => c.what, cell: (c) => <span title={c.what}>{c.what}</span> },
   ]
 
   return (
@@ -157,7 +159,7 @@ export function AEngines({ go }: ScreenProps) {
       <PageHeader title="Движки распознавания" description="Включайте и выключайте движки и ограничивайте, сколько каждый может сделать за сутки (UTC). Каждое изменение пишется в журнал." />
       <Note className="mb-6">Аварийный выключатель на сервере главнее любого переключателя здесь. Движок без ключа включить нельзя, и ни один переключатель не открывает движку реальные документы.</Note>
 
-      <div className="mb-6 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.3fr)] items-end gap-6 rounded-xl border border-border bg-surface px-6 py-5">
+      <div className="mb-6 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.3fr)] items-end gap-6 rounded-xl border border-border bg-surface px-5 py-4">
         <WebField id="eng-docs" label="По умолчанию для документов">
           <WebSelect id="eng-docs" value={docs} onChange={(v) => pickDefault('docs', v)} options={opts(false)} />
         </WebField>
@@ -167,14 +169,35 @@ export function AEngines({ go }: ScreenProps) {
         <p className="pb-1 text-sm text-muted-foreground">Документы моряков читает первый, если моряк не выбрал другой. Бланки агентств — второй, остальные включённые идут запасными.</p>
       </div>
 
-      <DataTable columns={columns} rows={engines} rowKey={(e) => e.id} empty={{ icon: Cpu, title: 'Движков нет', text: 'Подключённые движки появятся здесь после настройки ключей на сервере.' }} />
+      <DataTable
+        columns={columns}
+        rows={engines}
+        rowKey={(e) => e.id}
+        sortOptions={[
+          { key: 'engine', dir: 'asc', label: 'Движок: А — Я' },
+          { key: 'today', dir: 'desc', label: 'Запуски сегодня: сначала больше' },
+          { key: 'state', dir: 'asc', label: 'Состояние' },
+        ]}
+        empty={{ icon: Cpu, title: 'Движков нет', text: 'Подключённые движки появятся здесь после настройки ключей на сервере.' }} />
 
       <SectionTitle>Журнал изменений</SectionTitle>
-      <FilterBar onReset={from || to || eng ? () => (setFrom(''), setTo(''), setEng('')) : undefined} count={logRows.length}>
+      <FilterBar search={{ value: lq, onChange: setLq, placeholder: 'Кто или что изменилось' }} onReset={from || to || eng || lq ? () => (setFrom(''), setTo(''), setEng(''), setLq('')) : undefined} count={logRows.length}>
         <FilterSelect label="Движок" value={eng} onChange={setEng} options={engines.map((e) => ({ value: e.id, label: e.label }))} />
         <PeriodFilter label="Когда" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
       </FilterBar>
-      <DataTable columns={logCols} rows={logRows} rowKey={(c) => c.id} initialSort={{ key: 'when', dir: 'desc' }} empty={{ icon: History, title: 'Изменений пока нет', text: 'Здесь появится, кто и когда менял движки и лимиты.' }} />
+      <DataTable
+        columns={logCols}
+        rows={logRows}
+        rowKey={(c) => c.id}
+        initialSort={{ key: 'when', dir: 'desc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'when', dir: 'desc', label: 'Когда: сначала новые' },
+          { key: 'when', dir: 'asc', label: 'Когда: сначала старые' },
+          { key: 'who', dir: 'asc', label: 'Кто: А — Я' },
+          { key: 'engine', dir: 'asc', label: 'Движок: А — Я' },
+        ]}
+        empty={{ icon: History, title: 'Изменений пока нет', text: 'Здесь появится, кто и когда менял движки и лимиты.' }} />
     </AdminPage>
   )
 }
