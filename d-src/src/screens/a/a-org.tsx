@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BadgeCheck, Building2, Lock } from 'lucide-react'
+import { BadgeCheck, Building2, Lock, ShieldCheck } from 'lucide-react'
 import { Paper } from '@/components/app/paper'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
@@ -8,16 +8,15 @@ import { WebField, WebTextarea } from '@/components/web/fields'
 import { PageHeader } from '@/components/web/page-header'
 import { OrgStatusDot } from '@/components/web/status-badge'
 import { orgDetail, type OrgStatus } from '@/lib/data-admin'
+import { VERIFY_REQS } from '@/lib/data-admin-2'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
 import { useOrgStatuses } from './a-orgs'
-import { AdminPage, CancelButton, Facts, Mono, Note, SectionTitle, SideSheet, dt, useBagState } from './_parts'
+import { AdminPage, CancelButton, DocList, Facts, Mono, Note, SectionTitle, SideSheet, dt, useBagState } from './_parts'
 
-type Act = 'verify' | 'reject' | 'block' | 'unblock' | null
+type Act = 'block' | 'unblock' | null
 
 const ACT: Record<Exclude<Act, null>, { title: string; text: string; button: string; to: OrgStatus; toast: string; reason?: boolean }> = {
-  verify: { title: 'Подтвердить организацию?', text: 'Её рекрутеры смогут приглашать моряков. Владельцу придёт письмо.', button: 'Подтвердить', to: 'verified', toast: 'Организация подтверждена' },
-  reject: { title: 'Отклонить заявку?', text: 'Кабинет останется, но приглашать моряков организация не сможет. Причину увидит владелец.', button: 'Отклонить', to: 'rejected', toast: 'Заявка отклонена', reason: true },
   block: { title: 'Заблокировать организацию?', text: 'Все её рекрутеры потеряют доступ к кабинету, вакансии снимутся с публикации.', button: 'Заблокировать', to: 'blocked', toast: 'Организация заблокирована', reason: true },
   unblock: { title: 'Разблокировать организацию?', text: 'Рекрутеры снова войдут в кабинет. Вакансии нужно будет опубликовать заново.', button: 'Разблокировать', to: 'verified', toast: 'Организация разблокирована' },
 }
@@ -25,12 +24,20 @@ const ACT: Record<Exclude<Act, null>, { title: string; text: string; button: str
 export function AOrg({ go }: ScreenProps) {
   const { showToast } = useProto()
   const [id] = useBagState('a.org', 'org-mc')
+  const [, setVerifySel] = useBagState('a2.verifySel', '')
   const [over, setOver] = useOrgStatuses()
   const o = orgDetail(id)
   const status = over[o.id] ?? o.status
   const [act, setAct] = useState<Act>(null)
   const [reason, setReason] = useState('')
   const a = act ? ACT[act] : null
+  const docs = VERIFY_REQS.filter((r) => r.orgId === o.id).flatMap((r) => r.docs)
+  // подтверждение и отказ живут только на «Верификации»; здесь — ссылка на заявку
+  const req = VERIFY_REQS.find((r) => r.orgId === o.id && (r.state === 'pending' || status === 'rejected'))
+  const toVerify = () => {
+    if (req) setVerifySel(req.id)
+    go('a2-verify')
+  }
 
   const apply = () => {
     if (!a) return
@@ -75,6 +82,13 @@ export function AOrg({ go }: ScreenProps) {
               <p className="mt-5 border-t border-border pt-4 text-[15px]">{o.about}</p>
             </Paper>
 
+            {docs.length > 0 && (
+              <>
+                <SectionTitle>Документы компании</SectionTitle>
+                <DocList docs={docs} onOpen={(d) => showToast(`Просмотр ${d.name} записан в журнал`)} />
+              </>
+            )}
+
             <SectionTitle aside={<span className="text-sm text-muted-foreground">вакансий: <Mono>{o.jobs}</Mono></span>}>Участники</SectionTitle>
             <DataTable
               ignoreView
@@ -92,16 +106,11 @@ export function AOrg({ go }: ScreenProps) {
           <aside className="sticky top-0 flex flex-col gap-4 rounded-xl border border-border bg-surface p-6">
             {status === 'pending' && (
               <>
-                <h2 className="text-lg font-semibold">Проверка</h2>
-                <p className="text-[15px] text-muted-foreground">Сверьте название и номер с реестром страны. Пока организация не подтверждена, её рекрутеры не могут приглашать моряков.</p>
-                <div className="flex flex-col gap-2 pt-2">
-                  <Button size="lg" onClick={() => setAct('verify')}>
-                    <BadgeCheck /> Подтвердить
-                  </Button>
-                  <Button variant="outline" size="lg" onClick={() => setAct('reject')}>
-                    Отклонить
-                  </Button>
-                </div>
+                <h2 className="text-lg font-semibold">Ждёт проверки</h2>
+                <p className="text-[15px] text-muted-foreground">Пока организация не подтверждена, её рекрутеры не могут приглашать моряков. Документы и решение — на странице «Верификация».</p>
+                <Button size="lg" className="mt-2" onClick={toVerify}>
+                  <ShieldCheck /> Открыть проверку
+                </Button>
               </>
             )}
             {status === 'verified' && (
@@ -127,8 +136,8 @@ export function AOrg({ go }: ScreenProps) {
               <>
                 <h2 className="text-lg font-semibold">Заявка отклонена</h2>
                 <p className="text-[15px] text-muted-foreground">Владелец может исправить данные и отправить заявку снова.</p>
-                <Button variant="outline" className="mt-2" onClick={() => setAct('verify')}>
-                  Всё-таки подтвердить
+                <Button variant="outline" className="mt-2" onClick={toVerify}>
+                  Открыть заявку
                 </Button>
               </>
             )}
@@ -159,16 +168,6 @@ export function AOrg({ go }: ScreenProps) {
           </>
         }
       >
-        {act === 'verify' && (
-          <Facts
-            items={[
-              ['Название', o.name],
-              ['Регистрационный номер', <Mono key="r">{o.regNumber}</Mono>],
-              ['Страна', o.country],
-              ['Сайт', o.site],
-            ]}
-          />
-        )}
         {a?.reason && (
           <WebField id="org-reason" label="Причина" hint="Владелец увидит её в письме.">
             <WebTextarea id="org-reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Например: номер не найден в реестре" />

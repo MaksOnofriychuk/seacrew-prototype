@@ -1,16 +1,16 @@
 import { useState } from 'react'
-import { BadgeCheck, Check, FileText, ShieldCheck } from 'lucide-react'
+import { BadgeCheck, Check, ShieldCheck, Undo2 } from 'lucide-react'
 import { EmptyState, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { WebCheckbox, WebField, WebTextarea } from '@/components/web/fields'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
 import { LEVELS, LEVEL_CHECKS, VERIFY_REQS, VERIFY_STATE_LABEL, type VerifyReq, type VerifyState } from '@/lib/data-admin-2'
 import type { OrgStatus } from '@/lib/data-web'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { AdminPage, CancelButton, Mono, Note, SectionTitle, SideSheet, dt, useBagState } from '../a/_parts'
+import { AdminPage, AdminTabs, CancelButton, DocList, Mono, Note, SectionTitle, SideSheet, dt, useBagState } from '../a/_parts'
 import { Sample } from './_parts'
 
 const TONE: Record<VerifyState, Tone> = { pending: 'warning', approved: 'success', rejected: 'muted' }
@@ -53,8 +53,10 @@ export function A2Verify({ go }: ScreenProps) {
   const [dec, setDec] = useBagState<Record<string, Decision>>('a2.verify', {})
   const [orgStatus, setOrgStatus] = useBagState<Record<string, OrgStatus>>('a.orgStatus', {})
   const [, setOrg] = useBagState('a.org', 'org-mc')
-  const [tab, setTab] = useState<Tab>('pending')
-  const [selId, setSelId] = useState<string>('vr-29')
+  const [selBag, setSelBag] = useBagState('a2.verifySel', '')
+  const [tab, setTab] = useState<Tab>(() => VERIFY_REQS.find((r) => r.id === selBag)?.state ?? 'pending')
+  const selId = selBag || 'vr-29'
+  const setSelId = setSelBag
   const [checked, setChecked] = useState<Record<string, boolean[]>>({})
   const [rejecting, setRejecting] = useState(false)
   const [reason, setReason] = useState('')
@@ -81,7 +83,7 @@ export function A2Verify({ go }: ScreenProps) {
   }
 
   return (
-    <AdminPage active="a-orgs" go={go}>
+    <AdminPage active="a2-verify" go={go}>
       <PageHeader
         title="Верификация компаний"
         description="Компания сама просит следующий уровень и прикладывает документы. Уровень открывает ей новые возможности, а морякам показывает, насколько ей можно доверять."
@@ -91,7 +93,7 @@ export function A2Verify({ go }: ScreenProps) {
           </span>
         }
       />
-      <PageTabs<Tab>
+      <AdminTabs<Tab>
         tabs={[
           { id: 'pending', label: 'Ждут проверки', count: reqs.filter((r) => r.state === 'pending').length },
           { id: 'approved', label: 'Подтверждённые', count: reqs.filter((r) => r.state === 'approved').length },
@@ -159,24 +161,8 @@ export function A2Verify({ go }: ScreenProps) {
 
               <LevelLadder current={sel.state === 'approved' ? sel.level : sel.current} asked={sel.level} />
 
-              <SectionTitle aside={<span className="text-sm text-muted-foreground">файлы видны только по кнопке, просмотр пишется в журнал</span>}>Документы компании</SectionTitle>
-              <div className="overflow-hidden rounded-xl border border-border bg-surface">
-                {sel.docs.map((d) => (
-                  <div key={d.name} className="flex items-center gap-4 border-t border-border px-4 py-3 first:border-t-0">
-                    <FileText className="size-5 shrink-0 text-muted-foreground" />
-                    <span className="flex min-w-0 flex-1 flex-col leading-tight">
-                      <span className="truncate font-medium">{d.type}</span>
-                      <span className="truncate text-sm text-muted-foreground">
-                        <Mono>{d.name}</Mono>, <Mono>{d.pages}</Mono> стр., <Mono>{d.size}</Mono>
-                      </span>
-                    </span>
-                    <Mono className="shrink-0 text-sm text-muted-foreground">{dt(d.uploaded)}</Mono>
-                    <Button variant="outline" size="sm" onClick={() => showToast(`${d.name} открыт, просмотр записан в журнал`)}>
-                      Открыть
-                    </Button>
-                  </div>
-                ))}
-              </div>
+              <SectionTitle aside={<span className="text-sm text-muted-foreground">просмотр файла пишется в журнал</span>}>Документы компании</SectionTitle>
+              <DocList docs={sel.docs} onOpen={(d) => showToast(`Просмотр ${d.name} записан в журнал`)} />
               {sel.comment && (
                 <Note className="mt-4">
                   Комментарий компании: {sel.comment}
@@ -211,7 +197,8 @@ export function A2Verify({ go }: ScreenProps) {
                   </div>
                 </>
               ) : (
-                <Note tone={sel.state === 'rejected' ? 'error' : 'muted'} className="mt-6">
+                <div className="mt-6 flex items-start gap-4">
+                <Note tone={sel.state === 'rejected' ? 'error' : 'muted'} className="flex-1">
                   {sel.state === 'approved' ? (
                     <>
                       Уровень {sel.level} подтверждён <Mono>{dt(sel.decidedAt ?? '')}</Mono>.
@@ -222,6 +209,12 @@ export function A2Verify({ go }: ScreenProps) {
                     </>
                   )}
                 </Note>
+                {sel.state === 'rejected' && (
+                  <Button variant="outline" onClick={() => (setDec({ ...dec, [sel.id]: { state: 'pending', decidedAt: now() } }), sel.level === 1 && setOrgStatus({ ...orgStatus, [sel.orgId]: 'pending' }), setTab('pending'), showToast('Заявка снова ждёт проверки'))}>
+                    <Undo2 /> Пересмотреть
+                  </Button>
+                )}
+                </div>
               )}
             </section>
           </div>
@@ -242,7 +235,7 @@ export function A2Verify({ go }: ScreenProps) {
           </>
         }
       >
-        <WebField id="vr-reason" label="Причина">
+        <WebField id="vr-reason" label="Причина" hint="Владелец увидит её в письме.">
           <WebTextarea id="vr-reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Например: лицензия просрочена, пришлите действующую" />
         </WebField>
       </SideSheet>

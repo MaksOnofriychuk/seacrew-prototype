@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { Building2 } from 'lucide-react'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { FilterBar } from '@/components/web/filter-bar'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { PageHeader } from '@/components/web/page-header'
 import { OrgStatusDot } from '@/components/web/status-badge'
 import { ADMIN_ORGS, type AdminOrg, type OrgStatus } from '@/lib/data-web'
 import { orgDetail } from '@/lib/data-admin'
 import type { ScreenProps } from '../types'
-import { AdminPage, dt, useBagState } from './_parts'
+import { VERIFY_REQS } from '@/lib/data-admin-2'
+import { AdminPage, AdminTabs, dt, useBagState } from './_parts'
 
 type Tab = 'pending' | 'verified' | 'all'
 
@@ -19,6 +20,7 @@ export function useOrgStatuses() {
 export function AOrgs({ go }: ScreenProps) {
   const [over] = useOrgStatuses()
   const [, setSel] = useBagState('a.org', 'org-mc')
+  const [, setVerifySel] = useBagState('a2.verifySel', '')
   const [tab, setTab] = useState<Tab>('pending')
   const [q, setQ] = useState('')
   const orgs = ADMIN_ORGS.map((o) => ({ ...o, status: over[o.id] ?? o.status }))
@@ -30,6 +32,13 @@ export function AOrgs({ go }: ScreenProps) {
   const open = (o: AdminOrg) => {
     setSel(o.id)
     go('a-org')
+  }
+  // заявка на проверку разбирается в одном месте — на «Верификации»
+  const check = (o: AdminOrg) => {
+    const req = VERIFY_REQS.find((r) => r.orgId === o.id && r.state === 'pending')
+    if (!req) return open(o)
+    setVerifySel(req.id)
+    go('a2-verify')
   }
 
   const columns: Column<AdminOrg>[] = [
@@ -64,7 +73,7 @@ export function AOrgs({ go }: ScreenProps) {
         title="Организации"
         description="Рекрутеры регистрируются сами. Приглашать моряков организация может только после вашей проверки — остальной кабинет работает и без неё."
       />
-      <PageTabs<Tab>
+      <AdminTabs<Tab>
         tabs={[
           { id: 'pending', label: 'Ждут проверки', count: pending.length },
           { id: 'verified', label: 'Проверенные', count: orgs.filter((o) => o.status === 'verified').length },
@@ -78,7 +87,7 @@ export function AOrgs({ go }: ScreenProps) {
         columns={columns}
         rows={rows}
         rowKey={(o) => o.id}
-        onRowClick={open}
+        onRowClick={(o) => (o.status === 'pending' ? check(o) : open(o))}
         initialSort={{ key: 'created', dir: 'desc' }}
         empty={
           tab === 'pending' && !q
