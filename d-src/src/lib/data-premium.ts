@@ -176,3 +176,29 @@ export const REPLIES: Record<string, Reply[]> = {
     { av: 'ИБ', name: 'Ирина Бондарь', rank: '2nd Officer', time: '3 д', text: 'Сначала Basic Oil and Chemical Tanker, потом ищите агентство, которое берёт с курсом, но без стажа на танкерах.', likes: 3 },
   ],
 }
+
+/* ---------- обсуждения: полноценный раздел (правка №43) ---------- */
+
+export const TOPIC_SECTIONS = ['Порты', 'Документы', 'Новичкам', 'Карьера'] as const
+export type TopicSection = (typeof TOPIC_SECTIONS)[number]
+
+// Тема моряка: свои темы ('Вы') со статусом модерации, фото — подпись к рисунку-заглушке.
+export type GroupTopic = Topic & { status?: 'review' | 'published'; mine?: boolean; photo?: string }
+
+// Фото к темам из примера (рисунок-заглушка, подпись под ним).
+export const TOPIC_PHOTOS: Record<string, string> = { t1: 'Причал у Maasboulevard, как его видно с воды' }
+
+// Какая реплика отмечена автором как решение (индекс в списке), уже в примере.
+export const TOPIC_SOLVED: Record<string, number> = { t3: 0, m1: 0 }
+
+export const MY_TOPICS_SEED: GroupTopic[] = [
+  { id: 'm1', title: 'Какие сертификаты нужны для работы на газовозе?', text: 'Хочу перейти на газовозы со стороны танкеров. Нужны отдельные курсы до подачи или их оплачивает компания?', author: 'Вы', av: 'Я', replies: 2, last: '2 д', tag: 'Карьера', status: 'published', mine: true },
+  { id: 'm2', title: 'Где в Одессе быстро сделать медицинскую книжку?', text: 'Нужна справка за неделю до вылета. Подскажите клинику, которую принимает большинство агентств.', author: 'Вы', av: 'Я', replies: 0, last: 'сейчас', tag: 'Документы', status: 'review', mine: true },
+]
+
+export const MY_REPLIES: Record<string, Reply[]> = {
+  m1: [
+    { av: 'ИБ', name: 'Ирина Бондарь', rank: '2nd Officer', time: '2 д', text: 'Курс Basic Gas Tanker обычно оплачиваете сами, но часть компаний возвращает деньги после первого контракта.', likes: 4 },
+    { av: 'ОК', name: 'Олег Коваленко', rank: 'Master', time: '1 д', text: 'Спросите в агентстве до курса: у некоторых есть свои учебные центры со скидкой.', likes: 2 },
+  ],
+}

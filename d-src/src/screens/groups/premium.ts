@@ -2,7 +2,9 @@ import { defineGroups } from '../types'
 import { PrAnalytics } from '../pr/pr-analytics'
 import { PrCompare } from '../pr/pr-compare'
 import { PrFollow, PrFollowing } from '../pr/pr-follow'
-import { PrGroup, PrGroups } from '../pr/pr-groups'
+import { PrGroupNew } from '../pr/pr-group-new'
+import { PrGroup } from '../pr/pr-group-topic'
+import { PrGroups, PrGroupsMine } from '../pr/pr-groups'
 import { PrInvite, PrPromo } from '../pr/pr-invite'
 import { PrLock, PrLockAlerts, PrLockCompare, PrLockSearches } from '../pr/pr-lock'
 import { PrPaywall } from '../pr/pr-paywall'
@@ -43,6 +45,8 @@ export const groups = defineGroups('mobile', [
       { id: 'pr-follow', title: 'Профиль моряка · Подписаться', Component: PrFollow },
       { id: 'pr-following', title: 'Подписки', Component: PrFollowing },
       { id: 'pr-groups', title: 'Обсуждения (скоро)', Component: PrGroups },
+      { id: 'pr-groups-mine', title: 'Обсуждения · Мои темы', Component: PrGroupsMine },
+      { id: 'pr-group-new', title: 'Обсуждения · Новая тема', Component: PrGroupNew },
       { id: 'pr-group', title: 'Обсуждения · Тема', Component: PrGroup },
     ],
   },
