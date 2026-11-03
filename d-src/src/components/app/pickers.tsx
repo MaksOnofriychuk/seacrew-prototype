@@ -157,7 +157,10 @@ function Wheel({ label, items, value, onChange, mono }: { label: string; items: 
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       <span className="mb-2 text-center text-sm text-muted-foreground">{label}</span>
-      <div ref={ref} role="listbox" aria-label={label} onScroll={settle} className="h-56 snap-y snap-mandatory overflow-y-auto overscroll-contain rounded-xl border border-border py-[88px]">
+      {/* Рамка — на обгортці, а згасання — лише на списку: порожнє місце над першим рядком стає м'яким переходом. */}
+      <div className="relative overflow-hidden rounded-xl border border-border bg-surface">
+        <span aria-hidden="true" className="pointer-events-none absolute inset-x-2 top-1/2 h-12 -translate-y-1/2 rounded-lg bg-primary/10" />
+      <div ref={ref} role="listbox" aria-label={label} onScroll={settle} className="relative h-44 snap-y snap-mandatory overflow-y-auto overscroll-contain py-16 [mask-image:linear-gradient(to_bottom,transparent,black_30%,black_70%,transparent)]">
         {items.map((it) => {
           const on = it.v === value
           return (
@@ -172,7 +175,7 @@ function Wheel({ label, items, value, onChange, mono }: { label: string; items: 
               className={cn(
                 'flex h-12 w-full snap-center items-center justify-center text-base transition-colors outline-none',
                 mono && 'font-mono',
-                on ? 'bg-primary/10 font-semibold text-primary' : 'text-foreground',
+                on ? 'font-semibold text-primary' : 'text-foreground',
                 it.off && 'text-muted-foreground/40',
               )}
             >
@@ -180,6 +183,7 @@ function Wheel({ label, items, value, onChange, mono }: { label: string; items: 
             </button>
           )
         })}
+      </div>
       </div>
     </div>
   )
@@ -673,7 +677,35 @@ export function NumberPick({
           </Button>
         }
       >
-        <Wheel label={unit ?? title} mono value={draft} items={items} onChange={setDraft} />
+        {items.length <= 16 ? (
+          // Короткий список — сітка кнопок замість барабана: без порожнього місця над першим рядком.
+          <div className="flex flex-col gap-2">
+            {unit && <span className="text-center text-sm text-muted-foreground">{unit}</span>}
+            <div role="listbox" aria-label={unit ?? title} className="grid grid-cols-4 gap-2">
+              {items.map((it) => {
+                const on = it.v === draft
+                return (
+                  <button
+                    key={it.v}
+                    type="button"
+                    role="option"
+                    aria-selected={on}
+                    onClick={() => setDraft(it.v)}
+                    className={cn(
+                      'flex h-12 items-center justify-center rounded-lg border text-base transition-colors active:scale-[0.98]',
+                      it.v === 0 ? 'col-span-2' : 'font-mono',
+                      on ? 'border-primary bg-primary/10 font-semibold text-primary' : 'border-border text-foreground',
+                    )}
+                  >
+                    {it.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ) : (
+          <Wheel label={unit ?? title} mono value={draft} items={items} onChange={setDraft} />
+        )}
       </BottomSheet>
     </>
   )
