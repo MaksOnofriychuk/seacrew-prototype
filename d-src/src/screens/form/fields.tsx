@@ -219,7 +219,7 @@ export function QuestionField({
       {q.proof && st.proof[q.id] && <Attached p={st.proof[q.id]} onRemove={() => st.setProof(q.id, null)} />}
 
       {/* единственный зарезервированный ряд — здесь, в раскрытом блоке (правка №9) */}
-      <FieldMsg error={err} note={detail} />
+      <FieldMsg error={choice ? null : err} note={detail} />
       <div className="flex gap-3">
         <Button type="button" variant="outline" className="h-11 flex-1 text-[15px]" onClick={cancel}>
           Отмена

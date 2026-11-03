@@ -144,3 +144,16 @@ input:autofill {
 [data-phone] *::-webkit-scrollbar {
   display: none;
 }
+
+/* Поле, до якого перейшли («Продолжить» з порожнім полем, «Пропущенные поля»): м'яке тло, що згасає, — без обводки
+   (перевірка прототипу 03.11, №48). */
+@keyframes field-flash {
+  0%, 35% { background-color: color-mix(in oklab, var(--warning) 14%, transparent); }
+  100% { background-color: transparent; }
+}
+.field-flash {
+  animation: field-flash 1.4s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .field-flash { animation: none; }
+}

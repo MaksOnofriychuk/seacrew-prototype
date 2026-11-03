@@ -357,9 +357,10 @@ function MissingSheet({ step, go, close }: { step: number; go: (id: string) => v
       const el = document.getElementById(id)
       if (!el) return
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      const hl = ['outline-2', 'outline-offset-4', 'outline-warning', 'rounded-md']
-      el.classList.add(...hl)
-      window.setTimeout(() => el.classList.remove(...hl), 1600)
+      el.classList.remove('field-flash')
+      void el.offsetWidth
+      el.classList.add('field-flash')
+      window.setTimeout(() => el.classList.remove('field-flash'), 1500)
     }, 260)
   }
   return (
