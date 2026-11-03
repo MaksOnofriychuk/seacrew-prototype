@@ -1,0 +1,67 @@
+/* Оформление кабинета рекрутера (правка №52, п. 11). Только веб рекрутера: переменные ставятся атрибутами
+   на корень WebShell (и на контейнер окон внутри браузерной рамки) — мобильное приложение и админка не затронуты.
+   data-rweb-acc  — цвет-акцент; data-rweb-full — готовая тема целиком (перекрывает акцент);
+   data-rweb-font / -size / -dens — шрифт, размер текста, плотность таблиц. */
+
+/* цифры моноширинным шрифтом поверх Inter */
+@font-face {
+  font-family: "Inter Digits";
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2") format("woff2");
+  unicode-range: U+0030-0039;
+}
+
+/* ---------- шрифт ---------- */
+[data-rweb-font="system"] { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+[data-rweb-font="digits"] { font-family: "Inter Digits", "Inter", system-ui, sans-serif; }
+
+/* ---------- размер текста: меняем шкалу Tailwind внутри кабинета ---------- */
+[data-rweb-size="sm"] { --text-xs: 0.6875rem; --text-sm: 0.8125rem; --text-base: 0.9375rem; --text-lg: 1.0625rem; --text-xl: 1.1875rem; --text-2xl: 1.375rem; }
+[data-rweb-size="lg"] { --text-xs: 0.8125rem; --text-sm: 0.9375rem; --text-base: 1.0625rem; --text-lg: 1.1875rem; --text-xl: 1.3125rem; --text-2xl: 1.5625rem; }
+
+/* ---------- плотность таблиц ---------- */
+[data-rweb-dens="compact"] table td { height: 2.5rem; padding-block: 0.125rem; }
+[data-rweb-dens="compact"] table th { height: 2.25rem; }
+[data-rweb-dens="roomy"] table td { height: 4.25rem; padding-block: 0.75rem; }
+[data-rweb-dens="roomy"] table th { height: 3rem; }
+
+/* ---------- цвета-акценты ---------- */
+[data-rweb-acc="emerald"] { --primary: #047857; --primary-foreground: #FFFFFF; --hero: color-mix(in srgb, var(--primary) 6%, var(--background)); --chart-line: color-mix(in srgb, var(--primary) 14%, var(--hero)); }
+.dark [data-rweb-acc="emerald"] { --primary: #34D399; --primary-foreground: #04140E; --hero: var(--card); --chart-line: var(--border); }
+
+[data-rweb-acc="amber"] { --primary: #B45309; --primary-foreground: #FFFFFF; --hero: color-mix(in srgb, var(--primary) 6%, var(--background)); --chart-line: color-mix(in srgb, var(--primary) 14%, var(--hero)); }
+.dark [data-rweb-acc="amber"] { --primary: #F2B84B; --primary-foreground: #1A1205; --hero: var(--card); --chart-line: var(--border); }
+
+[data-rweb-acc="violet"] { --primary: #6D28D9; --primary-foreground: #FFFFFF; --hero: color-mix(in srgb, var(--primary) 6%, var(--background)); --chart-line: color-mix(in srgb, var(--primary) 14%, var(--hero)); }
+.dark [data-rweb-acc="violet"] { --primary: #A78BFA; --primary-foreground: #120B24; --hero: var(--card); --chart-line: var(--border); }
+
+[data-rweb-acc="coral"] { --primary: #C23B52; --primary-foreground: #FFFFFF; --hero: color-mix(in srgb, var(--primary) 6%, var(--background)); --chart-line: color-mix(in srgb, var(--primary) 14%, var(--hero)); }
+.dark [data-rweb-acc="coral"] { --primary: #F58A94; --primary-foreground: #1F0A0E; --hero: var(--card); --chart-line: var(--border); }
+
+[data-rweb-acc="graphite"] { --primary: #334155; --primary-foreground: #FFFFFF; --hero: color-mix(in srgb, var(--primary) 6%, var(--background)); --chart-line: color-mix(in srgb, var(--primary) 14%, var(--hero)); }
+.dark [data-rweb-acc="graphite"] { --primary: #CBD5E1; --primary-foreground: #0F172A; --hero: var(--card); --chart-line: var(--border); }
+
+/* ---------- готовые темы целиком ---------- */
+/* Океан — глубокий синий, тёмная */
+[data-rweb-full="ocean"] {
+  --background: #06192E; --card: #0C2745; --surface: #06192E; --muted: #0C2745; --border: #1B3C63;
+  --foreground: #E4EFFA; --muted-foreground: #8FA9C4; --primary: #4FB3E8; --primary-foreground: #04121F;
+  --signal: #F59A5B; --success: #4CC38A; --warning: #E2B341; --hero: var(--card); --chart-line: var(--border);
+  color-scheme: dark;
+}
+/* Ночная вахта — чёрная с янтарным, тёмная */
+[data-rweb-full="night"] {
+  --background: #050505; --card: #121212; --surface: #0A0A0A; --muted: #151515; --border: #2A2A2A;
+  --foreground: #ECE7DD; --muted-foreground: #9A9488; --primary: #F2A33A; --primary-foreground: #120B00;
+  --signal: #F08A4B; --success: #6FCF97; --warning: #E2B341; --hero: var(--card); --chart-line: var(--border);
+  color-scheme: dark;
+}
+/* Палуба — тёплая светлая */
+[data-rweb-full="deck"] {
+  --background: #F6F1E7; --card: #FFFDF8; --surface: #FFFDF8; --muted: #EFE8D8; --border: #E3D9C3;
+  --foreground: #2B2118; --muted-foreground: #766653; --primary: #24586B; --primary-foreground: #FFFFFF;
+  --signal: #B93815; --success: #2F7A45; --warning: #946000;
+  --hero: color-mix(in srgb, var(--primary) 6%, var(--background)); --chart-line: color-mix(in srgb, var(--primary) 14%, var(--hero));
+  color-scheme: light;
+}

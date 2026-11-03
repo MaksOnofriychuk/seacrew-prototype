@@ -1,4 +1,4 @@
-import { useState, type ComponentType, type ReactNode } from 'react'
+import { useEffect, useState, type ComponentType, type ReactNode } from 'react'
 import {
   BadgeCheck,
   Bell,
@@ -29,11 +29,13 @@ import {
 import { A_USERS } from '@/lib/data-admin'
 import { Wordmark } from '@/components/app/chrome'
 import { ADMIN_ORGS, ME_ADMIN, ME_RECRUITER, RECRUITER_ORG, RECRUITER_ROLE_LABEL } from '@/lib/data-web'
+import { usePhonePortal } from '@/lib/phone-portal'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import { useNavCounts, type NavCountKey } from './nav-counts'
 import { useOutside } from './web-pickers'
 import { WebAvatar } from './status-badge'
+import { themeAttrs, usePrefs } from './web-prefs'
 
 // Каркас вебу: ліва навігація, верхня панель (організація, пошук, користувач), область контенту.
 // Два варіанти: кабінет рекрутера і адмінка. Пункт навігації веде на екран з тим самим id (go(item.id)) —
@@ -216,6 +218,17 @@ export function WebShell({
   const items = nav ?? (variant === 'recruiter' ? RECRUITER_NAV : ADMIN_NAV)
   const recruiter = variant === 'recruiter'
   const counts = useNavCounts()
+  // Оформление кабинета рекрутера (Настройки): data-атрибуты на корне и на контейнере окон внутри рамки браузера.
+  const { prefs } = usePrefs()
+  const attrs = recruiter ? themeAttrs(prefs) : {}
+  const attrKey = JSON.stringify(attrs)
+  const portal = usePhonePortal()
+  useEffect(() => {
+    if (!portal) return
+    const set = Object.entries(JSON.parse(attrKey) as Record<string, string>)
+    set.forEach(([k, v]) => portal.setAttribute(k, v))
+    return () => set.forEach(([k]) => portal.removeAttribute(k))
+  }, [portal, attrKey])
   const [bell, setBell] = useState(false)
   const bellRef = useOutside(bell, () => setBell(false))
   const news = recruiter
@@ -230,7 +243,7 @@ export function WebShell({
       ]
 
   return (
-    <div className="flex h-full min-h-0">
+    <div className="flex h-full min-h-0 bg-background text-foreground" {...attrs}>
       <aside className="flex w-[248px] shrink-0 flex-col border-r border-border bg-surface">
         <div className="flex h-16 shrink-0 items-center gap-2 px-6">
           <Wordmark />
