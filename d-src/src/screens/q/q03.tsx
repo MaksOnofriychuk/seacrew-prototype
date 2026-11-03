@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { Bar, DOC_TYPES, FlowScreen, Footer, Hint, otherType, Title, useTimers, useToast, type DocTypeId, type DocUpload, type Upload, useQ } from './_parts'
-import { SourceSheet, srcCamera, srcFile, srcGallery, srcScan } from '@/components/app/source-sheet'
+import { SourceSheet, docSources, srcScan, srcFile, srcGallery } from '@/components/app/source-sheet'
 
 // q03 — CV і один документ моряка на вибір (удостоверение або диплом). Другий документ — за бажанням.
 // Правка п. 4: підпис другої кнопки — «Diploma / CoC | CoP». Правка №17: «Сфотографируйте или загрузите
@@ -102,9 +102,10 @@ export function Q03Upload({ go }: ScreenProps) {
             open={sheet === 'cv'}
             onClose={() => setSheet(null)}
             title="Добавить CV"
+            description="PDF, Word, фото или скан — данные из CV заполнят профиль."
             items={[
-              srcFile(pickCv, { title: 'Выбрать файл', sub: 'PDF или Word' }),
-              srcScan(pickCv, { title: 'Сканировать', sub: 'Если CV напечатано' }),
+              srcScan(pickCv, { title: 'Сканировать CV', sub: 'Если CV напечатано' }),
+              srcFile(pickCv, { sub: 'PDF или Word' }),
               srcGallery(pickCv, { sub: 'Фото или скриншот' }),
             ]}
           />
@@ -114,10 +115,7 @@ export function Q03Upload({ go }: ScreenProps) {
             title={DOC_TYPES[type].n}
             description="Сфотографируйте или загрузите страницу с фото и данными. Если на развороте есть другие данные — добавьте их второй страницей."
             items={[
-              srcScan(pickDoc),
-              srcCamera(pickDoc, { sub: 'При хорошем свете, без бликов' }),
-              srcFile(pickDoc, { title: 'Выбрать файл', sub: 'PDF или изображение' }),
-              srcGallery(pickDoc),
+              ...docSources(pickDoc),
             ]}
           />
         </>

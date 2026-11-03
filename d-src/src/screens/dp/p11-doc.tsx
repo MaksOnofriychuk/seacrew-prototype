@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { MenuRow, PageArt, plural, TextInput, useDP } from './_parts'
 import { expiry, useDocs } from './_docs'
-import { SourceSheet, srcCamera, srcFile, srcGallery } from '@/components/app/source-sheet'
+import { SourceSheet, docSources, srcFile } from '@/components/app/source-sheet'
 
 // p11 — документ (будь-який з p02, зокрема загранпаспорт і візи — правка №36): документ як папір,
 // сторінки зашифровані, дані з документа. «Изменить данные» — поля прямо на папері; правку видно
@@ -176,8 +176,7 @@ export function P11Doc({ go }: ScreenProps) {
         title={d.photo}
         description={isFile ? 'PDF или документ Word.' : 'Сфотографируйте или загрузите страницу с фото и данными.'}
         items={[
-          ...(isFile ? [] : [srcCamera(replaced), srcGallery(replaced)]),
-          srcFile(replaced, { title: 'Выбрать файл', sub: isFile ? undefined : 'PDF или изображение' }),
+          ...(isFile ? [srcFile(replaced, { sub: 'PDF или Word' })] : docSources(replaced)),
         ]}
       />
       <SourceSheet
@@ -185,7 +184,7 @@ export function P11Doc({ go }: ScreenProps) {
         onClose={() => setSheet(null)}
         title="Фото Endorsement"
         description="Необязательно. Нужно, если Endorsement — отдельный лист."
-        items={[srcCamera(endorsePicked), srcGallery(endorsePicked), srcFile(endorsePicked, { title: 'Выбрать файл', sub: 'PDF или изображение' })]}
+        items={docSources(endorsePicked)}
       />
       <BottomSheet
         open={sheet === 'delete'}

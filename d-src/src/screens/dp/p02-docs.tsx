@@ -9,7 +9,7 @@ import type { ScreenProps } from '../types'
 import { Note, TabHeader, useDP, type Icon } from './_parts'
 import { ADD_START, daysLeft, expiry, GROUPS, remindersLeft, useDocs, type AddState, type Doc, type DocGroup } from './_docs'
 import { useAppCounts } from '../m/_parts'
-import { SourceSheet, srcCamera, srcFile, srcGallery, srcManual } from '@/components/app/source-sheet'
+import { SourceSheet, docSources, srcManual } from '@/components/app/source-sheet'
 
 // p02 — документы. Групи: документ моряка, загранпаспорт і визы (правка №36), дипломи, медичні, CV;
 // «Прививки» з «+» (відповідь 76); «Подфлажные» і «Другие» — лише коли є. Номер прихований, крім останніх цифр; плашка строку — лише
@@ -133,9 +133,7 @@ export function P02Docs({ go }: ScreenProps) {
         title="Добавить документ"
         description="Сфотографируйте или загрузите страницу с фото и данными."
         items={[
-          srcCamera(picked),
-          srcGallery(picked),
-          srcFile(picked, { title: 'Выбрать файл', sub: 'PDF или изображение' }),
+          ...docSources(picked),
           srcManual(manual),
           { icon: HeartPulse, title: 'Медицинский документ', sub: 'Вводится вручную', onClick: () => go('s5') },
         ]}

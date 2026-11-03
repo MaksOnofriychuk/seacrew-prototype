@@ -8,7 +8,7 @@ import type { ScreenProps } from '../registry'
 import { Field, TextInput } from '../q/_parts'
 import { AddPanel, RowList, ScrollAnchor, SectionTitle, useBusy, useHashParams, useS } from './_core-parts'
 import { PASS, StepShell } from './_stepper'
-import { SourceSheet, srcCamera, srcFile, srcManual } from '@/components/app/source-sheet'
+import { SourceSheet, docSources } from '@/components/app/source-sheet'
 
 // s3p — «Загранпаспорт и визы» (правка №36), крок «Основного» після документа моряка.
 // Паспорт один: номер, страна выдачи, дата выдачи, действителен до, фото страницы с данными.
@@ -166,11 +166,17 @@ export function S3pPassport({ go }: ScreenProps) {
         open={visaSheet}
         onClose={() => setVisaSheet(false)}
         title="Добавить визу"
-        items={[
-          srcCamera(() => { setVisaSheet(false); uploadVisa() }, { title: 'Сфотографировать страницу с визой' }),
-          srcFile(() => { setVisaSheet(false); uploadVisa() }),
-          srcManual(() => { setVisaSheet(false); setVisaForm({ v: EMPTY_VISA, isNew: true }) }),
-        ]}
+        description="Сфотографируйте или загрузите страницу с визой. Данные заполнятся сами."
+        items={docSources(
+          () => {
+            setVisaSheet(false)
+            uploadVisa()
+          },
+          () => {
+            setVisaSheet(false)
+            setVisaForm({ v: EMPTY_VISA, isNew: true })
+          },
+        )}
       />
     </StepShell>
   )

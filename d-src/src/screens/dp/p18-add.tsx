@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { Note, PageArt, PageThumb, useDP, useLater } from './_parts'
 import { ADD_START, type AddState } from './_docs'
-import { SourceSheet, srcCamera, srcFile, srcGallery } from '@/components/app/source-sheet'
+import { SourceSheet, docSources } from '@/components/app/source-sheet'
 
 // p18 — «Добавить документ» (gaps №5; add.tsx у застосунку): сторінки одного документа (до 10) —
 // кожну можна відкрити, повернути, прибрати; тип документа (ИИ підказує, моряк може змінити);
@@ -238,7 +238,7 @@ export function P18Add({ go }: ScreenProps) {
         onClose={() => setSource(false)}
         title="Ещё страница"
         description="Только страницы этого же документа."
-        items={[srcCamera(addPage), srcGallery(addPage), srcFile(addPage, { title: 'Выбрать файл', sub: 'PDF или изображение' })]}
+        items={docSources(addPage)}
       />
 
       <BottomSheet
