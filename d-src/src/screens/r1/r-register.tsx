@@ -64,7 +64,7 @@ export function RRegister({ go }: ScreenProps) {
           </div>
         </Paper>
 
-        <Paper title="Компания">
+        <Paper title="Компания" className="overflow-visible">
           <div className="flex flex-col gap-4">
             <WebField id="reg-company" label="Название" required error={err('company')}>
               <WebInput id="reg-company" autoComplete="organization" value={f.company} onChange={(e) => set('company')(e.target.value)} />

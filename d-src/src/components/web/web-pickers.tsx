@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { countryLabel, findCountries } from '@/lib/countries'
@@ -24,6 +24,28 @@ function useOutside(open: boolean, close: () => void) {
   return ref
 }
 
+// Вікно відкривається під полем; якщо знизу не вміщається (край прокрутки, нижня панель) — над полем.
+function useFlip(open: boolean) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [up, setUp] = useState(false)
+  useLayoutEffect(() => {
+    if (!open) return setUp(false)
+    const el = ref.current
+    if (!el) return
+    let limit = window.innerHeight
+    for (let n = el.parentElement; n; n = n.parentElement) {
+      if (/(auto|scroll)/.test(getComputedStyle(n).overflowY)) {
+        limit = Math.min(limit, n.getBoundingClientRect().bottom)
+        break
+      }
+    }
+    const r = el.getBoundingClientRect()
+    const trigger = el.parentElement!.getBoundingClientRect()
+    if (r.bottom > limit && trigger.top > r.height + 16) setUp(true)
+  }, [open])
+  return [ref, up ? 'bottom-full mb-1' : 'top-full mt-1'] as const
+}
+
 function Trigger({ id, open, value, placeholder, icon, mono, onClick, className, disabled }: { disabled?: boolean; id?: string; open: boolean; value: ReactNode; placeholder: string; icon: ReactNode; mono?: boolean; onClick: () => void; className?: string }) {
   return (
     <button
@@ -45,7 +67,7 @@ function Trigger({ id, open, value, placeholder, icon, mono, onClick, className,
   )
 }
 
-const panel = 'absolute top-full left-0 z-50 mt-1 rounded-lg border border-border bg-surface p-3 shadow-lg animate-in fade-in-0 zoom-in-95 duration-150'
+const panel = 'absolute left-0 z-50 rounded-lg border border-border bg-surface p-3 shadow-lg animate-in fade-in-0 zoom-in-95 duration-150'
 
 /* ---------- дата: календар на місяць ---------- */
 
@@ -75,6 +97,7 @@ export function WebDatePick({
   const base = picked ?? (min && min > TODAY ? min : TODAY)
   const [view, setView] = useState({ y: base.getFullYear(), m: base.getMonth() })
   const ref = useOutside(open, () => setOpen(false))
+  const [pref, pos] = useFlip(open)
   const first = (new Date(view.y, view.m, 1).getDay() + 6) % 7
   const cells = [...Array(first).fill(null), ...Array.from({ length: daysIn(view.y, view.m) }, (_, i) => i + 1)]
   const step = (n: number) => setView(({ y, m }) => ({ y: m + n < 0 ? y - 1 : m + n > 11 ? y + 1 : y, m: (m + n + 12) % 12 }))
@@ -95,7 +118,7 @@ export function WebDatePick({
         }}
       />
       {open && (
-        <div role="dialog" aria-label="Выбор даты" className={cn(panel, 'w-72')}>
+        <div ref={pref} role="dialog" aria-label="Выбор даты" className={cn(panel, pos, 'w-72')}>
           <div className="mb-2 flex items-center justify-between">
             <button type="button" aria-label="Предыдущий месяц" disabled={!canPrev} onClick={() => step(-1)} className="rounded-md p-1.5 hover:bg-muted disabled:opacity-30">
               <ChevronLeft className="size-4" />
@@ -167,13 +190,14 @@ export function WebCountrySelect({ id, value, onChange, placeholder = 'Выбе�
     setQ('')
   }
   const ref = useOutside(open, close)
+  const [pref, pos] = useFlip(open)
   const shown = countryLabel(value)
   const list = findCountries(q)
   return (
     <div ref={ref} className={cn('relative', className)}>
       <Trigger id={id} disabled={disabled} open={open} value={shown} placeholder={placeholder} icon={<ChevronDown className="size-4" />} onClick={() => (open ? close() : setOpen(true))} />
       {open && (
-        <div role="dialog" aria-label="Выбор страны" className={cn(panel, 'w-full min-w-64 p-2')}>
+        <div ref={pref} role="dialog" aria-label="Выбор страны" className={cn(panel, pos, 'w-72 p-2')}>
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input autoFocus aria-label="Поиск страны" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Название страны" className="h-9 pl-9 text-sm md:text-sm" />
@@ -220,6 +244,7 @@ export function WebPhoneField({ id, value, onChange, disabled, className }: { id
     setQ('')
   }
   const ref = useOutside(open, close)
+  const [pref, pos] = useFlip(open)
   const parsed = parsePhone(value)
   useEffect(() => {
     if (value && parsed.dial.dial !== dial.dial) setDial(parsed.dial)
@@ -270,7 +295,7 @@ export function WebPhoneField({ id, value, onChange, disabled, className }: { id
       </div>
       {bad && <p className="text-xs text-signal">Номер неполный</p>}
       {open && (
-        <div role="dialog" aria-label="Код страны" className={cn(panel, 'top-10 w-72 p-2')}>
+        <div ref={pref} role="dialog" aria-label="Код страны" className={cn(panel, pos, 'w-72 p-2')}>
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input autoFocus aria-label="Поиск страны или кода" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Страна или код" className="h-9 pl-9 text-sm md:text-sm" />
