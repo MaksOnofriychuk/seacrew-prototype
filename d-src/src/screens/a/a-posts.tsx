@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { Image, Newspaper } from 'lucide-react'
+import { Check, EyeOff, Image, Newspaper, Undo2 } from 'lucide-react'
 import { WebField, WebSelect } from '@/components/web/fields'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
-import { FilterBar } from '@/components/web/filter-bar'
+import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, WebAvatar, type Tone } from '@/components/web/status-badge'
 import { APOST_STATE_LABEL, A_POSTS, type APost, type APostState } from '@/lib/data-admin'
+import '@/lib/data-admin-53-f'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
 import { AdminPage, AdminTabs, CancelButton, FileViewer, Mono, PeriodFilter, SideSheet, dt, inPeriod, useBagState } from './_parts'
+import { IconAction, QueueNav, RowActions } from './f53-parts'
 
 const TONE: Record<APostState, Tone> = { complaint: 'warning', published: 'success', hidden: 'muted' }
 type Tab = 'complaint' | 'all' | 'hidden'
@@ -26,23 +28,31 @@ export function APosts({ go }: ScreenProps) {
   const [photo, setPhoto] = useState<number | null>(null)
   const [hiding, setHiding] = useState(false)
   const [why, setWhy] = useState('')
+  const [reason, setReason] = useState('')
   const open = posts.find((p) => p.id === openId)
   const rows = posts.filter((p) => (tab === 'all' ? true : p.state === tab)).filter((p) => inPeriod(p.date, from, to))
+    .filter((p) => !reason || p.reasons.includes(reason))
     .filter((p) => !q || (p.author + p.text).toLowerCase().includes(q.toLowerCase()))
+    .sort((a, b) => b.date.localeCompare(a.date))
+  const idx = rows.findIndex((p) => p.id === openId)
+  const reasons = [...new Set(posts.flatMap((p) => p.reasons))].sort((a, b) => a.localeCompare(b, 'ru'))
 
   const decide = (id: string, state: APostState, toast: string) => {
     setPosts(posts.map((p) => (p.id === id ? { ...p, state, complaints: state === 'published' ? 0 : p.complaints, reasons: state === 'published' ? [] : p.reasons } : p)))
     showToast(toast)
-    setOpenId(null)
+    // очередь: после решения сразу открываем следующую запись (на вкладке «Все» запись остаётся в списке)
+    const next = tab === 'all' ? undefined : (rows[idx + 1] ?? rows[idx - 1])
+    setOpenId(openId === id ? (next?.id ?? null) : openId)
     setHiding(false)
     setWhy('')
   }
+  const hideAsk = (id: string) => (setOpenId(id), setHiding(true), setWhy(''))
 
   const columns: Column<APost>[] = [
     {
       key: 'author',
       header: 'Автор',
-      width: '22%',
+      width: '20%',
       sortValue: (p) => p.author,
       cell: (p) => (
         <span className="flex items-center gap-3">
@@ -54,24 +64,49 @@ export function APosts({ go }: ScreenProps) {
         </span>
       ),
     },
-    { key: 'text', header: 'Публикация', width: '32%', cell: (p) => <span className="block truncate">{p.text}</span> },
+    { key: 'text', header: 'Публикация', width: '29%', cell: (p) => <span className="block truncate" title={p.text}>{p.text}</span> },
     {
       key: 'cmp',
       header: 'Жалобы',
-      width: '18%',
+      width: '17%',
       sortValue: (p) => p.complaints,
       cell: (p) =>
         p.complaints ? (
           <span className="flex flex-col leading-tight">
             <Mono className="text-signal">{p.complaints}</Mono>
-            <span className="truncate text-sm text-muted-foreground">{p.reasons.join(', ')}</span>
+            <span className="truncate text-sm text-muted-foreground" title={p.reasons.join(', ')}>{p.reasons.join(', ')}</span>
           </span>
         ) : (
           <Mono className="text-muted-foreground">0</Mono>
         ),
     },
-    { key: 'date', header: 'Дата', width: '12%', mono: true, sortValue: (p) => p.date, cell: (p) => dt(p.date.split(' ')[0]) },
-    { key: 'state', header: 'Статус', width: '16%', cell: (p) => <StatusDot tone={TONE[p.state]}>{APOST_STATE_LABEL[p.state]}</StatusDot> },
+    { key: 'date', header: 'Дата', width: '11%', mono: true, sortValue: (p) => p.date, cell: (p) => dt(p.date.split(' ')[0]) },
+    { key: 'state', header: 'Статус', width: '13%', sortValue: (p) => p.state, cell: (p) => <StatusDot tone={TONE[p.state]}>{APOST_STATE_LABEL[p.state]}</StatusDot> },
+    {
+      key: 'act',
+      header: <span className="sr-only">Действия</span>,
+      width: '88px',
+      cell: (p) => (
+        <RowActions>
+          {p.state === 'hidden' ? (
+            <IconAction label="Вернуть в ленту" tone="ok" onClick={() => decide(p.id, 'published', 'Публикация снова видна')}>
+              <Undo2 className="size-4" />
+            </IconAction>
+          ) : (
+            <>
+              {p.state === 'complaint' && (
+                <IconAction label="Оставить, закрыть жалобы" tone="ok" onClick={() => decide(p.id, 'published', 'Публикация оставлена, жалобы закрыты')}>
+                  <Check className="size-4" />
+                </IconAction>
+              )}
+              <IconAction label="Скрыть…" tone="danger" onClick={() => hideAsk(p.id)}>
+                <EyeOff className="size-4" />
+              </IconAction>
+            </>
+          )}
+        </RowActions>
+      ),
+    },
   ]
 
   return (
@@ -86,7 +121,8 @@ export function APosts({ go }: ScreenProps) {
         value={tab}
         onChange={setTab}
       />
-      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Автор или текст' }} onReset={from || to || q ? () => (setFrom(''), setTo(''), setQ('')) : undefined} count={rows.length}>
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Автор или текст' }} onReset={from || to || q || reason ? () => (setFrom(''), setTo(''), setQ(''), setReason('')) : undefined} count={rows.length}>
+        <FilterSelect label="Причина жалобы" value={reason} onChange={setReason} options={reasons} className="max-w-[320px]" />
         <PeriodFilter label="Дата" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
       </FilterBar>
       <DataTable
@@ -96,6 +132,14 @@ export function APosts({ go }: ScreenProps) {
         onRowClick={(p) => (setOpenId(p.id), setHiding(false), setWhy(''))}
         selectedKey={openId ?? undefined}
         initialSort={{ key: 'date', dir: 'desc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'date', dir: 'desc', label: 'Дата: сначала новые' },
+          { key: 'date', dir: 'asc', label: 'Дата: сначала старые' },
+          { key: 'cmp', dir: 'desc', label: 'Жалобы: сначала больше' },
+          { key: 'author', dir: 'asc', label: 'Автор: А — Я' },
+          { key: 'state', dir: 'asc', label: 'Статус' },
+        ]}
         empty={tab === 'complaint' && !q ? { icon: Newspaper, title: 'Жалоб нет', text: 'Когда моряк пожалуется на пост, он появится здесь.' } : { icon: Newspaper, title: 'Публикаций не нашлось', text: 'Проверьте запрос или откройте вкладку «Все».' }}
       />
 
@@ -150,6 +194,7 @@ export function APosts({ go }: ScreenProps) {
         )}
         {open && !hiding && (
           <>
+            <QueueNav index={idx} total={rows.length} onPrev={() => setOpenId(rows[idx - 1].id)} onNext={() => setOpenId(rows[idx + 1].id)} noun={tab === 'all' ? 'в списке' : 'в очереди'} />
             <div className="flex items-center gap-3">
               <WebAvatar initials={open.initials} />
               <span className="flex flex-col leading-tight">

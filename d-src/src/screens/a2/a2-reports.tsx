@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Briefcase, Building2, Flag, MessageSquare } from 'lucide-react'
+import { Ban, Briefcase, Building2, EyeOff, Flag, MessageSquare, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebTextarea } from '@/components/web/fields'
@@ -9,11 +9,13 @@ import { StatusDot } from '@/components/web/status-badge'
 import { A_JOBS, type AJob } from '@/lib/data-admin'
 import { REPORTS, REPORT_TARGET_LABEL, type Report, type ReportTarget } from '@/lib/data-admin-2'
 import type { OrgStatus } from '@/lib/data-web'
+import '@/lib/data-admin-53-f'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { useUserOverrides } from '../a/a-users'
 import { AdminPage, AdminTabs, CancelButton, Facts, Mono, Note, PeriodFilter, SideSheet, dt, inPeriod, useBagState } from '../a/_parts'
+import { IconAction, QueueNav, RowActions } from '../a/f53-parts'
 import { Sample } from './_parts'
 
 const ICON: Record<ReportTarget, typeof Flag> = { org: Building2, job: Briefcase, message: MessageSquare }
@@ -31,6 +33,7 @@ export function A2Reports({ go }: ScreenProps) {
   const [tab, setTab] = useState<Tab>('open')
   const [q, setQ] = useState('')
   const [target, setTarget] = useState('')
+  const [why, setWhy] = useState('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
@@ -42,7 +45,11 @@ export function A2Reports({ go }: ScreenProps) {
     .filter((r) => r.state === tab)
     .filter((r) => !target || r.target === target)
     .filter((r) => inPeriod(r.at, from, to))
+    .filter((r) => !why || r.reason === why)
     .filter((r) => !q || (r.title + r.context + r.reason + r.reporter).toLowerCase().includes(q.toLowerCase()))
+    .sort((a, b) => b.at.localeCompare(a.at))
+  const idx = rows.findIndex((r) => r.id === openId)
+  const reasons = [...new Set(reports.map((r) => r.reason))].sort((a, b) => a.localeCompare(b, 'ru'))
 
   const close = () => {
     setOpenId(null)
@@ -54,7 +61,11 @@ export function A2Reports({ go }: ScreenProps) {
     a.run?.(r)
     setReports(reports.map((x) => (x.id === r.id ? { ...x, state: 'closed', outcome: a.outcome + (note.trim() ? `. ${note.trim()}` : '') } : x)))
     showToast(a.toast)
-    close()
+    // очередь: после решения открываем следующую жалобу
+    const next = rows[idx + 1] ?? rows[idx - 1]
+    setConfirm(null)
+    setNote('')
+    setOpenId(openId === r.id ? (next?.id ?? null) : openId)
   }
 
   const actsFor = (r: Report): Act[] => {
@@ -97,11 +108,11 @@ export function A2Reports({ go }: ScreenProps) {
     ]
   }
 
-  const columns: Column<Report>[] = [
+  const allColumns: Column<Report>[] = [
     {
       key: 'what',
       header: 'На что жалоба',
-      width: '30%',
+      width: '28%',
       sortValue: (r) => r.title,
       cell: (r) => {
         const I = ICON[r.target]
@@ -111,29 +122,52 @@ export function A2Reports({ go }: ScreenProps) {
               <I className="size-4" />
             </span>
             <span className="flex min-w-0 flex-col leading-tight">
-              <span className="truncate font-medium">{r.title}</span>
-              <span className="truncate text-sm text-muted-foreground">{r.context}</span>
+              <span className="truncate font-medium" title={r.title}>{r.title}</span>
+              <span className="truncate text-sm text-muted-foreground" title={r.context}>{r.context}</span>
             </span>
           </span>
         )
       },
     },
-    { key: 'reason', header: 'Причина', width: '28%', sortValue: (r) => r.reason, cell: (r) => <span className="truncate">{r.reason}</span> },
+    { key: 'reason', header: 'Причина', width: '24%', sortValue: (r) => r.reason, cell: (r) => <span className="block truncate" title={r.reason}>{r.reason}</span> },
     {
       key: 'count',
       header: 'Жалоб',
-      width: '8%',
+      width: '7%',
       align: 'right',
       sortValue: (r) => r.count,
       cell: (r) => <Mono className={cn(r.count >= 3 && r.state === 'open' && 'text-signal')}>{r.count}</Mono>,
     },
-    { key: 'at', header: 'Когда', width: '12%', mono: true, sortValue: (r) => r.at, cell: (r) => dt(r.at.split(' ')[0]) },
+    { key: 'at', header: 'Когда', width: '11%', mono: true, sortValue: (r) => r.at, cell: (r) => dt(r.at.split(' ')[0]) },
     {
       key: 'st',
       header: tab === 'open' ? 'От кого' : 'Решение',
-      cell: (r) => (r.state === 'open' ? <span className="text-muted-foreground">{r.reporter}</span> : <StatusDot tone="muted">{r.outcome}</StatusDot>),
+      sortValue: (r) => (r.state === 'open' ? r.reporter : (r.outcome ?? '')),
+      cell: (r) => (r.state === 'open' ? <span className="block truncate text-muted-foreground">{r.reporter}</span> : <span className="block truncate" title={r.outcome}><StatusDot tone="muted">{r.outcome}</StatusDot></span>),
+    },
+    {
+      key: 'act',
+      header: <span className="sr-only">Действия</span>,
+      width: '88px',
+      cell: (r) => {
+        if (r.state !== 'open') return null
+        const acts = actsFor(r)
+        const main = acts.at(-1)!
+        return (
+          <RowActions>
+            <IconAction label="Отклонить жалобу…" onClick={() => (setOpenId(r.id), setConfirm(acts[0]))}>
+              <X className="size-4" />
+            </IconAction>
+            <IconAction label={main.label + '…'} tone="danger" onClick={() => (setOpenId(r.id), setConfirm(main))}>
+              {main.key === 'hide' ? <EyeOff className="size-4" /> : <Ban className="size-4" />}
+            </IconAction>
+          </RowActions>
+        )
+      },
     },
   ]
+
+  const columns = allColumns.filter((c) => c.key !== 'act' || tab === 'open')
 
   return (
     <AdminPage active="a2-reports" go={go}>
@@ -159,8 +193,9 @@ export function A2Reports({ go }: ScreenProps) {
         value={tab}
         onChange={setTab}
       />
-      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Компания, вакансия, моряк' }} onReset={target || from || to ? () => (setTarget(''), setFrom(''), setTo('')) : undefined} count={rows.length}>
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Компания, вакансия, моряк' }} onReset={target || why || from || to ? () => (setTarget(''), setWhy(''), setFrom(''), setTo('')) : undefined} count={rows.length}>
         <FilterSelect label="На что" value={target} onChange={setTarget} options={(Object.keys(REPORT_TARGET_LABEL) as ReportTarget[]).map((k) => ({ value: k, label: REPORT_TARGET_LABEL[k] }))} />
+        <FilterSelect label="Причина" value={why} onChange={setWhy} options={reasons} className="max-w-[340px]" />
         <PeriodFilter label="Когда" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
       </FilterBar>
       <DataTable
@@ -170,8 +205,16 @@ export function A2Reports({ go }: ScreenProps) {
         onRowClick={(r) => (setOpenId(r.id), setConfirm(null))}
         selectedKey={openId ?? undefined}
         initialSort={{ key: 'at', dir: 'desc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'at', dir: 'desc', label: 'Когда: сначала новые' },
+          { key: 'at', dir: 'asc', label: 'Когда: сначала старые' },
+          { key: 'count', dir: 'desc', label: 'Жалоб: сначала больше' },
+          { key: 'what', dir: 'asc', label: 'На что: А — Я' },
+          { key: 'reason', dir: 'asc', label: 'Причина: А — Я' },
+        ]}
         empty={
-          q || target || from || to
+          q || target || why || from || to
             ? { icon: Flag, title: 'Жалоб не нашлось', text: 'Проверьте запрос или сбросьте фильтр.' }
             : tab === 'open'
               ? { icon: Flag, title: 'Новых жалоб нет', text: 'Когда моряк пожалуется на компанию, вакансию или сообщение, жалоба появится здесь.' }
@@ -212,6 +255,7 @@ export function A2Reports({ go }: ScreenProps) {
       >
         {open && !confirm && (
           <>
+            <QueueNav index={idx} total={rows.length} onPrev={() => setOpenId(rows[idx - 1].id)} onNext={() => setOpenId(rows[idx + 1].id)} noun={tab === 'open' ? 'в очереди' : 'в списке'} />
             <Facts
               className="[&_dd]:whitespace-normal"
               items={[

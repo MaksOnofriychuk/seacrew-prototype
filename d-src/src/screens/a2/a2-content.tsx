@@ -5,10 +5,11 @@ import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebInput, WebSelect, WebTextarea } from '@/components/web/fields'
 import { WebDatePick } from '@/components/web/web-pickers'
 import { BOUNDS, isoToRu, ruToIso } from '@/lib/dates'
-import { FilterBar } from '@/components/web/filter-bar'
+import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
 import { LANGS, MAILINGS, TEXTS, TEXT_STATE_LABEL, type Mailing, type TextItem, type TextKind, type TextState } from '@/lib/data-admin-2'
+import '@/lib/data-admin-53-f'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
 import { AdminPage, AdminTabs, CancelButton, Facts, Mono, Note, PeriodFilter, SideSheet, dt, inPeriod, useBagState } from '../a/_parts'
@@ -28,14 +29,15 @@ export function A2Content({ go }: ScreenProps) {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [creating, setCreating] = useState(false)
+  const [st, setSt] = useState('')
   const [nm, setNm] = useState({ title: '', channel: 'Push' as Mailing['channel'], audience: 'Все моряки', date: '', text: '' })
   const [ru, setRu] = useState('')
   const [en, setEn] = useState('')
   const text = tab !== 'mail' ? texts.find((t) => t.id === openId) : undefined
   const mail = tab === 'mail' ? mails.find((m) => m.id === openId) : undefined
 
-  const textRows = texts.filter((t) => t.kind === tab).filter((t) => inPeriod(t.updated, from, to)).filter((t) => !q || (t.title + t.key + t.ru).toLowerCase().includes(q.toLowerCase()))
-  const mailRows = mails.filter((m) => !q || m.title.toLowerCase().includes(q.toLowerCase()))
+  const textRows = texts.filter((t) => t.kind === tab).filter((t) => !st || t.state === st).filter((t) => inPeriod(t.updated, from, to)).filter((t) => !q || (t.title + t.key + t.ru).toLowerCase().includes(q.toLowerCase()))
+  const mailRows = mails.filter((m) => !st || m.state === st).filter((m) => !q || m.title.toLowerCase().includes(q.toLowerCase()))
 
   const createMail = () => {
     const m: Mailing = { id: 'm' + Date.now(), title: nm.title.trim(), channel: nm.channel, trigger: `Один раз, ${dt(nm.date)}`, audience: nm.audience, state: 'draft', sent: 0 }
@@ -66,12 +68,12 @@ export function A2Content({ go }: ScreenProps) {
       sortValue: (t) => t.title,
       cell: (t) => (
         <span className="flex min-w-0 flex-col leading-tight">
-          <span className="truncate font-medium">{t.title}</span>
-          <Mono className="truncate text-xs text-muted-foreground">{t.key}</Mono>
+          <span className="truncate font-medium" title={t.title}>{t.title}</span>
+          <span className="truncate font-mono text-xs text-muted-foreground" title={t.key}>{t.key}</span>
         </span>
       ),
     },
-    { key: 'ru', header: 'Текст', width: '36%', cell: (t) => <span className="block truncate">{t.ru}</span> },
+    { key: 'ru', header: 'Текст', width: '36%', cell: (t) => <span className="block truncate" title={t.ru}>{t.ru}</span> },
     {
       key: 'tr',
       header: 'Переводы',
@@ -88,12 +90,12 @@ export function A2Content({ go }: ScreenProps) {
   ]
 
   const mailCols: Column<Mailing>[] = [
-    { key: 'title', header: 'Рассылка', width: '28%', sortValue: (m) => m.title, cell: (m) => <span className="truncate font-medium">{m.title}</span> },
+    { key: 'title', header: 'Рассылка', width: '28%', sortValue: (m) => m.title, cell: (m) => <span className="block truncate font-medium" title={m.title}>{m.title}</span> },
     { key: 'ch', header: 'Канал', width: '13%', cell: (m) => <span className="text-muted-foreground">{m.channel}</span> },
-    { key: 'when', header: 'Когда', width: '22%', cell: (m) => <span className="truncate">{m.trigger}</span> },
-    { key: 'aud', header: 'Кому', width: '17%', cell: (m) => <span className="truncate text-muted-foreground">{m.audience}</span> },
+    { key: 'when', header: 'Когда', width: '22%', cell: (m) => <span className="block truncate" title={m.trigger}>{m.trigger}</span> },
+    { key: 'aud', header: 'Кому', width: '17%', cell: (m) => <span className="block truncate text-muted-foreground" title={m.audience}>{m.audience}</span> },
     { key: 'sent', header: 'Отправлено', width: '10%', align: 'right', mono: true, sortValue: (m) => m.sent, cell: (m) => m.sent.toLocaleString('ru') },
-    { key: 'state', header: 'Статус', cell: (m) => <StatusDot tone={MAIL_STATE[m.state].tone}>{MAIL_STATE[m.state].label}</StatusDot> },
+    { key: 'state', header: 'Статус', sortValue: (m) => m.state, cell: (m) => <StatusDot tone={MAIL_STATE[m.state].tone}>{MAIL_STATE[m.state].label}</StatusDot> },
   ]
 
   return (
@@ -122,13 +124,33 @@ export function A2Content({ go }: ScreenProps) {
           { id: 'mail', label: 'Рассылки', count: mails.length },
         ]}
         value={tab}
-        onChange={(t) => (setTab(t), setQ(''), setFrom(''), setTo(''), setOpenId(null))}
+        onChange={(t) => (setTab(t), setQ(''), setFrom(''), setTo(''), setSt(''), setOpenId(null))}
       />
-      <FilterBar search={{ value: q, onChange: setQ, placeholder: tab === 'mail' ? 'Название рассылки' : 'Текст или ключ' }} onReset={from || to || q ? () => (setFrom(''), setTo(''), setQ('')) : undefined} count={tab === 'mail' ? mailRows.length : textRows.length}>
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: tab === 'mail' ? 'Название рассылки' : 'Текст или ключ' }} onReset={from || to || q || st ? () => (setFrom(''), setTo(''), setQ(''), setSt('')) : undefined} count={tab === 'mail' ? mailRows.length : textRows.length}>
+        <FilterSelect
+          label="Статус"
+          value={st}
+          onChange={setSt}
+          options={tab === 'mail' ? (Object.keys(MAIL_STATE) as Mailing['state'][]).map((k) => ({ value: k, label: MAIL_STATE[k].label })) : (Object.keys(TEXT_STATE_LABEL) as TextState[]).map((k) => ({ value: k, label: TEXT_STATE_LABEL[k] }))}
+        />
         {tab !== 'mail' && <PeriodFilter label="Изменён" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />}
       </FilterBar>
       {tab === 'mail' ? (
-        <DataTable columns={mailCols} rows={mailRows} rowKey={(m) => m.id} onRowClick={(m) => setOpenId(m.id)} selectedKey={openId ?? undefined} empty={{ icon: Send, title: 'Рассылок нет', text: 'Автоматические уведомления и письма появятся здесь.' }} />
+        <DataTable
+          columns={mailCols}
+          rows={mailRows}
+          rowKey={(m) => m.id}
+          onRowClick={(m) => setOpenId(m.id)}
+          selectedKey={openId ?? undefined}
+          pageSizes={[10, 20, 50]}
+          sortOptions={[
+            { key: 'sent', dir: 'desc', label: 'Отправлено: сначала больше' },
+            { key: 'sent', dir: 'asc', label: 'Отправлено: сначала меньше' },
+            { key: 'title', dir: 'asc', label: 'Название: А — Я' },
+            { key: 'state', dir: 'asc', label: 'Статус' },
+          ]}
+          empty={q || st ? { icon: Send, title: 'Ничего не нашлось', text: 'Проверьте запрос или сбросьте фильтр.' } : { icon: Send, title: 'Рассылок нет', text: 'Автоматические уведомления и письма появятся здесь.' }}
+        />
       ) : (
         <DataTable
           columns={textCols}
@@ -137,7 +159,15 @@ export function A2Content({ go }: ScreenProps) {
           onRowClick={openText}
           selectedKey={openId ?? undefined}
           initialSort={{ key: 'upd', dir: 'desc' }}
-          empty={q ? { icon: FileText, title: 'Ничего не нашлось', text: 'Проверьте запрос.' } : { icon: FileText, title: 'Текстов пока нет' }}
+          pageSizes={[10, 20, 50]}
+          sortOptions={[
+            { key: 'upd', dir: 'desc', label: 'Изменён: сначала новые' },
+            { key: 'upd', dir: 'asc', label: 'Изменён: сначала старые' },
+            { key: 'title', dir: 'asc', label: 'Где: А — Я' },
+            { key: 'tr', dir: 'asc', label: 'Переводы: сначала меньше' },
+            { key: 'state', dir: 'asc', label: 'Статус' },
+          ]}
+          empty={q || st || from || to ? { icon: FileText, title: 'Ничего не нашлось', text: 'Проверьте запрос или сбросьте фильтр.' } : { icon: FileText, title: 'Текстов пока нет' }}
         />
       )}
 

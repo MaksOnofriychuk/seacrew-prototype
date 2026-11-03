@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { WebDatePick } from '@/components/web/web-pickers'
 import { BOUNDS, isoToRu, ruToIso } from '@/lib/dates'
 
-import { Briefcase, Plus } from 'lucide-react'
+import { Briefcase, Check, Plus, X } from 'lucide-react'
+import { WebDialog } from '@/components/web/dialog'
 import { MonoNums } from '@/components/app/mono-nums'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
@@ -13,9 +14,11 @@ import { StatusDot, type Tone } from '@/components/web/status-badge'
 import { FLEETS, departmentsFor, positionsFor } from '@/lib/data'
 import { ADMIN_ORGS } from '@/lib/data-web'
 import { AJOB_STATE_LABEL, A_JOBS, VESSEL_TYPES, type AJob, type AJobState } from '@/lib/data-admin'
+import '@/lib/data-admin-53-f'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
 import { AdminPage, AdminTabs, CancelButton, ExpandRows, Facts, Mono, WebMultiSelect, Note, PeriodFilter, SideSheet, dt, inPeriod, useBagState } from './_parts'
+import { IconAction, QueueNav, RowActions } from './f53-parts'
 
 const TONE: Record<AJobState, Tone> = { review: 'warning', published: 'success', rejected: 'muted', hidden: 'muted' }
 type Tab = 'review' | 'published' | 'off' | 'all'
@@ -39,6 +42,7 @@ export function AJobs({ go }: ScreenProps) {
   const [who, setWho] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
+  const [ask, setAsk] = useState<{ id: string; to: 'rejected' | 'hidden' } | null>(null)
   const [f, setF] = useState(EMPTY_FORM)
   const open = jobs.find((j) => j.id === openId)
 
@@ -49,11 +53,16 @@ export function AJobs({ go }: ScreenProps) {
     .filter((j) => inPeriod(j.created, from, to))
     .filter((j) => !who || (who === 'team' ? j.byTeam : !j.byTeam))
     .filter((j) => !q || (j.position + j.org + j.vesselType).toLowerCase().includes(q.toLowerCase()))
+    .sort((a, b) => b.created.localeCompare(a.created))
+  const idx = rows.findIndex((j) => j.id === openId)
 
   const setState = (id: string, state: AJobState, toast: string) => {
     setJobs(jobs.map((j) => (j.id === id ? { ...j, state } : j)))
     showToast(toast)
-    setOpenId(null)
+    // очередь: открываем следующую запись; на вкладке «Все» запись остаётся в списке
+    const next = tab === 'all' ? undefined : (rows[idx + 1] ?? rows[idx - 1])
+    setOpenId(openId === id ? (next?.id ?? null) : openId)
+    setAsk(null)
   }
 
   const add = () => {
@@ -80,16 +89,16 @@ export function AJobs({ go }: ScreenProps) {
     showToast('Вакансия опубликована')
   }
 
-  const columns: Column<AJob>[] = [
+  const allColumns: Column<AJob>[] = [
     {
       key: 'pos',
       header: 'Должность',
-      width: '27%',
+      width: '24%',
       sortValue: (j) => j.position,
       cell: (j) => (
         <span className="flex flex-col leading-tight">
-          <span className="truncate font-medium">{j.position}</span>
-          <span className="truncate text-sm text-muted-foreground">
+          <span className="truncate font-medium" title={j.position}>{j.position}</span>
+          <span className="truncate text-sm text-muted-foreground" title={`${j.fleet}, ${j.vesselType}`}>
             {j.fleet}, {j.vesselType}
           </span>
         </span>
@@ -98,20 +107,39 @@ export function AJobs({ go }: ScreenProps) {
     {
       key: 'org',
       header: 'Кто разместил',
-      width: '20%',
+      width: '18%',
       sortValue: (j) => j.org,
       cell: (j) => (
         <span className="flex flex-col leading-tight">
           <span className="truncate">{byLabel(j)}</span>
-          {(j.note || (j.byTeam && j.org !== 'Seafolio')) && <span className="truncate text-sm text-muted-foreground">{j.note ?? 'добавила команда'}</span>}
+          {(j.note || (j.byTeam && j.org !== 'Seafolio')) && <span className="truncate text-sm text-muted-foreground" title={j.note}>{j.note ?? 'добавила команда'}</span>}
         </span>
       ),
     },
-    { key: 'salary', header: 'Зарплата', width: '16%', cell: (j) => <MonoNums text={j.salary} /> },
-    { key: 'board', header: 'Посадка', width: '11%', mono: true, sortValue: (j) => j.board, cell: (j) => dt(j.board) },
-    { key: 'cmp', header: 'Жалобы', width: '9%', align: 'right', sortValue: (j) => j.complaints, cell: (j) => <Mono className={j.complaints ? 'text-signal' : 'text-muted-foreground'}>{j.complaints}</Mono> },
-    { key: 'state', header: 'Статус', width: '17%', sortValue: (j) => j.state, cell: (j) => <StatusDot tone={TONE[j.state]}>{AJOB_STATE_LABEL[j.state]}</StatusDot> },
+    { key: 'salary', header: 'Зарплата', width: '14%', cell: (j) => <MonoNums text={j.salary} /> },
+    { key: 'created', header: 'Размещена', hidden: true, sortValue: (j) => j.created, cell: (j) => dt(j.created) },
+    { key: 'board', header: 'Посадка', width: '12%', mono: true, sortValue: (j) => j.board, cell: (j) => dt(j.board) },
+    { key: 'cmp', header: 'Жалобы', width: '8%', align: 'right', sortValue: (j) => j.complaints, cell: (j) => <Mono className={j.complaints ? 'text-signal' : 'text-muted-foreground'}>{j.complaints}</Mono> },
+    { key: 'state', header: 'Статус', width: '14%', sortValue: (j) => j.state, cell: (j) => <StatusDot tone={TONE[j.state]}>{AJOB_STATE_LABEL[j.state]}</StatusDot> },
+    {
+      key: 'act',
+      header: <span className="sr-only">Действия</span>,
+      width: '88px',
+      cell: (j) =>
+        j.state === 'review' ? (
+          <RowActions>
+            <IconAction label="Опубликовать" tone="ok" onClick={() => setState(j.id, 'published', 'Вакансия опубликована')}>
+              <Check className="size-4" />
+            </IconAction>
+            <IconAction label="Отклонить…" tone="danger" onClick={() => setAsk({ id: j.id, to: 'rejected' })}>
+              <X className="size-4" />
+            </IconAction>
+          </RowActions>
+        ) : null,
+    },
   ]
+
+  const columns = allColumns.filter((c) => c.key !== 'act' || tab === 'review' || tab === 'all')
 
   const depts = f.fleet ? departmentsFor([f.fleet]) : []
   const positions = f.fleet && f.department ? positionsFor([f.fleet], f.department) : []
@@ -149,6 +177,16 @@ export function AJobs({ go }: ScreenProps) {
         rowKey={(j) => j.id}
         onRowClick={(j) => setOpenId(j.id)}
         selectedKey={openId ?? undefined}
+        initialSort={{ key: 'created', dir: 'desc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'created', dir: 'desc', label: 'Размещена: сначала новые' },
+          { key: 'created', dir: 'asc', label: 'Размещена: сначала старые' },
+          { key: 'board', dir: 'asc', label: 'Посадка: ближайшая' },
+          { key: 'cmp', dir: 'desc', label: 'Жалобы: сначала больше' },
+          { key: 'pos', dir: 'asc', label: 'Должность: А — Я' },
+          { key: 'org', dir: 'asc', label: 'Кто разместил: А — Я' },
+        ]}
         empty={tab === 'review' && !q && !fleets.length && !who && !from && !to ? { icon: Briefcase, title: 'Проверять нечего', text: 'Новые вакансии от непроверенных агентств и вакансии с жалобами появятся здесь.' } : { icon: Briefcase, title: 'Вакансий не нашлось', text: 'Сбросьте фильтры или откройте вкладку «Все».' }}
       />
 
@@ -162,14 +200,14 @@ export function AJobs({ go }: ScreenProps) {
             <>
               {open.state === 'review' && (
                 <>
-                  <Button variant="outline" onClick={() => setState(open.id, 'rejected', 'Вакансия отклонена')}>
+                  <Button variant="outline" onClick={() => setAsk({ id: open.id, to: 'rejected' })}>
                     Отклонить
                   </Button>
                   <Button onClick={() => setState(open.id, 'published', 'Вакансия опубликована')}>Опубликовать</Button>
                 </>
               )}
               {open.state === 'published' && (
-                <Button variant="outline" className="text-signal" onClick={() => setState(open.id, 'hidden', 'Вакансия снята с публикации')}>
+                <Button variant="outline" className="text-signal" onClick={() => setAsk({ id: open.id, to: 'hidden' })}>
                   Снять с публикации
                 </Button>
               )}
@@ -184,6 +222,7 @@ export function AJobs({ go }: ScreenProps) {
       >
         {open && (
           <>
+            <QueueNav index={idx} total={rows.length} onPrev={() => setOpenId(rows[idx - 1].id)} onNext={() => setOpenId(rows[idx + 1].id)} noun={tab === 'all' ? 'в списке' : 'в очереди'} />
             {open.note && <Note tone={open.complaints ? 'error' : 'warning'}>{open.note}</Note>}
             <Facts
               items={[
@@ -204,6 +243,23 @@ export function AJobs({ go }: ScreenProps) {
           </>
         )}
       </SideSheet>
+
+      <WebDialog
+        open={!!ask}
+        onClose={() => setAsk(null)}
+        title={ask?.to === 'rejected' ? 'Отклонить вакансию?' : 'Снять вакансию с публикации?'}
+        description={jobs.find((j) => j.id === ask?.id)?.position}
+        footer={
+          <>
+            <CancelButton onClick={() => setAsk(null)} />
+            <Button variant="destructive" onClick={() => ask && setState(ask.id, ask.to, ask.to === 'rejected' ? 'Вакансия отклонена' : 'Вакансия снята с публикации')}>
+              {ask?.to === 'rejected' ? 'Отклонить' : 'Снять'}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-[15px] text-muted-foreground">{ask?.to === 'rejected' ? 'Моряки её не увидят. Агентство получит уведомление и сможет вернуть вакансию на проверку.' : 'Вакансия пропадёт из ленты и поиска. Отклики останутся у рекрутера.'}</p>
+      </WebDialog>
 
       <SideSheet
         open={adding}
