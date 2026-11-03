@@ -66,7 +66,7 @@ export function RSearch({ go }: ScreenProps) {
     {
       key: 'name',
       header: 'Моряк',
-      width: '29%',
+      width: '27%',
       sortValue: (s) => s.name,
       cell: (s) => (
         <span className="flex items-center gap-3">
@@ -98,7 +98,7 @@ export function RSearch({ go }: ScreenProps) {
     {
       key: 'exp',
       header: 'Опыт',
-      width: '9%',
+      width: '12%',
       sortValue: (s) => expForFilter(s),
       cell: (s) => (s.experienceMonths === null ? <span className="text-muted-foreground">по контрактам</span> : <MonoNums text={monthsText(s.experienceMonths)} />),
     },
@@ -150,6 +150,14 @@ export function RSearch({ go }: ScreenProps) {
         rowKey={(s) => s.id}
         onRowClick={open}
         initialSort={{ key: 'avail', dir: 'asc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'avail', dir: 'asc', label: 'Готовность: сначала готовые' },
+          { key: 'exp', dir: 'desc', label: 'Опыт: сначала больше' },
+          { key: 'exp', dir: 'asc', label: 'Опыт: сначала меньше' },
+          { key: 'name', dir: 'asc', label: 'Имя: А — Я' },
+          { key: 'position', dir: 'asc', label: 'Должность: А — Я' },
+        ]}
         empty={{
           icon: SearchX,
           title: anyFilter ? 'Никого не нашли' : 'Моряков пока нет',

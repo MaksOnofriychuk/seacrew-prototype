@@ -10,7 +10,7 @@ import { WebShell } from '@/components/web/shell'
 import { ApplicationStatusDot, AvailabilityDot, WebAvatar } from '@/components/web/status-badge'
 import { APPLICATION_STATUS_LABEL, seafarerById, type Application, type ApplicationStatus } from '@/lib/data-web'
 import type { ScreenProps } from '../registry'
-import { monthsText } from '@/lib/data-recruiter-1'
+import { expForFilter, monthsText } from '@/lib/data-recruiter-1'
 import { useProto } from '@/lib/proto-state'
 import { ConfirmDialog, ruDate, useR2 } from './_parts'
 
@@ -58,7 +58,7 @@ export function RApplications({ go }: ScreenProps) {
     {
       key: 'who',
       header: 'Моряк',
-      width: '30%',
+      width: '33%',
       sortValue: (a) => seafarerById(a.seafarerId)!.name,
       cell: (a) => {
         const s = seafarerById(a.seafarerId)!
@@ -67,7 +67,14 @@ export function RApplications({ go }: ScreenProps) {
             <WebAvatar initials={s.initials} size="sm" />
             <span className="flex min-w-0 flex-col">
               <span className="truncate font-medium">{s.name}</span>
-              <span className="truncate text-[13px] text-muted-foreground">{s.position}</span>
+              <span className="truncate text-[13px] text-muted-foreground">
+                {s.experienceMonths !== null && (
+                  <>
+                    <MonoNums text={monthsText(s.experienceMonths)} /> ·{' '}
+                  </>
+                )}
+                {s.position}
+              </span>
             </span>
           </span>
         )
@@ -76,7 +83,7 @@ export function RApplications({ go }: ScreenProps) {
     {
       key: 'job',
       header: 'Вакансия',
-      width: '32%',
+      width: '23%',
       sortValue: (a) => jobOf(a).position,
       cell: (a) => (
         <span className="flex flex-col">
@@ -85,8 +92,19 @@ export function RApplications({ go }: ScreenProps) {
         </span>
       ),
     },
-    { key: 'date', header: 'Отклик', width: '18%', mono: true, sortValue: (a) => a.date, cell: (a) => ruDate(a.date) },
-    { key: 'status', header: 'Статус', width: '20%', sortValue: (a) => TABS.indexOf(a.status), cell: (a) => <ApplicationStatusDot s={a.status} /> },
+    {
+      key: 'exp',
+      header: 'Опыт',
+      hidden: true,
+      width: '0',
+      sortValue: (a) => expForFilter(seafarerById(a.seafarerId)!),
+      cell: (a) => {
+        const m = seafarerById(a.seafarerId)!.experienceMonths
+        return m === null ? <span className="text-muted-foreground">по контрактам</span> : <MonoNums text={monthsText(m)} />
+      },
+    },
+    { key: 'date', header: 'Отклик', width: '21%', mono: true, sortValue: (a) => a.date, cell: (a) => ruDate(a.date) },
+    { key: 'status', header: 'Статус', width: '23%', sortValue: (a) => TABS.indexOf(a.status), cell: (a) => <ApplicationStatusDot s={a.status} /> },
   ]
 
   const s = seafarerById(sel.seafarerId)!
@@ -123,6 +141,15 @@ export function RApplications({ go }: ScreenProps) {
             onRowClick={(a) => r.selectApp(a.id)}
             selectedKey={sel.id}
             initialSort={{ key: 'date', dir: 'desc' }}
+            pageSizes={[10, 20, 50]}
+            sortOptions={[
+              { key: 'date', dir: 'desc', label: 'Дата: сначала новые' },
+              { key: 'date', dir: 'asc', label: 'Дата: сначала старые' },
+              { key: 'exp', dir: 'desc', label: 'Опыт: сначала больше' },
+              { key: 'exp', dir: 'asc', label: 'Опыт: сначала меньше' },
+              { key: 'who', dir: 'asc', label: 'Имя: А — Я' },
+              { key: 'status', dir: 'asc', label: 'Статус: новые отклики первыми' },
+            ]}
             empty={
               filtered
                 ? { icon: SearchX, title: 'Ничего не нашлось', text: 'Измените поиск или сбросьте фильтры.' }

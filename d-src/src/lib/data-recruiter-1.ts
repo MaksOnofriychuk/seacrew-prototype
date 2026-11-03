@@ -87,8 +87,13 @@ export const expForFilter = (s: WebSeafarer) => s.experienceMonths ?? contractsF
 const PROFILE_PCT: Record<string, number> = { sf03: 70, sf08: 60, sf11: 85 }
 export const profilePct = (id: string) => PROFILE_PCT[id] ?? 100
 
-/** «38 мес.» */
-export const monthsText = (m: number) => `${m} мес.`
+/** 38 → «3 года 2 мес.»; 24 → «2 года»; 8 → «8 мес.» (правка №52: стаж не лише в місяцях) */
+export function monthsText(total: number) {
+  const y = Math.floor(total / 12)
+  const m = total % 12
+  const word = y % 10 === 1 && y % 100 !== 11 ? 'год' : [2, 3, 4].includes(y % 10) && ![12, 13, 14].includes(y % 100) ? 'года' : 'лет'
+  return [y ? `${y} ${word}` : '', m || !y ? `${m} мес.` : ''].filter(Boolean).join(' ')
+}
 
 /* ---------- запрошення (правки №22, №30; contract-recruiter-web §7) ---------- */
 
@@ -147,10 +152,10 @@ export const CERT_OPTIONS = [...BASIC, ...uniq(SEAFARERS.flatMap((s) => s.certif
 export const VISA_OPTIONS = uniq(SEAFARERS.flatMap((s) => s.visas))
 export const AIRPORT_OPTIONS = uniq(SEAFARERS.map((s) => s.airport))
 export const EXP_OPTIONS = [
-  { value: '12', label: 'от 12 мес.' },
-  { value: '36', label: 'от 36 мес.' },
-  { value: '60', label: 'от 60 мес.' },
-  { value: '120', label: 'от 120 мес.' },
+  { value: '12', label: 'от 1 года' },
+  { value: '36', label: 'от 3 лет' },
+  { value: '60', label: 'от 5 лет' },
+  { value: '120', label: 'от 10 лет' },
 ]
 export const AVAIL_FILTER = [
   { value: 'now', label: 'Готов сейчас' },

@@ -1,6 +1,7 @@
 // Спільні вигадані дані вебу (кабінет рекрутера й адмінка). Реальних людей, компаній і документів немає.
 // Що рекрутер бачить про моряка — за правкою №30: ім'я + перша літера прізвища, без прізвища, контактів, фото й файлів.
 import type { Availability } from './data'
+import { EXTRA_APPLICATIONS, EXTRA_JOBS, EXTRA_SEAFARERS } from './data-recruiter-52'
 
 /* ---------- організація-рекрутер і рекрутери ---------- */
 
@@ -74,6 +75,7 @@ export const SEAFARERS: WebSeafarer[] = [
   { id: 'sf10', name: 'Dmytro S.', initials: 'DS', position: '2nd Engineer', fleet: 'Merchant', department: 'Engine', experienceMonths: 83, nationality: 'Украина', airport: 'Варшава (WAW)', visas: ['Шенген'], availability: { kind: 'from', date: '2027-02-01' }, englishLevel: 'B2', certificates: [...STCW, 'Tanker Familiarization'], diplomas: ['2nd Engineer (III/2)'], medical: { title: 'Медицинский сертификат (ILO/STCW)', until: '2027-07-19' }, promotions: true, about: 'Газовозы LPG, бонус за продление — не против.', updated: '2026-10-20' },
   { id: 'sf11', name: 'Ivan P.', initials: 'IP', position: 'Chief Cook', fleet: 'Merchant', department: 'Catering', experienceMonths: 120, nationality: 'Болгария', airport: 'Варна (VAR)', visas: ['Шенген'], availability: { kind: 'now' }, englishLevel: 'B1', certificates: [...STCW, 'Ship Cook Certificate', 'Food Hygiene'], diplomas: [], medical: { title: 'Медицинский сертификат (ILO/STCW)', until: '2027-04-30' }, promotions: false, about: 'Смешанные экипажи до 25 человек.', updated: '2026-10-18' },
   { id: 'sf12', name: 'Oleksandr M.', initials: 'OM', position: 'Master', fleet: 'Merchant', department: 'Deck', experienceMonths: 168, nationality: 'Украина', airport: 'Кишинёв (KIV)', visas: ['Шенген', 'США C1/D', 'Великобритания'], availability: { kind: 'not' }, englishLevel: 'C1', certificates: [...STCW, 'ECDIS', 'Ship Security Officer'], diplomas: ['Master (II/2)'], medical: { title: 'Медицинский сертификат (ILO/STCW)', until: '2027-09-03' }, promotions: true, about: 'Химовозы, 6 лет капитаном.', updated: '2026-10-15' },
+  ...EXTRA_SEAFARERS,
 ]
 
 export const seafarerById = (id: string) => SEAFARERS.find((s) => s.id === id)
@@ -116,6 +118,7 @@ export const WEB_JOBS: WebJob[] = [
   { id: 'j04', position: 'ETO (Electro-Technical Officer)', fleet: 'Offshore', department: 'Engine', vesselType: 'AHTS', vesselName: 'Ocean Titan', salary: { amount: '380', currency: '£', period: 'день' }, region: 'Африка', board: '2027-01-15', duration: '5 недель', status: 'draft', recruiterId: 'rc3', created: '2026-11-01', description: 'Западная Африка, высокое напряжение.' },
   { id: 'j05', position: 'Chief Cook', fleet: 'Merchant', department: 'Catering', vesselType: 'Container Ship', vesselName: 'MV Baltic Way', salary: { amount: '2 900', currency: '$', period: 'месяц' }, region: 'ОАЭ', board: '2026-12-10', duration: '6 мес.', status: 'open', recruiterId: 'rc2', created: '2026-10-21', description: 'Смешанный экипаж 22 человека.' },
   { id: 'j06', position: '2nd Officer', fleet: 'Passenger / Cruise', department: 'Deck', vesselType: 'Cruise Ship', vesselName: 'Aegean Pearl', salary: { amount: '5 100', currency: '€', period: 'месяц' }, region: 'Европа', board: '2026-11-10', duration: '4 мес.', status: 'closed', recruiterId: 'rc1', created: '2026-09-30', description: 'Средиземноморье, сезон до марта.' },
+  ...EXTRA_JOBS,
 ]
 
 export const jobById = (id: string) => WEB_JOBS.find((j) => j.id === id)
@@ -140,6 +143,7 @@ export const APPLICATIONS: Application[] = [
   { id: 'ap08', jobId: 'j05', seafarerId: 'sf11', status: 'sent', date: '2026-10-24' },
   { id: 'ap09', jobId: 'j06', seafarerId: 'sf07', status: 'rejected', date: '2026-10-05' },
   { id: 'ap10', jobId: 'j02', seafarerId: 'sf03', status: 'sent', date: '2026-11-02' },
+  ...EXTRA_APPLICATIONS,
 ]
 
 export const applicationsFor = (jobId: string) => APPLICATIONS.filter((a) => a.jobId === jobId)

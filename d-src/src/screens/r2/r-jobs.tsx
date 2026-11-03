@@ -16,6 +16,9 @@ import { ConfirmDialog, plural, ruDate, useR2 } from './_parts'
 
 type Tab = JobStatus | 'all'
 
+// Для сортировки по зарплате: «4 200–4 600» → 4200; «день» ≈ 22 рабочих дня в месяце.
+const salaryNum = (j: WebJob) => (parseInt(j.salary.amount.replace(/\s/g, ''), 10) || 0) * (j.salary.period === 'день' ? 22 : 1)
+
 // r-jobs — вакансії агентства. Закриває вакансію рекрутер (відп. 27), лічильник переглядів (відп. 101).
 export function RJobs({ go }: ScreenProps) {
   const r = useR2()
@@ -67,7 +70,7 @@ export function RJobs({ go }: ScreenProps) {
       ),
     },
     { key: 'fleet', header: 'Флот', width: '10%', sortValue: (j) => j.fleet, cell: (j) => j.fleet },
-    { key: 'salary', header: 'Зарплата', width: '16%', cell: (j) => (j.salary.amount ? <MonoNums text={salaryText(j)} /> : '—') },
+    { key: 'salary', header: 'Зарплата', width: '16%', sortValue: (j) => salaryNum(j), cell: (j) => (j.salary.amount ? <MonoNums text={salaryText(j)} /> : '—') },
     { key: 'board', header: 'Посадка', width: '11%', mono: true, sortValue: (j) => j.board, cell: (j) => ruDate(j.board) || '—' },
     {
       key: 'apps',
@@ -183,6 +186,16 @@ export function RJobs({ go }: ScreenProps) {
         rowKey={(j) => j.id}
         onRowClick={open}
         initialSort={{ key: 'board', dir: 'asc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'board', dir: 'asc', label: 'Посадка: сначала ближайшая' },
+          { key: 'board', dir: 'desc', label: 'Посадка: сначала дальняя' },
+          { key: 'salary', dir: 'desc', label: 'Зарплата: сначала больше' },
+          { key: 'salary', dir: 'asc', label: 'Зарплата: сначала меньше' },
+          { key: 'apps', dir: 'desc', label: 'Отклики: сначала больше' },
+          { key: 'views', dir: 'desc', label: 'Просмотры: сначала больше' },
+          { key: 'position', dir: 'asc', label: 'Должность: А — Я' },
+        ]}
         empty={
           filtered
             ? { icon: SearchX, title: 'Ничего не нашлось', text: 'Измените поиск или сбросьте фильтры.' }

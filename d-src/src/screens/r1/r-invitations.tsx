@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Mail, Send } from 'lucide-react'
+import { Info, Mail, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebInput, WebTextarea } from '@/components/web/fields'
@@ -26,6 +26,16 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'cancelled', label: 'Отменено' },
 ]
 
+// Статус приглашения ставит моряк, когда отвечает в приложении (contract-recruiter-web §7: accept / decline — SEAFARER).
+// Рекрутер может только отменить приглашение, пока оно ждёт ответа (POST /org/invitations/:id/cancel).
+const TAB_HINT: Record<Tab, string> = {
+  all: 'Статус ставит моряк, когда отвечает в приложении. Вы можете только отменить приглашение, пока оно ждёт ответа.',
+  pending: 'Моряк ещё не ответил. Пока он думает, приглашение можно отменить.',
+  accepted: 'Моряк ответил «Интересно»: он среди кандидатов, открыта переписка. Статус поставил он сам.',
+  declined: 'Моряк отказался — статус поставил он сам. Позвать снова можно новым приглашением.',
+  cancelled: 'Вы отменили приглашение, пока моряк не ответил.',
+}
+
 const EMPTY_TEXT: Record<Tab, string> = {
   all: 'Позовите моряка на работу из поиска или пригласите по email.',
   pending: 'Все ответили. Новые приглашения появятся здесь.',
@@ -49,7 +59,7 @@ export function RInvitations({ go }: ScreenProps) {
     {
       key: 'who',
       header: 'Моряк',
-      width: '24%',
+      width: '22%',
       sortValue: (i) => (i.seafarerId ? seafarerById(i.seafarerId)!.name : i.email ?? ''),
       cell: (i) => {
         const s = i.seafarerId ? seafarerById(i.seafarerId) : undefined
@@ -77,7 +87,7 @@ export function RInvitations({ go }: ScreenProps) {
     {
       key: 'job',
       header: 'Вакансия',
-      width: '22%',
+      width: '20%',
       cell: (i) => {
         const j = i.jobId ? jobById(i.jobId) : undefined
         return j ? (
@@ -94,11 +104,11 @@ export function RInvitations({ go }: ScreenProps) {
     },
     { key: 'by', header: 'Пригласил', width: '15%', sortValue: (i) => RECRUITERS.find((r) => r.id === i.recruiterId)?.name ?? '', cell: (i) => RECRUITERS.find((r) => r.id === i.recruiterId)?.name },
     { key: 'date', header: 'Отправлено', width: '12%', mono: true, sortValue: (i) => i.date, cell: (i) => ruDate(i.date) },
-    { key: 'status', header: 'Статус', width: '13%', sortValue: (i) => i.status, cell: (i) => <InviteDot s={i.status} /> },
+    { key: 'status', header: 'Ответ моряка', width: '13%', sortValue: (i) => i.status, cell: (i) => <InviteDot s={i.status} /> },
     {
       key: 'act',
       header: <span className="sr-only">Действия</span>,
-      width: '14%',
+      width: '18%',
       align: 'right',
       cell: (i) =>
         i.status === 'pending' ? (
@@ -110,7 +120,7 @@ export function RInvitations({ go }: ScreenProps) {
               setCancelId(i.id)
             }}
           >
-            Отменить
+            Отменить приглашение
           </Button>
         ) : i.status === 'accepted' && i.seafarerId && CANDIDATES.some((c) => c.seafarerId === i.seafarerId) ? (
           <Button
@@ -132,7 +142,7 @@ export function RInvitations({ go }: ScreenProps) {
     <WebShell variant="recruiter" active="r-invitations" go={go}>
       <PageHeader
         title="Приглашения"
-        description="Моряк получает приглашение в приложении и отвечает одной кнопкой. Подтвердил интерес — появляется среди кандидатов, и открывается переписка."
+        description="Моряк получает приглашение в приложении и отвечает сам одной кнопкой. Подтвердил интерес — появляется среди кандидатов, и открывается переписка."
         actions={
           <Button className="h-10 px-5" onClick={() => setEmailOpen(true)}>
             <Mail /> Пригласить по email
@@ -140,6 +150,10 @@ export function RInvitations({ go }: ScreenProps) {
         }
       />
       <PageTabs tabs={TABS.map((t) => ({ ...t, count: count(t.id) }))} value={tab} onChange={setTab} />
+      <p className="mb-3 flex items-start gap-2 text-sm text-muted-foreground">
+        <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+        {TAB_HINT[tab]}
+      </p>
       <DataTable
         columns={columns}
         rows={rows}
