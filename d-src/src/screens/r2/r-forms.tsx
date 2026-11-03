@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FileText, Inbox, Plus, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
+import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader, PageTabs } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { StatusDot, WebAvatar } from '@/components/web/status-badge'
@@ -16,12 +17,23 @@ type Tab = 'forms' | 'answers'
 export function RForms({ go }: ScreenProps) {
   const r = useR2()
   const [tab, setTab] = useState<Tab>('forms')
+  const [q, setQ] = useState('')
+  const [fStatus, setFStatus] = useState('')
+  const [aForm, setAForm] = useState('')
+  const [aStatus, setAStatus] = useState('')
+  const needle = q.trim().toLowerCase()
+  const forms = FORMS.filter((f) => (!fStatus || f.status === fStatus) && (!needle || f.title.toLowerCase().includes(needle) || ASSIGNMENTS.some((a) => a.formId === f.id && seafarerById(a.seafarerId)!.name.toLowerCase().includes(needle))))
+  const answers = ASSIGNMENTS.filter((a) => (!aForm || a.formId === aForm) && (!aStatus || a.status === aStatus) && (!needle || seafarerById(a.seafarerId)!.name.toLowerCase().includes(needle) || FORMS.find((f) => f.id === a.formId)!.title.toLowerCase().includes(needle)))
+  const switchTab = (t: Tab) => {
+    setTab(t)
+    setQ('')
+  }
 
   const formCols: Column<WebForm>[] = [
     {
       key: 'title',
       header: 'Анкета',
-      width: '34%',
+      width: '27%',
       sortValue: (f) => f.title,
       cell: (f) => (
         <span className="flex flex-col">
@@ -32,8 +44,8 @@ export function RForms({ go }: ScreenProps) {
     },
     {
       key: 'size',
-      header: 'Разделы и поля',
-      width: '16%',
+      header: 'Структура',
+      width: '12%',
       cell: (f) => (
         <span className="text-muted-foreground">
           <span className="font-mono text-foreground">{FORM_DEFS[f.id]?.length ?? f.sections}</span> / <span className="font-mono text-foreground">{FORM_DEFS[f.id]?.reduce((n, x) => n + x.fields.length, 0) ?? f.fields}</span>
@@ -41,9 +53,24 @@ export function RForms({ go }: ScreenProps) {
       ),
     },
     {
+      key: 'to',
+      header: 'Кому отправлена',
+      width: '20%',
+      cell: (f) => {
+        const names = ASSIGNMENTS.filter((a) => a.formId === f.id).map((a) => seafarerById(a.seafarerId)!.name)
+        if (!names.length) return <span className="text-muted-foreground">Никому</span>
+        return (
+          <span className="truncate">
+            {names.slice(0, 2).join(', ')}
+            {f.sent > 2 && <span className="text-muted-foreground"> и ещё <span className="font-mono">{f.sent - Math.min(2, names.length)}</span></span>}
+          </span>
+        )
+      },
+    },
+    {
       key: 'answers',
       header: 'Ответили',
-      width: '14%',
+      width: '12%',
       sortValue: (f) => f.answered,
       cell: (f) => (
         <span className="text-muted-foreground">
@@ -51,8 +78,8 @@ export function RForms({ go }: ScreenProps) {
         </span>
       ),
     },
-    { key: 'updated', header: 'Изменена', width: '14%', mono: true, sortValue: (f) => f.updated, cell: (f) => ruDate(f.updated) },
-    { key: 'status', header: 'Статус', width: '14%', cell: (f) => <StatusDot tone={f.status === 'active' ? 'success' : 'muted'}>{f.status === 'active' ? 'Опубликована' : 'Черновик'}</StatusDot> },
+    { key: 'updated', header: 'Изменена', width: '12%', mono: true, sortValue: (f) => f.updated, cell: (f) => ruDate(f.updated) },
+    { key: 'status', header: 'Статус', width: '17%', cell: (f) => <StatusDot tone={f.status === 'active' ? 'success' : 'muted'}>{f.status === 'active' ? 'Опубликована' : 'Черновик'}</StatusDot> },
   ]
 
   const answerCols: Column<Assignment>[] = [
@@ -102,17 +129,21 @@ export function RForms({ go }: ScreenProps) {
       />
       <PageTabs<Tab>
         value={tab}
-        onChange={setTab}
+        onChange={switchTab}
         tabs={[
           { id: 'forms', label: 'Анкеты', count: FORMS.length },
           { id: 'answers', label: 'Ответы моряков', count: ASSIGNMENTS.length },
         ]}
       />
       {tab === 'forms' ? (
+        <>
+          <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Название анкеты или моряк' }} count={forms.length} onReset={q || fStatus ? () => (setQ(''), setFStatus('')) : undefined}>
+            <FilterSelect label="Статус" value={fStatus} onChange={setFStatus} options={[{ value: 'active', label: 'Опубликована' }, { value: 'draft', label: 'Черновик' }]} />
+          </FilterBar>
         <DataTable
           key="forms"
           columns={formCols}
-          rows={FORMS}
+          rows={forms}
           rowKey={(f) => f.id}
           onRowClick={(f) => {
             r.openForm(f.id)
@@ -134,11 +165,17 @@ export function RForms({ go }: ScreenProps) {
             ),
           }}
         />
+        </>
       ) : (
+        <>
+          <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Моряк или анкета' }} count={answers.length} onReset={q || aForm || aStatus ? () => (setQ(''), setAForm(''), setAStatus('')) : undefined}>
+            <FilterSelect label="Анкета" value={aForm} onChange={setAForm} options={FORMS.filter((f) => f.sent > 0).map((f) => ({ value: f.id, label: f.title }))} />
+            <FilterSelect label="Статус" value={aStatus} onChange={setAStatus} options={Object.entries(ASSIGNMENT_STATUS_LABEL).map(([value, label]) => ({ value, label }))} />
+          </FilterBar>
         <DataTable
           key="answers"
           columns={answerCols}
-          rows={ASSIGNMENTS}
+          rows={answers}
           rowKey={(a) => a.id}
           onRowClick={(a) => {
             r.openAssignment(a.id)
@@ -147,6 +184,7 @@ export function RForms({ go }: ScreenProps) {
           initialSort={{ key: 'date', dir: 'desc' }}
           empty={{ icon: Inbox, title: 'Ответов пока нет', text: 'Отправьте анкету моряку из разговора — его ответ появится здесь.' }}
         />
+        </>
       )}
     </WebShell>
   )

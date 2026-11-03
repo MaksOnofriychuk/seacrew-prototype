@@ -8,6 +8,7 @@ import {
   Camera,
   FileCheck2,
   FileText,
+  GripVertical,
   Hash,
   ListChecks,
   Paperclip,
@@ -117,6 +118,59 @@ export function RFormEdit({ go }: ScreenProps) {
     ;[next[i], next[j]] = [next[j], next[i]]
     putSection(section.id, { fields: next })
   }
+  // Порядок: стрелки у строк и перетаскивание (поля — между разделами, разделы — в списке слева).
+  const [drag, setDrag] = useState<{ s: string; f: string } | null>(null)
+  const [dragSec, setDragSec] = useState<string | null>(null)
+  const shiftField = (sid: string, fid: string, dir: -1 | 1) => {
+    const sec = sections.find((x) => x.id === sid)!
+    const i = sec.fields.findIndex((x) => x.id === fid)
+    const j = i + dir
+    if (j < 0 || j >= sec.fields.length) return
+    const next = [...sec.fields]
+    ;[next[i], next[j]] = [next[j], next[i]]
+    putSection(sid, { fields: next })
+  }
+  const shiftSection = (sid: string, dir: -1 | 1) => {
+    const i = sections.findIndex((x) => x.id === sid)
+    const j = i + dir
+    if (j < 0 || j >= sections.length) return
+    const next = [...sections]
+    ;[next[i], next[j]] = [next[j], next[i]]
+    setSections(next)
+  }
+  const dropField = (toS: string, beforeF: string | null) => {
+    if (!drag) return
+    const src = sections.find((x) => x.id === drag.s)!
+    const item = src.fields.find((x) => x.id === drag.f)!
+    const target = sections.find((x) => x.id === toS)!
+    if (target.audience === 'AGENCY_ONLY' && !AGENCY_TYPES.includes(item.type)) {
+      r.showToast('В раздел «Только агентство» нельзя перенести такое поле')
+      setDrag(null)
+      return
+    }
+    setSections((all) => {
+      const without = all.map((x) => (x.id === drag.s ? { ...x, fields: x.fields.filter((y) => y.id !== drag.f) } : x))
+      return without.map((x) => {
+        if (x.id !== toS) return x
+        const at = beforeF ? x.fields.findIndex((y) => y.id === beforeF) : x.fields.length
+        const next = [...x.fields]
+        next.splice(at < 0 ? next.length : at, 0, item)
+        return { ...x, fields: next }
+      })
+    })
+    setSel({ s: toS, f: drag.f })
+    setDrag(null)
+  }
+  const dropSection = (beforeId: string) => {
+    if (!dragSec || dragSec === beforeId) return
+    setSections((all) => {
+      const item = all.find((x) => x.id === dragSec)!
+      const rest = all.filter((x) => x.id !== dragSec)
+      rest.splice(rest.findIndex((x) => x.id === beforeId), 0, item)
+      return rest
+    })
+    setDragSec(null)
+  }
   const removeField = () => {
     if (!field) return
     putSection(section.id, { fields: section.fields.filter((x) => x !== field) })
@@ -161,23 +215,42 @@ export function RFormEdit({ go }: ScreenProps) {
       <ViewState loading={{ kind: 'cards', className: 'p-8' }} empty={{ icon: FileText, title: 'В анкете нет разделов', text: 'Добавьте первый раздел и поля в нём.', action: <Button onClick={addSection}>Добавить раздел</Button> }}>
         <div className="flex min-h-0 flex-1">
           {/* Розділи */}
-          <nav className="flex w-[240px] shrink-0 flex-col gap-1 overflow-y-auto border-r border-border bg-surface px-3 py-5" aria-label="Разделы анкеты">
+          <nav className="flex w-[220px] shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-border bg-surface px-2.5 py-4" aria-label="Разделы анкеты">
             <span className="px-3 pb-1 text-xs font-medium text-muted-foreground">Разделы</span>
             {sections.map((s, i) => (
-              <button
+              <div
                 key={s.id}
-                type="button"
-                onClick={() => {
-                  setSel({ s: s.id, f: null })
-                  const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-                  document.getElementById('sec-' + s.id)?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' })
-                }}
-                className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm', s.id === section.id ? 'bg-muted font-medium text-primary' : 'hover:bg-muted')}
+                draggable
+                onDragStart={() => setDragSec(s.id)}
+                onDragEnd={() => setDragSec(null)}
+                onDragOver={(e) => dragSec && e.preventDefault()}
+                onDrop={() => dropSection(s.id)}
+                className={cn('group flex items-center rounded-md', s.id === section.id ? 'bg-muted' : 'hover:bg-muted', dragSec === s.id && 'opacity-50')}
               >
-                <span className="w-4 shrink-0 font-mono text-xs text-muted-foreground">{i + 1}</span>
-                <span className="flex-1 truncate">{s.title}</span>
-                {s.audience === 'AGENCY_ONLY' && <Building2 className="size-3.5 shrink-0 text-muted-foreground" aria-label="Только агентство" />}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSel({ s: s.id, f: null })
+                    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                    document.getElementById('sec-' + s.id)?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' })
+                  }}
+                  className={cn('flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left text-sm', s.id === section.id && 'font-medium text-primary')}
+                >
+                  <GripVertical className="size-3.5 shrink-0 cursor-grab text-muted-foreground/60" aria-hidden="true" />
+                  <span className="w-3 shrink-0 font-mono text-xs text-muted-foreground">{i + 1}</span>
+                  <span className="flex-1 truncate">{s.title}</span>
+                  {s.audience === 'AGENCY_ONLY' && <Building2 className="size-3.5 shrink-0 text-muted-foreground" aria-label="Только агентство" />}
+                  <span className="font-mono text-xs text-muted-foreground">{s.fields.length}</span>
+                </button>
+                <span className="mr-1 hidden shrink-0 group-hover:flex">
+                  <button type="button" aria-label="Раздел выше" disabled={i === 0} onClick={() => shiftSection(s.id, -1)} className="flex size-6 items-center justify-center rounded text-muted-foreground hover:text-foreground disabled:opacity-30">
+                    <ArrowUp className="size-3.5" />
+                  </button>
+                  <button type="button" aria-label="Раздел ниже" disabled={i === sections.length - 1} onClick={() => shiftSection(s.id, 1)} className="flex size-6 items-center justify-center rounded text-muted-foreground hover:text-foreground disabled:opacity-30">
+                    <ArrowDown className="size-3.5" />
+                  </button>
+                </span>
+              </div>
             ))}
             <button type="button" onClick={addSection} className="mt-1 flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-primary hover:bg-muted">
               <Plus className="size-4" /> Добавить раздел
@@ -185,9 +258,9 @@ export function RFormEdit({ go }: ScreenProps) {
           </nav>
 
           {/* Анкета як папір */}
-          <div className="min-h-0 flex-1 overflow-y-auto bg-background px-10 py-8">
+          <div className="min-h-0 flex-1 overflow-y-auto bg-background px-8 py-6">
             {imported && (
-              <div className="mx-auto mb-5 flex max-w-[680px] gap-3 rounded-xl border border-border bg-surface px-4 py-3">
+              <div className="mx-auto mb-4 flex max-w-[760px] gap-3 rounded-xl border border-border bg-surface px-4 py-3">
                 <ScanText className="mt-0.5 size-5 shrink-0 text-primary" />
                 <div className="flex flex-col gap-0.5 text-sm">
                   <span className="font-medium">Распознано с вашего бланка</span>
@@ -197,7 +270,7 @@ export function RFormEdit({ go }: ScreenProps) {
                 </div>
               </div>
             )}
-            <div className="mx-auto max-w-[680px] overflow-hidden rounded-xl border border-border bg-surface">
+            <div className="mx-auto max-w-[760px] overflow-hidden rounded-xl border border-border bg-surface">
               <div className="bg-primary px-6 py-3">
                 <input
                   value={title}
@@ -209,7 +282,7 @@ export function RFormEdit({ go }: ScreenProps) {
               </div>
               <p className="min-h-5 px-6 pt-3 text-sm text-signal box-content">{tried && !title.trim() ? 'Укажите название анкеты.' : null}</p>
               {sections.map((s) => (
-                <section key={s.id} id={'sec-' + s.id} className={cn('scroll-mt-6 border-t border-border px-6 py-5 first:border-t-0', s.audience === 'AGENCY_ONLY' && 'bg-muted/60')}>
+                <section key={s.id} id={'sec-' + s.id} className={cn('scroll-mt-6 border-t border-border px-6 py-4 first:border-t-0', s.audience === 'AGENCY_ONLY' && 'bg-muted/60')}>
                   <button type="button" onClick={() => setSel({ s: s.id, f: null })} className="flex w-full items-baseline justify-between gap-4 text-left">
                     <h3 className={cn('text-base font-semibold', s.id === section.id && !field && 'text-primary')}>{s.title}</h3>
                     <span className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
@@ -217,66 +290,87 @@ export function RFormEdit({ go }: ScreenProps) {
                       {AUDIENCE_LABEL[s.audience]}
                     </span>
                   </button>
-                  <ul className="mt-3 flex flex-col">
-                    {s.fields.map((x) => {
+                  <ul className="mt-2 flex flex-col" onDragOver={(e) => drag && e.preventDefault()} onDrop={() => dropField(s.id, null)}>
+                    {s.fields.map((x, fi) => {
                       const I = TYPE_ICON[x.type]
                       const on = s.id === section.id && x.id === field?.id
                       const check = review.includes(`${s.id}.${x.id}`)
                       return (
-                        <li key={x.id}>
-                          <button
-                            type="button"
-                            onClick={() => setSel({ s: s.id, f: x.id })}
-                            className={cn('-mx-3 flex w-[calc(100%+24px)] items-center gap-3 rounded-md px-3 py-2.5 text-left', on ? 'bg-primary/8 ring-1 ring-primary' : 'hover:bg-muted')}
-                          >
+                        <li
+                          key={x.id}
+                          draggable
+                          onDragStart={() => setDrag({ s: s.id, f: x.id })}
+                          onDragEnd={() => setDrag(null)}
+                          onDragOver={(e) => drag && (e.preventDefault(), e.stopPropagation())}
+                          onDrop={(e) => (e.stopPropagation(), dropField(s.id, x.id))}
+                          className={cn('group/row -mx-3 flex items-center rounded-md', on ? 'bg-primary/8 ring-1 ring-primary' : 'hover:bg-muted', drag?.f === x.id && 'opacity-40')}
+                        >
+                          <button type="button" onClick={() => setSel({ s: s.id, f: x.id })} className="flex min-w-0 flex-1 items-center gap-2.5 py-1.5 pr-1 pl-2 text-left">
+                            <GripVertical className="size-3.5 shrink-0 cursor-grab text-muted-foreground/50" aria-hidden="true" />
                             <I className="size-4 shrink-0 text-muted-foreground" />
                             <span className="flex min-w-0 flex-1 flex-col">
-                              <span className="truncate text-[15px]">
-                                {x.label}
-                                              </span>
-                              <span className="truncate text-[13px] text-muted-foreground">
+                              <span className="truncate text-[15px] leading-snug">{x.label}</span>
+                              <span className="flex items-center gap-2 truncate text-[12px] leading-tight text-muted-foreground">
                                 {x.type === 'profile' && x.profileKey ? `Из профиля: ${x.profileKey}` : x.type === 'documentRequest' && x.category ? `Документ: ${x.category}` : FIELD_TYPE_LABEL[x.type]}
                                 {x.repeatable && ', можно повторять'}
+                                {x.proof && (
+                                  <span className="flex items-center gap-1 text-primary">
+                                    <FileCheck2 className="size-3.5 shrink-0" /> Нужно подтверждение
+                                  </span>
+                                )}
                               </span>
-                              {x.proof && (
-                                <span className="flex items-center gap-1.5 text-[13px] text-primary">
-                                  <FileCheck2 className="size-3.5 shrink-0" /> Нужно подтверждение
-                                </span>
-                              )}
                             </span>
                             {check && <StatusDot tone="warning">Проверьте</StatusDot>}
                             {x.pdf && <span className="shrink-0 font-mono text-xs text-muted-foreground">{x.pdf}</span>}
                           </button>
+                          <span className="mr-1 hidden shrink-0 group-hover/row:flex">
+                            <button type="button" aria-label="Поле выше" disabled={fi === 0} onClick={() => shiftField(s.id, x.id, -1)} className="flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground disabled:opacity-30">
+                              <ArrowUp className="size-4" />
+                            </button>
+                            <button type="button" aria-label="Поле ниже" disabled={fi === s.fields.length - 1} onClick={() => shiftField(s.id, x.id, 1)} className="flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground disabled:opacity-30">
+                              <ArrowDown className="size-4" />
+                            </button>
+                          </span>
                         </li>
                       )
                     })}
                   </ul>
-                  {s.fields.length === 0 && <p className="py-2 text-sm text-muted-foreground">Полей пока нет. Добавьте первое.</p>}
-                  <div className="relative mt-2">
-                    <button type="button" onClick={() => setAdding(adding === s.id ? null : s.id)} className="flex items-center gap-2 text-sm font-medium text-primary" aria-expanded={adding === s.id}>
-                      <Plus className="size-4" /> Добавить поле
+                  {s.fields.length === 0 && <p className="py-1 text-sm text-muted-foreground">Полей пока нет. Добавьте первое.</p>}
+                  {/* Быстрое добавление: частые типы — в один клик, остальные — в «Ещё». */}
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <span className="mr-1 text-[13px] text-muted-foreground">Добавить:</span>
+                    {(s.audience === 'AGENCY_ONLY' ? (['text', 'select', 'date', 'file'] as FieldType[]) : (['profile', 'text', 'select', 'date', 'documentRequest', 'file'] as FieldType[])).map((t) => {
+                      const I = TYPE_ICON[t]
+                      return (
+                        <button key={t} type="button" onClick={() => addField(s.id, t)} className="flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-[13px] hover:bg-muted">
+                          <I className="size-3.5 text-muted-foreground" /> {FIELD_TYPE_LABEL[t]}
+                        </button>
+                      )
+                    })}
+                    <button type="button" onClick={() => setAdding(adding === s.id ? null : s.id)} aria-expanded={adding === s.id} className="flex h-8 items-center gap-1 rounded-md px-2 text-[13px] font-medium text-primary hover:bg-muted">
+                      <Plus className="size-3.5" /> Ещё
                     </button>
-                    {adding === s.id && (
-                      <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl border border-border bg-surface p-1.5">
-                        {(s.audience === 'AGENCY_ONLY' ? AGENCY_TYPES : ALL_TYPES).map((t) => {
-                          const I = TYPE_ICON[t]
-                          return (
-                            <button key={t} type="button" onClick={() => addField(s.id, t)} className="flex h-9 items-center gap-2 rounded-md px-2.5 text-left text-sm hover:bg-muted">
-                              <I className="size-4 shrink-0 text-muted-foreground" />
-                              <span className="truncate">{FIELD_TYPE_LABEL[t]}</span>
-                            </button>
-                          )
-                        })}
-                      </div>
-                    )}
                   </div>
+                  {adding === s.id && (
+                    <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl border border-border bg-surface p-1.5">
+                      {(s.audience === 'AGENCY_ONLY' ? AGENCY_TYPES : ALL_TYPES).map((t) => {
+                        const I = TYPE_ICON[t]
+                        return (
+                          <button key={t} type="button" onClick={() => addField(s.id, t)} className="flex h-9 items-center gap-2 rounded-md px-2.5 text-left text-sm hover:bg-muted">
+                            <I className="size-4 shrink-0 text-muted-foreground" />
+                            <span className="truncate">{FIELD_TYPE_LABEL[t]}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
                 </section>
               ))}
             </div>
           </div>
 
           {/* Властивості */}
-          <aside className="flex w-[320px] shrink-0 flex-col gap-5 overflow-y-auto border-l border-border bg-surface px-6 py-6">
+          <aside className="flex w-[300px] shrink-0 flex-col gap-4 overflow-y-auto border-l border-border bg-surface px-5 py-5">
             {field ? (
               <>
                 <div className="flex items-center justify-between gap-2">

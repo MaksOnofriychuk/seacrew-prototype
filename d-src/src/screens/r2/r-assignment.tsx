@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { Download, FileCheck2, FileText, Hourglass, MessageSquare } from 'lucide-react'
-import { MonoNums } from '@/components/app/mono-nums'
+import { ChevronsDownUp, ChevronsUpDown, Download, FileText, Hourglass, MessageSquare } from 'lucide-react'
 import { EmptyState, useView, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { WebField, WebInput, WebSelect, WebTextarea } from '@/components/web/fields'
@@ -11,8 +10,9 @@ import { WebDatePick } from '@/components/web/web-pickers'
 import { addYears, TODAY } from '@/lib/dates'
 import { StatusDot } from '@/components/web/status-badge'
 import { ASSIGNMENT_STATUS_LABEL, ASSIGNMENTS, FORMS, seafarerById } from '@/lib/data-web'
-import { ANSWERS, FORM_DEFS, SOURCE_LABEL, type Answer } from '@/lib/data-recruiter-2'
-import { cn } from '@/lib/utils'
+import { ANSWERS, FORM_DEFS, SOURCE_LABEL } from '@/lib/data-recruiter-2'
+import { Fold } from '../r1/sf-parts'
+import { AnswerRow } from './answer-parts'
 import type { ScreenProps } from '../registry'
 import { ASSIGNMENT_TONE, BlockHead, ruDate, useR2 } from './_parts'
 
@@ -33,6 +33,8 @@ export function RAssignment({ go }: ScreenProps) {
     if (v.file) files.push({ key: k, name: v.file.name, size: v.file.size, how: SOURCE_LABEL[v.source].toLowerCase() })
     if (v.proof && !files.some((x) => x.name === v.proof!.file.name)) files.push({ key: k + '.proof', name: v.proof.file.name, size: v.proof.file.size, how: 'подтверждение' })
   }
+  const seaSections = sections.filter((x) => x.audience === 'SEAFARER')
+  const [closed, setClosed] = useState<string[]>([])
   const agency = sections.filter((x) => x.audience === 'AGENCY_ONLY').flatMap((x) => x.fields)
   const [agencyVals, setAgencyVals] = useState<Record<string, string>>({})
   const chat = r.chats.find((c) => c.seafarerId === s.id)
@@ -50,19 +52,36 @@ export function RAssignment({ go }: ScreenProps) {
   ) : (
     <div className="grid grid-cols-[minmax(0,1fr)_340px] items-start gap-8">
       <div className="overflow-hidden rounded-xl border border-border bg-surface">
-        <div className="bg-primary px-6 py-3 text-[15px] font-semibold text-primary-foreground">{form.title}</div>
-        {sections
-          .filter((x) => x.audience === 'SEAFARER')
-          .map((sec) => (
-            <section key={sec.id} className="border-t border-border px-6 py-5 first:border-t-0">
-              <h3 className="mb-2 text-base font-semibold">{sec.title}</h3>
+        <div className="flex items-center justify-between gap-4 bg-primary px-5 py-2.5 text-primary-foreground">
+          <span className="text-[15px] font-semibold">{form.title}</span>
+          <button type="button" onClick={() => setClosed(closed.length ? [] : seaSections.map((x) => x.id))} className="flex items-center gap-1.5 text-sm font-medium text-primary-foreground/90 hover:text-primary-foreground">
+            {closed.length ? <ChevronsUpDown className="size-4" /> : <ChevronsDownUp className="size-4" />}
+            {closed.length ? 'Развернуть все' : 'Свернуть все'}
+          </button>
+        </div>
+        {seaSections.map((sec) => {
+          const got = sec.fields.filter((f) => answers[f.id]).length
+          return (
+            <Fold
+              key={sec.id}
+              level={2}
+              title={sec.title}
+              aside={
+                <>
+                  <span className="font-mono">{got}</span> из <span className="font-mono">{sec.fields.length}</span>
+                </>
+              }
+              open={!closed.includes(sec.id)}
+              onToggle={(o) => setClosed(o ? closed.filter((x) => x !== sec.id) : [...closed, sec.id])}
+            >
               <dl className="flex flex-col">
                 {sec.fields.map((f) => (
                   <AnswerRow key={f.id} label={f.label} a={answers[f.id]} needsProof={f.proof} onFile={view} />
                 ))}
               </dl>
-            </section>
-          ))}
+            </Fold>
+          )
+        })}
       </div>
 
       <aside className="flex flex-col gap-8">
@@ -160,50 +179,5 @@ export function RAssignment({ go }: ScreenProps) {
       </ViewState>
       {att.node}
     </WebShell>
-  )
-}
-
-function AnswerRow({ label, a, needsProof, onFile }: { label: string; a?: Answer; needsProof?: boolean; onFile: (name: string) => void }) {
-  const lines = a?.value.split('\n') ?? []
-  return (
-    <div className="flex flex-col gap-0.5 border-t border-border py-2.5 first:border-t-0">
-      {/* Метка источника — над ответом, справа от названия поля */}
-      <div className="flex items-baseline justify-between gap-4">
-        <dt className="text-[13px] text-muted-foreground">{label}</dt>
-        {a && <span className={cn('text-xs whitespace-nowrap', a.source === 'edited' ? 'text-warning' : 'text-muted-foreground')}>{SOURCE_LABEL[a.source]}</span>}
-      </div>
-      <dd className="text-[15px]">
-        {!a ? (
-          <span className="text-muted-foreground">Нет ответа</span>
-        ) : a.file ? (
-          <button type="button" onClick={() => onFile(a.file!.name)} className="flex items-center gap-2 text-left font-medium text-primary">
-            <FileText className="size-4 shrink-0" />
-            {a.file.name}
-          </button>
-        ) : lines.length > 1 ? (
-          <ol className="flex flex-col gap-1">
-            {lines.map((l, i) => (
-              <li key={i} className="flex gap-2">
-                <span className="w-4 shrink-0 font-mono text-sm text-muted-foreground">{i + 1}</span>
-                {l}
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <MonoNums text={a.value} />
-        )}
-        {a?.proof && (
-          // Поле с отметкой «Нужно подтверждение документом» (ТЗ §9): чем именно подтверждено.
-          <span className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[13px] text-muted-foreground">
-            <FileCheck2 className="size-3.5 shrink-0 text-success" />
-            {a.proof.kind === 'library' ? `Подтверждено документом из профиля: ${a.proof.doc}` : `Подтверждено приложенным файлом: ${a.proof.doc}`}
-            <button type="button" onClick={() => onFile(a.proof!.file.name)} className="font-medium text-primary hover:underline">
-              {a.proof.file.name}
-            </button>
-          </span>
-        )}
-        {needsProof && a && !a.proof && <span className="mt-1 block text-[13px] text-warning">Нет подтверждения документом</span>}
-      </dd>
-    </div>
   )
 }
