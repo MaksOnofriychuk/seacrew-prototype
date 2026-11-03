@@ -82,13 +82,20 @@ export function CountryPick({
   return (
     <>
       <PickField id={id} value={shown} placeholder={placeholder} icon={<ChevronDown className="size-4" />} invalid={invalid} disabled={disabled} className={className} onOpen={() => setOpen(true)} />
-      <BottomSheet open={open} onClose={close} title={title}>
-        <div className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input aria-label="Поиск страны" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Название страны" className="h-12 pl-10 text-base md:text-base" />
-        </div>
+      <BottomSheet
+        open={open}
+        onClose={close}
+        title={title}
+        fixed
+        head={
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input aria-label="Поиск страны" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Название страны" className="h-12 pl-10 text-base md:text-base" />
+          </div>
+        }
+      >
         {list.length ? (
-          <ul className="mt-3 overflow-hidden rounded-xl border border-border">
+          <ul className="overflow-hidden rounded-xl border border-border">
             {list.map((c) => {
               const on = shown === c.ru
               return (
@@ -110,7 +117,7 @@ export function CountryPick({
             })}
           </ul>
         ) : (
-          <p className="mt-4 text-[15px] text-muted-foreground">Такой страны нет в списке. Проверьте название.</p>
+          <p className="text-[15px] text-muted-foreground">Такой страны нет в списке. Проверьте название.</p>
         )}
       </BottomSheet>
     </>
@@ -481,13 +488,20 @@ export function PhoneField({
         />
       </div>
       {bad && !invalid && <p className="text-sm text-signal">Номер неполный</p>}
-      <BottomSheet open={open} onClose={close} title="Код страны">
-        <div className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input aria-label="Поиск страны или кода" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Страна или код" className="h-12 pl-10 text-base md:text-base" />
-        </div>
+      <BottomSheet
+        open={open}
+        onClose={close}
+        title="Код страны"
+        fixed
+        head={
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input aria-label="Поиск страны или кода" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Страна или код" className="h-12 pl-10 text-base md:text-base" />
+          </div>
+        }
+      >
         {list.length ? (
-          <ul className="mt-3 overflow-hidden rounded-xl border border-border">
+          <ul className="overflow-hidden rounded-xl border border-border">
             {list.map((d) => {
               const on = d.country.en === dial.country.en
               return (
@@ -513,7 +527,7 @@ export function PhoneField({
             })}
           </ul>
         ) : (
-          <p className="mt-4 text-[15px] text-muted-foreground">Такой страны или кода нет в списке.</p>
+          <p className="text-[15px] text-muted-foreground">Такой страны или кода нет в списке.</p>
         )}
       </BottomSheet>
     </div>

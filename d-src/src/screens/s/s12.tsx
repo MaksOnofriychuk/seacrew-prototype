@@ -127,13 +127,20 @@ function AirportPick({ value, onChange }: { value: string; onChange: (v: string)
         <span className={cn('truncate', !value && 'text-muted-foreground')}>{value || 'Выберите аэропорт'}</span>
         <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
       </button>
-      <BottomSheet open={open} onClose={close} title="Ближайший аэропорт">
-        <div className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
-          <TextInput aria-label="Поиск аэропорта" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Город или код, например ODS" className="pl-10" />
-        </div>
+      <BottomSheet
+        open={open}
+        onClose={close}
+        title="Ближайший аэропорт"
+        fixed
+        head={
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+            <TextInput aria-label="Поиск аэропорта" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Город или код, например ODS" className="pl-10" />
+          </div>
+        }
+      >
         {list.length ? (
-          <ul className="mt-3 overflow-hidden rounded-xl border border-border">
+          <ul className="overflow-hidden rounded-xl border border-border">
             {list.map((a) => {
               const label = airportLabel(a)
               const on = value === label
@@ -162,7 +169,7 @@ function AirportPick({ value, onChange }: { value: string; onChange: (v: string)
             })}
           </ul>
         ) : (
-          <p className="mt-4 text-[15px] text-muted-foreground">Ничего не нашли. Проверьте название или код.</p>
+          <p className="text-[15px] text-muted-foreground">Ничего не нашли. Проверьте название или код.</p>
         )}
       </BottomSheet>
     </>
