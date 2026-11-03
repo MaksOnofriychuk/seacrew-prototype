@@ -71,7 +71,7 @@ export function A2Sub({ go }: ScreenProps) {
   }
 
   return (
-    <AdminPage active="a-users" go={go}>
+    <AdminPage active="a2-subs" go={go}>
       <PageHeader
         back={{ label: 'Подписки моряков', onClick: () => go('a2-subs') }}
         title={

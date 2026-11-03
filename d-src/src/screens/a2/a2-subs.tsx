@@ -3,7 +3,7 @@ import { Crown } from 'lucide-react'
 import { ViewState } from '@/components/app/states'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, WebAvatar, type Tone } from '@/components/web/status-badge'
 import {
   PREMIUM_PRICE,
@@ -20,7 +20,7 @@ import {
 } from '@/lib/data-admin-2'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { AdminPage, Mono, dt, useBagState } from '../a/_parts'
+import { AdminPage, AdminTabs, Mono, PeriodFilter, dt, inPeriod, useBagState } from '../a/_parts'
 import { Sample } from './_parts'
 
 export const SUB_TONE: Record<SubState, Tone> = { active: 'success', trial: 'primary', ended: 'muted' }
@@ -42,9 +42,12 @@ export function A2Subs({ go }: ScreenProps) {
   const [tab, setTab] = useBagState<Tab>('a2.subsTab', 'active')
   const [q, setQ] = useState('')
   const [source, setSource] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const rows = subs
     .filter((s) => tab === 'all' || s.state === tab)
     .filter((s) => !source || s.source === source)
+    .filter((s) => inPeriod(s.until, from, to))
     .filter((s) => !q || (s.name + s.position).toLowerCase().includes(q.toLowerCase()))
 
   const T = SUB_TOTALS
@@ -90,7 +93,7 @@ export function A2Subs({ go }: ScreenProps) {
   ]
 
   return (
-    <AdminPage active="a-users" go={go}>
+    <AdminPage active="a2-subs" go={go}>
       <PageHeader
         title="Подписки моряков"
         description="Премиум оплачивают в App Store, Google Play или картой на сайте. Отсюда можно продлить подписку вручную — например, если оплата прошла, а премиум не включился."
@@ -134,7 +137,7 @@ export function A2Subs({ go }: ScreenProps) {
         </section>
       </ViewState>
 
-      <PageTabs<Tab>
+      <AdminTabs<Tab>
         tabs={[
           { id: 'active', label: 'Активные', count: subs.filter((s) => s.state === 'active').length },
           { id: 'trial', label: 'Пробные', count: subs.filter((s) => s.state === 'trial').length },
@@ -144,8 +147,9 @@ export function A2Subs({ go }: ScreenProps) {
         value={tab}
         onChange={setTab}
       />
-      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Имя или должность' }} onReset={source ? () => setSource('') : undefined} count={rows.length}>
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Имя или должность' }} onReset={source || from || to ? () => (setSource(''), setFrom(''), setTo('')) : undefined} count={rows.length}>
         <FilterSelect label="Откуда" value={source} onChange={setSource} options={(Object.keys(SUB_SOURCE_LABEL) as SubSource[]).map((k) => ({ value: k, label: SUB_SOURCE_LABEL[k] }))} />
+        <PeriodFilter label="Действует до" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} future />
       </FilterBar>
       <DataTable
         columns={columns}
@@ -157,7 +161,7 @@ export function A2Subs({ go }: ScreenProps) {
         }}
         initialSort={{ key: 'until', dir: 'asc' }}
         empty={
-          q || source
+          q || source || from || to
             ? { icon: Crown, title: 'Никого не нашли', text: 'Проверьте имя или сбросьте фильтр.' }
             : tab === 'ended'
               ? { icon: Crown, title: 'Закончившихся подписок нет', text: 'Здесь будут моряки, которые не продлили премиум.' }

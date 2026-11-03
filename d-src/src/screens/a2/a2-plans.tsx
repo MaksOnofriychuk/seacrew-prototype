@@ -4,13 +4,13 @@ import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebCheckbox, WebField, WebInput, WebSelect } from '@/components/web/fields'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
 import { COMPANY_PLANS, ORG_PLANS, SEARCH_LABEL, money, type CompanyPlan, type OrgPlanRow } from '@/lib/data-admin-2'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { AdminPage, CancelButton, Facts, Mono, Note, SideSheet, dt, useBagState } from '../a/_parts'
+import { AdminPage, AdminTabs, CancelButton, Facts, Mono, Note, SideSheet, dt, useBagState } from '../a/_parts'
 import { Sample } from './_parts'
 
 type Tab = 'plans' | 'orgs'
@@ -46,7 +46,7 @@ export function A2Plans({ go }: ScreenProps) {
 
   const setD = (id: string, k: string, v: string | boolean) => setDraft({ ...draft, [id]: { ...draft[id], [k]: v } })
   const bad = (s: string | boolean, allowEmpty = false) => typeof s === 'string' && (s === '' ? !allowEmpty : !(Number(s) >= 0 && Number.isFinite(Number(s))))
-  const invalid = plans.some((p) => bad(draft[p.id].month) || bad(draft[p.id].year) || bad(draft[p.id].recruiters, true) || bad(draft[p.id].jobs, true) || bad(draft[p.id].invites, true))
+  const invalid = plans.some((p) => bad(draft[p.id].month) || bad(draft[p.id].year))
 
   const save = () => {
     setPlans(
@@ -63,10 +63,24 @@ export function A2Plans({ go }: ScreenProps) {
     <WebInput aria-label={k} inputMode="numeric" value={draft[id][k] as string} onChange={(e) => setD(id, k, e.target.value)} placeholder={placeholder} className={cn('h-9 font-mono', bad(draft[id][k], !!placeholder) && 'border-signal')} />
   )
 
+  // лимиты выбираются из ряда значений (правило 4); «Без лимита» — пустое значение
+  const limitSelect = (id: string, k: string, steps: number[]) => {
+    const cur = draft[id][k] as string
+    const all = [...new Set([...steps, ...(cur ? [Number(cur)] : [])])].sort((a, b) => a - b)
+    return (
+      <WebSelect
+        value={cur || 'none'}
+        onChange={(v) => setD(id, k, v === 'none' ? '' : v)}
+        options={[{ value: 'none', label: 'Без лимита' }, ...all.map((n) => ({ value: String(n), label: n.toLocaleString('ru') }))]}
+        className="h-9 data-[size=default]:h-9 font-mono"
+      />
+    )
+  }
+
   const ROWS: { label: string; hint?: string; view: (p: CompanyPlan) => ReactNode; edit: (p: CompanyPlan) => ReactNode }[] = [
-    { label: 'Рекрутеров в компании', view: (p) => lim(p.recruiters), edit: (p) => cellInput(p.id, 'recruiters', 'без лимита') },
-    { label: 'Активных вакансий', view: (p) => lim(p.jobs), edit: (p) => cellInput(p.id, 'jobs', 'без лимита') },
-    { label: 'Приглашений морякам в месяц', view: (p) => lim(p.invites), edit: (p) => cellInput(p.id, 'invites', 'без лимита') },
+    { label: 'Рекрутеров в компании', view: (p) => lim(p.recruiters), edit: (p) => limitSelect(p.id, 'recruiters', [1, 2, 3, 5, 10, 25]) },
+    { label: 'Активных вакансий', view: (p) => lim(p.jobs), edit: (p) => limitSelect(p.id, 'jobs', [1, 3, 5, 10, 25, 50, 100]) },
+    { label: 'Приглашений морякам в месяц', view: (p) => lim(p.invites), edit: (p) => limitSelect(p.id, 'invites', [10, 25, 50, 100, 250, 500, 1000, 2500]) },
     {
       label: 'Поиск по базе моряков',
       view: (p) => SEARCH_LABEL[p.search],
@@ -98,7 +112,7 @@ export function A2Plans({ go }: ScreenProps) {
   ]
 
   return (
-    <AdminPage active="a-orgs" go={go}>
+    <AdminPage active="a2-plans" go={go}>
       <PageHeader
         title="Тарифы компаний"
         description="Сколько платят агентства и что получают за эти деньги. Изменения цен действуют со следующей оплаты, лимиты — сразу."
@@ -116,7 +130,7 @@ export function A2Plans({ go }: ScreenProps) {
           )
         }
       />
-      <PageTabs<Tab>
+      <AdminTabs<Tab>
         tabs={[
           { id: 'plans', label: 'Тарифы', count: plans.length },
           { id: 'orgs', label: 'Компании на тарифах', count: orgPlans.length },
@@ -192,7 +206,7 @@ export function A2Plans({ go }: ScreenProps) {
             </table>
             {editing && (
               <div className="flex items-center justify-end gap-3 border-t border-border bg-muted/50 px-6 py-4">
-                <span className="mr-auto text-sm text-muted-foreground">Пустой лимит — без ограничений. Компании получат письмо об изменениях.</span>
+                <span className="mr-auto text-sm text-muted-foreground">Компании получат письмо об изменениях.</span>
                 <CancelButton onClick={() => setEditing(false)} />
                 <Button disabled={invalid} onClick={save}>
                   Сохранить тарифы

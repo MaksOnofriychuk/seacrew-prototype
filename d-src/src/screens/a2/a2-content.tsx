@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { FileText, Send } from 'lucide-react'
+import { FileText, Plus, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
-import { WebField, WebTextarea } from '@/components/web/fields'
+import { WebField, WebInput, WebSelect, WebTextarea } from '@/components/web/fields'
+import { WebDatePick } from '@/components/web/web-pickers'
+import { BOUNDS, isoToRu, ruToIso } from '@/lib/dates'
 import { FilterBar } from '@/components/web/filter-bar'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
 import { LANGS, MAILINGS, TEXTS, TEXT_STATE_LABEL, type Mailing, type TextItem, type TextKind, type TextState } from '@/lib/data-admin-2'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
-import { AdminPage, Facts, Mono, Note, SideSheet, dt, useBagState } from '../a/_parts'
+import { AdminPage, AdminTabs, CancelButton, Facts, Mono, Note, PeriodFilter, SideSheet, dt, inPeriod, useBagState } from '../a/_parts'
 import { Sample } from './_parts'
 
 type Tab = TextKind | 'mail'
@@ -23,13 +25,25 @@ export function A2Content({ go }: ScreenProps) {
   const [tab, setTab] = useState<Tab>('app')
   const [q, setQ] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [creating, setCreating] = useState(false)
+  const [nm, setNm] = useState({ title: '', channel: 'Push' as Mailing['channel'], audience: 'Все моряки', date: '', text: '' })
   const [ru, setRu] = useState('')
   const [en, setEn] = useState('')
   const text = tab !== 'mail' ? texts.find((t) => t.id === openId) : undefined
   const mail = tab === 'mail' ? mails.find((m) => m.id === openId) : undefined
 
-  const textRows = texts.filter((t) => t.kind === tab).filter((t) => !q || (t.title + t.key + t.ru).toLowerCase().includes(q.toLowerCase()))
+  const textRows = texts.filter((t) => t.kind === tab).filter((t) => inPeriod(t.updated, from, to)).filter((t) => !q || (t.title + t.key + t.ru).toLowerCase().includes(q.toLowerCase()))
   const mailRows = mails.filter((m) => !q || m.title.toLowerCase().includes(q.toLowerCase()))
+
+  const createMail = () => {
+    const m: Mailing = { id: 'm' + Date.now(), title: nm.title.trim(), channel: nm.channel, trigger: `Один раз, ${dt(nm.date)}`, audience: nm.audience, state: 'draft', sent: 0 }
+    setMails([m, ...mails])
+    setCreating(false)
+    setNm({ title: '', channel: 'Push', audience: 'Все моряки', date: '', text: '' })
+    showToast('Рассылка сохранена как черновик')
+  }
 
   const openText = (t: TextItem) => {
     setOpenId(t.id)
@@ -83,17 +97,24 @@ export function A2Content({ go }: ScreenProps) {
   ]
 
   return (
-    <AdminPage active="a-refs" go={go}>
+    <AdminPage active="a2-content" go={go}>
       <PageHeader
         title="Тексты и рассылки"
         description="Тексты приложения, ответы на частые вопросы и письма. Мы пишем черновик на русском и английском, заказчик утверждает, потом текст уходит переводчикам."
+        actions={
+          tab === 'mail' && (
+            <Button onClick={() => setCreating(true)}>
+              <Plus /> Новая рассылка
+            </Button>
+          )
+        }
         meta={
           <span className="flex items-center gap-2">
             Кто пишет и утверждает тексты — пока наше предложение <Sample q="152–154" />
           </span>
         }
       />
-      <PageTabs<Tab>
+      <AdminTabs<Tab>
         tabs={[
           { id: 'app', label: 'Приложение', count: texts.filter((t) => t.kind === 'app').length },
           { id: 'faq', label: 'Вопросы и ответы', count: texts.filter((t) => t.kind === 'faq').length },
@@ -101,9 +122,11 @@ export function A2Content({ go }: ScreenProps) {
           { id: 'mail', label: 'Рассылки', count: mails.length },
         ]}
         value={tab}
-        onChange={(t) => (setTab(t), setQ(''), setOpenId(null))}
+        onChange={(t) => (setTab(t), setQ(''), setFrom(''), setTo(''), setOpenId(null))}
       />
-      <FilterBar search={{ value: q, onChange: setQ, placeholder: tab === 'mail' ? 'Название рассылки' : 'Текст или ключ' }} count={tab === 'mail' ? mailRows.length : textRows.length} />
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: tab === 'mail' ? 'Название рассылки' : 'Текст или ключ' }} onReset={from || to || q ? () => (setFrom(''), setTo(''), setQ('')) : undefined} count={tab === 'mail' ? mailRows.length : textRows.length}>
+        {tab !== 'mail' && <PeriodFilter label="Изменён" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />}
+      </FilterBar>
       {tab === 'mail' ? (
         <DataTable columns={mailCols} rows={mailRows} rowKey={(m) => m.id} onRowClick={(m) => setOpenId(m.id)} selectedKey={openId ?? undefined} empty={{ icon: Send, title: 'Рассылок нет', text: 'Автоматические уведомления и письма появятся здесь.' }} />
       ) : (
@@ -144,7 +167,7 @@ export function A2Content({ go }: ScreenProps) {
             <WebField id="tx-ru" label="Русский" hint={<><Mono>{ru.length}</Mono> знаков</>}>
               <WebTextarea id="tx-ru" value={ru} onChange={(e) => setRu(e.target.value)} />
             </WebField>
-            <WebField id="tx-en" label="English">
+            <WebField id="tx-en" label="English" hint={<><Mono>{en.length}</Mono> знаков</>}>
               <WebTextarea id="tx-en" value={en} onChange={(e) => setEn(e.target.value)} />
             </WebField>
             <Note>
@@ -152,6 +175,39 @@ export function A2Content({ go }: ScreenProps) {
             </Note>
           </>
         )}
+      </SideSheet>
+
+      <SideSheet
+        open={creating}
+        onOpenChange={setCreating}
+        title="Новая рассылка"
+        description="Сохранится черновиком. Отправится в выбранный день, когда вы её включите."
+        footer={
+          <>
+            <CancelButton onClick={() => setCreating(false)} />
+            <Button disabled={!nm.title.trim() || !nm.date} onClick={createMail}>
+              Сохранить черновик
+            </Button>
+          </>
+        }
+      >
+        <WebField id="nm-title" label="Название" required hint="Видно только команде.">
+          <WebInput id="nm-title" value={nm.title} onChange={(e) => setNm({ ...nm, title: e.target.value })} placeholder="Например: Новые вакансии недели" />
+        </WebField>
+        <div className="grid grid-cols-2 gap-3">
+          <WebField id="nm-ch" label="Канал">
+            <WebSelect id="nm-ch" value={nm.channel} onChange={(v) => setNm({ ...nm, channel: v as Mailing['channel'] })} options={['Push', 'Email', 'Push и email']} />
+          </WebField>
+          <WebField id="nm-aud" label="Кому">
+            <WebSelect id="nm-aud" value={nm.audience} onChange={(v) => setNm({ ...nm, audience: v })} options={['Все моряки', 'Новые моряки', 'Без премиума', 'Активные за 30 дней', 'Рекрутеры']} />
+          </WebField>
+        </div>
+        <WebField id="nm-date" label="Когда отправить" required hint="Не раньше сегодняшнего дня.">
+          <WebDatePick id="nm-date" value={isoToRu(nm.date)} onChange={(v) => setNm({ ...nm, date: ruToIso(v) })} {...BOUNDS.future} className="w-48" />
+        </WebField>
+        <WebField id="nm-text" label="Текст" hint="Можно написать позже, в черновике.">
+          <WebTextarea id="nm-text" value={nm.text} onChange={(e) => setNm({ ...nm, text: e.target.value })} />
+        </WebField>
       </SideSheet>
 
       <SideSheet

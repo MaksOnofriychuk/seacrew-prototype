@@ -6,19 +6,20 @@ import { Gift, Plus, Ticket, Users } from 'lucide-react'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
-import { WebCheckbox, WebField, WebInput, WebSelect } from '@/components/web/fields'
+import { WebField, WebInput, WebSelect } from '@/components/web/fields'
 import { FilterBar } from '@/components/web/filter-bar'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, WebAvatar, type Tone } from '@/components/web/status-badge'
 import { INVITERS, INVITE_RULE, INVITE_TOTALS, PROMOS, PROMO_STATE_LABEL, type Inviter, type Promo, type PromoState } from '@/lib/data-admin-2'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { AdminPage, CancelButton, Facts, Mono, Note, SideSheet, dt, useBagState } from '../a/_parts'
+import { AdminPage, AdminTabs, CancelButton, Facts, Mono, Note, SideSheet, dt, useBagState } from '../a/_parts'
 import { Sample, UsageBar } from './_parts'
 
 const TONE: Record<PromoState, Tone> = { active: 'success', off: 'muted', expired: 'muted' }
 const DAYS = [7, 14, 30]
+const LIMITS = ['10', '25', '50', '100', '250', '500', '1000']
 const AUDIENCE = { new: 'Новые моряки', all: 'Все моряки' } as const
 const EMPTY = { code: '', days: 7, limit: '100', unlimited: false, until: '2026-12-31', audience: 'new' as Promo['audience'], note: '' }
 
@@ -142,7 +143,7 @@ export function A2Promo({ go }: ScreenProps) {
   ]
 
   return (
-    <AdminPage active="a-users" go={go}>
+    <AdminPage active="a2-promo" go={go}>
       <PageHeader
         title="Промокоды и приглашения"
         description="Код даёт моряку дни премиума. Приглашение от моряка моряку по ссылке или коду дарит неделю премиума обоим."
@@ -154,7 +155,7 @@ export function A2Promo({ go }: ScreenProps) {
           )
         }
       />
-      <PageTabs<Tab>
+      <AdminTabs<Tab>
         tabs={[
           { id: 'codes', label: 'Промокоды', count: promos.filter((p) => promoState(p) === 'active').length },
           { id: 'invites', label: 'Приглашения' },
@@ -298,12 +299,14 @@ export function A2Promo({ go }: ScreenProps) {
             ))}
           </div>
         </div>
-        <WebField id="pc-limit" label="Сколько раз можно использовать" error={!f.unlimited && f.limit && !(Number.isInteger(limitNum) && limitNum > 0) ? 'Целое число больше нуля' : undefined}>
-          <WebInput id="pc-limit" inputMode="numeric" disabled={f.unlimited} value={f.unlimited ? '' : f.limit} onChange={(e) => setF({ ...f, limit: e.target.value })} className="font-mono" />
+        <WebField id="pc-limit" label="Сколько раз можно использовать">
+          <WebSelect
+            id="pc-limit"
+            value={f.unlimited ? 'unl' : f.limit}
+            onChange={(v) => setF({ ...f, unlimited: v === 'unl', limit: v === 'unl' ? f.limit : v })}
+            options={[...LIMITS.map((n) => ({ value: n, label: n })), { value: 'unl', label: 'Без лимита' }]}
+          />
         </WebField>
-        <WebCheckbox id="pc-unl" checked={f.unlimited} onChange={(v) => setF({ ...f, unlimited: v })}>
-          Без лимита
-        </WebCheckbox>
         <WebField id="pc-until" label="Действует до" hint="Оставьте пустым — код будет бессрочным.">
           <WebDatePick id="pc-until" value={isoToRu(f.until)} onChange={(v) => setF({ ...f, until: ruToIso(v) })} {...BOUNDS.future} clearable className="w-48" />
         </WebField>
@@ -325,7 +328,6 @@ export function A2Promo({ go }: ScreenProps) {
           <>
             <CancelButton onClick={() => setEditRule(false)} />
             <Button
-              disabled={!(Number(ruleDraft.daysEach) > 0 && Number(ruleDraft.max) > 0)}
               onClick={() => {
                 setRule({ daysEach: Number(ruleDraft.daysEach), maxWeeksPerYear: Number(ruleDraft.max) })
                 showToast('Правило приглашений сохранено')
@@ -337,11 +339,11 @@ export function A2Promo({ go }: ScreenProps) {
           </>
         }
       >
-        <WebField id="ir-days" label="Дней премиума каждому" hint="Обоим: и тому, кто пригласил, и тому, кто пришёл.">
-          <WebInput id="ir-days" inputMode="numeric" value={ruleDraft.daysEach} onChange={(e) => setRuleDraft({ ...ruleDraft, daysEach: e.target.value })} className="font-mono" />
+        <WebField id="ir-days" label="Премиума каждому" hint="Обоим: и тому, кто пригласил, и тому, кто пришёл.">
+          <WebSelect id="ir-days" value={ruleDraft.daysEach} onChange={(v) => setRuleDraft({ ...ruleDraft, daysEach: v })} options={DAYS.map((d) => ({ value: String(d), label: daysText(d) }))} />
         </WebField>
-        <WebField id="ir-max" label="Недель в год на одного пригласившего, не больше">
-          <WebInput id="ir-max" inputMode="numeric" value={ruleDraft.max} onChange={(e) => setRuleDraft({ ...ruleDraft, max: e.target.value })} className="font-mono" />
+        <WebField id="ir-max" label="Недель в год на одного пригласившего, не больше" hint="Выше этого предела бонусы не начисляются.">
+          <WebSelect id="ir-max" value={ruleDraft.max} onChange={(v) => setRuleDraft({ ...ruleDraft, max: v })} options={['2', '4', '8', '12', '26', '52'].map((n) => ({ value: n, label: n }))} />
         </WebField>
       </SideSheet>
 

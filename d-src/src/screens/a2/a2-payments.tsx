@@ -4,13 +4,13 @@ import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebInput, WebTextarea } from '@/components/web/fields'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
 import { PAYMENTS, PAY_MONTH, PAY_STATE_LABEL, money, type PayChannel, type PayState, type Payment } from '@/lib/data-admin-2'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { AdminPage, CancelButton, Facts, Mono, Note, SideSheet, dt, useBagState } from '../a/_parts'
+import { AdminPage, AdminTabs, CancelButton, Facts, Mono, Note, PeriodFilter, SideSheet, dt, inPeriod, useBagState } from '../a/_parts'
 import { SummaryLine } from './_parts'
 
 const TONE: Record<PayState, Tone> = { paid: 'success', refunded: 'muted', failed: 'error', pending: 'warning' }
@@ -27,6 +27,8 @@ export function A2Payments({ go }: ScreenProps) {
   const [, setOrg] = useBagState('a.org', 'org-mc')
   const [tab, setTab] = useState<Tab>('all')
   const [channel, setChannel] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
   const [refunding, setRefunding] = useState(false)
   const [full, setFull] = useState(true)
@@ -37,6 +39,7 @@ export function A2Payments({ go }: ScreenProps) {
   const rows = pays
     .filter((p) => (tab === 'all' ? true : tab === 'refunded' ? p.state === 'refunded' : p.payerKind === tab))
     .filter((p) => !channel || p.channel === channel)
+    .filter((p) => inPeriod(p.at, from, to))
     .filter((p) => !q || (p.payer + p.item + p.id).toLowerCase().includes(q.toLowerCase()))
 
   const close = () => {
@@ -86,7 +89,7 @@ export function A2Payments({ go }: ScreenProps) {
 
   const M = PAY_MONTH
   return (
-    <AdminPage active="a-users" go={go}>
+    <AdminPage active="a2-payments" go={go}>
       <PageHeader
         title="Платежи"
         description="Оплаты премиума моряками и тарифов компаниями. Возврат по карте или счёту оформляется здесь, за покупки в App Store и Google Play деньги возвращает магазин."
@@ -98,7 +101,7 @@ export function A2Payments({ go }: ScreenProps) {
           — от моряков <Mono>{money(M.seafarers)}</Mono>, от компаний <Mono>{money(M.companies)}</Mono>, возвраты <Mono>{money(-M.refunds)}</Mono>
         </span>
       </SummaryLine>
-      <PageTabs<Tab>
+      <AdminTabs<Tab>
         tabs={[
           { id: 'all', label: 'Все', count: pays.length },
           { id: 'seafarer', label: 'Моряки', count: pays.filter((p) => p.payerKind === 'seafarer').length },
@@ -108,8 +111,9 @@ export function A2Payments({ go }: ScreenProps) {
         value={tab}
         onChange={setTab}
       />
-      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Плательщик или номер' }} onReset={channel || q ? () => (setChannel(''), setQ('')) : undefined} count={rows.length}>
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Плательщик или номер' }} onReset={channel || from || to || q ? () => (setChannel(''), setFrom(''), setTo(''), setQ('')) : undefined} count={rows.length}>
         <FilterSelect label="Как" value={channel} onChange={setChannel} options={CHANNELS} />
+        <PeriodFilter label="Дата" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
       </FilterBar>
       <DataTable
         columns={columns}
@@ -119,7 +123,7 @@ export function A2Payments({ go }: ScreenProps) {
         selectedKey={openId ?? undefined}
         initialSort={{ key: 'at', dir: 'desc' }}
         empty={
-          q || channel
+          q || channel || from || to
             ? { icon: Receipt, title: 'Платежей не нашлось', text: 'Проверьте имя или сбросьте фильтр.' }
             : tab === 'refunded'
               ? { icon: Undo2, title: 'Возвратов не было', text: 'Здесь появятся платежи, по которым вернули деньги.' }
