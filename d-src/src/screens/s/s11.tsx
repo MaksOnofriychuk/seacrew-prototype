@@ -70,7 +70,7 @@ export function S11About({ go }: ScreenProps) {
       </Section>
 
       <Section id="f-pos" title="Желаемая должность" note={pos.positions.length ? fleetSummary(pos) : undefined}>
-        <FleetPicker value={pos} onChange={(v) => setBag('s11.fleet', v)} multiFleet multiPosition labels={{ position: 'Должности' }} />
+        <FleetPicker value={pos} onChange={(v) => setBag('s11.fleet', v)} multiFleet multiPosition labels={{ position: 'Желаемые должности' }} />
       </Section>
 
       <Section title="Коротко о себе" note="Агентства видят это в начале профиля.">

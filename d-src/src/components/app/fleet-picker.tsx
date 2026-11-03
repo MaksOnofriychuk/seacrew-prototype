@@ -6,7 +6,8 @@ import { departmentsFor, FLEETS, positionsFor } from '@/lib/data'
 import { cn } from '@/lib/utils'
 
 // Правки №2, №25, №35: вибір Флот → Департамент → Должность; кожен наступний список — лише під вибране в попередньому.
-// Перевірка прототипу 03.11, №10б: три випадаючі списки в один рядок зліва направо; наступний активний, коли вибрано попередній.
+// Перевірка прототипу 03.11, №10б і №20: три випадаючі списки один під одним, пов'язані — крок за кроком:
+// наступний активний лише після вибору попереднього й відкривається сам.
 // Департамент завжди один. Флот і посада — один або кілька (multiFleet / multiPosition):
 //   фільтри вакансій: флот кілька, посада кілька; бажана посада (s11): флот і посада кілька;
 //   контракт в «Опыте работы»: усе по одному.
@@ -56,35 +57,51 @@ export function FleetPicker({
 
   const fleetNote = multiFleet ? 'можно несколько' : undefined
   const posNote = multiPosition ? 'можно несколько' : undefined
+  // Покроково: після вибору флоту сам відкривається департамент, після департаменту — посада.
+  const [openAt, setOpenAt] = useState<number | null>(null)
+  const next = (i: number) => window.setTimeout(() => setOpenAt(i), 180)
   return (
-    <div className={cn('grid grid-cols-3 gap-2', className)}>
+    <div className={cn('flex flex-col gap-4', className)}>
       <Drop
+        step={1}
         label={labels.fleet ?? 'Флот'}
-        align="start"
         note={fleetNote}
         options={FLEETS}
         picked={value.fleets}
         multi={multiFleet}
-        placeholder="Выбрать"
-        onPick={toggleFleet}
+        placeholder={multiFleet ? 'Выберите флоты' : 'Выберите флот'}
+        open={openAt === 0}
+        onOpen={(o) => setOpenAt(o ? 0 : null)}
+        onPick={(f) => {
+          toggleFleet(f)
+          if (!multiFleet) next(1)
+        }}
       />
       <Drop
+        step={2}
         label={labels.department ?? 'Департамент'}
         options={departments}
         picked={value.department ? [value.department] : []}
-        placeholder={value.fleets.length ? 'Выбрать' : '—'}
+        placeholder={value.fleets.length ? 'Выберите департамент' : 'Сначала выберите флот'}
         disabled={!value.fleets.length}
-        onPick={setDepartment}
+        open={openAt === 1}
+        onOpen={(o) => setOpenAt(o ? 1 : null)}
+        onPick={(d) => {
+          setDepartment(d)
+          next(2)
+        }}
       />
       <Drop
+        step={3}
         label={labels.position ?? 'Должность'}
-        align="end"
         note={posNote}
         options={positions}
         picked={value.positions}
         multi={multiPosition}
-        placeholder={value.department ? 'Выбрать' : '—'}
+        placeholder={value.department ? (multiPosition ? 'Выберите должности' : 'Выберите должность') : 'Сначала выберите департамент'}
         disabled={!value.department}
+        open={openAt === 2}
+        onOpen={(o) => setOpenAt(o ? 2 : null)}
         onPick={togglePosition}
       />
     </div>
@@ -93,6 +110,7 @@ export function FleetPicker({
 
 // Випадаючий список під полем. Один вибір — закривається після тапу; кілька — лишається відкритим, галочки біля вибраних.
 function Drop({
+  step,
   label,
   note,
   options,
@@ -100,9 +118,13 @@ function Drop({
   multi,
   placeholder,
   disabled,
-  align = 'center',
+  open,
+  onOpen,
   onPick,
 }: {
+  step: number
+  open: boolean
+  onOpen: (o: boolean) => void
   label: string
   note?: string
   options: readonly string[]
@@ -110,23 +132,23 @@ function Drop({
   multi?: boolean
   placeholder: string
   disabled?: boolean
-  align?: 'start' | 'center' | 'end'
   onPick: (v: string) => void
 }) {
-  const [open, setOpen] = useState(false)
   const container = usePhonePortal()
-  const shown = picked.length > 1 ? `${picked[0]} +${picked.length - 1}` : (picked[0] ?? '')
+  const shown = picked.join(', ')
   return (
-    <div className="flex min-w-0 flex-col gap-1.5">
-      <span className="truncate text-sm font-medium" title={note ? `${label}, ${note}` : label}>
+    <div className={cn('flex flex-col gap-2 transition-opacity duration-200', disabled && 'opacity-60')}>
+      <span className="flex items-baseline gap-2 text-sm font-medium">
+        <span className={cn('font-mono text-xs', picked.length ? 'text-success' : 'text-muted-foreground')}>{step}</span>
         {label}
+        {note && <span className="font-normal text-muted-foreground">{note}</span>}
       </span>
-      <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Root open={open && !disabled} onOpenChange={onOpen}>
         <Popover.Trigger asChild disabled={disabled}>
           <button
             type="button"
             className={cn(
-              'flex h-12 w-full min-w-0 items-center justify-between gap-1 rounded-md border border-input bg-surface px-3 text-left text-sm transition-colors disabled:opacity-50',
+              'flex h-12 w-full items-center justify-between gap-3 rounded-md border border-input bg-surface px-4 text-left text-base transition-colors disabled:cursor-not-allowed',
               open && 'border-ring',
             )}
           >
@@ -137,15 +159,15 @@ function Drop({
         <Popover.Portal container={container}>
           <Popover.Content
             side="top"
-            align={align}
+            align="start"
             sideOffset={4}
             collisionPadding={12}
             collisionBoundary={container}
             avoidCollisions={false}
             onOpenAutoFocus={(e) => e.preventDefault()}
-            className="z-50 max-h-[min(18rem,var(--radix-popover-content-available-height))] w-60 overflow-y-auto rounded-lg border border-border bg-surface p-1 shadow-lg data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
+            className="z-50 max-h-[min(18rem,var(--radix-popover-content-available-height))] w-[var(--radix-popover-trigger-width)] overflow-y-auto rounded-lg border border-border bg-surface p-1 shadow-lg data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
           >
-            <p className="px-3 pt-2 pb-1 text-xs text-muted-foreground">{note ? `${label} — ${note}` : label}</p>
+            {note && <p className="px-3 pt-2 pb-1 text-xs text-muted-foreground">{note}</p>}
             <ul role="listbox" aria-multiselectable={multi || undefined}>
               {options.map((o) => {
                 const on = picked.includes(o)
@@ -157,7 +179,7 @@ function Drop({
                       aria-selected={on}
                       onClick={() => {
                         onPick(o)
-                        if (!multi) setOpen(false)
+                        if (!multi) onOpen(false)
                       }}
                       className={cn('flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-[15px] active:bg-muted', on && 'font-medium text-primary')}
                     >

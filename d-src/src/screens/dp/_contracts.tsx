@@ -149,7 +149,7 @@ function ContractForm({ initial, onSave, onCancel, onDelete }: { initial?: Contr
       <FleetPicker
         value={fleet}
         onChange={(v) => put({ fleet: v.fleets[0] ?? '', department: v.department ?? '', position: v.positions[0] ?? '' })}
-        labels={{ position: 'Должность' }}
+        labels={{ position: 'Должность на контракте' }}
       />
       <div className="grid grid-cols-2 gap-3">
         <Field id="p22-type" label="Тип судна">
