@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebTextarea } from '@/components/web/fields'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { PageHeader } from '@/components/web/page-header'
 import { StatusDot } from '@/components/web/status-badge'
 import { A_JOBS, type AJob } from '@/lib/data-admin'
 import { REPORTS, REPORT_TARGET_LABEL, type Report, type ReportTarget } from '@/lib/data-admin-2'
@@ -13,7 +13,7 @@ import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { useUserOverrides } from '../a/a-users'
-import { AdminPage, CancelButton, Facts, Mono, Note, SideSheet, dt, useBagState } from '../a/_parts'
+import { AdminPage, AdminTabs, CancelButton, Facts, Mono, Note, PeriodFilter, SideSheet, dt, inPeriod, useBagState } from '../a/_parts'
 import { Sample } from './_parts'
 
 const ICON: Record<ReportTarget, typeof Flag> = { org: Building2, job: Briefcase, message: MessageSquare }
@@ -31,6 +31,8 @@ export function A2Reports({ go }: ScreenProps) {
   const [tab, setTab] = useState<Tab>('open')
   const [q, setQ] = useState('')
   const [target, setTarget] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
   const [confirm, setConfirm] = useState<Act | null>(null)
   const [note, setNote] = useState('')
@@ -39,6 +41,7 @@ export function A2Reports({ go }: ScreenProps) {
   const rows = reports
     .filter((r) => r.state === tab)
     .filter((r) => !target || r.target === target)
+    .filter((r) => inPeriod(r.at, from, to))
     .filter((r) => !q || (r.title + r.context + r.reason + r.reporter).toLowerCase().includes(q.toLowerCase()))
 
   const close = () => {
@@ -133,7 +136,7 @@ export function A2Reports({ go }: ScreenProps) {
   ]
 
   return (
-    <AdminPage active="a-posts" go={go}>
+    <AdminPage active="a2-reports" go={go}>
       <PageHeader
         title="Жалобы"
         description="Моряки жалуются на компании, вакансии и сообщения рекрутеров. Жалобы на публикации в ленте — в разделе «Публикации»."
@@ -148,7 +151,7 @@ export function A2Reports({ go }: ScreenProps) {
           Три жалобы на вакансию за 30 дней — она уходит на проверку сама, пока вы не решите. <Sample q="148" />
         </span>
       </Note>
-      <PageTabs<Tab>
+      <AdminTabs<Tab>
         tabs={[
           { id: 'open', label: 'Новые', count: reports.filter((r) => r.state === 'open').length },
           { id: 'closed', label: 'Решённые', count: reports.filter((r) => r.state === 'closed').length },
@@ -156,8 +159,9 @@ export function A2Reports({ go }: ScreenProps) {
         value={tab}
         onChange={setTab}
       />
-      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Компания, вакансия, моряк' }} onReset={target ? () => setTarget('') : undefined} count={rows.length}>
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Компания, вакансия, моряк' }} onReset={target || from || to ? () => (setTarget(''), setFrom(''), setTo('')) : undefined} count={rows.length}>
         <FilterSelect label="На что" value={target} onChange={setTarget} options={(Object.keys(REPORT_TARGET_LABEL) as ReportTarget[]).map((k) => ({ value: k, label: REPORT_TARGET_LABEL[k] }))} />
+        <PeriodFilter label="Когда" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
       </FilterBar>
       <DataTable
         columns={columns}
@@ -167,7 +171,7 @@ export function A2Reports({ go }: ScreenProps) {
         selectedKey={openId ?? undefined}
         initialSort={{ key: 'at', dir: 'desc' }}
         empty={
-          q || target
+          q || target || from || to
             ? { icon: Flag, title: 'Жалоб не нашлось', text: 'Проверьте запрос или сбросьте фильтр.' }
             : tab === 'open'
               ? { icon: Flag, title: 'Новых жалоб нет', text: 'Когда моряк пожалуется на компанию, вакансию или сообщение, жалоба появится здесь.' }

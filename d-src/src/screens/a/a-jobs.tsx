@@ -8,20 +8,23 @@ import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebInput, WebSelect, WebTextarea } from '@/components/web/fields'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
 import { FLEETS, departmentsFor, positionsFor } from '@/lib/data'
 import { ADMIN_ORGS } from '@/lib/data-web'
 import { AJOB_STATE_LABEL, A_JOBS, VESSEL_TYPES, type AJob, type AJobState } from '@/lib/data-admin'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
-import { AdminPage, CancelButton, Facts, Mono, Note, SideSheet, dt, useBagState } from './_parts'
+import { AdminPage, AdminTabs, CancelButton, ExpandRows, Facts, Mono, MultiFilter, Note, PeriodFilter, SideSheet, dt, inPeriod, useBagState } from './_parts'
 
 const TONE: Record<AJobState, Tone> = { review: 'warning', published: 'success', rejected: 'muted', hidden: 'muted' }
 type Tab = 'review' | 'published' | 'off' | 'all'
 
 /** вакансію від імені Seafolio показуємо як «Команда Seafolio»; від імені агентства — назвою агентства */
 const byLabel = (j: AJob) => (j.byTeam && j.org === 'Seafolio' ? 'Команда Seafolio' : j.org)
+
+const DURATIONS = ['1 мес.', '2 мес.', '3 мес.', '4 мес.', '5 мес.', '6 мес.', '8 мес.', '9 мес.', '12 мес.']
+const mask = (v: string) => v.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
 
 const EMPTY_FORM = { org: 'Seafolio', fleet: '', department: '', position: '', vessel: '', amount: '', currency: '$', period: 'месяц', region: '', board: '', duration: '', text: '' }
 
@@ -30,7 +33,9 @@ export function AJobs({ go }: ScreenProps) {
   const [jobs, setJobs] = useBagState<AJob[]>('a.jobs', A_JOBS)
   const [tab, setTab] = useState<Tab>('review')
   const [q, setQ] = useState('')
-  const [fleet, setFleet] = useState('')
+  const [fleets, setFleets] = useState<string[]>([])
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const [who, setWho] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
@@ -40,7 +45,8 @@ export function AJobs({ go }: ScreenProps) {
   const inTab = (j: AJob) => (tab === 'review' ? j.state === 'review' : tab === 'published' ? j.state === 'published' : tab === 'off' ? j.state === 'rejected' || j.state === 'hidden' : true)
   const rows = jobs
     .filter(inTab)
-    .filter((j) => !fleet || j.fleet === fleet)
+    .filter((j) => !fleets.length || fleets.includes(j.fleet))
+    .filter((j) => inPeriod(j.created, from, to))
     .filter((j) => !who || (who === 'team' ? j.byTeam : !j.byTeam))
     .filter((j) => !q || (j.position + j.org + j.vesselType).toLowerCase().includes(q.toLowerCase()))
 
@@ -122,7 +128,7 @@ export function AJobs({ go }: ScreenProps) {
           </Button>
         }
       />
-      <PageTabs<Tab>
+      <AdminTabs<Tab>
         tabs={[
           { id: 'review', label: 'На проверке', count: jobs.filter((j) => j.state === 'review').length },
           { id: 'published', label: 'Опубликованные', count: jobs.filter((j) => j.state === 'published').length },
@@ -132,9 +138,10 @@ export function AJobs({ go }: ScreenProps) {
         value={tab}
         onChange={setTab}
       />
-      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Должность, судно, компания' }} onReset={fleet || who || q ? () => (setFleet(''), setWho(''), setQ('')) : undefined} count={rows.length}>
-        <FilterSelect label="Флот" value={fleet} onChange={setFleet} options={[...FLEETS]} />
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Должность, судно, компания' }} onReset={fleets.length || who || from || to || q ? () => (setFleets([]), setWho(''), setFrom(''), setTo(''), setQ('')) : undefined} count={rows.length}>
+        <MultiFilter label="Флот" value={fleets} onChange={setFleets} options={[...FLEETS]} />
         <FilterSelect label="Кто" value={who} onChange={setWho} options={[{ value: 'team', label: 'Команда Seafolio' }, { value: 'orgs', label: 'Агентства' }]} />
+        <PeriodFilter label="Размещена" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
       </FilterBar>
       <DataTable
         columns={columns}
@@ -142,7 +149,7 @@ export function AJobs({ go }: ScreenProps) {
         rowKey={(j) => j.id}
         onRowClick={(j) => setOpenId(j.id)}
         selectedKey={openId ?? undefined}
-        empty={tab === 'review' && !q && !fleet && !who ? { icon: Briefcase, title: 'Проверять нечего', text: 'Новые вакансии от непроверенных агентств и вакансии с жалобами появятся здесь.' } : { icon: Briefcase, title: 'Вакансий не нашлось', text: 'Сбросьте фильтры или откройте вкладку «Все».' }}
+        empty={tab === 'review' && !q && !fleets.length && !who && !from && !to ? { icon: Briefcase, title: 'Проверять нечего', text: 'Новые вакансии от непроверенных агентств и вакансии с жалобами появятся здесь.' } : { icon: Briefcase, title: 'Вакансий не нашлось', text: 'Сбросьте фильтры или откройте вкладку «Все».' }}
       />
 
       <SideSheet
@@ -212,48 +219,75 @@ export function AJobs({ go }: ScreenProps) {
           </>
         }
       >
-        <WebField id="nj-org" label="От имени">
-          <WebSelect id="nj-org" value={f.org} onChange={(v) => setF({ ...f, org: v })} options={['Seafolio', ...ADMIN_ORGS.filter((o) => o.status === 'verified').map((o) => o.name)]} />
-        </WebField>
-        <WebField id="nj-fleet" label="Флот" required>
-          <WebSelect id="nj-fleet" value={f.fleet} onChange={(v) => setF({ ...f, fleet: v, department: '', position: '', vessel: '' })} options={[...FLEETS]} />
-        </WebField>
-        <div className="grid grid-cols-2 gap-3">
-          <WebField id="nj-dep" label="Департамент" required>
-            <WebSelect id="nj-dep" value={f.department} onChange={(v) => setF({ ...f, department: v, position: '' })} options={depts} placeholder={f.fleet ? 'Выберите' : 'Сначала флот'} />
-          </WebField>
-          <WebField id="nj-pos" label="Должность" required>
-            <WebSelect id="nj-pos" value={f.position} onChange={(v) => setF({ ...f, position: v })} options={positions} placeholder={f.department ? 'Выберите' : 'Сначала департамент'} />
-          </WebField>
-        </div>
-        <WebField id="nj-vessel" label="Тип судна">
-          <WebSelect id="nj-vessel" value={f.vessel} onChange={(v) => setF({ ...f, vessel: v })} options={vessels} />
-        </WebField>
-        <div className="grid grid-cols-[1fr_72px_112px] gap-3">
-          <WebField id="nj-amount" label="Зарплата">
-            <WebInput id="nj-amount" inputMode="numeric" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} placeholder="4 500" className="font-mono" />
-          </WebField>
-          <WebField id="nj-cur" label="Валюта">
-            <WebSelect id="nj-cur" value={f.currency} onChange={(v) => setF({ ...f, currency: v })} options={['$', '€', '£']} />
-          </WebField>
-          <WebField id="nj-per" label="За">
-            <WebSelect id="nj-per" value={f.period} onChange={(v) => setF({ ...f, period: v })} options={['месяц', 'день']} />
-          </WebField>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <WebField id="nj-region" label="Регион">
-            <WebSelect id="nj-region" value={f.region} onChange={(v) => setF({ ...f, region: v })} options={['Европа', 'Африка', 'ОАЭ']} />
-          </WebField>
-          <WebField id="nj-dur" label="Контракт">
-            <WebInput id="nj-dur" value={f.duration} onChange={(e) => setF({ ...f, duration: e.target.value })} placeholder="4 мес. или 6 недель" />
-          </WebField>
-        </div>
-        <WebField id="nj-board" label="Посадка">
-          <WebDatePick id="nj-board" value={isoToRu(f.board)} onChange={(v) => setF({ ...f, board: ruToIso(v) })} {...BOUNDS.future} />
-        </WebField>
-        <WebField id="nj-text" label="Описание">
-          <WebTextarea id="nj-text" value={f.text} onChange={(e) => setF({ ...f, text: e.target.value })} placeholder="Судно, линия, условия на борту" />
-        </WebField>
+        <ExpandRows
+          rows={[
+            {
+              id: 'who',
+              title: 'Кто и какая должность',
+              summary: f.position ? `${f.position}, ${f.fleet}` : 'не заполнено',
+              body: (
+                <>
+                  <WebField id="nj-org" label="От имени">
+                    <WebSelect id="nj-org" value={f.org} onChange={(v) => setF({ ...f, org: v })} options={['Seafolio', ...ADMIN_ORGS.filter((o) => o.status === 'verified').map((o) => o.name)]} />
+                  </WebField>
+                  <WebField id="nj-fleet" label="Флот" required>
+                    <WebSelect id="nj-fleet" value={f.fleet} onChange={(v) => setF({ ...f, fleet: v, department: '', position: '', vessel: '' })} options={[...FLEETS]} />
+                  </WebField>
+                  <WebField id="nj-dep" label="Департамент" required>
+                    <WebSelect id="nj-dep" value={f.department} onChange={(v) => setF({ ...f, department: v, position: '' })} options={depts} placeholder={f.fleet ? 'Выберите' : 'Сначала флот'} />
+                  </WebField>
+                  <WebField id="nj-pos" label="Должность" required>
+                    <WebSelect id="nj-pos" value={f.position} onChange={(v) => setF({ ...f, position: v })} options={positions} placeholder={f.department ? 'Выберите' : 'Сначала департамент'} />
+                  </WebField>
+                  <WebField id="nj-vessel" label="Тип судна">
+                    <WebSelect id="nj-vessel" value={f.vessel} onChange={(v) => setF({ ...f, vessel: v })} options={vessels} />
+                  </WebField>
+                </>
+              ),
+            },
+            {
+              id: 'terms',
+              title: 'Условия',
+              summary: [f.amount && `${f.currency}${f.amount}`, f.duration, f.board && dt(f.board)].filter(Boolean).join(', ') || 'не заполнено',
+              body: (
+                <>
+                  <div className="grid grid-cols-[1fr_72px_112px] gap-3">
+                    <WebField id="nj-amount" label="Зарплата">
+                      <WebInput id="nj-amount" inputMode="numeric" value={f.amount} onChange={(e) => setF({ ...f, amount: mask(e.target.value) })} placeholder="4 500" className="font-mono" />
+                    </WebField>
+                    <WebField id="nj-cur" label="Валюта">
+                      <WebSelect id="nj-cur" value={f.currency} onChange={(v) => setF({ ...f, currency: v })} options={['$', '€', '£']} />
+                    </WebField>
+                    <WebField id="nj-per" label="За">
+                      <WebSelect id="nj-per" value={f.period} onChange={(v) => setF({ ...f, period: v })} options={['месяц', 'день']} />
+                    </WebField>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <WebField id="nj-region" label="Регион">
+                      <WebSelect id="nj-region" value={f.region} onChange={(v) => setF({ ...f, region: v })} options={['Европа', 'Африка', 'ОАЭ']} />
+                    </WebField>
+                    <WebField id="nj-dur" label="Контракт">
+                      <WebSelect id="nj-dur" value={f.duration} onChange={(v) => setF({ ...f, duration: v })} options={DURATIONS} />
+                    </WebField>
+                  </div>
+                  <WebField id="nj-board" label="Посадка">
+                    <WebDatePick id="nj-board" value={isoToRu(f.board)} onChange={(v) => setF({ ...f, board: ruToIso(v) })} {...BOUNDS.future} />
+                  </WebField>
+                </>
+              ),
+            },
+            {
+              id: 'text',
+              title: 'Описание',
+              summary: f.text ? f.text.slice(0, 40) : 'необязательно',
+              body: (
+                <WebField id="nj-text" label="Описание">
+                  <WebTextarea id="nj-text" value={f.text} onChange={(e) => setF({ ...f, text: e.target.value })} placeholder="Судно, линия, условия на борту" />
+                </WebField>
+              ),
+            },
+          ]}
+        />
       </SideSheet>
     </AdminPage>
   )
