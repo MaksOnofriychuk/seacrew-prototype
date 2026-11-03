@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { BadgeCheck, Link2, Lock } from 'lucide-react'
+import { BadgeCheck, Link2, Lock, Smartphone } from 'lucide-react'
 import { MonoNums } from '@/components/app/mono-nums'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
@@ -8,8 +8,8 @@ import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
 import { GetAppDialog, PublicLayout, QrCode, ruDate } from './_parts'
 
-// pub-job — публічна сторінка вакансії для посилань «Поделиться» (відп. 102): опис і «Откликнуться»,
-// яка пропонує завантажити застосунок (App Store / Google Play, QR). Без кабінету.
+// pub-job — публічна сторінка вакансії для посилань «Поделиться» (відп. 102): опис,
+// лише вітрина: моряку — «Скачать приложение» (відгук тільки в застосунку, вебу для моряків немає), без кнопки відгуку у вебі. Без кабінету.
 // Стан «Пусто» — вакансію закрили (посилання живе далі); «Ошибка», «Загрузка» — звичайні.
 export function PubJob({ go }: ScreenProps) {
   const { showToast } = useProto()
@@ -26,7 +26,7 @@ export function PubJob({ go }: ScreenProps) {
             text: 'Агентство уже нашло моряка. Похожие вакансии — в приложении Seafolio.',
             action: (
               <Button className="h-10" onClick={() => setApp(true)}>
-                Смотреть вакансии в приложении
+                Скачать приложение
               </Button>
             ),
           }}
@@ -100,11 +100,11 @@ export function PubJob({ go }: ScreenProps) {
 
             <aside className="sticky top-0 flex flex-col gap-5 rounded-xl border border-border bg-surface p-6">
               <div className="flex flex-col gap-1.5">
-                <h2 className="text-lg font-semibold">Откликнуться</h2>
-                <p className="text-sm text-muted-foreground">Отклик отправляется из приложения Seafolio. Агентство увидит профиль без фамилии и контактов.</p>
+                <h2 className="text-lg font-semibold">Вакансия в приложении</h2>
+                <p className="text-sm text-muted-foreground">Откликнуться и написать агентству можно в приложении Seafolio. На сайте отклик недоступен.</p>
               </div>
               <Button className="h-12 text-[15px]" onClick={() => setApp(true)}>
-                Откликнуться
+                <Smartphone /> Скачать приложение
               </Button>
               <Button
                 variant="outline"
@@ -126,8 +126,8 @@ export function PubJob({ go }: ScreenProps) {
         open={app}
         onClose={() => setApp(false)}
         seed={J.slug}
-        title="Откликнитесь в приложении"
-        text={`${J.position}, ${J.vesselName}. После установки вакансия откроется сама — останется нажать «Откликнуться».`}
+        title="Скачайте Seafolio"
+        text={`${J.position}, ${J.vesselName}. После установки вакансия откроется в приложении.`}
       />
     </PublicLayout>
   )

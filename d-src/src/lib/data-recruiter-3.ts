@@ -39,18 +39,6 @@ export const PUB_JOB = {
   views: 312,
 }
 
-/* ---------- публічний профіль (відп. 51, правка №30) ---------- */
-
-export const PUB_PROFILE = {
-  slug: '/s/andrii-k',
-  name: 'Andrii K.',
-  initials: 'AK',
-  position: '3rd Engineer',
-  fleet: 'Merchant / Engine',
-  /** що відкривається в застосунку після входу — без значень */
-  closed: ['Опыт работы и стаж по контрактам', 'Дипломы, сертификаты и медицина', 'Визы и ближайший аэропорт', 'Готовность к контракту', 'Публикации'],
-}
-
 /* ---------- тарифи (відп. 160, 161 — пример) ---------- */
 
 export type PlanId = 'subscription' | 'per-job' | 'database'

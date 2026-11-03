@@ -29,13 +29,13 @@ export function RLogin({ go }: ScreenProps) {
 
   return (
     <AuthLayout aside={<Pitch />} go={go}>
-      <form onSubmit={submit} noValidate className="flex flex-col gap-6">
-        <div className="flex flex-col gap-1.5">
-          <h1 className="text-[28px] leading-tight font-semibold tracking-tight">Вход</h1>
-          <p className="text-[15px] text-muted-foreground">Для рекрутеров и администраторов платформы.</p>
+      <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl leading-tight font-semibold tracking-tight">Вход</h1>
+          <p className="text-sm text-muted-foreground">Для рекрутеров и администраторов платформы.</p>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
           <WebField id="login-email" label="Email" error={touched && badEmail ? 'Введите email полностью' : undefined}>
             <WebInput id="login-email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={touched && badEmail} />
           </WebField>
@@ -51,11 +51,11 @@ export function RLogin({ go }: ScreenProps) {
           </p>
         )}
 
-        <Button type="submit" className="h-11 text-[15px]" disabled={busy}>
+        <Button type="submit" className="h-10 text-[15px]" disabled={busy}>
           {busy ? 'Входим…' : 'Войти'}
         </Button>
 
-        <p className="-mt-2 text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Входя, вы принимаете{' '}
           <button type="button" onClick={() => legal('terms')} className="text-primary hover:underline">
             Условия сервиса
@@ -67,7 +67,7 @@ export function RLogin({ go }: ScreenProps) {
           .
         </p>
 
-        <p className="border-t border-border pt-5 text-sm text-muted-foreground">
+        <p className="border-t border-border pt-4 text-sm text-muted-foreground">
           Компании ещё нет в Seafolio?{' '}
           <button type="button" onClick={() => go('r-register')} className="font-medium text-primary hover:underline">
             Зарегистрировать компанию

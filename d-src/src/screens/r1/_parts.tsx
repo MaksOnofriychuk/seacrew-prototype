@@ -69,7 +69,7 @@ export function AuthLayout({ children, aside, go }: { children: ReactNode; aside
         <div className="relative flex flex-col gap-3 px-12 pb-10">{aside}</div>
       </HeroPanel>
       <div className="flex min-h-0 flex-1 overflow-y-auto bg-background">
-        <div className="m-auto w-full max-w-[440px] px-6 py-12">{children}</div>
+        <div className="m-auto w-full max-w-[440px] px-6 py-8">{children}</div>
       </div>
     </div>
   )
