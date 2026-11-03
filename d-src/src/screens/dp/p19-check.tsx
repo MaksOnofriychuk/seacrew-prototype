@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { Field, Note, PageArt, plural, SourceTag, TextInput, useDP } from './_parts'
 import { type AddedDoc, type AddState } from './_docs'
+import { ExpandRow } from './_inline-edit'
 
 // p19 — «Проверьте документ» після додавання в застосунку (gaps №5; extraction/[id] у застосунку).
 // Сторінки документа (кожну можна відкрити); поля — з позначкою «из документа», сумнівні — «проверьте»,
@@ -39,6 +40,9 @@ export function P19Check({ go }: ScreenProps) {
   const [viewing, setViewing] = useState<number | null>(null)
   const [tried, setTried] = useState(false)
   const [noExp, setNoExp] = useState(false)
+  // Відкритий блок (один) і знімок значення на момент відкриття — для «Отмена».
+  const [openK, setOpenK] = useState<string | null>(null)
+  const [snap, setSnap] = useState<{ v: string; noExp: boolean } | null>(null)
   // Диплом: необов'язкове фото Endorsement (відповідь 75) — коли це окремий аркуш.
   const [endorse, setEndorse] = useState(false)
   const pages = st.pages
@@ -59,9 +63,25 @@ export function P19Check({ go }: ScreenProps) {
     return <SourceTag kind="doc" />
   }
 
+  const toggle = (k: string) => {
+    if (openK === k) return setOpenK(null)
+    setSnap({ v: vals[k] ?? '', noExp })
+    setOpenK(k)
+  }
+  const cancel = (k: string) => {
+    if (snap) {
+      setVals((x) => ({ ...x, [k]: snap.v }))
+      setNoExp(snap.noExp)
+    }
+    setOpenK(null)
+  }
+
   const confirm = () => {
     setTried(true)
-    if (problems.length) return
+    if (problems.length) {
+      toggle(problems[0].k)
+      return
+    }
     const doc: AddedDoc = {
       id: `add-${Date.now()}`,
       cat,
@@ -195,53 +215,86 @@ export function P19Check({ go }: ScreenProps) {
         )}
 
         <Paper title={read.title} className="mt-5">
-          <div className="flex flex-col gap-5 py-1">
+          <div className="-mx-5 -my-4">
             {fields.map((f) => {
               const id = `p19-${f.k}`
-              const bad = tried && (missing(f))
+              const bad = tried && missing(f)
+              const open = openK === f.k
+              const warn = f.low && !edited(f) && !manual && !!vals[f.k]
+              const empty = !vals[f.k]?.trim() && !(f.k === 'exp' && noExp)
+              const shown = f.k === 'exp' && noExp ? 'Без срока' : vals[f.k]
+              const rowTag = bad ? (
+                <span className="text-sm font-medium text-signal">Заполните</span>
+              ) : edited(f) ? (
+                <SourceTag kind="edited" />
+              ) : warn ? (
+                <SourceTag kind="check" />
+              ) : null
               return (
-                <Field
+                <ExpandRow
                   key={f.k}
-                  id={id}
-                  label={f.label}
-                  tag={tag(f)}
-                  error={bad ? 'Заполните это поле.' : null}
-                  note={edited(f) && orig(f) ? <>В документе: <span className={cn(f.mono && 'font-mono')}>{orig(f)}</span></> : null}
+                  className={cn(warn && !open && 'bg-warning/10')}
+                  title={
+                    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="text-muted-foreground">{f.label}</span>
+                      {rowTag}
+                    </span>
+                  }
+                  value={empty ? <span className="text-muted-foreground">Не заполнено</span> : <span className={cn('text-foreground', f.mono && 'font-mono')}>{shown}</span>}
+                  open={open}
+                  onToggle={() => toggle(f.k)}
                 >
-                  {isDate(f) ? (
-                    <>
-                      <DatePick
+                  <Field
+                    id={id}
+                    label={f.label}
+                    tag={tag(f)}
+                    {...(bad ? { error: 'Заполните это поле.' } : {})}
+                    {...(edited(f) && orig(f) ? { note: <>В документе: <span className={cn(f.mono && 'font-mono')}>{orig(f)}</span></> } : {})}
+                  >
+                    {isDate(f) ? (
+                      <>
+                        <DatePick
+                          id={id}
+                          title={f.label}
+                          value={f.k === 'exp' && noExp ? '' : vals[f.k]}
+                          placeholder={f.k === 'exp' && noExp ? 'Без срока действия' : undefined}
+                          disabled={f.k === 'exp' && noExp}
+                          invalid={bad}
+                          className={lowCls(f)}
+                          onChange={(v) => setVals({ ...vals, [f.k]: v })}
+                          {...(f.k === 'exp' ? BOUNDS.expiry(vals.issue) : BOUNDS.issue)}
+                        />
+                        {f.k === 'exp' && (
+                          <label className="flex items-center gap-2.5 text-[15px]">
+                            <Checkbox checked={noExp} onCheckedChange={(v) => setNoExp(v === true)} />
+                            Без срока действия
+                          </label>
+                        )}
+                      </>
+                    ) : f.k === 'country' ? (
+                      <CountryPick id={id} title={f.label} value={vals[f.k]} invalid={bad} className={lowCls(f)} onChange={(v) => setVals({ ...vals, [f.k]: v })} />
+                    ) : (
+                      <TextInput
                         id={id}
-                        title={f.label}
-                        value={f.k === 'exp' && noExp ? '' : vals[f.k]}
-                        placeholder={f.k === 'exp' && noExp ? 'Без срока действия' : undefined}
-                        disabled={f.k === 'exp' && noExp}
+                        mono={f.mono}
+                        value={vals[f.k]}
                         invalid={bad}
+                        placeholder="Как в документе"
                         className={lowCls(f)}
-                        onChange={(v) => setVals({ ...vals, [f.k]: v })}
-                        {...(f.k === 'exp' ? BOUNDS.expiry(vals.issue) : BOUNDS.issue)}
+                        onChange={(e) => setVals({ ...vals, [f.k]: e.target.value })}
+                        onKeyDown={(e) => e.key === 'Enter' && setOpenK(null)}
                       />
-                      {f.k === 'exp' && (
-                        <label className="flex items-center gap-2.5 text-[15px]">
-                          <Checkbox checked={noExp} onCheckedChange={(v) => setNoExp(v === true)} />
-                          Без срока действия
-                        </label>
-                      )}
-                    </>
-                  ) : f.k === 'country' ? (
-                    <CountryPick id={id} title={f.label} value={vals[f.k]} invalid={bad} className={lowCls(f)} onChange={(v) => setVals({ ...vals, [f.k]: v })} />
-                  ) : (
-                    <TextInput
-                      id={id}
-                      mono={f.mono}
-                      value={vals[f.k]}
-                      invalid={bad}
-                      placeholder="Как в документе"
-                      className={lowCls(f)}
-                      onChange={(e) => setVals({ ...vals, [f.k]: e.target.value })}
-                    />
-                  )}
-                </Field>
+                    )}
+                  </Field>
+                  <div className="mt-2 flex gap-3">
+                    <Button type="button" variant="outline" className="h-11 flex-1 text-[15px]" onClick={() => cancel(f.k)}>
+                      Отмена
+                    </Button>
+                    <Button type="button" className="h-11 flex-1 text-[15px]" onClick={() => setOpenK(null)}>
+                      Готово
+                    </Button>
+                  </div>
+                </ExpandRow>
               )
             })}
           </div>

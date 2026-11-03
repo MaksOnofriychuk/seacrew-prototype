@@ -31,7 +31,7 @@ export const valid = (k: TextField, v: string) => {
 export type EditKey = TextField | 'rank' | 'salary' | 'theme'
 
 /** Строка-аккордеон: заголовок как MenuRow, под ним плавно раскрывается блок (200 мс, без движения при reduced-motion). */
-export function ExpandRow({ icon: I, title, value, open, onToggle, children }: { icon?: ComponentType<{ className?: string }>; title: ReactNode; value?: ReactNode; open: boolean; onToggle: () => void; children: ReactNode }) {
+export function ExpandRow({ icon: I, title, value, open, onToggle, children, className }: { icon?: ComponentType<{ className?: string }>; title: ReactNode; value?: ReactNode; open: boolean; onToggle: () => void; children: ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!open) return
@@ -39,7 +39,7 @@ export function ExpandRow({ icon: I, title, value, open, onToggle, children }: {
     return () => window.clearTimeout(t)
   }, [open])
   return (
-    <div ref={ref} className="border-t border-border first:border-t-0">
+    <div ref={ref} className={cn('border-t border-border first:border-t-0', className)}>
       <button type="button" aria-expanded={open} onClick={onToggle} className="flex min-h-13 w-full items-center gap-3 px-4 py-3 text-left active:bg-muted/60">
         {I && <I className="size-5 shrink-0 text-primary" />}
         <span className="flex-1 text-[15px]">{title}</span>
