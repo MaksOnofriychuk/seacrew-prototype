@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
-import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { countryLabel, findCountries } from '@/lib/countries'
 import { addYears, daysIn, fmtDate, inRange, MONTHS, parseDate, TODAY } from '@/lib/dates'
@@ -9,7 +9,7 @@ import { FieldMsg } from '@/components/app/field-msg'
 
 // Вибір дати й країни для вебу: поле-кнопка + випадне вікно під ним. Вписати руками не можна.
 
-function useOutside(open: boolean, close: () => void) {
+export function useOutside(open: boolean, close: () => void) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!open) return
@@ -26,7 +26,7 @@ function useOutside(open: boolean, close: () => void) {
 }
 
 // Вікно відкривається під полем; якщо знизу не вміщається (край прокрутки, нижня панель) — над полем.
-function useFlip(open: boolean) {
+export function useFlip(open: boolean) {
   const ref = useRef<HTMLDivElement>(null)
   const [up, setUp] = useState(false)
   useLayoutEffect(() => {
@@ -235,7 +235,7 @@ export function WebCountrySelect({ id, value, onChange, placeholder = 'Выбе�
 
 /* ---------- телефон: код країни + номер з маскою ---------- */
 
-export function WebPhoneField({ id, value, onChange, disabled, className }: { id?: string; value: string; onChange: (v: string) => void; disabled?: boolean; className?: string }) {
+export function WebPhoneField({ id, value, onChange, disabled, className, hint }: { id?: string; value: string; onChange: (v: string) => void; disabled?: boolean; className?: string; hint?: string }) {
   const [dial, setDial] = useState<Dial>(() => parsePhone(value).dial)
   const [open, setOpen] = useState(false)
   const [q, setQ] = useState('')
@@ -294,7 +294,7 @@ export function WebPhoneField({ id, value, onChange, disabled, className }: { id
           className="min-w-0 flex-1 bg-transparent px-3 font-mono text-sm outline-none placeholder:text-muted-foreground/60"
         />
       </div>
-      <FieldMsg error={bad ? 'Номер неполный' : null} />
+      <FieldMsg error={bad ? 'Номер неполный' : null} note={hint} />
       {open && (
         <div ref={pref} role="dialog" aria-label="Код страны" className={cn(panel, pos, 'w-72 p-2')}>
           <div className="relative">
@@ -326,6 +326,180 @@ export function WebPhoneField({ id, value, onChange, disabled, className }: { id
               )
             })}
             {!list.length && <li className="px-2 py-2 text-sm text-muted-foreground">Такой страны или кода нет.</li>}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ---------- кілька значень: плашки «×» у полі і список з галочками ---------- */
+
+// Правка №8 (перевірка 03.11): у фільтрах флот і посада — кілька значень. Поле показує вибране плашками;
+// «×» на плашці прибирає значення, клік по полю відкриває список з галочками (з пошуком, якщо значень багато).
+export function WebMultiSelect({
+  id,
+  label,
+  values,
+  onChange,
+  options,
+  placeholder = 'Все',
+  searchPlaceholder = 'Найти',
+  disabled,
+  disabledHint,
+  className,
+}: {
+  id?: string
+  /** підпис всередині поля: «Флот» */
+  label?: string
+  values: string[]
+  onChange: (v: string[]) => void
+  options: string[]
+  placeholder?: string
+  searchPlaceholder?: string
+  disabled?: boolean
+  /** підказка, чому поле неактивне */
+  disabledHint?: string
+  className?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [q, setQ] = useState('')
+  const close = () => {
+    setOpen(false)
+    setQ('')
+  }
+  const ref = useOutside(open, close)
+  const [pref, pos] = useFlip(open)
+  const needle = q.trim().toLowerCase()
+  const list = options.filter((o) => o.toLowerCase().includes(needle))
+  const toggle = (o: string) => onChange(values.includes(o) ? values.filter((x) => x !== o) : [...values, o])
+  return (
+    <div ref={ref} className={cn('relative', className)} title={disabled ? disabledHint : undefined}>
+      <div
+        id={id}
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-disabled={disabled || undefined}
+        aria-label={label}
+        onClick={() => !disabled && (open ? close() : setOpen(true))}
+        onKeyDown={(e) => {
+          if (!disabled && (e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) {
+            e.preventDefault()
+            open ? close() : setOpen(true)
+          }
+        }}
+        className={cn(
+          'flex min-h-10 w-full cursor-pointer items-center gap-2 rounded-md border border-input bg-surface py-1 pr-3 pl-3 text-left text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring',
+          open && 'border-ring',
+          values.length > 0 && !open && 'border-primary',
+          disabled && 'pointer-events-none opacity-50',
+        )}
+      >
+        {label && <span className="shrink-0 text-muted-foreground">{label}:</span>}
+        <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
+          {values.length === 0 ? (
+            <span>{placeholder}</span>
+          ) : (
+            values.map((v) => (
+              <span key={v} className="inline-flex max-w-full items-center gap-1 rounded bg-muted py-0.5 pr-1 pl-2 text-[13px]">
+                <span className="truncate">{v}</span>
+                <button
+                  type="button"
+                  aria-label={`Убрать: ${v}`}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    toggle(v)
+                  }}
+                  className="flex size-4 items-center justify-center rounded text-muted-foreground hover:bg-border hover:text-foreground"
+                >
+                  <X className="size-3" />
+                </button>
+              </span>
+            ))
+          )}
+        </span>
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+      </div>
+      {open && (
+        <div ref={pref} role="dialog" aria-label={label ?? 'Выбор'} className={cn(panel, pos, 'w-72 p-2')}>
+          {options.length > 8 && (
+            <div className="relative mb-2">
+              <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input autoFocus aria-label={searchPlaceholder} value={q} onChange={(e) => setQ(e.target.value)} placeholder={searchPlaceholder} className="h-9 pl-9 text-sm md:text-sm" />
+            </div>
+          )}
+          <ul role="listbox" aria-multiselectable="true" className="max-h-60 overflow-y-auto">
+            {list.map((o) => {
+              const on = values.includes(o)
+              return (
+                <li key={o}>
+                  <button type="button" role="option" aria-selected={on} onClick={() => toggle(o)} className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted">
+                    <span aria-hidden="true" className={cn('flex size-4 shrink-0 items-center justify-center rounded-[4px] border', on ? 'border-primary bg-primary text-primary-foreground' : 'border-input')}>
+                      {on && <Check className="size-3.5" />}
+                    </span>
+                    <span className="flex-1">{o}</span>
+                  </button>
+                </li>
+              )
+            })}
+            {!list.length && <li className="px-2 py-2 text-sm text-muted-foreground">Ничего не найдено.</li>}
+          </ul>
+          {values.length > 0 && (
+            <button type="button" onClick={() => onChange([])} className="mt-1 w-full rounded-md py-1.5 text-sm text-muted-foreground hover:bg-muted">
+              Сбросить
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ---------- обычный список с поиском (WebSelect searchable) ---------- */
+
+export function SearchableSelect({ id, value, onChange, options, placeholder = 'Выберите', className, disabled }: { id?: string; value: string; onChange: (v: string) => void; options: (string | { value: string; label: ReactNode })[]; placeholder?: string; className?: string; disabled?: boolean }) {
+  const [open, setOpen] = useState(false)
+  const [q, setQ] = useState('')
+  const close = () => {
+    setOpen(false)
+    setQ('')
+  }
+  const ref = useOutside(open, close)
+  const [pref, pos] = useFlip(open)
+  const items = options.map((o) => (typeof o === 'string' ? { value: o, label: o as ReactNode } : o))
+  const cur = items.find((o) => o.value === value)
+  const needle = q.trim().toLowerCase()
+  const list = items.filter((o) => !needle || String(typeof o.label === 'string' ? o.label : o.value).toLowerCase().includes(needle))
+  return (
+    <div ref={ref} className={cn('relative', className)}>
+      <Trigger id={id} disabled={disabled} open={open} value={cur?.label ?? ''} placeholder={placeholder} icon={<ChevronDown className="size-4" />} onClick={() => (open ? close() : setOpen(true))} />
+      {open && (
+        <div ref={pref} role="dialog" aria-label={placeholder} className={cn(panel, pos, 'w-full min-w-60 p-2')}>
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input autoFocus aria-label="Поиск" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Найти" className="h-9 pl-9 text-sm md:text-sm" />
+          </div>
+          <ul role="listbox" className="mt-2 max-h-60 overflow-y-auto">
+            {list.map((o) => (
+              <li key={o.value}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={o.value === value}
+                  onClick={() => {
+                    onChange(o.value)
+                    close()
+                  }}
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted"
+                >
+                  <span className={cn('flex-1', o.value === value && 'font-medium')}>{o.label}</span>
+                  {o.value === value && <Check className="size-3.5 text-primary" />}
+                </button>
+              </li>
+            ))}
+            {!list.length && <li className="px-2 py-2 text-sm text-muted-foreground">Ничего не найдено.</li>}
           </ul>
         </div>
       )}

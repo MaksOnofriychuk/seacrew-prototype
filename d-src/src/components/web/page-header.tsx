@@ -41,7 +41,8 @@ export function PageHeader({
   )
 }
 
-// Вкладки під заголовком сторінки: підкреслення primary, лічильник моноширинним.
+// Вкладки під заголовком сторінки: підкреслення primary, лічильник — кругла плашка (понад 99 — «99+»); ширина за вмістом.
+// Вкладка перемикає вміст тієї ж сторінки, а не веде на іншу.
 export function PageTabs<T extends string>({
   tabs,
   value,
@@ -54,23 +55,36 @@ export function PageTabs<T extends string>({
   className?: string
 }) {
   return (
-    <div role="tablist" className={cn('mb-6 flex gap-6 border-b border-border', className)}>
-      {tabs.map((t) => (
-        <button
-          key={t.id}
-          type="button"
-          role="tab"
-          aria-selected={t.id === value}
-          onClick={() => onChange(t.id)}
-          className={cn(
-            '-mb-px flex h-10 items-center gap-2 border-b-2 text-sm font-medium transition-colors',
-            t.id === value ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground',
-          )}
-        >
-          {t.label}
-          {t.count !== undefined && <span className="font-mono text-xs text-muted-foreground">{t.count}</span>}
-        </button>
-      ))}
+    <div role="tablist" className={cn('mb-6 flex gap-6 overflow-x-auto border-b border-border', className)}>
+      {tabs.map((t) => {
+        const on = t.id === value
+        return (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onChange(t.id)}
+            className={cn(
+              '-mb-px flex h-10 shrink-0 items-center gap-2 border-b-2 text-sm font-medium whitespace-nowrap transition-colors',
+              on ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground',
+            )}
+          >
+            {t.label}
+            {t.count !== undefined && (
+              <span
+                className={cn(
+                  'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 font-mono text-xs leading-none',
+                  on ? 'bg-primary text-primary-foreground' : 'bg-border text-foreground/70',
+                )}
+                aria-label={`Всего: ${t.count}`}
+              >
+                {t.count > 99 ? '99+' : t.count}
+              </span>
+            )}
+          </button>
+        )
+      })}
     </div>
   )
 }

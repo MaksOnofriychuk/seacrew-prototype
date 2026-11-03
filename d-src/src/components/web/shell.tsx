@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react'
+import { useState, type ComponentType, type ReactNode } from 'react'
 import {
   BadgeCheck,
   Bell,
@@ -29,7 +29,9 @@ import {
 import { Wordmark } from '@/components/app/chrome'
 import { ADMIN_COUNTS } from '@/lib/data-admin'
 import { ME_ADMIN, ME_RECRUITER, RECRUITER_COUNTS, RECRUITER_ORG, RECRUITER_ROLE_LABEL } from '@/lib/data-web'
+import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
+import { useOutside } from './web-pickers'
 import { WebAvatar } from './status-badge'
 
 // Каркас вебу: ліва навігація, верхня панель (організація, пошук, користувач), область контенту.
@@ -102,6 +104,20 @@ export function WebShell({
 }) {
   const items = nav ?? (variant === 'recruiter' ? RECRUITER_NAV : ADMIN_NAV)
   const recruiter = variant === 'recruiter'
+  const { setBag } = useProto()
+  const [q, setQ] = useState('')
+  const [bell, setBell] = useState(false)
+  const bellRef = useOutside(bell, () => setBell(false))
+  const news = recruiter
+    ? [
+        { id: 'r-applications', text: 'Новый отклик на вакансию 3rd Engineer', time: 'сегодня' },
+        { id: 'r-invitations', text: 'Моряк принял приглашение', time: 'вчера' },
+        { id: 'r-messages', text: 'Новое сообщение в разговоре', time: 'вчера' },
+      ]
+    : [
+        { id: 'a-orgs', text: 'Новая организация ждёт проверки', time: 'сегодня' },
+        { id: 'a2-reports', text: 'Новая жалоба на публикацию', time: 'вчера' },
+      ]
 
   return (
     <div className="flex h-full min-h-0">
@@ -148,12 +164,42 @@ export function WebShell({
             <input
               placeholder={searchPlaceholder ?? (recruiter ? 'Поиск по морякам, вакансиям, сообщениям' : 'Поиск по организациям и пользователям')}
               aria-label="Поиск"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter' || !q.trim()) return
+                // Верхняя строка ищет там, где живёт список: у рекрутера — среди моряков, у администратора — среди организаций.
+                setBag('shell.q', q.trim())
+                setQ('')
+                go(recruiter ? 'r-search' : 'a-orgs')
+              }}
               className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
           </label>
-          <button type="button" aria-label="Уведомления" className="flex size-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted">
-            <Bell className="size-5" />
-          </button>
+          <div ref={bellRef} className="relative">
+            <button type="button" aria-label="Уведомления" aria-expanded={bell} onClick={() => setBell(!bell)} className={cn('flex size-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted', bell && 'bg-muted')}>
+              <Bell className="size-5" />
+            </button>
+            {bell && (
+              <div role="dialog" aria-label="Уведомления" className="absolute top-full right-0 z-50 mt-2 w-[340px] rounded-lg border border-border bg-surface p-1.5 shadow-lg animate-in fade-in-0 duration-150 motion-reduce:animate-none">
+                <p className="px-3 pt-2 pb-1 text-sm font-semibold">Уведомления</p>
+                {news.map((n) => (
+                  <button
+                    key={n.text}
+                    type="button"
+                    onClick={() => {
+                      setBell(false)
+                      go(n.id)
+                    }}
+                    className="flex w-full flex-col gap-0.5 rounded-md px-3 py-2 text-left hover:bg-muted"
+                  >
+                    <span className="text-sm">{n.text}</span>
+                    <span className="text-xs text-muted-foreground">{n.time}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-3">
             <WebAvatar initials={recruiter ? ME_RECRUITER.initials : ME_ADMIN.initials} />
             <span className="flex flex-col leading-tight">

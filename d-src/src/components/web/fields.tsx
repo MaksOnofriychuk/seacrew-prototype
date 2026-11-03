@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { SearchableSelect } from './web-pickers'
 import { FieldMsg } from '@/components/app/field-msg'
 
 // Базові поля форм для вебу (поверх ui/*): висота 40 px, підпис над полем, підказка або помилка під ним.
@@ -51,7 +52,12 @@ export function WebSelect({
   options,
   placeholder = 'Выберите',
   className,
+  disabled,
+  searchable,
 }: {
+  /** поиск в длинных списках */
+  searchable?: boolean
+  disabled?: boolean
   id?: string
   value: string
   onChange: (v: string) => void
@@ -59,8 +65,9 @@ export function WebSelect({
   placeholder?: string
   className?: string
 }) {
+  if (searchable) return <SearchableSelect id={id} value={value} onChange={onChange} options={options} placeholder={placeholder} className={className} disabled={disabled} />
   return (
-    <Select value={value} onValueChange={onChange}>
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger id={id} className={cn('h-10 w-full data-[size=default]:h-10', className)}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
