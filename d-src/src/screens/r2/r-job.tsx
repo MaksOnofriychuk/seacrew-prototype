@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { ExternalLink, Eye, Inbox, Pencil } from 'lucide-react'
+import { Eye, Inbox, Link2, Pencil } from 'lucide-react'
 import { MonoNums } from '@/components/app/mono-nums'
 import { useView, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,9 @@ import { WebShell } from '@/components/web/shell'
 import { ApplicationStatusDot, JobStatusDot, WebAvatar } from '@/components/web/status-badge'
 import { RECRUITERS, salaryText, seafarerById, type Application } from '@/lib/data-web'
 import { JOB_EXTRA } from '@/lib/data-recruiter-2'
+import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../registry'
+import { EMPTY_META, requirementLines, type JobMeta } from './_job-meta'
 import { BlockHead, ConfirmDialog, plural, ruDate, useR2, ViewBars } from './_parts'
 
 // r-job — вакансія очима рекрутера: умови, опис, вимоги, перегляди (відп. 101) і відгуки.
@@ -17,11 +19,14 @@ import { BlockHead, ConfirmDialog, plural, ruDate, useR2, ViewBars } from './_pa
 export function RJob({ go }: ScreenProps) {
   const r = useR2()
   const view = useView()
+  const { bag } = useProto()
   const [closing, setClosing] = useState(false)
   const j = r.jobs.find((x) => x.id === r.jobId) ?? r.jobs[0]
   const extra = JOB_EXTRA[j.id] ?? { views: 0, daily: Array(14).fill(0), requirements: '' }
   const apps = r.apps.filter((a) => a.jobId === j.id)
   const week = extra.daily.slice(-7).reduce((s, v) => s + v, 0)
+  const meta = bag<Record<string, JobMeta>>('r2.jobMeta', {})[j.id]
+  const reqLines = meta ? requirementLines({ ...EMPTY_META, ...meta }) : []
   const recruiter = RECRUITERS.find((x) => x.id === j.recruiterId)
 
   const facts: [string, ReactNode][] = [
@@ -32,6 +37,7 @@ export function RJob({ go }: ScreenProps) {
     ['Посадка', <span className="font-mono">{ruDate(j.board)}</span>],
     ['Контракт', <MonoNums text={j.duration} />],
     ['Регион', j.region],
+    ...(meta ? ([['Нужно человек', <span className="font-mono">{meta.seats}</span>]] as [string, ReactNode][]) : []),
   ]
 
   const openApp = (a: Application) => {
@@ -44,7 +50,7 @@ export function RJob({ go }: ScreenProps) {
       <div className="flex min-w-0 flex-col gap-8">
         <div>
           <p className="text-[28px] leading-tight font-semibold text-primary">
-            <MonoNums text={salaryText(j)} />
+            {j.salary.amount === 'Договорная' ? 'Договорная' : <MonoNums text={salaryText(j)} />}
           </p>
           <dl className="mt-5 grid grid-cols-[repeat(4,minmax(0,1fr))] gap-x-6 gap-y-4 border-t border-border pt-5">
             {facts.map(([l, v]) => (
@@ -61,7 +67,15 @@ export function RJob({ go }: ScreenProps) {
         </section>
         <section>
           <BlockHead title="Требования к моряку" />
-          <p className="max-w-[640px] text-[15px] leading-relaxed">{extra.requirements || 'Не указаны.'}</p>
+          {reqLines.length ? (
+            <ul className="flex max-w-[640px] flex-col gap-1 text-[15px] leading-relaxed">
+              {reqLines.map((l) => (
+                <li key={l}>{l}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="max-w-[640px] text-[15px] leading-relaxed">{meta ? 'Не указаны.' : extra.requirements || 'Не указаны.'}</p>
+          )}
         </section>
       </div>
 
@@ -141,8 +155,15 @@ export function RJob({ go }: ScreenProps) {
         actions={
           <>
             {j.status === 'open' && (
-              <Button variant="ghost" className="text-primary" onClick={() => go('pub-job')}>
-                <ExternalLink /> Открыть публичную страницу
+              <Button
+                variant="ghost"
+                className="text-primary"
+                onClick={() => {
+                  void navigator.clipboard?.writeText(`https://crew.app/jobs/${j.id}`).catch(() => {})
+                  r.showToast('Ссылка для моряков скопирована — откроется приложение')
+                }}
+              >
+                <Link2 /> Скопировать ссылку для моряков
               </Button>
             )}
             <Button

@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from 'react'
-import { WebDatePick } from '@/components/web/web-pickers'
+import { WebDatePick, WebMultiSelect } from '@/components/web/web-pickers'
 import { BOUNDS, isoToRu, ruToIso } from '@/lib/dates'
 
-import { BadgeCheck } from 'lucide-react'
+import { BadgeCheck, Bookmark, ChevronLeft, Search } from 'lucide-react'
 import { MonoNums } from '@/components/app/mono-nums'
 import { Button } from '@/components/ui/button'
 import { WebField, WebInput, WebSelect, WebTextarea } from '@/components/web/fields'
@@ -11,9 +11,11 @@ import { WebShell } from '@/components/web/shell'
 import { departmentsFor, FLEETS, positionsFor } from '@/lib/data'
 import { RECRUITER_ORG, type WebJob } from '@/lib/data-web'
 import { CURRENCIES, emptyJob, JOB_EXTRA, NEW_JOB_ID, REGIONS, VESSEL_TYPES_WEB } from '@/lib/data-recruiter-2'
+import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { plural, ruDate, useR2 } from './_parts'
+import { CERT_OPTIONS, EMPTY_META, ENGLISH_LEVELS, EXPERIENCE, LANG_OPTIONS, requirementLines, SEATS, VISA_OPTIONS, type JobMeta } from './_job-meta'
 
 type Key = 'fleet' | 'department' | 'position' | 'vesselType' | 'amount' | 'board' | 'duration'
 const REQUIRED: Key[] = ['fleet', 'department', 'position', 'vesselType', 'amount', 'board', 'duration']
@@ -26,8 +28,18 @@ export function RJobEdit({ go }: ScreenProps) {
   const isNew = r.editId === 'new'
   const source = isNew ? emptyJob() : (r.jobs.find((j) => j.id === r.editId) ?? emptyJob())
   const [j, setJ] = useState<WebJob>(source)
-  const [req, setReq] = useState(isNew ? '' : (JOB_EXTRA[source.id]?.requirements ?? ''))
+  const { bag, setBag } = useProto()
+  const metaAll = bag<Record<string, JobMeta>>('r2.jobMeta', {})
+  const [meta, setMeta] = useState<JobMeta>(() => metaAll[source.id] ?? { ...EMPTY_META, note: isNew ? '' : (JOB_EXTRA[source.id]?.requirements ?? '') })
+  const putMeta = (p: Partial<JobMeta>) => setMeta((m) => ({ ...m, ...p }))
   const [tried, setTried] = useState(false)
+  const [sal, setSal] = useState(() => parseSalary(source.salary.amount))
+  const [previewOpen, setPreviewOpen] = useState(false)
+
+  const commitSalary = (n: SalaryState) => {
+    setSal(n)
+    putSalary({ amount: n.mode === 'nego' ? NEGO : n.mode === 'fixed' ? n.lo : n.lo && n.hi ? `${n.lo}–${n.hi}` : '' })
+  }
 
   const put = (p: Partial<WebJob>) => setJ((x) => ({ ...x, ...p }))
   const dur = parseDuration(j.duration)
@@ -36,8 +48,10 @@ export function RJobEdit({ go }: ScreenProps) {
   const missing = REQUIRED.filter((k) => !value[k].trim())
   const err = (k: Key) => (tried && missing.includes(k) ? 'Заполните поле' : undefined)
 
+  const saveMeta = () => setBag('r2.jobMeta', { ...metaAll, [j.id]: meta })
   const back = () => (isNew ? go('r-jobs') : go('r-job'))
   const saveDraft = () => {
+    saveMeta()
     r.saveJob({ ...j, status: isNew ? 'draft' : j.status })
     r.showToast('Черновик сохранён')
     if (isNew) r.openJob(NEW_JOB_ID)
@@ -46,6 +60,7 @@ export function RJobEdit({ go }: ScreenProps) {
   const publish = () => {
     setTried(true)
     if (missing.length) return
+    saveMeta()
     r.saveJob({ ...j, status: 'open' })
     r.setJobStatus(j.id, 'open')
     r.openJob(j.id)
@@ -57,8 +72,8 @@ export function RJobEdit({ go }: ScreenProps) {
     <WebShell variant="recruiter" active="r-jobs" go={go} className="flex flex-col p-0">
       <div className="min-h-0 flex-1 overflow-y-auto px-8 pt-8 pb-10">
         <PageHeader back={{ label: isNew ? 'Вакансии' : 'Вакансия', onClick: back }} title={isNew ? 'Новая вакансия' : 'Редактирование вакансии'} />
-        <div className="grid grid-cols-[minmax(0,720px)_minmax(0,1fr)] gap-12">
-          <div className="flex flex-col gap-9">
+        <div className="grid grid-cols-[minmax(0,1fr)_372px] gap-10">
+          <div className="flex flex-col gap-6">
             <Block title="Должность">
               <div className="grid grid-cols-3 gap-4">
                 <WebField id="je-fleet" label="Флот" required error={err('fleet')}>
@@ -85,18 +100,34 @@ export function RJobEdit({ go }: ScreenProps) {
             </Block>
 
             <Block title="Условия">
-              <div className="grid grid-cols-[minmax(0,1fr)_96px_minmax(0,1fr)] items-start gap-4">
-                <WebField id="je-sal" label="Зарплата" required error={err('amount')}>
-                  <WebInput id="je-sal" value={j.salary.amount} onChange={(e) => putSalary({ amount: maskSalary(e.target.value) })} placeholder="4 200–4 600" className="font-mono" inputMode="numeric" />
+              <div className="grid grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)_minmax(0,1fr)_84px] items-start gap-4">
+                <WebField label="Зарплата" required error={err('amount')}>
+                  <Segmented value={sal.mode} onChange={(mode) => commitSalary({ ...sal, mode })} options={[['range', 'От–до'], ['fixed', 'Точная'], ['nego', 'Договорная']]} />
                 </WebField>
-                <WebField id="je-cur" label="Валюта">
+                {sal.mode !== 'nego' ? (
+                  <>
+                    <WebField id="je-lo" label={sal.mode === 'range' ? 'От' : 'Сумма'} hint="">
+                      <WebSelect id="je-lo" searchable className="data-[size=default]:h-10 font-mono" value={sal.lo} onChange={(lo) => commitSalary({ ...sal, lo, hi: sal.hi && toNum(sal.hi) <= toNum(lo) ? '' : sal.hi })} options={salaryOptions(j.salary.period, sal.lo)} />
+                    </WebField>
+                    {sal.mode === 'range' ? (
+                      <WebField id="je-hi" label="До" hint="">
+                        <WebSelect id="je-hi" searchable disabled={!sal.lo} className="data-[size=default]:h-10 font-mono" value={sal.hi} onChange={(hi) => commitSalary({ ...sal, hi })} options={salaryOptions(j.salary.period, sal.hi).filter((o) => toNum(o) > toNum(sal.lo))} placeholder={sal.lo ? 'Выберите' : 'Сначала «от»'} />
+                      </WebField>
+                    ) : (
+                      <span />
+                    )}
+                  </>
+                ) : (
+                  <p className="col-span-2 self-center text-sm text-muted-foreground">Сумму моряк увидит после отклика, в карточке будет «Договорная».</p>
+                )}
+                <WebField id="je-cur" label="Валюта" hint="">
                   <WebSelect className="data-[size=default]:h-10" id="je-cur" value={j.salary.currency} onChange={(currency) => putSalary({ currency: currency as WebJob['salary']['currency'] })} options={[...CURRENCIES]} />
                 </WebField>
-                <WebField label="Период">
-                  <Segmented value={j.salary.period} onChange={(period) => putSalary({ period })} options={[['месяц', 'В месяц'], ['день', 'В день']]} />
-                </WebField>
               </div>
-              <div className="mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1.9fr)_minmax(0,1fr)] gap-4">
+              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.5fr)] items-start gap-4">
+                <WebField label="Период оплаты">
+                  <Segmented value={j.salary.period} onChange={(period) => { putSalary({ period }); commitSalary({ ...sal, lo: '', hi: '' }) }} options={[['месяц', 'В месяц'], ['день', 'В день']]} />
+                </WebField>
                 <WebField id="je-board" label="Дата посадки" required error={err('board')}>
                   <WebDatePick id="je-board" value={isoToRu(j.board)} onChange={(v) => put({ board: ruToIso(v) })} {...BOUNDS.future} />
                 </WebField>
@@ -109,27 +140,60 @@ export function RJobEdit({ go }: ScreenProps) {
                     </div>
                   </div>
                 </WebField>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
                 <WebField id="je-reg" label="Регион">
                   <WebSelect className="data-[size=default]:h-10" id="je-reg" value={j.region} onChange={(region) => put({ region: region as WebJob['region'] })} options={[...REGIONS]} />
+                </WebField>
+                <WebField id="je-seats" label="Сколько человек нужно">
+                  <WebSelect className="data-[size=default]:h-10 font-mono" id="je-seats" value={meta.seats} onChange={(seats) => putMeta({ seats })} options={SEATS} />
                 </WebField>
               </div>
             </Block>
 
-            <Block title="Описание и требования">
-              <div className="flex flex-col gap-4">
+            <Block title="Требования к моряку">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+                <WebField id="je-exp" label="Стаж в должности">
+                  <WebSelect className="data-[size=default]:h-10" id="je-exp" value={meta.expPos} onChange={(expPos) => putMeta({ expPos })} options={EXPERIENCE} />
+                </WebField>
+                <WebField id="je-expv" label="Опыт на этом типе судна">
+                  <WebSelect className="data-[size=default]:h-10" id="je-expv" value={meta.expVessel} onChange={(expVessel) => putMeta({ expVessel })} options={EXPERIENCE} />
+                </WebField>
+                <WebField id="je-cert" label="Сертификаты">
+                  <WebMultiSelect id="je-cert" label="Сертификаты" values={meta.certs} onChange={(certs) => putMeta({ certs })} options={CERT_OPTIONS} placeholder="Не важны" />
+                </WebField>
+                <WebField id="je-visa" label="Визы">
+                  <WebMultiSelect id="je-visa" label="Визы" values={meta.visas} onChange={(visas) => putMeta({ visas })} options={VISA_OPTIONS} placeholder="Не нужны" />
+                </WebField>
+                <WebField id="je-lang" label="Языки экипажа">
+                  <WebMultiSelect id="je-lang" label="Языки" values={meta.langs} onChange={(langs) => putMeta({ langs })} options={LANG_OPTIONS} placeholder="Не важны" />
+                </WebField>
+                <WebField id="je-eng" label="Английский">
+                  <WebSelect className="data-[size=default]:h-10" id="je-eng" value={meta.english} onChange={(english) => putMeta({ english })} options={ENGLISH_LEVELS} />
+                </WebField>
+              </div>
+            </Block>
+
+            <Block title="Описание">
+              <div className="grid grid-cols-2 gap-4">
                 <WebField id="je-desc" label="Описание">
                   <WebTextarea id="je-desc" value={j.description} onChange={(e) => put({ description: e.target.value })} placeholder="Судовладелец, линия, смена экипажа, условия на борту" className="min-h-28" />
                 </WebField>
-                <WebField id="je-req" label="Требования к моряку" hint="Свободным текстом: визы, минимальный стаж, опыт на конкретном типе судна">
-                  <WebTextarea id="je-req" value={req} onChange={(e) => setReq(e.target.value)} placeholder="Виза США C1/D. Стаж в должности от 12 месяцев." className="min-h-24" />
+                <WebField id="je-req" label="Ещё для моряка" hint="Только то, чего нет в списках выше">
+                  <WebTextarea id="je-req" value={meta.note} onChange={(e) => putMeta({ note: e.target.value })} placeholder="Например: двигатели MAN B&W" className="min-h-28" />
                 </WebField>
               </div>
             </Block>
           </div>
 
           <aside className="sticky top-0 flex flex-col gap-3 self-start">
-            <span className="text-sm text-muted-foreground">Так вакансию увидят в приложении</span>
-            <Preview j={j} />
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm text-muted-foreground">Так вакансию увидят в приложении</span>
+              <div className="w-[170px]">
+                <Segmented value={previewOpen ? 'open' : 'card'} onChange={(v) => setPreviewOpen(v === 'open')} options={[['card', 'В списке'], ['open', 'Открытая']]} />
+              </div>
+            </div>
+            <Preview j={j} meta={meta} open={previewOpen} />
           </aside>
         </div>
       </div>
@@ -173,14 +237,25 @@ function durationText(n: string, unit: DurUnit, tol = '') {
   return `${v}${t} ${plural(Number(v), 'неделя', 'недели', 'недель')}`
 }
 
-// Сумма с пробелами между тысячами; диапазон через «–» («4 200–4 600»).
-function maskSalary(raw: string) {
-  return raw
-    .replace(/-/g, '–')
-    .split('–')
-    .slice(0, 2)
-    .map((p) => p.replace(/\D/g, '').slice(0, 6).replace(/\B(?=(\d{3})+(?!\d))/g, ' '))
-    .join('–')
+// Зарплата выбором: диапазон «от–до», точная сумма или «Договорная». Шаги суммы — списком, руками ничего не вводится.
+const NEGO = 'Договорная'
+type SalaryState = { mode: 'range' | 'fixed' | 'nego'; lo: string; hi: string }
+const fmtNum = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+const toNum = (s: string) => Number(s.replace(/\D/g, '')) || 0
+const seq = (from: number, to: number, step: number) => Array.from({ length: Math.floor((to - from) / step) + 1 }, (_, i) => from + i * step)
+const MONTH_SUMS = [...seq(1000, 6000, 200), ...seq(6500, 12000, 500), ...seq(13000, 20000, 1000)]
+const DAY_SUMS = [...seq(100, 600, 10), ...seq(650, 1000, 50)]
+function salaryOptions(period: WebJob['salary']['period'], current: string) {
+  const list = (period === 'месяц' ? MONTH_SUMS : DAY_SUMS).slice()
+  const cur = toNum(current)
+  if (cur && !list.includes(cur)) list.push(cur)
+  return list.sort((a, b) => a - b).map(fmtNum)
+}
+function parseSalary(amount: string): SalaryState {
+  if (amount === NEGO) return { mode: 'nego', lo: '', hi: '' }
+  const [lo = '', hi = ''] = amount.split('–')
+  if (hi) return { mode: 'range', lo, hi }
+  return { mode: lo ? 'fixed' : 'range', lo, hi: '' }
 }
 
 function Block({ title, children }: { title: string; children: ReactNode }) {
@@ -211,25 +286,92 @@ function Segmented<T extends string>({ value, onChange, options }: { value: T; o
   )
 }
 
-// Картка вакансії зі списку застосунку: посада, ЗП, тип судна, посадка, тривалість, агентство.
-function Preview({ j }: { j: WebJob }) {
-  const salary = j.salary.amount ? `${j.salary.currency}${j.salary.amount} / ${j.salary.period}` : ''
+// Вакансия так, как её видит моряк в мобильном приложении: рамка телефона, карточка списка или открытая вакансия.
+function Preview({ j, meta, open }: { j: WebJob; meta: JobMeta; open: boolean }) {
+  const nego = j.salary.amount === NEGO
+  const salary = j.salary.amount ? (nego ? NEGO : `${j.salary.currency}${j.salary.amount} / ${j.salary.period === 'месяц' ? 'мес' : 'день'}`) : ''
   const empty = <span className="text-muted-foreground/60">—</span>
+  const reqs = requirementLines(meta)
+  const title = j.position || <span className="text-muted-foreground/60">Должность</span>
+  const money = salary || <span className="text-muted-foreground/60">Зарплата</span>
+  const card = (
+    <div className="flex flex-col gap-1">
+      <span className="text-[17px] font-semibold">{title}</span>
+      <span className="font-mono text-[15px] font-semibold text-primary">{money}</span>
+      <span className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-muted-foreground">
+        <span>{j.vesselType || empty}</span>
+        <span>
+          контракт {j.duration ? <MonoNums text={j.duration} /> : empty}
+        </span>
+        <span>
+          посадка {j.board ? <span className="font-mono">{ruDate(j.board)}</span> : empty}
+        </span>
+      </span>
+    </div>
+  )
   return (
-    <div className="w-[360px] rounded-2xl border border-border bg-surface px-5 py-4">
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[17px] font-semibold">{j.position || <span className="text-muted-foreground/60">Должность</span>}</span>
-        <span className="font-mono text-[15px] font-semibold text-primary">{salary || <span className="font-sans text-muted-foreground/60">Зарплата</span>}</span>
-        <span className="flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-muted-foreground">
-          <span>{j.vesselType || empty}</span>
-          <span>посадка {j.board ? <span className="font-mono">{ruDate(j.board)}</span> : empty}</span>
-          <span>{j.duration ? <MonoNums text={j.duration} /> : empty}</span>
-        </span>
-        <span className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-          {RECRUITER_ORG.name}
-          <BadgeCheck className="size-4 text-success" aria-label="Агентство проверено" />
-        </span>
+    <div className="mx-auto w-full max-w-[340px] overflow-hidden rounded-[32px] border-[6px] border-border bg-background">
+      <div className="flex items-center justify-between px-6 pt-3 pb-1 text-xs text-muted-foreground">
+        <span className="font-mono">9:41</span>
+        <span className="h-1.5 w-16 rounded-full bg-border" />
+        <span className="w-8" />
       </div>
+      {open ? (
+        <div className="flex min-h-[420px] flex-col">
+          <div className="flex items-center gap-1 px-3 py-2 text-sm text-primary">
+            <ChevronLeft className="size-4" /> Вакансии
+            <Bookmark className="ml-auto size-4 text-muted-foreground" />
+          </div>
+          <div className="flex flex-col gap-3 border-t border-border bg-surface px-5 py-4">
+            {card}
+            <span className="flex items-center gap-1 text-sm text-muted-foreground">
+              {RECRUITER_ORG.name}
+              <BadgeCheck className="size-4 text-success" aria-label="Агентство проверено" />
+            </span>
+            {j.description && <p className="text-sm leading-relaxed">{j.description}</p>}
+            {meta.seats !== '1' && (
+              <p className="text-sm text-muted-foreground">
+                Нужно <span className="font-mono text-foreground">{meta.seats}</span> {plural(Number(meta.seats), 'человек', 'человека', 'человек')}
+              </p>
+            )}
+            {reqs.length > 0 && (
+              <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
+                {reqs.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+            )}
+            <span className="mt-1 flex h-10 items-center justify-center rounded-md bg-primary text-sm font-medium text-primary-foreground">Откликнуться</span>
+          </div>
+        </div>
+      ) : (
+        <div className="flex min-h-[420px] flex-col">
+          <div className="px-3 pb-2">
+            <span className="flex h-9 items-center gap-2 rounded-md border border-border bg-surface px-3 text-sm text-muted-foreground">
+              <Search className="size-4" /> Поиск вакансий
+            </span>
+          </div>
+          <div className="flex flex-col divide-y divide-border border-t border-border bg-surface">
+            <div className="px-5 py-4">
+              {card}
+              <span className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
+                {RECRUITER_ORG.name}
+                <BadgeCheck className="size-4 text-success" aria-label="Агентство проверено" />
+              </span>
+            </div>
+            <div className="flex flex-col gap-1.5 px-5 py-4 opacity-40" aria-hidden="true">
+              <span className="h-3.5 w-36 rounded bg-border" />
+              <span className="h-3 w-24 rounded bg-border" />
+              <span className="h-3 w-48 rounded bg-border" />
+            </div>
+            <div className="flex flex-col gap-1.5 px-5 py-4 opacity-40" aria-hidden="true">
+              <span className="h-3.5 w-28 rounded bg-border" />
+              <span className="h-3 w-20 rounded bg-border" />
+              <span className="h-3 w-44 rounded bg-border" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
