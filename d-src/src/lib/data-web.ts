@@ -123,7 +123,7 @@ export const WEB_JOBS: WebJob[] = [
 
 export const jobById = (id: string) => WEB_JOBS.find((j) => j.id === id)
 /** «$4 200–4 600 / месяц» */
-export const salaryText = (j: WebJob) => `${j.salary.currency}${j.salary.amount} / ${j.salary.period}`
+export const salaryText = (j: WebJob) => (j.salary.amount === 'Договорная' ? 'Договорная' : `${j.salary.currency}${j.salary.amount} / ${j.salary.period}`)
 
 /* ---------- відгуки на вакансії (статуси — відповіді 98, 108; правка №22) ---------- */
 

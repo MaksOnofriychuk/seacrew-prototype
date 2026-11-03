@@ -3,6 +3,7 @@ import { Briefcase, Plus, SearchX } from 'lucide-react'
 import { MonoNums } from '@/components/app/mono-nums'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
+import { usePrefs } from '@/components/web/web-prefs'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader, PageTabs } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
@@ -21,6 +22,7 @@ const salaryNum = (j: WebJob) => (parseInt(j.salary.amount.replace(/\s/g, ''), 1
 
 // r-jobs — вакансії агентства. Закриває вакансію рекрутер (відп. 27), лічильник переглядів (відп. 101).
 export function RJobs({ go }: ScreenProps) {
+  const { prefs } = usePrefs()
   const r = useR2()
   const [tab, setTab] = useState<Tab>('open')
   const [q, setQ] = useState('')
@@ -187,6 +189,7 @@ export function RJobs({ go }: ScreenProps) {
         onRowClick={open}
         initialSort={{ key: 'board', dir: 'asc' }}
         pageSizes={[10, 20, 50]}
+        pageSize={Number(prefs.rows)}
         sortOptions={[
           { key: 'board', dir: 'asc', label: 'Посадка: сначала ближайшая' },
           { key: 'board', dir: 'desc', label: 'Посадка: сначала дальняя' },

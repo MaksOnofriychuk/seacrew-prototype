@@ -51,6 +51,7 @@ export function DataTable<T>({
   selectedKey,
   ignoreView = false,
   pageSizes,
+  pageSize,
   sortOptions,
   className,
 }: {
@@ -66,6 +67,8 @@ export function DataTable<T>({
   ignoreView?: boolean
   /** пагінація «по скільки виводити», напр. [10, 20, 50]; без пропа таблиця показує всі рядки */
   pageSizes?: number[]
+  /** початковий розмір сторінки (напр. з налаштувань рекрутера); має бути серед pageSizes */
+  pageSize?: number
   /** список «Сортировать: …» у верхній смузі таблиці (додатково до клікабельних заголовків) */
   sortOptions?: SortOption[]
   className?: string
@@ -75,7 +78,7 @@ export function DataTable<T>({
   const sortable = allColumns
   const [sort, setSort] = useState<Sort>(initialSort)
   const v = ignoreView ? 'normal' : view
-  const [size, setSize] = useState(pageSizes?.[0] ?? 0)
+  const [size, setSize] = useState(pageSize && pageSizes?.includes(pageSize) ? pageSize : (pageSizes?.[0] ?? 0))
   const [page, setPage] = useState(0)
 
   const col = sort && sortable.find((c) => c.key === sort.key)

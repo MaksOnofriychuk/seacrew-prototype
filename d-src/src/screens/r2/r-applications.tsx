@@ -4,6 +4,7 @@ import { MonoNums } from '@/components/app/mono-nums'
 import { useView } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
+import { usePrefs } from '@/components/web/web-prefs'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader, PageTabs } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
@@ -28,6 +29,7 @@ const SEAFARER_SEES: Record<ApplicationStatus, string> = {
 // r-applications — відгуки на вакансії: статуси отправлено / ожидание / метч / отклонено (відп. 98),
 // дії рекрутера і перехід у розмову (правка №22). Таблиця ліворуч, вибраний відгук — праворуч.
 export function RApplications({ go }: ScreenProps) {
+  const { prefs } = usePrefs()
   const r = useR2()
   const view = useView()
   const { setBag } = useProto()
@@ -142,6 +144,7 @@ export function RApplications({ go }: ScreenProps) {
             selectedKey={sel.id}
             initialSort={{ key: 'date', dir: 'desc' }}
             pageSizes={[10, 20, 50]}
+            pageSize={Number(prefs.rows)}
             sortOptions={[
               { key: 'date', dir: 'desc', label: 'Дата: сначала новые' },
               { key: 'date', dir: 'asc', label: 'Дата: сначала старые' },

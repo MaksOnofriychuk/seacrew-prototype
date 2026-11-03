@@ -5,6 +5,7 @@ import { SearchX } from 'lucide-react'
 import { MonoNums } from '@/components/app/mono-nums'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
+import { usePrefs } from '@/components/web/web-prefs'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
@@ -36,6 +37,7 @@ function match(s: WebSeafarer, f: Filters) {
 }
 
 export function RSearch({ go }: ScreenProps) {
+  const { prefs } = usePrefs()
   // Поиск из верхней строки кабинета (Enter) приходит сюда готовым запросом.
   const { bag, setBag } = useProto()
   const [f, setF] = useState<Filters>(() => ({ ...NONE, q: bag<string>('shell.q', '') }))
@@ -151,6 +153,7 @@ export function RSearch({ go }: ScreenProps) {
         onRowClick={open}
         initialSort={{ key: 'avail', dir: 'asc' }}
         pageSizes={[10, 20, 50]}
+        pageSize={Number(prefs.rows)}
         sortOptions={[
           { key: 'avail', dir: 'asc', label: 'Готовность: сначала готовые' },
           { key: 'exp', dir: 'desc', label: 'Опыт: сначала больше' },
