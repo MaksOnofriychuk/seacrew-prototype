@@ -51,7 +51,7 @@ function StatusScreen({ go, id, forced }: ScreenProps & { id: string; forced?: P
             <EmptyState
               icon={Pennant}
               title="Премиум не подключён"
-              text="Подходящие вакансии сразу, до 20 подборок, сравнение вакансий и анкеты из профиля."
+              text="Подходящие вакансии сразу, до 20 подборок и сравнение вакансий."
               action={
                 <Button className="h-11 text-[15px]" onClick={paywall}>
                   Попробовать неделю бесплатно

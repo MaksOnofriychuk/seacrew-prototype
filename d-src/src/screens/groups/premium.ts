@@ -21,7 +21,7 @@ export const groups = defineGroups('mobile', [
       { id: 'pr-paywall', title: 'Премиум (конец онбординга)', Component: PrPaywall, bleed: true },
       { id: 'pr-status', title: 'Моя подписка', Component: PrStatus },
       { id: 'pr-status-ended', title: 'Моя подписка · закончилась', Component: PrStatusEnded },
-      { id: 'pr-lock', title: 'Замок · анкета из профиля', Component: PrLock },
+      { id: 'pr-lock', title: 'Замок · анкета из профиля (позже; сейчас — для всех)', Component: PrLock },
       { id: 'pr-lock-searches', title: 'Замок · больше 3 подборок', Component: PrLockSearches },
       { id: 'pr-lock-compare', title: 'Замок · сравнение вакансий', Component: PrLockCompare },
       { id: 'pr-lock-alerts', title: 'Замок · подходящие вакансии сразу', Component: PrLockAlerts },

@@ -17,10 +17,10 @@ export const PLAN_ENDED: Plan = { kind: 'ended', until: '01.11.2026' }
 export type FeatureId = 'searches' | 'alerts' | 'autofill' | 'compare'
 
 // Переваги премиуму. Остаточного списку замовник ще не дав (відповідь 127) — це приклад із уже названого.
+// Заповнення анкети з профілю зараз для всіх (відповідь 117: «пока для всех, потом — для премиумов») — серед переваг його немає.
 export const FEATURES: { id: FeatureId; title: string; text: string; to: string }[] = [
   { id: 'alerts', title: 'Подходящие вакансии — сразу', text: 'Пришлём уведомление, как только появится вакансия под ваш профиль', to: 'pr-lock-alerts' },
   { id: 'searches', title: 'До 20 подборок', text: 'Бесплатно — 3 сохранённых поиска', to: 'p17' },
-  { id: 'autofill', title: 'Анкеты заполняются из профиля', text: 'Анкету агентства не нужно набирать вручную', to: 'pr-lock' },
   { id: 'compare', title: 'Сравнение вакансий', text: 'Зарплата, судно и сроки рядом, в одной таблице', to: 'pr-compare' },
 ]
 
