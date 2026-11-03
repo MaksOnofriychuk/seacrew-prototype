@@ -45,7 +45,7 @@ function tagOf(q: Question, a: Answer | undefined, proved: boolean): Tag | null 
   if (a.src === 'sugg') return { text: 'из профиля', tone: 'plain' }
   if (typeof a.src === 'number') {
     const s = q.sources[a.src]
-    if (q.proof && proved && s?.kind === 'doc' && !s.unproved) return { text: 'подтверждено документом', tone: 'auto', icon: ShieldCheck }
+    if (q.proof && proved && s?.kind === 'doc' && !s.unproved) return { text: 'подтверждено', tone: 'auto', icon: ShieldCheck }
     return { text: KIND_TAG[s?.kind ?? 'profile'], tone: 'plain' }
   }
   if (a.base !== undefined) return { text: 'исправлено вами', tone: 'warn' }
@@ -56,7 +56,7 @@ function FieldTag({ tag, onPick }: { tag: Tag | null; onPick?: () => void }) {
   if (!tag) return null
   const Icon = tag.icon
   const badge = (
-    <Badge variant={tag.tone === 'warn' ? 'warning' : tag.tone === 'auto' ? 'success' : 'outline'} className={cn('font-normal', tag.tone === 'plain' && 'text-muted-foreground')}>
+    <Badge variant={tag.tone === 'warn' ? 'warning' : tag.tone === 'auto' ? 'success' : 'outline'} className={cn('max-w-full font-normal', tag.tone === 'plain' && 'text-muted-foreground')}>
       {Icon && <Icon />}
       {tag.text}
       {onPick && <ChevronDown />}
@@ -250,7 +250,7 @@ export function QuestionField({
         className={cn('border-t-0', hint && 'bg-warning/10')}
         title={
           // Мітка джерела — над назвою поля, однаково в кожному рядку (перевірка 03.11, №50).
-          <span className="flex flex-col items-start gap-1">
+          <span className="flex min-w-0 flex-col items-start gap-1 overflow-hidden">
             {tag}
             <span className="text-muted-foreground">{q.label}</span>
           </span>
@@ -259,14 +259,14 @@ export function QuestionField({
           !hasValue ? (
             <span className="text-muted-foreground">Не заполнено</span>
           ) : q.kind === 'doc' || q.kind === 'nok' ? (
-            <span className="flex max-w-[10.5rem] flex-col items-end text-right leading-snug">
-              <span className={cn('max-w-full truncate text-foreground', q.kind === 'doc' && 'font-mono')}>{splitComposite(q.kind, shown).a || '—'}</span>
-              <span className={cn('max-w-full truncate text-sm', splitComposite(q.kind, shown).b ? 'font-mono text-muted-foreground' : 'text-signal')}>
+            <span className="flex min-w-0 max-w-full flex-col items-end text-right leading-snug">
+              <span className={cn('max-w-full text-sm text-foreground [overflow-wrap:anywhere]', q.kind === 'doc' && 'font-mono')}>{splitComposite(q.kind, shown).a || '—'}</span>
+              <span className={cn('max-w-full text-sm [overflow-wrap:anywhere]', splitComposite(q.kind, shown).b ? 'font-mono text-muted-foreground' : 'text-signal')}>
                 {splitComposite(q.kind, shown).b ? (q.kind === 'doc' ? 'до ' : '') + splitComposite(q.kind, shown).b : q.kind === 'doc' ? 'нет срока' : 'нет телефона'}
               </span>
             </span>
           ) : (
-            <span className={cn('block max-w-[9.5rem] truncate text-foreground', mono && 'font-mono')}>{shown}</span>
+            <span className={cn('block max-w-full text-sm text-foreground [overflow-wrap:anywhere]', mono && 'font-mono text-[13px] tracking-tight')}>{shown}</span>
           )
         }
         open={open}

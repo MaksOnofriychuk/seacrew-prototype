@@ -42,8 +42,9 @@ export function ExpandRow({ icon: I, title, value, open, onToggle, children, cla
     <div ref={ref} className={cn('border-t border-border first:border-t-0', className)}>
       <button type="button" aria-expanded={open} onClick={onToggle} className="flex min-h-13 w-full items-center gap-3 px-4 py-3 text-left active:bg-muted/60">
         {I && <I className="size-5 shrink-0 text-primary" />}
-        <span className="flex-1 text-[15px]">{title}</span>
-        {value !== undefined && <span className="min-w-0 truncate text-[15px] text-muted-foreground">{value}</span>}
+        {/* Назва і значення — порівну, по 50 % (перевірка 03.11, №51). */}
+        <span className="min-w-0 flex-1 basis-0 text-[15px]">{title}</span>
+        {value !== undefined && <span className="flex min-w-0 flex-1 basis-0 justify-end text-right text-[15px] leading-snug text-muted-foreground [overflow-wrap:anywhere]">{value}</span>}
         <ChevronRight className={cn('size-4 shrink-0 text-muted-foreground transition-transform duration-200 motion-reduce:transition-none', open && 'rotate-90')} />
       </button>
       <div className={cn('grid transition-[grid-template-rows,visibility] duration-200 ease-out motion-reduce:transition-none', open ? 'visible grid-rows-[1fr]' : 'invisible grid-rows-[0fr]')}>
