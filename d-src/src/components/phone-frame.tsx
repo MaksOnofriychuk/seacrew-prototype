@@ -10,6 +10,7 @@ export function PhoneFrame({ children, bleed = false }: { children: ReactNode; b
   return (
     <div
       ref={setEl}
+      data-phone
       className="relative flex h-[844px] w-[390px] shrink-0 flex-col overflow-hidden rounded-[48px] border border-border bg-background text-foreground max-[480px]:h-dvh max-[480px]:w-full max-[480px]:rounded-none max-[480px]:border-0"
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex h-[50px] items-center justify-between px-8 pt-1 text-[15px] font-semibold">

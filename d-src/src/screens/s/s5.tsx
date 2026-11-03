@@ -159,7 +159,7 @@ function AddMed({ disabled, again, onManual, onPhoto, onFile }: { disabled: bool
       <div className="grid grid-cols-2 border-t border-border">
         <button type="button" disabled={disabled} onClick={onPhoto} className="flex items-center justify-center gap-2 py-3 text-sm font-medium text-primary">
           <Camera className="size-4" />
-          Фото титульной
+          Фото
         </button>
         <button type="button" disabled={disabled} onClick={onFile} className="flex items-center justify-center gap-2 border-l border-border py-3 text-sm font-medium text-primary">
           <FolderOpen className="size-4" />
@@ -230,11 +230,11 @@ function MedForm({ initial, onSave, onCancel, onDelete }: { initial: MedDoc; onS
               <div className="flex flex-col gap-2">
                 <span className="text-sm text-muted-foreground">Вся информация обычно на титульной странице</span>
                 <div className="grid grid-cols-2 gap-2">
-                  <button type="button" onClick={() => put({ file: 'photo' })} className="flex items-center gap-2 rounded-md border border-border px-3 py-3 text-left text-[15px] font-medium active:scale-[0.99]">
+                  <button type="button" onClick={() => put({ file: 'photo' })} className="flex h-12 items-center justify-center gap-2 rounded-md border border-border px-3 text-[15px] font-medium whitespace-nowrap active:scale-[0.99]">
                     <Camera className="size-5 shrink-0 text-primary" />
-                    Фото титульной
+                    Фото
                   </button>
-                  <button type="button" onClick={() => put({ file: 'pdf' })} className="flex items-center gap-2 rounded-md border border-border px-3 py-3 text-left text-[15px] font-medium active:scale-[0.99]">
+                  <button type="button" onClick={() => put({ file: 'pdf' })} className="flex h-12 items-center justify-center gap-2 rounded-md border border-border px-3 text-[15px] font-medium whitespace-nowrap active:scale-[0.99]">
                     <FolderOpen className="size-5 shrink-0 text-primary" />
                     Файл
                   </button>

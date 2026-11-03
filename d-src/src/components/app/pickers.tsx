@@ -129,17 +129,35 @@ export function CountryPick({
 
 type Item = { v: number; label: string; off?: boolean }
 
-// Колонка з прокруткою: вибраний рядок — по центру; недоступні значення тьмяні й не натискаються.
+// Колонка-барабан: вибране — те, що зупинилось по центру після прокрутки (або тап по рядку).
+// Недоступні значення тьмяні: якщо прокрутка зупинилась на них, барабан повертається до вибраного.
+const ROW = 48
+
 function Wheel({ label, items, value, onChange, mono }: { label: string; items: Item[]; value: number; onChange: (v: number) => void; mono?: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
+  const timer = useRef<number | undefined>(undefined)
+  const at = items.findIndex((it) => it.v === value)
   useEffect(() => {
-    const el = ref.current?.querySelector<HTMLElement>('[data-on="true"]')
-    el?.scrollIntoView({ block: 'center' })
-  }, [value, items.length])
+    const el = ref.current
+    if (el && at >= 0 && Math.abs(el.scrollTop - at * ROW) > 2) el.scrollTo({ top: at * ROW })
+  }, [at, items.length])
+  useEffect(() => () => window.clearTimeout(timer.current), [])
+  const settle = () => {
+    window.clearTimeout(timer.current)
+    timer.current = window.setTimeout(() => {
+      const el = ref.current
+      if (!el) return
+      const i = Math.max(0, Math.min(items.length - 1, Math.round(el.scrollTop / ROW)))
+      const it = items[i]
+      if (it && !it.off) {
+        if (it.v !== value) onChange(it.v)
+      } else if (at >= 0) el.scrollTo({ top: at * ROW, behavior: 'smooth' })
+    }, 140)
+  }
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       <span className="mb-2 text-center text-sm text-muted-foreground">{label}</span>
-      <div ref={ref} role="listbox" aria-label={label} className="h-56 snap-y overflow-y-auto overscroll-contain rounded-xl border border-border py-[88px]">
+      <div ref={ref} role="listbox" aria-label={label} onScroll={settle} className="h-56 snap-y snap-mandatory overflow-y-auto overscroll-contain rounded-xl border border-border py-[88px]">
         {items.map((it) => {
           const on = it.v === value
           return (
@@ -152,7 +170,7 @@ function Wheel({ label, items, value, onChange, mono }: { label: string; items: 
               disabled={it.off}
               onClick={() => onChange(it.v)}
               className={cn(
-                'flex h-12 w-full snap-center items-center justify-center text-base transition-colors',
+                'flex h-12 w-full snap-center items-center justify-center text-base transition-colors outline-none',
                 mono && 'font-mono',
                 on ? 'bg-primary/10 font-semibold text-primary' : 'text-foreground',
                 it.off && 'text-muted-foreground/40',
@@ -204,7 +222,7 @@ export function DatePick({
   title,
   min,
   max,
-  placeholder = 'Выберите дату',
+  placeholder = 'Выбрать',
   invalid,
   disabled,
   initial,
@@ -371,7 +389,7 @@ export function MonthPick({
   title,
   min,
   max = thisMonth,
-  placeholder = 'Выберите месяц',
+  placeholder = 'Выбрать',
   invalid,
 }: {
   id?: string

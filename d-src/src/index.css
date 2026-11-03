@@ -135,3 +135,12 @@ input:autofill {
   box-shadow: 0 0 0 1000px var(--surface) inset !important;
   transition: background-color 600000s 0s, color 600000s 0s;
 }
+
+/* Усередині телефона смуг прокрутки не видно — як на справжньому пристрої. */
+[data-phone] *,
+[data-phone] {
+  scrollbar-width: none;
+}
+[data-phone] *::-webkit-scrollbar {
+  display: none;
+}
