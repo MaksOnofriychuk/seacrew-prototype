@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { AlertTriangle, Check, CreditCard, ReceiptText } from 'lucide-react'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
-import { WebField, WebInput } from '@/components/web/fields'
+import { WebDialog } from '@/components/web/dialog'
+import { WebField, WebInput, WebSelect } from '@/components/web/fields'
 import { PageHeader } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { BILLING, PLAN_USAGE, PLANS, type Plan } from '@/lib/data-recruiter-3'
@@ -19,6 +20,10 @@ export function RBilling({ go }: ScreenProps) {
   const b = useBilling()
   const [switchTo, setSwitchTo] = useState<Plan | null>(null)
   const [cancelAsk, setCancelAsk] = useState(false)
+  const [cardOpen, setCardOpen] = useState(false)
+  const [card, setCard] = useState({ number: '', month: '', year: '', cvc: '' })
+  const [cardTried, setCardTried] = useState(false)
+  const cardOk = card.number.replace(/\D/g, '').length === 16 && !!card.month && !!card.year && card.cvc.length >= 3
   const [details, setDetails] = useState(BILLING.details)
   const current = PLANS.find((p) => p.id === b.plan)!
   const next = PLANS.find((p) => p.id === b.nextPlan)
@@ -211,7 +216,7 @@ export function RBilling({ go }: ScreenProps) {
                   действует до <span className="font-mono">{BILLING.card.exp}</span>
                 </span>
               </span>
-              <Button variant="ghost" className="text-primary" onClick={() => b.showToast('Откроется форма платёжного провайдера')}>
+              <Button variant="ghost" className="text-primary" onClick={() => setCardOpen(true)}>
                 Заменить
               </Button>
             </div>
@@ -241,6 +246,46 @@ export function RBilling({ go }: ScreenProps) {
         </section>
       </ViewState>
 
+      <WebDialog
+        open={cardOpen}
+        onClose={() => setCardOpen(false)}
+        title="Новая карта"
+        description="Данные карты вводятся на стороне платёжного провайдера, Seafolio их не видит."
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setCardOpen(false)}>
+              Отмена
+            </Button>
+            <Button
+              onClick={() => {
+                setCardTried(true)
+                if (!cardOk) return
+                setCardOpen(false)
+                setCardTried(false)
+                setCard({ number: '', month: '', year: '', cvc: '' })
+                b.showToast('Карта заменена')
+              }}
+            >
+              Сохранить карту
+            </Button>
+          </>
+        }
+      >
+        <WebField id="card-number" label="Номер карты" required error={cardTried && card.number.replace(/\D/g, '').length !== 16 ? 'Введите 16 цифр' : undefined}>
+          <WebInput id="card-number" inputMode="numeric" autoComplete="off" className="font-mono" placeholder="0000 0000 0000 0000" value={card.number} onChange={(e) => setCard({ ...card, number: e.target.value.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 ') })} />
+        </WebField>
+        <div className="grid grid-cols-3 gap-4">
+          <WebField id="card-month" label="Месяц" required error={cardTried && !card.month ? 'Выберите' : undefined}>
+            <WebSelect id="card-month" value={card.month} onChange={(month) => setCard({ ...card, month })} options={Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))} placeholder="ММ" />
+          </WebField>
+          <WebField id="card-year" label="Год" required error={cardTried && !card.year ? 'Выберите' : undefined}>
+            <WebSelect id="card-year" value={card.year} onChange={(year) => setCard({ ...card, year })} options={Array.from({ length: 10 }, (_, i) => String(2026 + i))} placeholder="ГГГГ" />
+          </WebField>
+          <WebField id="card-cvc" label="Код CVC" required error={cardTried && card.cvc.length < 3 ? 'Три цифры' : undefined}>
+            <WebInput id="card-cvc" inputMode="numeric" autoComplete="off" className="font-mono" value={card.cvc} onChange={(e) => setCard({ ...card, cvc: e.target.value.replace(/\D/g, '').slice(0, 4) })} />
+          </WebField>
+        </div>
+      </WebDialog>
       <ConfirmDialog
         open={!!switchTo}
         onOpenChange={(v) => !v && setSwitchTo(null)}

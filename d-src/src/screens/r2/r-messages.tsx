@@ -3,6 +3,7 @@ import { Check, CheckCheck, Download, FileText, ImageIcon, Link2, MessageSquare,
 import { EmptyState, useView, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { WebShell } from '@/components/web/shell'
+import { useAttachment } from '@/components/web/web-viewer'
 import { ApplicationStatusDot, WebAvatar } from '@/components/web/status-badge'
 import { FORMS, seafarerById } from '@/lib/data-web'
 import { formTitle, type Chat, type ChatMsg } from '@/lib/data-recruiter-2'
@@ -149,6 +150,7 @@ function Thread({ chat, go }: { chat: Chat; go: Go }) {
   const s = seafarerById(chat.seafarerId)!
   const j = r.jobs.find((x) => x.id === chat.jobId)!
   const app = r.apps.find((a) => a.id === chat.id)
+  const att = useAttachment()
   const [text, setText] = useState('')
   const [menu, setMenu] = useState<'closed' | 'main' | 'forms'>('closed')
   const [seenAll, setSeenAll] = useState(false)
@@ -203,7 +205,7 @@ function Thread({ chat, go }: { chat: Chat; go: Go }) {
                 }}
               />
             ) : (
-              <Bubble m={m} go={go} />
+              <Bubble m={m} go={go} onOpen={(name, kind) => att.open(name, kind, m.from === 'me' ? 'Вы' : s.name)} />
             )}
             {i === lastMine && (
               <span className="mt-1 flex items-center gap-1 self-end text-xs text-muted-foreground">
@@ -313,6 +315,7 @@ function Thread({ chat, go }: { chat: Chat; go: Go }) {
           </Button>
         </div>
       </footer>
+      {att.node}
     </>
   )
 }
@@ -340,14 +343,14 @@ function SystemLine({ m, job, onJob }: { m: ChatMsg; job: string; onJob: () => v
   )
 }
 
-function Bubble({ m, go }: { m: ChatMsg; go: Go }) {
+function Bubble({ m, go, onOpen }: { m: ChatMsg; go: Go; onOpen: (name: string, kind: 'photo' | 'file') => void }) {
   const r = useR2()
   const mine = m.from === 'me'
   const time = <span className={cn('font-mono text-[11px]', mine && !m.form && !m.file && !m.photo ? 'text-primary-foreground/70' : 'text-muted-foreground')}>{m.time.slice(6)}</span>
 
   // Вкладення — окремим блоком без кольорової «бульбашки»; текст — у бульбашці.
   const attachment = m.photo ? (
-    <button type="button" onClick={() => r.showToast(`Открываем ${m.photo!.name}`)} className="flex w-[260px] flex-col overflow-hidden rounded-xl border border-border bg-surface text-left">
+    <button type="button" onClick={() => onOpen(m.photo!.name, 'photo')} className="flex w-[260px] flex-col overflow-hidden rounded-xl border border-border bg-surface text-left">
       <PhotoStub />
       <span className="flex items-center justify-between gap-2 px-3 py-2 text-[13px]">
         <span className="truncate text-muted-foreground">{m.photo.name}</span>
@@ -355,17 +358,19 @@ function Bubble({ m, go }: { m: ChatMsg; go: Go }) {
       </span>
     </button>
   ) : m.file ? (
-    <div className="flex w-[320px] items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2.5">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-primary">
-        <FileText className="size-5" />
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-sm font-medium">{m.file.name}</span>
-        <span className="text-xs text-muted-foreground">
-          <span className="font-mono">{m.file.size}</span>, PDF
+    <div className="flex w-[320px] items-center rounded-xl border border-border bg-surface">
+      <button type="button" onClick={() => onOpen(m.file!.name, 'file')} className="flex min-w-0 flex-1 items-center gap-3 rounded-l-xl py-2.5 pr-1 pl-3 text-left hover:bg-muted">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-primary">
+          <FileText className="size-5" />
         </span>
-      </span>
-      <button type="button" aria-label={`Скачать ${m.file.name}`} onClick={() => r.showToast(`Скачиваем ${m.file!.name}`)} className="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted">
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-sm font-medium">{m.file.name}</span>
+          <span className="text-xs text-muted-foreground">
+            <span className="font-mono">{m.file.size}</span>, PDF
+          </span>
+        </span>
+      </button>
+      <button type="button" aria-label={`Скачать ${m.file.name}`} onClick={() => r.showToast(`Файл скачан: ${m.file!.name}`)} className="mr-2 flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted">
         <Download className="size-4" />
       </button>
     </div>

@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button'
 import { WebField, WebInput, WebSelect, WebTextarea } from '@/components/web/fields'
 import { PageHeader } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
+import { useAttachment } from '@/components/web/web-viewer'
+import { WebDatePick } from '@/components/web/web-pickers'
+import { addYears, TODAY } from '@/lib/dates'
 import { StatusDot } from '@/components/web/status-badge'
 import { ASSIGNMENT_STATUS_LABEL, ASSIGNMENTS, FORMS, seafarerById } from '@/lib/data-web'
 import { ANSWERS, FORM_DEFS, SOURCE_LABEL, type Answer } from '@/lib/data-recruiter-2'
@@ -17,7 +20,7 @@ import { ASSIGNMENT_TONE, BlockHead, ruDate, useR2 } from './_parts'
 // вкладення, поля агентства (бачить лише агентство) і заповнений PDF (contract-recruiter-web §4, §5).
 export function RAssignment({ go }: ScreenProps) {
   const r = useR2()
-  const view = useView()
+  const state = useView()
   const a = ASSIGNMENTS.find((x) => x.id === r.assignmentId) ?? ASSIGNMENTS[0]
   const s = seafarerById(a.seafarerId)!
   const form = FORMS.find((x) => x.id === a.formId)!
@@ -34,7 +37,11 @@ export function RAssignment({ go }: ScreenProps) {
   const [agencyVals, setAgencyVals] = useState<Record<string, string>>({})
   const chat = r.chats.find((c) => c.seafarerId === s.id)
 
-  const download = (name: string) => r.showToast(`Скачиваем ${name}`)
+  // Фото и файлы открываются в просмотре (перевірка 03.11, №13); скачать можно и из него, и из списка вложений.
+  const att = useAttachment()
+  const kindOf = (name: string) => (/\.(jpe?g|png|heic)$/i.test(name) ? 'photo' : 'file')
+  const view = (name: string) => att.open(name, kindOf(name), `${s.name}, ${form.title}`)
+  const download = (name: string) => r.showToast(`Файл скачан: ${name}`)
 
   const notYet = <EmptyState icon={Hourglass} title="Моряк ещё не отправил анкету" text="Ответы появятся здесь, когда он её отправит. Напомнить можно в разговоре." />
 
@@ -51,7 +58,7 @@ export function RAssignment({ go }: ScreenProps) {
               <h3 className="mb-2 text-base font-semibold">{sec.title}</h3>
               <dl className="flex flex-col">
                 {sec.fields.map((f) => (
-                  <AnswerRow key={f.id} label={f.label} a={answers[f.id]} needsProof={f.proof} onFile={download} />
+                  <AnswerRow key={f.id} label={f.label} a={answers[f.id]} needsProof={f.proof} onFile={view} />
                 ))}
               </dl>
             </section>
@@ -70,13 +77,15 @@ export function RAssignment({ go }: ScreenProps) {
           <ul className="overflow-hidden rounded-xl border border-border bg-surface">
             {files.map((v) => (
               <li key={v.key} className="flex items-center gap-3 border-t border-border px-4 py-3 first:border-t-0">
-                <FileText className="size-4 shrink-0 text-primary" />
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-sm font-medium">{v.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    <span className="font-mono">{v.size}</span>, {v.how}
+                <button type="button" onClick={() => view(v.name)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                  <FileText className="size-4 shrink-0 text-primary" />
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-sm font-medium">{v.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      <span className="font-mono">{v.size}</span>, {v.how}
+                    </span>
                   </span>
-                </span>
+                </button>
                 <button type="button" aria-label={`Скачать ${v.name}`} onClick={() => download(v.name)} className="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted">
                   <Download className="size-4" />
                 </button>
@@ -96,8 +105,10 @@ export function RAssignment({ go }: ScreenProps) {
                     <WebSelect className="data-[size=default]:h-10" id={`ag-${f.id}`} value={agencyVals[f.id] ?? ''} onChange={(v) => setAgencyVals((x) => ({ ...x, [f.id]: v }))} options={['Рекомендован', 'В резерв', 'Не подходит']} />
                   ) : f.type === 'textarea' ? (
                     <WebTextarea id={`ag-${f.id}`} value={agencyVals[f.id] ?? ''} onChange={(e) => setAgencyVals((x) => ({ ...x, [f.id]: e.target.value }))} className="min-h-20" />
+                  ) : f.type === 'date' ? (
+                    <WebDatePick id={`ag-${f.id}`} value={agencyVals[f.id] ?? ''} onChange={(v) => setAgencyVals((x) => ({ ...x, [f.id]: v }))} min={new Date(2025, 0, 1)} max={addYears(TODAY, 3)} />
                   ) : (
-                    <WebInput id={`ag-${f.id}`} type={f.type === 'date' ? 'date' : 'text'} value={agencyVals[f.id] ?? ''} onChange={(e) => setAgencyVals((x) => ({ ...x, [f.id]: e.target.value }))} className={cn(f.type === 'date' && 'font-mono dark:[color-scheme:dark]')} />
+                    <WebInput id={`ag-${f.id}`} value={agencyVals[f.id] ?? ''} onChange={(e) => setAgencyVals((x) => ({ ...x, [f.id]: e.target.value }))} />
                   )}
                 </WebField>
               ))}
@@ -136,7 +147,7 @@ export function RAssignment({ go }: ScreenProps) {
                 <MessageSquare /> Написать
               </Button>
             )}
-            {submitted && view === 'normal' && (
+            {submitted && state === 'normal' && (
               <Button onClick={() => download(`${form.title} — ${s.name}.pdf`)}>
                 <Download /> Скачать заполненный PDF
               </Button>
@@ -147,6 +158,7 @@ export function RAssignment({ go }: ScreenProps) {
       <ViewState loading={{ kind: 'cards' }} empty={notYet}>
         {body}
       </ViewState>
+      {att.node}
     </WebShell>
   )
 }
@@ -154,8 +166,12 @@ export function RAssignment({ go }: ScreenProps) {
 function AnswerRow({ label, a, needsProof, onFile }: { label: string; a?: Answer; needsProof?: boolean; onFile: (name: string) => void }) {
   const lines = a?.value.split('\n') ?? []
   return (
-    <div className="grid grid-cols-[220px_minmax(0,1fr)_auto] items-baseline gap-4 border-t border-border py-2.5 first:border-t-0">
-      <dt className="text-sm text-muted-foreground">{label}</dt>
+    <div className="flex flex-col gap-0.5 border-t border-border py-2.5 first:border-t-0">
+      {/* Метка источника — над ответом, справа от названия поля */}
+      <div className="flex items-baseline justify-between gap-4">
+        <dt className="text-[13px] text-muted-foreground">{label}</dt>
+        {a && <span className={cn('text-xs whitespace-nowrap', a.source === 'edited' ? 'text-warning' : 'text-muted-foreground')}>{SOURCE_LABEL[a.source]}</span>}
+      </div>
       <dd className="text-[15px]">
         {!a ? (
           <span className="text-muted-foreground">Нет ответа</span>
@@ -177,8 +193,8 @@ function AnswerRow({ label, a, needsProof, onFile }: { label: string; a?: Answer
           <MonoNums text={a.value} />
         )}
         {a?.proof && (
-          // Поле з позначкою «Нужно подтверждение документом» (ТЗ §9): чим саме підтверджено.
-          <span className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[13px] text-muted-foreground">
+          // Поле с отметкой «Нужно подтверждение документом» (ТЗ §9): чем именно подтверждено.
+          <span className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[13px] text-muted-foreground">
             <FileCheck2 className="size-3.5 shrink-0 text-success" />
             {a.proof.kind === 'library' ? `Подтверждено документом из профиля: ${a.proof.doc}` : `Подтверждено приложенным файлом: ${a.proof.doc}`}
             <button type="button" onClick={() => onFile(a.proof!.file.name)} className="font-medium text-primary hover:underline">
@@ -186,9 +202,8 @@ function AnswerRow({ label, a, needsProof, onFile }: { label: string; a?: Answer
             </button>
           </span>
         )}
-        {needsProof && a && !a.proof && <span className="mt-1.5 block text-[13px] text-warning">Нет подтверждения документом</span>}
+        {needsProof && a && !a.proof && <span className="mt-1 block text-[13px] text-warning">Нет подтверждения документом</span>}
       </dd>
-      <span className={cn('text-xs whitespace-nowrap', a?.source === 'edited' ? 'text-warning' : 'text-muted-foreground')}>{a ? SOURCE_LABEL[a.source] : ''}</span>
     </div>
   )
 }

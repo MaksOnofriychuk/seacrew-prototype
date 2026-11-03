@@ -6,11 +6,11 @@ import { DataTable, type Column } from '@/components/web/data-table'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader, PageTabs } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
+import { WebMultiSelect } from '@/components/web/web-pickers'
 import { JobStatusDot } from '@/components/web/status-badge'
 import { departmentsFor, FLEETS, positionsFor } from '@/lib/data'
 import { ME_RECRUITER, RECRUITERS, salaryText, type JobStatus, type WebJob } from '@/lib/data-web'
 import { JOB_EXTRA } from '@/lib/data-recruiter-2'
-import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { ConfirmDialog, plural, ruDate, useR2 } from './_parts'
 
@@ -21,9 +21,9 @@ export function RJobs({ go }: ScreenProps) {
   const r = useR2()
   const [tab, setTab] = useState<Tab>('open')
   const [q, setQ] = useState('')
-  const [fleet, setFleet] = useState('')
+  const [fleet, setFleet] = useState<string[]>([])
   const [department, setDepartment] = useState('')
-  const [position, setPosition] = useState('')
+  const [position, setPosition] = useState<string[]>([])
   const [owner, setOwner] = useState('')
   const [closing, setClosing] = useState<WebJob | null>(null)
 
@@ -32,14 +32,15 @@ export function RJobs({ go }: ScreenProps) {
   const rows = r.jobs
     .filter((j) => tab === 'all' || j.status === tab)
     .filter((j) => !needle || [j.position, j.vesselName, j.vesselType].some((s) => s.toLowerCase().includes(needle)))
-    .filter((j) => !fleet || j.fleet === fleet)
+    .filter((j) => !fleet.length || fleet.includes(j.fleet))
     .filter((j) => !department || j.department === department)
-    .filter((j) => !position || j.position === position)
+    .filter((j) => !position.length || position.includes(j.position))
     .filter((j) => !owner || j.recruiterId === owner)
-  const filtered = !!(needle || fleet || department || position || owner)
+  const filtered = !!(needle || fleet.length || department || position.length || owner)
   // Флот → департамент → должность (№2, №25): кожен наступний список — лише під вибране в попередньому.
-  const departments = departmentsFor(fleet ? [fleet] : FLEETS)
-  const positions = positionsFor(fleet ? [fleet] : FLEETS, department || null)
+  const fleets = fleet.length ? fleet : FLEETS
+  const departments = departmentsFor(fleets)
+  const positions = positionsFor(fleets, department || null)
 
   const newApps = (id: string) => r.apps.filter((a) => a.jobId === id && a.status === 'sent').length
   const allApps = (id: string) => r.apps.filter((a) => a.jobId === id).length
@@ -134,30 +135,34 @@ export function RJobs({ go }: ScreenProps) {
         ]}
       />
       <FilterBar
+        className="items-start"
         search={{ value: q, onChange: setQ, placeholder: 'Должность или судно' }}
         onReset={
           filtered
             ? () => {
                 setQ('')
-                setFleet('')
+                setFleet([])
                 setDepartment('')
-                setPosition('')
+                setPosition([])
                 setOwner('')
               }
             : undefined
         }
         count={rows.length}
       >
-        <FilterSelect
-          className="data-[size=default]:h-10"
+        <WebMultiSelect
           label="Флот"
-          value={fleet}
+          className="w-[320px]"
+          values={fleet}
+          options={[...FLEETS]}
           onChange={(v) => {
             setFleet(v)
-            setDepartment('')
-            setPosition('')
+            const fl = v.length ? v : FLEETS
+            const dep = departmentsFor(fl).includes(department) ? department : ''
+            if (dep !== department) setDepartment('')
+            const allowed = dep ? positionsFor(fl, dep) : []
+            setPosition((p) => p.filter((x) => allowed.includes(x)))
           }}
-          options={[...FLEETS]}
         />
         <FilterSelect
           className="data-[size=default]:h-10"
@@ -165,13 +170,11 @@ export function RJobs({ go }: ScreenProps) {
           value={department}
           onChange={(v) => {
             setDepartment(v)
-            setPosition('')
+            setPosition([])
           }}
           options={departments}
         />
-        <span className={cn(!department && 'pointer-events-none opacity-50')} title={department ? undefined : 'Сначала выберите департамент'}>
-          <FilterSelect className="data-[size=default]:h-10" label="Должность" value={position} onChange={setPosition} options={positions} />
-        </span>
+        <WebMultiSelect label="Должность" className="w-[290px]" values={position} options={positions} searchPlaceholder="Найти должность" disabled={!department} disabledHint="Сначала выберите департамент" onChange={setPosition} />
         <FilterSelect className="data-[size=default]:h-10" label="Рекрутер" value={owner} onChange={setOwner} options={RECRUITERS.map((x) => ({ value: x.id, label: x.id === ME_RECRUITER.id ? 'Мои' : x.name }))} />
       </FilterBar>
       <DataTable

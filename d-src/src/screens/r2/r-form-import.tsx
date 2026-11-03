@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type ComponentType } from 'react'
-import { ArrowDown, ArrowUp, Check, FileText, FileType, Images, LoaderCircle, RotateCw, Upload, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, Check, ChevronDown, FileText, FileType, Images, LoaderCircle, RotateCw, Upload, X } from 'lucide-react'
 import { ErrorState, useView, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
-import { DataTable, type Column } from '@/components/web/data-table'
 import { WebCheckbox, WebField, WebInput } from '@/components/web/fields'
 import { PageHeader } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
@@ -88,53 +87,8 @@ export function RFormImport({ go }: ScreenProps) {
   const review = ROWS.filter((x) => !x.sure && !confirmed.includes(x.pdf))
   const stepIndex = STEPS.findIndex((s) => s.id.includes(step))
 
-  const cols: Column<Row>[] = [
-    {
-      key: 'pdf',
-      header: ai ? 'Поле на бланке' : 'Поле в PDF',
-      width: '22%',
-      cell: (x) => (
-        <span className="flex flex-col">
-          {ai ? <span className="truncate">{x.label}</span> : <span className="truncate font-mono text-[13px]">{x.pdf}</span>}
-          <span className="text-[13px] text-muted-foreground">
-            Страница <span className="font-mono">{x.page}</span>
-          </span>
-        </span>
-      ),
-    },
-    { key: 'target', header: 'Заполняется из', width: '27%', cell: (x) => <span className={cn(x.kind === 'ignore' && 'text-muted-foreground')}>{x.target}</span> },
-    {
-      key: 'sure',
-      header: 'Предложение',
-      width: '16%',
-      cell: (x) => (x.sure || confirmed.includes(x.pdf) ? <StatusDot tone="success">{confirmed.includes(x.pdf) ? 'Подтверждено' : 'Совпадает'}</StatusDot> : <StatusDot tone="warning">Проверьте</StatusDot>),
-    },
-    {
-      key: 'proof',
-      header: 'Нужен документ',
-      width: '15%',
-      cell: (x) =>
-        x.proof ? (
-          <WebCheckbox id={`proof-${x.pdf}`} checked={proof.includes(x.pdf)} onChange={(v) => setProof((p) => (v ? [...p, x.pdf] : p.filter((k) => k !== x.pdf)))}>
-            {proof.includes(x.pdf) ? 'Да' : <span className="text-muted-foreground">Нет</span>}
-          </WebCheckbox>
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        ),
-    },
-    {
-      key: 'act',
-      header: <span className="sr-only">Действие</span>,
-      width: '20%',
-      align: 'right',
-      cell: (x) =>
-        !x.sure && !confirmed.includes(x.pdf) ? (
-          <Button variant="outline" size="sm" onClick={() => setConfirmed((c) => [...c, x.pdf])}>
-            <Check /> Подтвердить
-          </Button>
-        ) : null,
-    },
-  ]
+  // Длинная проверка полей — строки, которые раскрываются; открыта одна (перевірка 03.11, №22).
+  const [openKey, setOpenKey] = useState<string | null>(() => ROWS.find((x) => !x.sure)?.pdf ?? null)
 
   const body = (
     <div className="flex max-w-[960px] flex-col gap-8">
@@ -298,7 +252,7 @@ export function RFormImport({ go }: ScreenProps) {
                 Найдено <span className="font-mono">{ROWS.length}</span> полей
               </h2>
               <p className="max-w-[620px] text-sm text-muted-foreground">
-                Проверьте, что означает каждое поле. Предложения — по названиям полей и прошлым анкетам вашего агентства. Подтверждено <span className="font-mono">{ROWS.length - review.length}</span> из <span className="font-mono">{ROWS.length}</span>. «Нужен документ» — моряк подтвердит значение документом из профиля или приложит фото либо файл.
+                Проверьте, что означает каждое поле. Предложения — по названиям полей и прошлым анкетам вашего агентства. Подтверждено <span className="font-mono">{ROWS.length - review.length}</span> из <span className="font-mono">{ROWS.length}</span>. Моряк заполнит все поля — из профиля или вручную. «Нужно подтверждение» — рядом с данными он приложит фото, файл или документ из профиля.
               </p>
             </div>
             {review.length > 0 && (
@@ -307,7 +261,49 @@ export function RFormImport({ go }: ScreenProps) {
               </Button>
             )}
           </div>
-          <DataTable columns={cols} rows={ROWS} rowKey={(x) => x.pdf} ignoreView />
+          <ul className="overflow-hidden rounded-xl border border-border bg-surface">
+            {ROWS.map((x) => {
+              const open = openKey === x.pdf
+              const done = x.sure || confirmed.includes(x.pdf)
+              return (
+                <li key={x.pdf} className="border-t border-border first:border-t-0">
+                  <button
+                    type="button"
+                    aria-expanded={open}
+                    onClick={() => setOpenKey(open ? null : x.pdf)}
+                    className={cn('grid w-full grid-cols-[minmax(0,1.1fr)_minmax(0,1.3fr)_150px_20px] items-center gap-4 px-5 py-2.5 text-left transition-colors hover:bg-muted', open && 'bg-muted')}
+                  >
+                    <span className="flex min-w-0 flex-col leading-tight">
+                      {ai ? <span className="truncate">{x.label}</span> : <span className="truncate font-mono text-[13px]">{x.pdf}</span>}
+                      <span className="text-[13px] text-muted-foreground">
+                        Страница <span className="font-mono">{x.page}</span>
+                      </span>
+                    </span>
+                    <span className={cn('truncate', x.kind === 'ignore' && 'text-muted-foreground')}>{x.target}</span>
+                    {done ? <StatusDot tone="success">{confirmed.includes(x.pdf) ? 'Подтверждено' : 'Совпадает'}</StatusDot> : <StatusDot tone="warning">Проверьте</StatusDot>}
+                    <ChevronDown className={cn('size-4 text-muted-foreground transition-transform duration-200 motion-reduce:transition-none', open && 'rotate-180')} />
+                  </button>
+                  {open && (
+                    <div className="flex items-center gap-6 border-t border-border bg-muted/40 px-5 py-3">
+                      <p className="flex-1 text-sm text-muted-foreground">
+                        {x.sure || confirmed.includes(x.pdf) ? 'Предложение совпадает с названием поля и прошлыми анкетами агентства.' : 'Не уверены, что это то поле. Проверьте и подтвердите.'}
+                      </p>
+                      {x.kind !== 'ignore' && !x.target.startsWith('Только') && (
+                        <WebCheckbox id={`proof-${x.pdf}`} checked={proof.includes(x.pdf)} onChange={(v) => setProof((p) => (v ? [...p, x.pdf] : p.filter((k) => k !== x.pdf)))}>
+                          Нужно подтверждение
+                        </WebCheckbox>
+                      )}
+                      {!done && (
+                        <Button variant="outline" size="sm" onClick={() => setConfirmed((c) => [...c, x.pdf])}>
+                          <Check /> Подтвердить
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
           <div className="flex items-center gap-3">
             <Button
               onClick={() => {

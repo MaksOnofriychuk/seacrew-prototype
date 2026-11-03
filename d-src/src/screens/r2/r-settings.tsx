@@ -1,9 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Check, ChevronRight, CreditCard, ReceiptText } from 'lucide-react'
+import { Building2, Check, ChevronRight, CreditCard, FileText, ReceiptText, ShieldCheck, Users } from 'lucide-react'
 import { PageHeader } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
+import { useOpenLegal } from '../r3/pub-legal'
 import { useR2 } from './_parts'
 
 type Lang = 'ru' | 'uk' | 'en'
@@ -36,6 +37,7 @@ const isDark = () => document.documentElement.classList.contains('dark')
 // r-settings — налаштування вигляду кабінету: мова і тема (ADR-070, apps/web /settings).
 export function RSettings({ go }: ScreenProps) {
   const r = useR2()
+  const legal = useOpenLegal(go, 'r-settings')
   const [lang, setLang] = useState<Lang>('ru')
   // Вибрана тема стежить за справжньою темою сторінки (її міняє й панель прототипу), тому читаємо клас dark на <html>.
   const [dark, setDark] = useState(isDark)
@@ -55,7 +57,7 @@ export function RSettings({ go }: ScreenProps) {
 
   return (
     <WebShell variant="recruiter" active="r-settings" go={go}>
-      <PageHeader title="Настройки" description="Как кабинет выглядит для вас. Изменения действуют сразу и сохраняются для любого браузера, где вы войдёте." />
+      <PageHeader title="Настройки" description="Вид кабинета и всё, что связано с компанией. Изменения действуют сразу и сохраняются для любого браузера, где вы войдёте." />
       <div className="flex max-w-[760px] flex-col gap-10">
         <Group title="Язык">
           <div role="radiogroup" aria-label="Язык" className="grid grid-cols-3 gap-3">
@@ -86,29 +88,47 @@ export function RSettings({ go }: ScreenProps) {
           </div>
         </Group>
 
-        <Group title="Оплата">
-          <ul className="overflow-hidden rounded-xl border border-border bg-surface">
-            {(
-              [
-                ['r-billing', CreditCard, 'Тариф и оплата', 'План компании, места и способ оплаты'],
-                ['r-billing-history', ReceiptText, 'Счета', 'Все счета и квитанции'],
-              ] as const
-            ).map(([id, Icon, title, sub]) => (
-              <li key={id} className="border-t border-border first:border-t-0">
-                <button type="button" onClick={() => go(id)} className="flex w-full items-center gap-3 px-5 py-3.5 text-left hover:bg-muted">
-                  <Icon className="size-5 shrink-0 text-primary" />
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-[15px] font-medium">{title}</span>
-                    <span className="text-sm text-muted-foreground">{sub}</span>
-                  </span>
-                  <ChevronRight className="size-4 text-muted-foreground" />
-                </button>
-              </li>
-            ))}
-          </ul>
+        <Group title="Компания">
+          <LinkList
+            items={[
+              [() => go('r-org'), Building2, 'Организация', 'Профиль компании'],
+              [() => go('r-team'), Users, 'Команда', 'Рекрутеры, роли и приглашения'],
+              [() => go('r-verify'), ShieldCheck, 'Верификация', 'Уровни проверки компании'],
+              [() => go('r-billing'), CreditCard, 'Тариф и оплата', 'План компании, места и способ оплаты'],
+              [() => go('r-billing-history'), ReceiptText, 'Счета', 'Все счета и квитанции'],
+            ]}
+          />
+        </Group>
+
+        <Group title="Документы">
+          <LinkList
+            items={[
+              [() => legal('terms'), FileText, 'Условия сервиса', 'Текст соглашения'],
+              [() => legal('privacy'), FileText, 'Политика конфиденциальности', 'Какие данные собираем и кто их видит'],
+            ]}
+          />
         </Group>
       </div>
     </WebShell>
+  )
+}
+
+function LinkList({ items }: { items: [() => void, typeof Building2, string, string][] }) {
+  return (
+    <ul className="overflow-hidden rounded-xl border border-border bg-surface">
+      {items.map(([open, Icon, title, sub]) => (
+        <li key={title} className="border-t border-border first:border-t-0">
+          <button type="button" onClick={open} className="flex w-full items-center gap-3 px-5 py-3 text-left hover:bg-muted">
+            <Icon className="size-5 shrink-0 text-primary" />
+            <span className="flex min-w-0 flex-1 flex-col leading-tight">
+              <span className="text-[15px] font-medium">{title}</span>
+              <span className="text-sm text-muted-foreground">{sub}</span>
+            </span>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </button>
+        </li>
+      ))}
+    </ul>
   )
 }
 

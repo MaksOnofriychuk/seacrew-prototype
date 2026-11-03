@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
+import { useAttachment } from '@/components/web/web-viewer'
 import { TODAY_R3, VERIFY_L1, VERIFY_L2, type VerifyDoc, type VerifyDocStatus } from '@/lib/data-recruiter-3'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
@@ -26,6 +27,7 @@ export function RVerify({ go }: ScreenProps) {
   const status = bag<AppStatus>('r3.verifyStatus', 'returned')
   const docs = bag<VerifyDoc[]>('r3.verifyDocs', VERIFY_L2.docs)
   const [busy, setBusy] = useState<string | null>(null)
+  const att = useAttachment()
   const ready = docs.every((d) => d.status === 'accepted' || d.status === 'uploaded')
 
   const upload = (id: string) => {
@@ -125,10 +127,10 @@ export function RVerify({ go }: ScreenProps) {
                     <span className="text-[15px] font-medium">{d.title}</span>
                     <span className="text-sm text-muted-foreground">{d.hint}</span>
                     {d.file && (
-                      <span className="mt-1 flex items-center gap-1.5 text-sm">
-                        <FileText className="size-4 text-muted-foreground" />
-                        <span className={cn('truncate', d.status === 'replace' && 'text-muted-foreground line-through')}>{d.file}</span>
-                      </span>
+                      <button type="button" onClick={() => att.open(d.file!, 'file', d.title)} className="mt-1 flex items-center gap-1.5 self-start text-left text-sm hover:underline">
+                        <FileText className="size-4 shrink-0 text-muted-foreground" />
+                        <span className={cn('truncate', d.status === 'replace' ? 'text-muted-foreground line-through' : 'text-primary')}>{d.file}</span>
+                      </button>
                     )}
                     {d.note && <span className="text-sm text-signal">{d.note}</span>}
                   </div>
@@ -181,6 +183,7 @@ export function RVerify({ go }: ScreenProps) {
           </aside>
         </div>
       </ViewState>
+      {att.node}
     </WebShell>
   )
 }

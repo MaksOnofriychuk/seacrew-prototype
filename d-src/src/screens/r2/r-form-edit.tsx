@@ -27,7 +27,7 @@ import { WebCheckbox, WebField, WebInput, WebSelect } from '@/components/web/fie
 import { WebShell } from '@/components/web/shell'
 import { StatusDot } from '@/components/web/status-badge'
 import { FORMS } from '@/lib/data-web'
-import { AUDIENCE_LABEL, FIELD_TYPE_LABEL, FORM_DEFS, formTitle, IMPORTED_FORM_ID, PROOF_TYPES, type Audience, type FieldType, type FormField, type FormSection } from '@/lib/data-recruiter-2'
+import { AUDIENCE_LABEL, FIELD_TYPE_LABEL, FORM_DEFS, formTitle, IMPORTED_FORM_ID, type Audience, type FieldType, type FormField, type FormSection } from '@/lib/data-recruiter-2'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
@@ -233,15 +233,14 @@ export function RFormEdit({ go }: ScreenProps) {
                             <span className="flex min-w-0 flex-1 flex-col">
                               <span className="truncate text-[15px]">
                                 {x.label}
-                                {x.required && <span className="text-signal"> *</span>}
-                              </span>
+                                              </span>
                               <span className="truncate text-[13px] text-muted-foreground">
                                 {x.type === 'profile' && x.profileKey ? `Из профиля: ${x.profileKey}` : x.type === 'documentRequest' && x.category ? `Документ: ${x.category}` : FIELD_TYPE_LABEL[x.type]}
                                 {x.repeatable && ', можно повторять'}
                               </span>
                               {x.proof && (
                                 <span className="flex items-center gap-1.5 text-[13px] text-primary">
-                                  <FileCheck2 className="size-3.5 shrink-0" /> Подтвердить документом
+                                  <FileCheck2 className="size-3.5 shrink-0" /> Нужно подтверждение
                                 </span>
                               )}
                             </span>
@@ -312,15 +311,13 @@ export function RFormEdit({ go }: ScreenProps) {
                     <span className="flex h-10 items-center rounded-md bg-muted px-3 font-mono text-sm">{field.pdf}</span>
                   </WebField>
                 )}
-                <WebCheckbox id="fe-req" checked={field.required} onChange={(required) => putField({ required })}>
-                  Обязательное
-                </WebCheckbox>
-                {section.audience === 'SEAFARER' && PROOF_TYPES.includes(field.type) && (
+                <p className="text-[13px] text-muted-foreground">Моряк заполнит все поля — из профиля или вручную.</p>
+                {section.audience === 'SEAFARER' && (
                   <div className="flex flex-col gap-1.5">
                     <WebCheckbox id="fe-proof" checked={!!field.proof} onChange={(proof) => putField({ proof })}>
-                      Нужно подтверждение документом
+                      Нужно подтверждение
                     </WebCheckbox>
-                    <p className="pl-[26px] text-[13px] text-muted-foreground">Моряк возьмёт значение из подтверждённого документа или введёт сам и приложит фото либо файл. Без этого поле не примется.</p>
+                    <p className="pl-[26px] text-[13px] text-muted-foreground">Фото, файл или документ из профиля моряка рядом с данными. Без подтверждения поле не примется.</p>
                   </div>
                 )}
                 <div className="mt-auto flex flex-col gap-1 border-t border-border pt-4">

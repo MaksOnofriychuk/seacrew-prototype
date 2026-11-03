@@ -65,10 +65,10 @@ export function RJobEdit({ go }: ScreenProps) {
                   <WebSelect className="data-[size=default]:h-10" id="je-fleet" value={j.fleet} onChange={(fleet) => put({ fleet, department: '', position: '' })} options={[...FLEETS]} />
                 </WebField>
                 <WebField id="je-dep" label="Департамент" required error={err('department')}>
-                  <WebSelect className="data-[size=default]:h-10" id="je-dep" value={j.department} onChange={(department) => put({ department, position: '' })} options={j.fleet ? departmentsFor([j.fleet]) : []} placeholder={j.fleet ? 'Выберите' : 'Сначала флот'} />
+                  <WebSelect className="data-[size=default]:h-10" id="je-dep" value={j.department} onChange={(department) => put({ department, position: '' })} options={j.fleet ? departmentsFor([j.fleet]) : []} disabled={!j.fleet} placeholder={j.fleet ? 'Выберите' : 'Сначала флот'} />
                 </WebField>
                 <WebField id="je-pos" label="Должность" required error={err('position')}>
-                  <WebSelect className="data-[size=default]:h-10" id="je-pos" value={j.position} onChange={(position) => put({ position })} options={positionsFor(j.fleet ? [j.fleet] : [], j.department || null)} placeholder={j.department ? 'Выберите' : 'Сначала департамент'} />
+                  <WebSelect className="data-[size=default]:h-10" id="je-pos" searchable value={j.position} onChange={(position) => put({ position })} options={positionsFor(j.fleet ? [j.fleet] : [], j.department || null)} disabled={!j.department} placeholder={j.department ? 'Выберите' : 'Сначала департамент'} />
                 </WebField>
               </div>
             </Block>
@@ -87,7 +87,7 @@ export function RJobEdit({ go }: ScreenProps) {
             <Block title="Условия">
               <div className="grid grid-cols-[minmax(0,1fr)_96px_minmax(0,1fr)] items-start gap-4">
                 <WebField id="je-sal" label="Зарплата" required error={err('amount')}>
-                  <WebInput id="je-sal" value={j.salary.amount} onChange={(e) => putSalary({ amount: e.target.value })} placeholder="4 200–4 600" className="font-mono" inputMode="numeric" />
+                  <WebInput id="je-sal" value={j.salary.amount} onChange={(e) => putSalary({ amount: maskSalary(e.target.value) })} placeholder="4 200–4 600" className="font-mono" inputMode="numeric" />
                 </WebField>
                 <WebField id="je-cur" label="Валюта">
                   <WebSelect className="data-[size=default]:h-10" id="je-cur" value={j.salary.currency} onChange={(currency) => putSalary({ currency: currency as WebJob['salary']['currency'] })} options={[...CURRENCIES]} />
@@ -96,15 +96,16 @@ export function RJobEdit({ go }: ScreenProps) {
                   <Segmented value={j.salary.period} onChange={(period) => putSalary({ period })} options={[['месяц', 'В месяц'], ['день', 'В день']]} />
                 </WebField>
               </div>
-              <div className="mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] gap-4">
+              <div className="mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1.9fr)_minmax(0,1fr)] gap-4">
                 <WebField id="je-board" label="Дата посадки" required error={err('board')}>
                   <WebDatePick id="je-board" value={isoToRu(j.board)} onChange={(v) => put({ board: ruToIso(v) })} {...BOUNDS.future} />
                 </WebField>
                 <WebField id="je-dur" label="Длительность контракта" required error={err('duration')}>
                   <div className="flex gap-2">
-                    <WebInput id="je-dur" value={dur.n} onChange={(e) => put({ duration: durationText(e.target.value, dur.unit) })} placeholder="4 ±1" className="w-[88px] shrink-0 font-mono" />
+                    <WebSelect id="je-dur" className="w-[76px] shrink-0 font-mono" value={dur.n} onChange={(n) => put({ duration: durationText(n, dur.unit, dur.tol) })} options={(dur.unit === 'm' ? MONTH_N : WEEK_N).map(String)} placeholder="—" />
+                    <WebSelect className="w-[96px] shrink-0" value={dur.tol || '0'} onChange={(tol) => put({ duration: durationText(dur.n, dur.unit, tol === '0' ? '' : tol) })} options={[{ value: '0', label: 'точно' }, { value: '1', label: '±1' }, { value: '2', label: '±2' }]} />
                     <div className="min-w-0 flex-1">
-                      <Segmented value={dur.unit} onChange={(unit) => put({ duration: durationText(dur.n, unit) })} options={[['m', 'мес.'], ['w', 'нед.']]} />
+                      <Segmented value={dur.unit} onChange={(unit) => put({ duration: durationText(dur.n, unit, dur.tol) })} options={[['m', 'мес.'], ['w', 'нед.']]} />
                     </div>
                   </div>
                 </WebField>
@@ -154,19 +155,32 @@ export function RJobEdit({ go }: ScreenProps) {
   )
 }
 
-// Тривалість контракту — число й одиниця: місяці або тижні (правка №35: «1 мес / 4 недели»).
+// Длительность контракта — число из списка, допуск и единица: месяцы или недели (правка №35: «1 мес / 4 недели»).
+// Небольшой набор значений — выбор из списка, не ввод (перевірка 03.11, №4).
 type DurUnit = 'm' | 'w'
-function parseDuration(text: string): { n: string; unit: DurUnit } {
-  const m = text.match(/^(.*?)\s*(мес\.?|недел[яиь]|нед\.?)$/)
-  if (!m) return { n: text, unit: 'm' }
-  return { n: m[1], unit: m[2].startsWith('мес') ? 'm' : 'w' }
+const MONTH_N = Array.from({ length: 12 }, (_, i) => i + 1)
+const WEEK_N = Array.from({ length: 12 }, (_, i) => i + 1)
+function parseDuration(text: string): { n: string; tol: string; unit: DurUnit } {
+  const m = text.match(/^(\d+)(?:\s*±\s*(\d+))?\s*(мес\.?|недел[яиь]|нед\.?)$/)
+  if (!m) return { n: '', tol: '', unit: 'm' }
+  return { n: m[1], tol: m[2] ?? '', unit: m[3].startsWith('мес') ? 'm' : 'w' }
 }
-function durationText(n: string, unit: DurUnit) {
+function durationText(n: string, unit: DurUnit, tol = '') {
   const v = n.trim()
   if (!v) return ''
-  if (unit === 'm') return `${v} мес.`
-  const first = Number(v.match(/\d+/)?.[0] ?? 0)
-  return `${v} ${plural(first, 'неделя', 'недели', 'недель')}`
+  const t = tol ? ` ±${tol}` : ''
+  if (unit === 'm') return `${v}${t} мес.`
+  return `${v}${t} ${plural(Number(v), 'неделя', 'недели', 'недель')}`
+}
+
+// Сумма с пробелами между тысячами; диапазон через «–» («4 200–4 600»).
+function maskSalary(raw: string) {
+  return raw
+    .replace(/-/g, '–')
+    .split('–')
+    .slice(0, 2)
+    .map((p) => p.replace(/\D/g, '').slice(0, 6).replace(/\B(?=(\d{3})+(?!\d))/g, ' '))
+    .join('–')
 }
 
 function Block({ title, children }: { title: string; children: ReactNode }) {

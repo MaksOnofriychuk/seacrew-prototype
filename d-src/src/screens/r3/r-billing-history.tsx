@@ -23,7 +23,7 @@ export function RBillingHistory({ go }: ScreenProps) {
   const [openId, setOpenId] = useState<string | null>(null)
   const open = b.invoices.find((i) => i.id === openId)
   const paidTotal = b.invoices.filter((i) => i.status === 'paid').reduce((s, i) => s + i.amount, 0)
-  const pdf = (i: Invoice) => b.showToast(`Скачиваем ${i.number}.pdf`)
+  const pdf = (i: Invoice) => b.showToast(`Файл скачан: ${i.number}.pdf`)
 
   const cols: Column<Invoice>[] = [
     { key: 'number', header: 'Счёт', width: '16%', mono: true, sortValue: (i) => i.number, cell: (i) => <span className="font-medium">{i.number}</span> },
