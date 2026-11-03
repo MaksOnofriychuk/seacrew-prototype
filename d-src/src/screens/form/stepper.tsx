@@ -5,6 +5,7 @@ import { Status } from '@/components/app/status'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
+import { fillTone } from '@/components/app/profile-fill'
 
 // Степер анкети — той самий вигляд, що й у покроковій реєстрації (components/app/stepper.tsx,
 // screens/s/_stepper.tsx): «Назад», назва, «Позже»; «Разделы, N из M» з картою розділів; рядок прогресу
@@ -62,14 +63,14 @@ export function FormStepShell({ nav, steps, cur, title, sub, pct, onBack, onJump
               <ChevronRight className="size-4" />
             </button>
             <span className="text-sm text-muted-foreground">
-              Анкета <span className="font-mono font-medium text-foreground">{pct} %</span>
+              Анкета <span className={cn('font-mono font-medium', fillTone(pct).text)}>{pct} %</span>
             </span>
           </div>
           {!final && (
             <div className="mt-3 flex gap-1.5" role="progressbar" aria-label="Разделы анкеты" aria-valuemin={1} aria-valuemax={steps.length} aria-valuenow={cur + 1}>
               {steps.map((s, i) => {
                 const st = i === cur ? 'cur' : s.state
-                return <span key={s.key} className={cn('h-1 flex-1 rounded-full', st === 'done' || st === 'cur' ? 'bg-primary' : st === 'skip' ? 'bg-muted-foreground/40' : 'bg-border')} />
+                return <span key={s.key} className={cn('h-1 flex-1 rounded-full transition-colors duration-200', st === 'done' || st === 'cur' ? fillTone(pct).bar : st === 'skip' ? 'bg-muted-foreground/40' : 'bg-border')} />
               })}
             </div>
           )}

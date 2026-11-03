@@ -204,7 +204,7 @@ export function AddPanel({
         </div>
       </div>
       {onManual && (
-        <button type="button" onClick={onManual} className="flex items-center gap-2 self-start text-[15px] font-medium text-primary">
+        <button type="button" onClick={onManual} className="mt-2 flex items-center gap-2 self-start text-[15px] font-medium text-primary">
           <PenLine className="size-4" />
           {manualLabel}
         </button>

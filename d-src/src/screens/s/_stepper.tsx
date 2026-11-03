@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
+import { fillTone } from '@/components/app/profile-fill'
 
 /* ---------- кроки покрокової реєстрації (дані й поведінка — з вкладки C) ---------- */
 
@@ -218,7 +219,7 @@ export function StepShell({ step, go, children, canNext = true, optional = false
               <ChevronRight className="size-4" />
             </button>
             <span className="text-sm text-muted-foreground">
-              Профиль <span className="font-mono font-medium text-foreground">{r.pct} %</span>
+              Профиль <span className={cn('font-mono font-medium', fillTone(r.pct).text)}>{r.pct} %</span>
             </span>
           </div>
           {info.k !== 'final' && (
@@ -228,7 +229,7 @@ export function StepShell({ step, go, children, canNext = true, optional = false
                 return (
                   <span
                     key={s.n}
-                    className={cn('h-1 flex-1 rounded-full', st === 'done' || st === 'cur' ? 'bg-primary' : st === 'skip' ? 'bg-muted-foreground/40' : 'bg-border')}
+                    className={cn('h-1 flex-1 rounded-full transition-colors duration-200', st === 'done' || st === 'cur' ? fillTone(r.pct).bar : st === 'skip' ? 'bg-muted-foreground/40' : 'bg-border')}
                   />
                 )
               })}

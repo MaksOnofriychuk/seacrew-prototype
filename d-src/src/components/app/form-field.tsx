@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import { fillTone } from './profile-fill'
 import { FieldMsg } from '@/components/app/field-msg'
 
 // Поле форми: підпис, мітка джерела («из документа», «из CV»), поле, підказка або помилка.
@@ -29,13 +30,13 @@ export function FormField(props: {
   )
 }
 
-// Прогрес потоку зверху (як у Wise): сегменти кольору primary / border.
+// Прогрес потоку зверху (як у Wise): пройдені сегменти — колір за часткою пройденого (шкала заповнення профілю).
 export function StepProgress({ step, total, label }: { step: number; total: number; label?: string }) {
   return (
     <div className="flex flex-col gap-2 px-6">
       <div className="flex gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={total} aria-valuenow={step} aria-label={label ?? 'Шаг'}>
         {Array.from({ length: total }, (_, n) => (
-          <span key={n} className={cn('h-1 flex-1 rounded-full', n < step ? 'bg-primary' : 'bg-border')} />
+          <span key={n} className={cn('h-1 flex-1 rounded-full transition-colors duration-200', n < step ? fillTone((step / total) * 100).bar : 'bg-border')} />
         ))}
       </div>
       {label && <span className="text-sm text-muted-foreground">{label}</span>}
