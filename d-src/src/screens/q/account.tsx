@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { CircleAlert, Eye, EyeOff, LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useOpenLegal } from '../m/legal'
 import type { ScreenProps } from '../registry'
 import { StepShell } from '../s/_stepper'
 import { LEGAL } from '../s/_core-parts'
@@ -37,6 +38,7 @@ const FLOWS = {
 function AccountScreen({ go, flow }: ScreenProps & { flow: keyof typeof FLOWS }) {
   const cfg = FLOWS[flow]
   const step = flow === 'step'
+  const openLegal = useOpenLegal(go, step ? 's1' : 'q06')
   const { state, bag, setBag, showToast } = useQ()
   const a = bag<Acct>(cfg.bag, { email: '', pass: '', pass2: '' })
   const c = bag('s1.consent', { terms: false, data: false })
@@ -195,11 +197,11 @@ function AccountScreen({ go, flow }: ScreenProps & { flow: keyof typeof FLOWS })
       <div className="mt-3 flex flex-col gap-4 border-t border-border pt-5">
         <CheckRow id="s1-terms" checked={c.terms} onChange={(v) => setBag('s1.consent', { ...c, terms: v })}>
           Принимаю{' '}
-          <a href="#" className={link} onClick={(e) => e.preventDefault()}>
+          <a href="#" className={link} onClick={(e) => { e.preventDefault(); openLegal('terms') }}>
             Условия сервиса
           </a>{' '}
           и{' '}
-          <a href="#" className={link} onClick={(e) => e.preventDefault()}>
+          <a href="#" className={link} onClick={(e) => { e.preventDefault(); openLegal('privacy') }}>
             Политику конфиденциальности
           </a>
         </CheckRow>

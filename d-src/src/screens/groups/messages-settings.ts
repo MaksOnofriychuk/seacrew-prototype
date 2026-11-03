@@ -1,3 +1,4 @@
+import { MLegal } from '../m/legal'
 import { defineGroups } from '../types'
 import { P04Drawer } from '../p/p04'
 import { MChat, MChatApplied } from '../m/chat'
@@ -32,6 +33,7 @@ export const groups = defineGroups('mobile', [
       { id: 'm-notif-settings', title: 'Уведомления · настройки', Component: MNotifSettings },
       { id: 'm-delete', title: 'Удаление аккаунта', Component: MDelete },
       { id: 'm-support', title: 'Поддержка', Component: MSupport },
+      { id: 'm-legal', title: 'Условия / Политика (текст)', Component: MLegal },
     ],
   },
 ])

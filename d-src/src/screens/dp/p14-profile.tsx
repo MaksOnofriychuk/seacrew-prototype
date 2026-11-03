@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Banknote, Bookmark, Briefcase, ChartColumn, FileText, HeartPulse, Settings, ShieldCheck, Ship, UsersRound } from 'lucide-react'
+import { Banknote, BarChart3, Bookmark, Briefcase, Crown, FileText, HeartPulse, LifeBuoy, MessagesSquare, Settings, ShieldCheck, Ship, UserPlus, UsersRound, Wallet } from 'lucide-react'
 import { AvailabilityButton, AvailabilitySheet } from '@/components/app/availability'
 import { ProfileFillCard } from '@/components/app/profile-fill'
 import { ViewState } from '@/components/app/states'
@@ -130,12 +130,21 @@ export function P14Profile({ go }: ScreenProps) {
         />
         <MenuRow icon={FileText} title="Моё CV" value="PDF" onClick={() => go('p20')} />
         <MenuRow icon={Bookmark} title="Сохранённое" value={<span className="font-mono">{savedN}</span>} onClick={() => go('p09')} />
+      </ListGroup>
+
+      {/* Усе, що є в боковому меню, є і тут (перевірка 03.11, №40). «Мои документы» — вкладка «Документы». */}
+      <ListGroup title="Премиум">
+        <MenuRow icon={Crown} title="Премиум" onClick={() => goBack('pr-status')} />
+        <MenuRow icon={Wallet} title="Моя зарплата" onClick={() => goBack('pr-salary')} />
+        <MenuRow icon={BarChart3} title="Аналитика" onClick={() => goBack('pr-analytics')} />
         <MenuRow icon={UsersRound} title="Подписки" onClick={() => goBack('pr-following')} />
-        <MenuRow icon={ChartColumn} title="Моя зарплата" onClick={() => goBack('pr-salary')} />
+        <MenuRow icon={MessagesSquare} title="Обсуждения" onClick={() => goBack('pr-groups')} />
+        <MenuRow icon={UserPlus} title="Пригласить коллегу" onClick={() => goBack('pr-invite')} />
       </ListGroup>
 
       <ListGroup>
         <MenuRow icon={Settings} title="Настройки" onClick={() => goBack('m-settings')} />
+        <MenuRow icon={LifeBuoy} title="Поддержка" onClick={() => goBack('m-support')} />
       </ListGroup>
     </div>
   )

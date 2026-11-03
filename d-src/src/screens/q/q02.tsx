@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Clock, Lock, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useOpenLegal } from '../m/legal'
 import type { ScreenProps } from '../registry'
 import { CheckRow, FlowScreen, Footer, Hint, QSheet, Title, useQ } from './_parts'
 
@@ -23,6 +24,7 @@ const LEGAL: [string, string][] = [
 ]
 
 export function Q02Consent({ go }: ScreenProps) {
+  const openLegal = useOpenLegal(go, 'q02')
   const { bag, setBag } = useQ()
   const c = bag('q.consent', { terms: false, data: false })
   const [more, setMore] = useState(false)
@@ -37,11 +39,11 @@ export function Q02Consent({ go }: ScreenProps) {
         <Footer className="border-t border-border pt-4">
           <CheckRow id="q02-terms" checked={c.terms} onChange={(v) => setBag('q.consent', { ...c, terms: v })}>
             Принимаю{' '}
-            <a href="#" className={link} onClick={(e) => e.preventDefault()}>
+            <a href="#" className={link} onClick={(e) => { e.preventDefault(); openLegal('terms') }}>
               Условия сервиса
             </a>{' '}
             и{' '}
-            <a href="#" className={link} onClick={(e) => e.preventDefault()}>
+            <a href="#" className={link} onClick={(e) => { e.preventDefault(); openLegal('privacy') }}>
               Политику конфиденциальности
             </a>
           </CheckRow>

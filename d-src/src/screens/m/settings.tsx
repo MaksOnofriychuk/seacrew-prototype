@@ -8,6 +8,7 @@ import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
 import { useQ } from '../q/_parts'
 import type { Acct } from '../q/account'
+import { useOpenLegal } from './legal'
 import { LogoutSheet } from './side-menu'
 import { SettingsGroup, SettingsRow } from './_parts'
 
@@ -22,6 +23,7 @@ export function MSettings({ go }: ScreenProps) {
   const lang = bag<string>('dp.lang', 'Русский')
   const [langOpen, setLangOpen] = useState(false)
   const [themeOpen, setThemeOpen] = useState(false)
+  const openLegal = useOpenLegal(go, 'm-settings')
   const email = useQ().bag<Acct | null>('q.acct', null)?.email || 'you@example.com'
   const [sheet, setSheet] = useState<'logout' | null>(null)
 
@@ -69,8 +71,8 @@ export function MSettings({ go }: ScreenProps) {
         </SettingsGroup>
 
         <SettingsGroup title="Юридическое">
-          <SettingsRow icon={FileText} title="Условия сервиса" onClick={() => showToast('Откроется текст условий (пример)')} />
-          <SettingsRow icon={FileText} title="Политика конфиденциальности" onClick={() => showToast('Откроется текст политики (пример)')} />
+          <SettingsRow icon={FileText} title="Условия сервиса" onClick={() => openLegal('terms')} />
+          <SettingsRow icon={FileText} title="Политика конфиденциальности" onClick={() => openLegal('privacy')} />
           <SettingsRow icon={ShieldCheck} title="Согласия" sub="Что вы разрешили и когда" onClick={() => go('q10')} />
           <SettingsRow icon={Download} title="Скачать мои данные" sub="Копию пришлём на ваш email" onClick={() => showToast('Копию данных отправим на ваш email')} />
         </SettingsGroup>
