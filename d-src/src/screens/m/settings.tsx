@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Bell, Check, Crown, UserRound, FileText, Globe, LifeBuoy, LogOut, Moon, ShieldCheck, Trash2 } from 'lucide-react'
+import { Bell, Check, Crown, UserRound, FileText, Globe, LifeBuoy, LogOut, ShieldCheck, Trash2 } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { NavBar } from '@/components/app/chrome'
 import { MOBILE_ROUTES } from '@/lib/mobile-routes'
@@ -9,17 +9,12 @@ import type { ScreenProps } from '../types'
 import { useQ } from '../q/_parts'
 import type { Acct } from '../q/q06'
 import { LogoutSheet } from './side-menu'
-import { SettingsGroup, SettingsRow, setTheme, useDark } from './_parts'
+import { ThemeRow } from '@/components/app/theme-select'
+import { SettingsGroup, SettingsRow } from './_parts'
 
 // m-settings — «Настройки» (gaps №7, відповіді 52 і 125, код settings): тема, мова, акаунт, сповіщення,
 // підтримка, юридичне; унизу — вихід і видалення акаунта. Тема справді перемикає прототип.
 
-type ThemePref = 'system' | 'light' | 'dark'
-const THEMES: { id: ThemePref; label: string }[] = [
-  { id: 'system', label: 'Как в системе' },
-  { id: 'light', label: 'Светлая' },
-  { id: 'dark', label: 'Тёмная' },
-]
 const LANGS = [
   { id: 'system', label: 'Как в системе' },
   { id: 'ru', label: 'Русский' },
@@ -29,24 +24,17 @@ const LANGS = [
 
 export function MSettings({ go }: ScreenProps) {
   const { bag, setBag, showToast } = useProto()
-  const dark = useDark()
+  const [themeOpen, setThemeOpen] = useState(false)
   const email = useQ().bag<Acct | null>('q.acct', null)?.email || 'you@example.com'
-  const pref = bag<ThemePref | null>('settings.theme', null) ?? (dark ? 'dark' : 'light')
   const lang = bag<string>('settings.lang', 'ru')
-  const [sheet, setSheet] = useState<'theme' | 'lang' | 'logout' | null>(null)
-
-  const pickTheme = (t: ThemePref) => {
-    setBag('settings.theme', t)
-    setSheet(null)
-    setTheme(t === 'system' ? window.matchMedia('(prefers-color-scheme: dark)').matches : t === 'dark')
-  }
+  const [sheet, setSheet] = useState<'lang' | 'logout' | null>(null)
 
   return (
     <div className="relative flex h-full flex-col">
       <NavBar title="Настройки" onBack={() => go('p04')} />
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-3 pb-8">
         <SettingsGroup title="Вид">
-          <SettingsRow icon={Moon} title="Тема" value={THEMES.find((t) => t.id === pref)!.label} onClick={() => setSheet('theme')} />
+          <ThemeRow open={themeOpen} onToggle={() => setThemeOpen((o) => !o)} />
           <SettingsRow icon={Globe} title="Язык" value={LANGS.find((l) => l.id === lang)!.label} onClick={() => setSheet('lang')} />
         </SettingsGroup>
 
@@ -99,7 +87,6 @@ export function MSettings({ go }: ScreenProps) {
         </p>
       </div>
 
-      <ChoiceSheet open={sheet === 'theme'} title="Тема" items={THEMES} value={pref} onClose={() => setSheet(null)} onPick={(v) => pickTheme(v as ThemePref)} />
       <ChoiceSheet
         open={sheet === 'lang'}
         title="Язык"

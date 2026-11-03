@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react'
-import { Download, FolderDown, LoaderCircle, Mail, MessageCircle, Send, Share2 } from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Download, FolderDown, LoaderCircle, Mail, Maximize2, MessageCircle, Minus, Plus, Send, Share2, X } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { useView, ViewState } from '@/components/app/states'
 import { useAvailability } from '@/components/app/availability'
@@ -22,6 +22,7 @@ const AVAIL_EN = { now: 'Available for Immediate Joining', from: 'Available from
 export function P20Cv({ go }: ScreenProps) {
   const { showToast } = useDP()
   const [share, setShare] = useState(false)
+  const [full, setFull] = useState(false)
   const { busy, run } = useBusy()
   // Скачати й поділитися можна лише готовим CV.
   const ready = useView() === 'normal'
@@ -63,7 +64,7 @@ export function P20Cv({ go }: ScreenProps) {
                 PDF, <span className="font-mono">2</span> страницы, обновлено <span className="font-mono">{CV_UPDATED}</span>
               </p>
             </div>
-            <CvPreview />
+            <CvPreview onOpen={() => setFull(true)} />
           </div>
         </ViewState>
       </div>
@@ -78,6 +79,7 @@ export function P20Cv({ go }: ScreenProps) {
           </Button>
         </Footer>
       )}
+      {full && <CvViewer onClose={() => setFull(false)} />}
       <SourceSheet
         open={share}
         onClose={() => setShare(false)}
@@ -103,7 +105,7 @@ const RULE = '#D5DCE5'
 
 function Sheet({ n, children }: { n: number; children: ReactNode }) {
   return (
-    <div className="relative mx-auto aspect-[1/1.414] w-full overflow-hidden rounded-[4px] border border-border bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)]" style={{ color: INK }}>
+    <div className="relative mx-auto aspect-[1/1.414] w-full shrink-0 overflow-hidden rounded-[4px] border border-border bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)]" style={{ color: INK }}>
       <div className="flex h-full flex-col px-[7%] pt-[7%] pb-[5%] text-[7.5px] leading-[1.45]">{children}</div>
       <span className="absolute right-[7%] bottom-[3%] font-mono text-[6.5px]" style={{ color: SOFT }}>
         {n} / 2
@@ -162,7 +164,63 @@ function Table({ head, rows }: { head: string[]; rows: ReactNode[][] }) {
   )
 }
 
-function CvPreview() {
+// Прев'ю на сторінці: тап відкриває повноекранний перегляд.
+function CvPreview({ onOpen }: { onOpen: () => void }) {
+  return (
+    <button type="button" onClick={onOpen} aria-label="Открыть CV на весь экран" className="mt-6 block w-full bg-muted px-6 py-6 text-left active:opacity-90">
+      <CvSheets />
+      <span className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-primary">
+        <Maximize2 className="size-4" /> Открыть на весь экран
+      </span>
+    </button>
+  )
+}
+
+const SHEET_W = 300
+const ZOOMS = [1, 1.5, 2, 3]
+
+// Повноекранний перегляд: аркуші на всю ширину, прокрутка вниз, масштаб кнопками +/− (вправо тоже прокручивается).
+function CvViewer({ onClose }: { onClose: () => void }) {
+  const box = useRef<HTMLDivElement>(null)
+  const [w, setW] = useState(0)
+  const [zi, setZi] = useState(0)
+  useEffect(() => {
+    const el = box.current
+    if (!el) return
+    const ro = new ResizeObserver(() => setW(el.clientWidth))
+    ro.observe(el)
+    setW(el.clientWidth)
+    return () => ro.disconnect()
+  }, [])
+  const fit = w ? (w - 24) / SHEET_W : 1
+  const zoom = fit * ZOOMS[zi]
+  return (
+    <div role="dialog" aria-modal="true" aria-label="Моё CV" className="screen-in absolute inset-0 z-40 flex flex-col bg-muted">
+      <div className="flex h-14 shrink-0 items-center gap-1 border-b border-border bg-background px-2">
+        <button type="button" onClick={onClose} aria-label="Закрыть" className="flex size-11 items-center justify-center rounded-md text-primary active:scale-95">
+          <X className="size-6" />
+        </button>
+        <span className="flex-1 text-[15px] font-semibold">Моё CV</span>
+        <button type="button" aria-label="Уменьшить" disabled={zi === 0} onClick={() => setZi(zi - 1)} className="flex size-11 items-center justify-center rounded-md text-primary active:scale-95 disabled:opacity-40">
+          <Minus className="size-5" />
+        </button>
+        <span className="w-11 text-center font-mono text-sm text-muted-foreground">{Math.round(ZOOMS[zi] * 100)}%</span>
+        <button type="button" aria-label="Увеличить" disabled={zi === ZOOMS.length - 1} onClick={() => setZi(zi + 1)} className="flex size-11 items-center justify-center rounded-md text-primary active:scale-95 disabled:opacity-40">
+          <Plus className="size-5" />
+        </button>
+      </div>
+      <div ref={box} className="min-h-0 flex-1 overflow-auto">
+        <div className="flex flex-col gap-3 p-3" style={{ width: 'fit-content', minWidth: '100%' }}>
+          <div className="flex flex-col gap-3" style={{ width: SHEET_W, zoom, margin: '0 auto' }}>
+            <CvSheets />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CvSheets() {
   const p = useProfile()
   const { docs } = useDocs()
   const avail = useAvailability().value
@@ -181,7 +239,7 @@ function CvPreview() {
   const status = avail.kind === 'from' ? `${AVAIL_EN.from} ${ruDate(avail.date ?? '2026-12-01')}` : AVAIL_EN[avail.kind]
 
   return (
-    <div className="mt-6 flex flex-col gap-4 bg-muted px-6 py-6">
+    <div className="flex flex-col gap-4">
       <Sheet n={1}>
         <header className="flex items-end justify-between gap-3 border-b-2 pb-[3%]" style={{ borderColor: INK }}>
           <div>

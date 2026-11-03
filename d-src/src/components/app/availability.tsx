@@ -29,10 +29,12 @@ export function AvailabilityButton({ onClick, className }: { onClick: () => void
       type="button"
       onClick={onClick}
       aria-label={`Статус: ${label}. Изменить`}
-      className={cn('flex items-center gap-2 self-start rounded-md border border-border bg-surface px-3 py-2 text-left text-[15px] font-medium', className)}
+      className={cn('flex min-h-11 w-full items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 text-left text-[15px] leading-snug font-medium tracking-[-0.01em]', className)}
     >
-      <Icon className={cn('size-4.5 shrink-0', AVAIL_TONE[value.kind])} />
-      <AvailText a={value} />
+      <Icon className={cn('size-[18px] shrink-0', AVAIL_TONE[value.kind])} />
+      <span className="min-w-0 flex-1 text-balance">
+        <AvailText a={value} />
+      </span>
       <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
     </button>
   )

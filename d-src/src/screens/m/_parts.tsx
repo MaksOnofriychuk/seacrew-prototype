@@ -194,7 +194,7 @@ export function SettingsRow({
 }
 
 // Перемикач вкладок (як у колишніх «Входящих»): рівні кнопки з лічильником; три й більше — дрібнішим шрифтом.
-export function Segmented<T extends string>({ value, onChange, items, label }: { value: T; onChange: (v: T) => void; items: { id: T; label: string; n?: number }[]; label: string }) {
+export function Segmented<T extends string>({ value, onChange, items, label, zero }: { value: T; onChange: (v: T) => void; items: { id: T; label: string; n?: number }[]; label: string; zero?: boolean }) {
   const many = items.length > 2
   return (
     <div role="tablist" aria-label={label} className="grid gap-1 rounded-md border border-border bg-surface p-1" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
@@ -212,7 +212,7 @@ export function Segmented<T extends string>({ value, onChange, items, label }: {
           )}
         >
           {it.label}
-          {!!it.n && <span className="font-mono text-sm text-muted-foreground">{it.n}</span>}
+          {(zero ? it.n !== undefined : !!it.n) && <span className="font-mono text-sm text-muted-foreground">{it.n}</span>}
         </button>
       ))}
     </div>

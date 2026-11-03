@@ -20,12 +20,12 @@ import { Note, SourceTag, TextInput, useDP, useHashParam, useProfile, type TextF
 // (відповіді 46, 134). Поле — з p14 (bag dp.field) або з адреси:
 // #p21?f=birth | last | first | cit | phone | email | marital | rank | salary.
 
-const ERR: Partial<Record<TextField, string>> = {
+export const ERR: Partial<Record<TextField, string>> = {
   phone: 'Номер неполный',
   email: 'Введите email, например name@example.com.',
 }
 
-const valid = (k: TextField, v: string) => {
+export const valid = (k: TextField, v: string) => {
   if (!v) return true
   if (k === 'phone') return !phoneIncomplete(parsePhone(v).dial, parsePhone(v).digits)
   if (k === 'email') return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
@@ -241,7 +241,7 @@ function SalaryEditor({ go }: { go: ScreenProps['go'] }) {
 }
 
 // Перемикач на 2–3 варіанти — як «Валюта» і «Период оплаты» у фільтрах вакансій.
-function Seg<T extends string>({ label, value, options, onChange, mono, className }: { label: string; value: T; options: [T, string][]; onChange: (v: T) => void; mono?: boolean; className?: string }) {
+export function Seg<T extends string>({ label, value, options, onChange, mono, className }: { label: string; value: T; options: [T, string][]; onChange: (v: T) => void; mono?: boolean; className?: string }) {
   return (
     <div role="radiogroup" aria-label={label} className={cn('flex h-12 gap-1 rounded-md border border-border bg-surface p-1', className)}>
       {options.map(([o, l]) => (

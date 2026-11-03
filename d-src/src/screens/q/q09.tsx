@@ -1,5 +1,5 @@
 import { useEffect, useState, type ComponentType, type ReactNode } from 'react'
-import { Bookmark, Briefcase, Check, ChevronRight, Download, FileText, Globe, Moon, ShieldCheck, Ship, UserRound } from 'lucide-react'
+import { Bookmark, Briefcase, Check, ChevronRight, Download, FileText, Globe, ShieldCheck, Ship, UserRound } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { Wordmark } from '@/components/app/chrome'
 import { ErrorState, useView } from '@/components/app/states'
@@ -11,7 +11,7 @@ import { MOBILE_ROUTES } from '@/lib/mobile-routes'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { byStart, VOYAGES, vMonths, type Voyage } from '../s/_core-voyage'
-import { useDarkClass } from '../dp/_parts'
+import { ThemeRow } from '@/components/app/theme-select'
 import { durText, FORM_DEFAULTS, Note, readiness, ReadinessBlock, useToast, type QForm, useQ } from './_parts'
 import { MonoNums } from '../p/_app-parts'
 import type { Acct } from './q06'
@@ -29,6 +29,7 @@ const LANGS = ['Русский', 'Українська', 'English']
 
 
 export function Q09Profile({ go }: ScreenProps) {
+  const [themeOpen, setThemeOpen] = useState(false)
   const { bag, setBag } = useQ()
   const view = useView()
   const [loading, setLoading] = useState(true)
@@ -43,7 +44,6 @@ export function Q09Profile({ go }: ScreenProps) {
   // Медичні, введені на кроці s5, теж рахуються — тоді профіль заповнено на 100 %.
   const r = readiness(full || bag<unknown[]>('s5.docs', []).length > 0)
   const savedN = bag<number[]>('saved.jobs', [0, 3]).length + bag<string[]>('saved.posts', []).length
-  const dark = useDarkClass()
 
   useEffect(() => {
     const id = window.setTimeout(() => setLoading(false), 650)
@@ -60,12 +60,6 @@ export function Q09Profile({ go }: ScreenProps) {
   // Підпис під іменем — посада й тип судна з останнього контракту (як у p14).
   const latest = [...voyages].sort(byStart)[0]
   const role = latest ? [latest.rank, latest.type].filter(Boolean).join(', ') : ''
-
-  // Тема в D живе в адресі (#q09?t=dark) — перемикаємо її так само, як панель. Той самий екран і як p14.
-  const toggleTheme = () => {
-    const id = location.hash.replace(/^#/, '').split('?')[0] || 'q09'
-    location.hash = dark ? `#${id}` : `#${id}?t=dark`
-  }
 
   return (
     <div className="relative flex h-full flex-col">
@@ -135,7 +129,7 @@ export function Q09Profile({ go }: ScreenProps) {
             </Group>
             <Group title="Настройки">
               <Row icon={Globe} title="Язык" value={lang} onClick={() => setLangOpen(true)} />
-              <Row icon={Moon} title="Тема" value={dark ? 'Тёмная' : 'Светлая'} onClick={toggleTheme} />
+              <ThemeRow open={themeOpen} onToggle={() => setThemeOpen((o) => !o)} />
               <Row icon={ShieldCheck} title="Согласия" onClick={() => go('q10')} />
               <Row icon={Download} title="Скачать мои данные" onClick={() => toast('Копию данных отправим на ваш email')} />
             </Group>

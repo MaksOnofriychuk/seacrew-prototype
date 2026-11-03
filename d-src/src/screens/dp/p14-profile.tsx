@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Banknote, Bookmark, Briefcase, Check, ChartColumn, Download, FileText, Globe, HeartPulse, Moon, ShieldCheck, Ship, UsersRound } from 'lucide-react'
+import { Banknote, Bookmark, Briefcase, Check, ChartColumn, Download, FileText, Globe, HeartPulse, ShieldCheck, Ship, UsersRound } from 'lucide-react'
 import { AvailabilityButton, AvailabilitySheet } from '@/components/app/availability'
+import { ThemeRow } from '@/components/app/theme-select'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { ProfileFillCard } from '@/components/app/profile-fill'
 import { ViewState } from '@/components/app/states'
@@ -10,7 +11,8 @@ import { PROFILE_FIELDS } from '@/lib/data-docs-profile'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { readiness } from '../q/_parts'
-import { Dur, ListGroup, MenuRow, Note, SalaryText, TabHeader, useDP, useDarkClass, useHashParam, useProfile, type TextField } from './_parts'
+import { Dur, ListGroup, MenuRow, Note, SalaryText, TabHeader, useDP, useHashParam, useProfile, type TextField } from './_parts'
+import { ExpandRow, FieldEditor, RankEditor, SalaryEditor, type EditKey } from './_inline-edit'
 import { byStart, cMonths, useContracts } from './_contracts'
 import { daysLeft, DEMO_MED, expiry, useDocs } from './_docs'
 import { useAppCounts } from '../m/_parts'
@@ -36,7 +38,6 @@ export function P14Profile({ go }: ScreenProps) {
   const [langOpen, setLangOpen] = useState(false)
   const full = useHashParam('full') === '1'
   const lang = bag<string>('dp.lang', 'Русский')
-  const dark = useDarkClass()
 
   const { docs } = useDocs()
   const counts = useAppCounts()
@@ -58,16 +59,9 @@ export function P14Profile({ go }: ScreenProps) {
   }
   const medSoon = med?.exp ? expiry(med.exp) : null
 
-  const edit = (f: string) => {
-    setBag('dp.field', f)
-    go('p21')
-  }
-  // Тема в D живе в адресі (#p14?t=dark) — перемикаємо її так само, як панель.
-  const toggleTheme = () => {
-    const id = location.hash.replace(/^#/, '').split('?')[0] || 'p14'
-    location.hash = dark ? `#${id}` : `#${id}?t=dark`
-  }
-
+  // Редактирование под строкой (правка №19д): открыт один блок, второй тап по строке закрывает.
+  const [editing, setEditing] = useState<EditKey | null>(null)
+  const toggle = (k: EditKey) => setEditing((e) => (e === k ? null : k))
   // «Пусто» з панелі для профілю сенсу не має — показуємо звичайний вигляд.
   const content = (
     <div className="screen-in">
@@ -100,20 +94,31 @@ export function P14Profile({ go }: ScreenProps) {
       </ProfileFillCard>
 
       <ListGroup title="Личные данные">
-        {PROFILE_FIELDS.map((f) => (
-          <MenuRow
-            key={f.k}
-            title={<span className="text-muted-foreground">{f.label}</span>}
-            value={p.value(f.k as TextField) ? <span className={cn('text-foreground', f.mono && 'font-mono')}>{p.value(f.k as TextField)}</span> : 'Не указано'}
-            onClick={() => edit(f.k)}
-          />
-        ))}
+        {PROFILE_FIELDS.map((f) => {
+          const k = f.k as TextField
+          const val = p.value(k)
+          return (
+            <ExpandRow
+              key={f.k}
+              title={<span className="text-muted-foreground">{f.label}</span>}
+              value={val ? <span className={cn('text-foreground', f.mono && 'font-mono')}>{val}</span> : 'Не указано'}
+              open={editing === f.k}
+              onToggle={() => toggle(f.k)}
+            >
+              <FieldEditor k={k} open={editing === f.k} onClose={() => setEditing(null)} />
+            </ExpandRow>
+          )
+        })}
       </ListGroup>
 
       <ListGroup title="Работа">
-        <MenuRow icon={Briefcase} title="Должность" value={p.position || 'Не указана'} onClick={() => edit('rank')} />
+        <ExpandRow icon={Briefcase} title="Должность" value={p.position || 'Не указана'} open={editing === 'rank'} onToggle={() => toggle('rank')}>
+          <RankEditor open={editing === 'rank'} onClose={() => setEditing(null)} />
+        </ExpandRow>
         <MenuRow icon={Ship} title="Опыт работы" value={<Dur m={total} />} onClick={() => go('p22')} />
-        <MenuRow icon={Banknote} title="Желаемая зарплата" value={p.salary?.amount ? <SalaryText s={p.salary} /> : 'Не указана'} onClick={() => edit('salary')} />
+        <ExpandRow icon={Banknote} title="Желаемая зарплата" value={p.salary?.amount ? <SalaryText s={p.salary} /> : 'Не указана'} open={editing === 'salary'} onToggle={() => toggle('salary')}>
+          <SalaryEditor open={editing === 'salary'} onClose={() => setEditing(null)} />
+        </ExpandRow>
         <MenuRow
           icon={HeartPulse}
           title={
@@ -136,7 +141,7 @@ export function P14Profile({ go }: ScreenProps) {
 
       <ListGroup title="Настройки">
         <MenuRow icon={Globe} title="Язык" value={lang} onClick={() => setLangOpen(true)} />
-        <MenuRow icon={Moon} title="Тема" value={dark ? 'Тёмная' : 'Светлая'} onClick={toggleTheme} />
+        <ThemeRow open={editing === 'theme'} onToggle={() => toggle('theme')} />
         <MenuRow icon={ShieldCheck} title="Согласия" onClick={() => go('q10')} />
         <MenuRow icon={Download} title="Скачать мои данные" onClick={() => showToast('Копию данных отправим на ваш email')} />
       </ListGroup>

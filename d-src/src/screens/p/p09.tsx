@@ -4,9 +4,9 @@ import { NavBar } from '@/components/app/chrome'
 import { Button } from '@/components/ui/button'
 import { POSTS, type Post } from '@/lib/data'
 import { SAVED_JOBS_DEFAULT } from '@/lib/data-feed-jobs'
-import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { useToast } from '../q/_parts'
+import { Segmented } from '../m/_parts'
 import { useHashParams } from '../s/_core-parts'
 import { useView, ViewState } from '@/components/app/states'
 import { Empty, SaveButton, useApp } from './_app-parts'
@@ -52,23 +52,8 @@ export function P09Saved({ go }: ScreenProps) {
     <div className="relative flex h-full flex-col">
       <NavBar title="Сохранённое" onBack={() => go('q09')} />
       <div className="min-h-0 flex-1 overflow-y-auto pb-6">
-        <div role="tablist" aria-label="Что сохранено" className="mx-6 mt-1 flex gap-6 border-b border-border">
-          {tabs.map(([id, label, n]) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              aria-selected={tab === id}
-              onClick={() => setBag('saved.ui.tab', id)}
-              className={cn(
-                '-mb-px flex items-center gap-1.5 border-b-2 pt-2 pb-3 text-[15px] font-medium transition-colors',
-                tab === id ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground',
-              )}
-            >
-              {label}
-              <span className={cn('font-mono text-sm', tab === id ? 'text-primary' : 'text-muted-foreground')}>{n}</span>
-            </button>
-          ))}
+        <div className="mx-6 mt-1">
+          <Segmented label="Что сохранено" zero value={tab} onChange={(id) => setBag('saved.ui.tab', id)} items={tabs.map(([id, label, n]) => ({ id, label, n }))} />
         </div>
 
         <ViewState loading={{ kind: 'list', rows: 3 }} empty={{ icon: Bookmark, title: 'Пока ничего не сохранено', text: 'Нажмите на закладку у вакансии или публикации, чтобы вернуться к ней позже.' }}>
