@@ -1,6 +1,7 @@
 import { useProto } from '@/lib/proto-state'
 import { A_JOBS, A_POSTS, A_USERS, type AJob, type APost, type AUser } from '@/lib/data-admin'
 import { REPORTS, VERIFY_REQS, type Report, type VerifyReq } from '@/lib/data-admin-2'
+import { EXTRA_ORGS, EXTRA_USERS } from '@/lib/data-admin-53-e'
 import { R1_INVITES, type R1Invite } from '@/lib/data-recruiter-1'
 import { CHATS } from '@/lib/data-recruiter-2'
 import { ADMIN_ORGS, APPLICATIONS, type ApplicationStatus, type OrgStatus } from '@/lib/data-web'
@@ -26,9 +27,9 @@ export function useNavCounts(): Partial<Record<NavCountKey, number>> {
     invitations: invites.filter((i) => i.status === 'pending').length,
     applications: APPLICATIONS.filter((a) => (appStatus[a.id] ?? a.status) === 'sent').length,
     messages: CHATS.reduce((n, c) => n + (read.includes(c.id) ? 0 : c.unread), 0),
-    orgs: ADMIN_ORGS.filter((o) => (orgOver[o.id] ?? o.status) === 'pending').length,
+    orgs: [...ADMIN_ORGS, ...EXTRA_ORGS].filter((o) => (orgOver[o.id] ?? o.status) === 'pending').length,
     verify: VERIFY_REQS.filter((r) => (verifyDec[r.id]?.state ?? r.state) === 'pending').length,
-    users: A_USERS.filter((u) => (userOver[u.id]?.status ?? u.status) !== 'active').length,
+    users: [...A_USERS, ...EXTRA_USERS].filter((u) => (userOver[u.id]?.status ?? u.status) !== 'active').length,
     jobs: jobs.filter((j) => j.state === 'review').length,
     posts: posts.filter((p) => p.state === 'complaint').length,
     reports: reports.filter((r) => r.state === 'open').length,
