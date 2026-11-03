@@ -1,8 +1,9 @@
+import { useState } from 'react'
 import { Clock, Heart, ImageIcon, MessageCircle, Pin, Share, ShieldCheck, Ship } from 'lucide-react'
 import { Status } from '@/components/app/status'
 import { Badge } from '@/components/ui/badge'
 import type { Post } from '@/lib/data'
-import { useProto } from '@/lib/proto-state'
+import { ShareSheet } from '@/components/app/share-sheet'
 import { cn } from '@/lib/utils'
 import { Avatar, Hl, roleText, SaveButton, useLikes, useMe, type MyPost } from './_feed-parts'
 
@@ -20,8 +21,8 @@ type ItemProps = {
 }
 
 export function FeedItem({ p, onOpen, onAuthor, words = [], flat }: ItemProps) {
-  const { showToast } = useProto()
   const likes = useLikes()
+  const [shareOpen, setShareOpen] = useState(false)
 
   if (p.kind === 'news' && p.pin && !flat) {
     return (
@@ -100,10 +101,11 @@ export function FeedItem({ p, onOpen, onAuthor, words = [], flat }: ItemProps) {
           <MessageCircle className="size-[18px]" />
           <span className="font-mono">{p.comments}</span>
         </button>
-        <button type="button" className="flex items-center gap-1.5" onClick={() => showToast('Ссылка скопирована (пример)')}>
+        <button type="button" className="flex items-center gap-1.5" onClick={() => setShareOpen(true)}>
           <Share className="size-[18px]" /> Поделиться
         </button>
       </div>
+      <ShareSheet open={shareOpen} onClose={() => setShareOpen(false)} title="Поделиться публикацией" />
     </article>
   )
 }

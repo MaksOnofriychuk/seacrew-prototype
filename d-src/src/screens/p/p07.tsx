@@ -4,6 +4,7 @@ import { Footer, NavBar } from '@/components/app/chrome'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { POSTS } from '@/lib/data'
+import { ShareSheet } from '@/components/app/share-sheet'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
@@ -14,10 +15,11 @@ import { Avatar, COMMENTS, hashParam, SaveButton, useLikes, useMe } from './_fee
 // Тап на автора публікації чи коментаря — короткий профіль моряка p16 (правка п. 16).
 // Сильний елемент — сама публікація великим текстом; коментарі — тихий білий список.
 export function P07Post({ go }: ScreenProps) {
-  const { bag, setBag, showToast } = useProto()
+  const { bag, setBag } = useProto()
   const me = useMe()
   const likes = useLikes()
   const [draft, setDraft] = useState('')
+  const [shareOpen, setShareOpen] = useState(false)
   const input = useRef<HTMLInputElement>(null)
   const scroller = useRef<HTMLDivElement>(null)
 
@@ -82,10 +84,11 @@ export function P07Post({ go }: ScreenProps) {
                   <MessageCircle className="size-[18px]" />
                   <span className="font-mono">{p.comments + own.length}</span>
                 </button>
-                <button type="button" className="flex items-center gap-1.5" onClick={() => showToast('Ссылка скопирована (пример)')}>
+                <button type="button" className="flex items-center gap-1.5" onClick={() => setShareOpen(true)}>
                   <Share className="size-[18px]" /> Поделиться
                 </button>
               </div>
+              <ShareSheet open={shareOpen} onClose={() => setShareOpen(false)} title="Поделиться публикацией" />
             </article>
 
             <h2 className="mt-7 mb-2 text-base font-semibold">Комментарии</h2>

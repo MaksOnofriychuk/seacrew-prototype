@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AlertCircle, Copy, Share2, Ticket, Users } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { Paper } from '@/components/app/paper'
+import { ShareSheet } from '@/components/app/share-sheet'
 import { useView, ViewState } from '@/components/app/states'
 import { Status } from '@/components/app/status'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,7 @@ import { Initials, Section, useBack, useGoFrom, usePlan, usePr } from './_parts'
 // бонус — тиждень премиуму обом. pr-promo — «Промокод»: ввести код коллеги чи акції.
 
 export function PrInvite({ go }: ScreenProps) {
+  const [shareOpen, setShareOpen] = useState(false)
   const { showToast } = usePr()
   const back = useBack('pr-invite', 'pr-status')
   const goFrom = useGoFrom(go, 'pr-invite')
@@ -81,10 +83,11 @@ export function PrInvite({ go }: ScreenProps) {
         </button>
       </div>
       <Footer className="border-t border-border bg-background">
-        <Button size="lg" onClick={() => showToast('Откроется «Поделиться»: мессенджеры, почта (пример)')}>
+        <Button size="lg" onClick={() => setShareOpen(true)}>
           <Share2 /> Поделиться ссылкой
         </Button>
       </Footer>
+      <ShareSheet open={shareOpen} onClose={() => setShareOpen(false)} title="Пригласить коллегу" description="Ссылка-приглашение в Seafolio" />
     </div>
   )
 }
