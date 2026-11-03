@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { ChevronDown, Search, X } from 'lucide-react'
-import { WebCheckbox } from '@/components/web/fields'
+import type { ReactNode } from 'react'
+import { Search, X } from 'lucide-react'
 import { WebDatePick } from '@/components/web/web-pickers'
 import { TODAY, addYears, isoToRu, ruToIso, parseDate } from '@/lib/dates'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -118,50 +117,3 @@ export const inPeriod = (iso: string, from: string, to: string) => {
   const d = iso.slice(0, 10)
   return (!from || d >= from) && (!to || d <= to)
 }
-
-
-/** Фильтр с несколькими значениями: выбранные плашки «×» и список с галочками (правило 8). */
-export function MultiFilter({ label, options, value, onChange }: { label: string; options: string[]; value: string[]; onChange: (v: string[]) => void }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (!open) return
-    const h = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setOpen(false)
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [open])
-  const toggle = (o: string) => onChange(value.includes(o) ? value.filter((x) => x !== o) : [...value, o])
-  return (
-    <div ref={ref} className="relative">
-      <div
-        className={cn('flex min-h-10 min-w-[200px] cursor-pointer flex-wrap items-center gap-1.5 rounded-md border bg-surface py-1 pr-2 pl-3', value.length ? 'border-primary' : 'border-border')}
-        onClick={() => setOpen(!open)}
-        role="button"
-        aria-expanded={open}
-        aria-label={label}
-      >
-        <span className="text-sm text-muted-foreground">{label}:</span>
-        {value.length === 0 && <span className="text-sm">Все</span>}
-        {value.map((v) => (
-          <span key={v} className="flex h-6 items-center gap-1 rounded-full bg-muted pr-1 pl-2.5 text-xs font-medium">
-            {v}
-            <button type="button" aria-label={`Убрать ${v}`} onClick={(e) => (e.stopPropagation(), toggle(v))} className="flex size-4 items-center justify-center rounded-full text-muted-foreground hover:bg-border">
-              <X className="size-3" />
-            </button>
-          </span>
-        ))}
-        <ChevronDown className="ml-auto size-4 text-muted-foreground" />
-      </div>
-      {open && (
-        <div className="absolute left-0 z-40 mt-1 w-full min-w-[220px] rounded-lg border border-border bg-surface p-1 shadow-lg animate-in fade-in-0 duration-150">
-          {options.map((o, i) => (
-            <WebCheckbox key={o} id={`mf-${label}-${i}`} checked={value.includes(o)} onChange={() => toggle(o)} className="h-9 rounded-md px-2 hover:bg-muted">
-              {o}
-            </WebCheckbox>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-

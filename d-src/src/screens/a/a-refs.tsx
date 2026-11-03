@@ -11,7 +11,7 @@ import { OTHER_ENTRIES, VESSEL_TYPES, type OtherEntry } from '@/lib/data-admin'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { AdminPage, AdminTabs, CancelButton, Mono, MultiFilter, SideSheet, dt, useBagState } from './_parts'
+import { AdminPage, AdminTabs, CancelButton, Mono, WebMultiSelect, SideSheet, dt, useBagState } from './_parts'
 
 type Tab = 'tree' | 'vessels' | 'other'
 type Tree = Record<string, Record<string, string[]>>
@@ -227,7 +227,7 @@ function Vessels() {
   return (
     <>
       <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Тип судна' }} count={rows.length}>
-        <MultiFilter label="Флот" value={fleets} onChange={setFleets} options={[...FLEETS]} />
+        <WebMultiSelect label="Флот" className="w-[260px]" values={fleets} onChange={setFleets} options={[...FLEETS]} />
         <Button variant="outline" className="h-10 text-primary" onClick={() => setAdding(true)}>
           <Plus /> Добавить тип
         </Button>

@@ -18,8 +18,8 @@ import { IncompleteMark, useSelected } from './_parts'
 // r-search — пошук моряків (правка №30; фільтри: флот → департамент → посада за №2, №25; відповіді 108, 136, 142).
 // Рекрутер бачить «Andrii K.» — без прізвища, фото й контактів; аватар — лише ініціали.
 
-type Filters = { q: string; fleet: string[]; department: string; position: string[]; exp: string; cert: string; avail: string; visa: string; airport: string }
-const NONE: Filters = { q: '', fleet: [], department: '', position: [], exp: '', cert: '', avail: '', visa: '', airport: '' }
+type Filters = { q: string; fleet: string[]; department: string; position: string[]; exp: string; cert: string[]; avail: string; visa: string; airport: string }
+const NONE: Filters = { q: '', fleet: [], department: '', position: [], exp: '', cert: [], avail: '', visa: '', airport: '' }
 
 function match(s: WebSeafarer, f: Filters) {
   const q = f.q.trim().toLowerCase()
@@ -28,7 +28,7 @@ function match(s: WebSeafarer, f: Filters) {
   if (f.department && s.department !== f.department) return false
   if (f.position.length && !f.position.includes(s.position)) return false
   if (f.exp && expForFilter(s) < Number(f.exp)) return false
-  if (f.cert && !s.certificates.includes(f.cert)) return false
+  if (f.cert.length && !f.cert.every((c) => s.certificates.includes(c))) return false
   if (f.avail && s.availability.kind !== f.avail) return false
   if (f.visa && !s.visas.includes(f.visa)) return false
   if (f.airport && s.airport !== f.airport) return false
@@ -39,10 +39,14 @@ export function RSearch({ go }: ScreenProps) {
   // Поиск из верхней строки кабинета (Enter) приходит сюда готовым запросом.
   const { bag, setBag } = useProto()
   const [f, setF] = useState<Filters>(() => ({ ...NONE, q: bag<string>('shell.q', '') }))
+  // Если экран уже открыт, новый запрос из шапки тоже применяется.
+  const shellQ = bag<string>('shell.q', '')
   useEffect(() => {
-    if (bag<string>('shell.q', '')) setBag('shell.q', '')
+    if (!shellQ) return
+    setF((s) => ({ ...s, q: shellQ }))
+    setBag('shell.q', '')
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [shellQ])
   const [, select] = useSelected('r1.seafarer', 'sf01')
   const set = (patch: Partial<Filters>) => setF((s) => ({ ...s, ...patch }))
   const rows = SEAFARERS.filter((s) => match(s, f))
@@ -134,7 +138,7 @@ export function RSearch({ go }: ScreenProps) {
       </FilterBar>
       <FilterBar onReset={anyFilter ? () => setF(NONE) : undefined} count={rows.length}>
         <FilterSelect label="Опыт" value={f.exp} onChange={(exp) => set({ exp })} options={EXP_OPTIONS} allLabel="Любой" />
-        <FilterSelect label="Сертификат" value={f.cert} onChange={(cert) => set({ cert })} options={CERT_OPTIONS} allLabel="Любой" className="max-w-[300px]" />
+        <WebMultiSelect label="Сертификат" className="w-[340px]" values={f.cert} options={CERT_OPTIONS} placeholder="Любой" searchPlaceholder="Найти сертификат" onChange={(cert) => set({ cert })} />
         <FilterSelect label="Готовность" value={f.avail} onChange={(avail) => set({ avail })} options={AVAIL_FILTER} allLabel="Любая" />
         <FilterSelect label="Виза" value={f.visa} onChange={(visa) => set({ visa })} options={VISA_OPTIONS} allLabel="Любая" />
         <FilterSelect label="Аэропорт" value={f.airport} onChange={(airport) => set({ airport })} options={AIRPORT_OPTIONS} allLabel="Любой" />

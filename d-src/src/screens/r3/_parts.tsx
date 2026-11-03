@@ -1,9 +1,11 @@
-import { useMemo, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { Smartphone } from 'lucide-react'
 import { Wordmark } from '@/components/app/chrome'
 import { Button } from '@/components/ui/button'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
+import { WebField, WebInput } from '@/components/web/fields'
+import { WebPhoneField } from '@/components/web/web-pickers'
 import { WebDialog } from '../r1/_parts'
 
 // Спільне для екранів «Веб, частина 3»: публічні сторінки (без кабінету), позначка «пример»,
@@ -88,26 +90,92 @@ export function PublicLayout({ go, onGetApp, here, children }: { go: Go; onGetAp
   )
 }
 
-// Кнопки магазинів — без логотипів брендів, лише підписи.
-export function StoreButtons({ className, vertical = false }: { className?: string; vertical?: boolean }) {
+// Кнопки магазинів — без логотипів брендів, лише підписи. На сторінці тап відкриває вікно «Скачайте Seafolio»
+// (QR, магазини, ссылка на телефон); внутри самого окна (`inDialog`) кнопки ведут в магазин.
+const STORES = [
+  { store: 'App Store', caption: 'Загрузите в' },
+  { store: 'Google Play', caption: 'Доступно в' },
+]
+
+export function StoreButtons({ className, vertical = false, inDialog = false }: { className?: string; vertical?: boolean; inDialog?: boolean }) {
   const { showToast } = useProto()
-  const items = [
-    { store: 'App Store', caption: 'Загрузите в' },
-    { store: 'Google Play', caption: 'Доступно в' },
-  ]
+  const [open, setOpen] = useState(false)
   return (
-    <div className={cn('flex gap-3', vertical && 'flex-col', className)}>
-      {items.map((i) => (
-        <button
-          key={i.store}
-          type="button"
-          onClick={() => showToast(`Откроется ${i.store}`)}
-          className="flex h-12 w-[168px] flex-col items-start justify-center rounded-lg bg-foreground px-4 text-left text-background transition-transform active:scale-[0.98] motion-reduce:transition-none"
-        >
-          <span className="text-[11px] leading-none opacity-80">{i.caption}</span>
-          <span className="mt-0.5 text-base leading-tight font-semibold">{i.store}</span>
-        </button>
-      ))}
+    <>
+      <div className={cn('flex gap-3', vertical && 'flex-col', className)}>
+        {STORES.map((i) => (
+          <div key={i.store} className="flex flex-col gap-1.5">
+            <button
+              type="button"
+              onClick={() => (inDialog ? showToast(`Откроется ${i.store}`) : setOpen(true))}
+              className="flex h-12 w-[168px] flex-col items-start justify-center rounded-lg bg-foreground px-4 text-left text-background transition-transform active:scale-[0.98] motion-reduce:transition-none"
+            >
+              <span className="text-[11px] leading-none opacity-80">{i.caption}</span>
+              <span className="mt-0.5 text-base leading-tight font-semibold">{i.store}</span>
+            </button>
+            {inDialog && <span className="text-xs text-muted-foreground">откроется магазин</span>}
+          </div>
+        ))}
+      </div>
+      {!inDialog && <GetAppDialog open={open} onClose={() => setOpen(false)} seed="seafolio-app" title="Скачайте Seafolio" text="Приложение для моряков: iPhone на iOS 16 и новее, Android 10 и новее." />}
+    </>
+  )
+}
+
+// «Отправить ссылку на телефон»: email или номер.
+function SendLink() {
+  const { showToast } = useProto()
+  const [kind, setKind] = useState<'email' | 'phone'>('email')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [sent, setSent] = useState('')
+  const [tried, setTried] = useState(false)
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())
+  const phoneOk = phone.replace(/\D/g, '').length >= 9
+  const ok = kind === 'email' ? emailOk : phoneOk
+  const err = tried && !ok ? (kind === 'email' ? 'Проверьте адрес почты' : 'Номер неполный') : undefined
+  const send = () => {
+    setTried(true)
+    if (!ok) return
+    setSent(kind === 'email' ? email.trim() : phone)
+    showToast('Ссылка отправлена')
+  }
+  return (
+    <div className="flex flex-col gap-3 border-t border-border pt-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">Отправить ссылку на телефон</span>
+        <div role="tablist" aria-label="Куда отправить" className="flex rounded-md bg-muted p-0.5 text-sm">
+          {(['email', 'phone'] as const).map((k) => (
+            <button
+              key={k}
+              type="button"
+              role="tab"
+              aria-selected={kind === k}
+              onClick={() => {
+                setKind(k)
+                setTried(false)
+                setSent('')
+              }}
+              className={cn('h-8 rounded px-3 font-medium transition-colors', kind === k ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground')}
+            >
+              {k === 'email' ? 'Почта' : 'Телефон'}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-start gap-2">
+        <WebField label={kind === 'email' ? 'Почта' : 'Номер телефона'} error={err} className="flex-1">
+          {kind === 'email' ? (
+            <WebInput type="email" value={email} onChange={(e) => (setEmail(e.target.value), setSent(''))} placeholder="name@example.com" onKeyDown={(e) => e.key === 'Enter' && send()} />
+          ) : (
+            <WebPhoneField value={phone} onChange={(v) => (setPhone(v), setSent(''))} />
+          )}
+        </WebField>
+        <Button className="mt-[26px] h-10" onClick={send}>
+          Отправить
+        </Button>
+      </div>
+      {sent && <p className="text-sm text-success">Ссылка ушла на {sent}. Откройте её с телефона.</p>}
     </div>
   )
 }
@@ -155,13 +223,14 @@ export function GetAppDialog({ open, onClose, title, text, seed }: { open: boole
   const { showToast } = useProto()
   return (
     <WebDialog open={open} onClose={onClose} title={title} description={text} className="w-[560px]">
-      <div className="flex items-center gap-6">
+      <div className="flex items-start gap-6">
         <QrCode seed={seed} size={148} />
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           <p className="text-sm text-muted-foreground">Наведите камеру телефона на код или скачайте приложение из магазина.</p>
-          <StoreButtons vertical />
+          <StoreButtons vertical inDialog />
         </div>
       </div>
+      <SendLink />
       <p className="border-t border-border pt-4 text-sm text-muted-foreground">
         Приложение уже установлено?{' '}
         <button

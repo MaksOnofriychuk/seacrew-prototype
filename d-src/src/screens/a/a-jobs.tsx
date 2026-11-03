@@ -15,7 +15,7 @@ import { ADMIN_ORGS } from '@/lib/data-web'
 import { AJOB_STATE_LABEL, A_JOBS, VESSEL_TYPES, type AJob, type AJobState } from '@/lib/data-admin'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
-import { AdminPage, AdminTabs, CancelButton, ExpandRows, Facts, Mono, MultiFilter, Note, PeriodFilter, SideSheet, dt, inPeriod, useBagState } from './_parts'
+import { AdminPage, AdminTabs, CancelButton, ExpandRows, Facts, Mono, WebMultiSelect, Note, PeriodFilter, SideSheet, dt, inPeriod, useBagState } from './_parts'
 
 const TONE: Record<AJobState, Tone> = { review: 'warning', published: 'success', rejected: 'muted', hidden: 'muted' }
 type Tab = 'review' | 'published' | 'off' | 'all'
@@ -139,7 +139,7 @@ export function AJobs({ go }: ScreenProps) {
         onChange={setTab}
       />
       <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Должность, судно, компания' }} onReset={fleets.length || who || from || to || q ? () => (setFleets([]), setWho(''), setFrom(''), setTo(''), setQ('')) : undefined} count={rows.length}>
-        <MultiFilter label="Флот" value={fleets} onChange={setFleets} options={[...FLEETS]} />
+        <WebMultiSelect label="Флот" className="w-[260px]" values={fleets} onChange={setFleets} options={[...FLEETS]} />
         <FilterSelect label="Кто" value={who} onChange={setWho} options={[{ value: 'team', label: 'Команда Seafolio' }, { value: 'orgs', label: 'Агентства' }]} />
         <PeriodFilter label="Размещена" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
       </FilterBar>

@@ -166,5 +166,6 @@ export function DocList({ docs, onOpen }: { docs: DocItem[]; onOpen?: (d: DocIte
 
 // Перенесено в components/web (общие для веб-кабинетов); здесь — прежние имена.
 export { PageTabs as AdminTabs } from '@/components/web/page-header'
-export { PeriodFilter, inPeriod, MultiFilter } from '@/components/web/filter-bar'
+export { PeriodFilter, inPeriod } from '@/components/web/filter-bar'
+export { WebMultiSelect } from '@/components/web/web-pickers'
 export { FileViewer } from '@/components/web/web-viewer'

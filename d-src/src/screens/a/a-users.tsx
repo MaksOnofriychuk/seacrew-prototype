@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Users } from 'lucide-react'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, WebAvatar, type Tone } from '@/components/web/status-badge'
 import { A_USERS, USTATUS_LABEL, type AUser, type UStatus } from '@/lib/data-admin'
+import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
 import { AdminPage, AdminTabs, Mono, PeriodFilter, dt, inPeriod, useBagState } from './_parts'
 
@@ -25,8 +26,18 @@ type Tab = 'all' | 'blocked'
 export function AUsers({ go }: ScreenProps) {
   const users = useUsers()
   const [, setSel] = useBagState('a.user', 'u02')
-  const [tab, setTab] = useState<Tab>('blocked')
-  const [q, setQ] = useState('')
+  const { bag, setBag } = useProto()
+  // Запрос из поиска в шапке: ищем среди всех пользователей.
+  const shellQ = bag<string>('shell.q', '')
+  const [tab, setTab] = useState<Tab>(shellQ ? 'all' : 'blocked')
+  const [q, setQ] = useState(shellQ)
+  useEffect(() => {
+    if (!shellQ) return
+    setQ(shellQ)
+    setTab('all')
+    setBag('shell.q', '')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shellQ])
   const [role, setRole] = useState('')
   const [st, setSt] = useState('')
   const [from, setFrom] = useState('')
