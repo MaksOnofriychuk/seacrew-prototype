@@ -7,10 +7,12 @@ import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebInput, WebSelect } from '@/components/web/fields'
-import { FilterBar } from '@/components/web/filter-bar'
+import { FilterBar, FilterSelect, PeriodFilter, inPeriod } from '@/components/web/filter-bar'
+import { WebDialog } from '@/components/web/dialog'
+import { ALL_INVITERS, ALL_PROMOS } from '@/lib/data-admin-53-g'
 import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, WebAvatar, type Tone } from '@/components/web/status-badge'
-import { INVITERS, INVITE_RULE, INVITE_TOTALS, PROMOS, PROMO_STATE_LABEL, type Inviter, type Promo, type PromoState } from '@/lib/data-admin-2'
+import { INVITE_RULE, INVITE_TOTALS, PROMO_STATE_LABEL, type Inviter, type Promo, type PromoState } from '@/lib/data-admin-2'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
@@ -31,12 +33,20 @@ type Tab = 'codes' | 'invites'
 export function A2Promo({ go }: ScreenProps) {
   const { showToast } = useProto()
   const [tab, setTab] = useBagState<Tab>('a2.promoTab', 'codes')
-  const [promos, setPromos] = useBagState<Promo[]>('a2.promos', PROMOS)
-  const [inviters, setInviters] = useBagState<Inviter[]>('a2.inviters', INVITERS)
+  const [promos, setPromos] = useBagState<Promo[]>('a2.promos', ALL_PROMOS)
+  const [inviters, setInviters] = useBagState<Inviter[]>('a2.inviters', ALL_INVITERS)
   const [rule, setRule] = useBagState('a2.inviteRule', INVITE_RULE)
   const [, setUser] = useBagState('a.user', 'u02')
   const [, setRegTab] = useBagState('a.regTab', 'attempts')
   const [q, setQ] = useState('')
+  const [pState, setPState] = useState('')
+  const [pAud, setPAud] = useState('')
+  const [pDays, setPDays] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [minWeeks, setMinWeeks] = useState('')
+  const [onlyFlag, setOnlyFlag] = useState('')
+  const [confirm, setConfirm] = useState<null | 'off' | 'bonus'>(null)
   const [openCode, setOpenCode] = useState<string | null>(null)
   const [openInv, setOpenInv] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
@@ -52,7 +62,7 @@ export function A2Promo({ go }: ScreenProps) {
   const canCreate = !!codeClean && !codeErr && (f.unlimited || (Number.isInteger(limitNum) && limitNum > 0))
 
   const create = () => {
-    const p: Promo = { id: 'pc' + Date.now(), code: codeClean, days: f.days, limit: f.unlimited ? null : limitNum, used: 0, until: f.until || null, audience: f.audience, state: 'active', created: '2026-11-02', note: f.note.trim() || 'Без описания' }
+    const p: Promo = { id: 'pc' + Date.now(), code: codeClean, days: f.days, limit: f.unlimited ? null : limitNum, used: 0, until: f.until || null, audience: f.audience, state: 'active', created: '2026-11-03', note: f.note.trim() || 'Без описания' }
     setPromos([p, ...promos])
     showToast(`Код ${p.code} создан`)
     setCreating(false)
@@ -64,10 +74,20 @@ export function A2Promo({ go }: ScreenProps) {
     setPromos(promos.map((x) => (x.id === p.id ? { ...x, state: next } : x)))
     showToast(next === 'off' ? `Код ${p.code} выключен` : `Код ${p.code} снова действует`)
     setOpenCode(null)
+    setConfirm(null)
   }
 
-  const codeRows = promos.filter((p) => !q || (p.code + p.note).toLowerCase().includes(q.toLowerCase()))
-  const invRows = inviters.filter((i) => !q || i.name.toLowerCase().includes(q.toLowerCase()))
+  const codeRows = promos
+    .filter((p) => !q || (p.code + p.note).toLowerCase().includes(q.toLowerCase()))
+    .filter((p) => !pState || promoState(p) === pState)
+    .filter((p) => !pAud || p.audience === pAud)
+    .filter((p) => !pDays || p.days === Number(pDays))
+    .filter((p) => (!from && !to) || (p.until !== null && inPeriod(p.until, from, to)))
+  const invRows = inviters
+    .filter((i) => !q || i.name.toLowerCase().includes(q.toLowerCase()))
+    .filter((i) => !minWeeks || i.weeks >= Number(minWeeks))
+    .filter((i) => !onlyFlag || !!i.flag === (onlyFlag === 'yes'))
+  const codeFiltered = !!(q || pState || pAud || pDays || from || to)
 
   const codeCols: Column<Promo>[] = [
     {
@@ -82,8 +102,8 @@ export function A2Promo({ go }: ScreenProps) {
         </span>
       ),
     },
-    { key: 'days', header: 'Даёт премиум', width: '13%', sortValue: (p) => p.days, cell: (p) => daysText(p.days) },
-    { key: 'aud', header: 'Для кого', width: '14%', cell: (p) => <span className="text-muted-foreground">{AUDIENCE[p.audience]}</span> },
+    { key: 'days', header: 'Премиум', width: '13%', sortValue: (p) => p.days, cell: (p) => daysText(p.days) },
+    { key: 'aud', header: 'Для кого', width: '14%', sortValue: (p) => p.audience, cell: (p) => <span className="text-muted-foreground">{AUDIENCE[p.audience]}</span> },
     {
       key: 'used',
       header: 'Использовано',
@@ -139,7 +159,7 @@ export function A2Promo({ go }: ScreenProps) {
       ),
     },
     { key: 'last', header: 'Последнее', width: '12%', mono: true, sortValue: (i) => i.last, cell: (i) => dt(i.last) },
-    { key: 'flag', header: '', cell: (i) => (i.flag ? <StatusDot tone="warning">Проверить</StatusDot> : null) },
+    { key: 'flag', header: 'Проверка', sortValue: (i) => (i.flag ? 0 : 1), cell: (i) => (i.flag ? <StatusDot tone="warning">Проверить</StatusDot> : null) },
   ]
 
   return (
@@ -161,12 +181,21 @@ export function A2Promo({ go }: ScreenProps) {
           { id: 'invites', label: 'Приглашения' },
         ]}
         value={tab}
-        onChange={(t) => (setTab(t), setQ(''))}
+        onChange={(t) => (setTab(t), setQ(''), setPState(''), setPAud(''), setPDays(''), setFrom(''), setTo(''), setMinWeeks(''), setOnlyFlag(''))}
       />
 
       {tab === 'codes' ? (
         <>
-          <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Код или описание' }} count={codeRows.length} />
+          <FilterBar
+            search={{ value: q, onChange: setQ, placeholder: 'Код или описание' }}
+            onReset={pState || pAud || pDays || from || to ? () => (setPState(''), setPAud(''), setPDays(''), setFrom(''), setTo('')) : undefined}
+            count={codeRows.length}
+          >
+            <FilterSelect label="Статус" value={pState} onChange={setPState} options={(['active', 'off', 'expired'] as PromoState[]).map((k) => ({ value: k, label: PROMO_STATE_LABEL[k] }))} />
+            <FilterSelect label="Для кого" value={pAud} onChange={setPAud} options={[{ value: 'new', label: AUDIENCE.new }, { value: 'all', label: AUDIENCE.all }]} />
+            <FilterSelect label="Даёт" value={pDays} onChange={setPDays} options={DAYS.map((d) => ({ value: String(d), label: daysText(d) }))} />
+            <PeriodFilter label="Действует до" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} future />
+          </FilterBar>
           <DataTable
             columns={codeCols}
             rows={codeRows}
@@ -174,8 +203,17 @@ export function A2Promo({ go }: ScreenProps) {
             onRowClick={(p) => setOpenCode(p.id)}
             selectedKey={openCode ?? undefined}
             initialSort={{ key: 'state', dir: 'asc' }}
+            pageSizes={[10, 20, 50]}
+            sortOptions={[
+              { key: 'state', dir: 'asc', label: 'Статус: сначала действующие' },
+              { key: 'until', dir: 'asc', label: 'Срок: сначала ближайший' },
+              { key: 'until', dir: 'desc', label: 'Срок: сначала дальний' },
+              { key: 'used', dir: 'desc', label: 'Использовано: сначала больше' },
+              { key: 'days', dir: 'desc', label: 'Дней премиума: сначала больше' },
+              { key: 'code', dir: 'asc', label: 'Код: А — Я' },
+            ]}
             empty={
-              q
+              codeFiltered
                 ? { icon: Ticket, title: 'Код не найден', text: 'Проверьте написание.' }
                 : { icon: Ticket, title: 'Промокодов пока нет', text: 'Создайте код для ярмарки, партнёра или бета-теста.', action: <Button onClick={() => setCreating(true)}><Plus /> Создать код</Button> }
             }
@@ -207,7 +245,14 @@ export function A2Promo({ go }: ScreenProps) {
               <Note tone="warning">Если приглашённый зарегистрировался с того же устройства, что и пригласивший, строка отмечена «Проверить»: возможно, человек приглашает сам себя ради бонусов.</Note>
             </div>
           </div>
-          <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Имя моряка' }} count={invRows.length} />
+          <FilterBar
+            search={{ value: q, onChange: setQ, placeholder: 'Имя моряка' }}
+            onReset={minWeeks || onlyFlag ? () => (setMinWeeks(''), setOnlyFlag('')) : undefined}
+            count={invRows.length}
+          >
+            <FilterSelect label="Бонусных недель" value={minWeeks} onChange={setMinWeeks} options={[1, 3, 5, 8].map((n) => ({ value: String(n), label: `от ${n}` }))} allLabel="Любое" />
+            <FilterSelect label="Проверка" value={onlyFlag} onChange={setOnlyFlag} options={[{ value: 'yes', label: 'Нужна' }, { value: 'no', label: 'Не нужна' }]} />
+          </FilterBar>
           <DataTable
             columns={invCols}
             rows={invRows}
@@ -215,7 +260,16 @@ export function A2Promo({ go }: ScreenProps) {
             onRowClick={(i) => setOpenInv(i.id)}
             selectedKey={openInv ?? undefined}
             initialSort={{ key: 'joined', dir: 'desc' }}
-            empty={q ? { icon: Users, title: 'Никого не нашли', text: 'Проверьте имя.' } : { icon: Gift, title: 'Приглашений пока нет', text: 'Когда моряк поделится ссылкой, он появится здесь.' }}
+            pageSizes={[10, 20, 50]}
+            sortOptions={[
+              { key: 'joined', dir: 'desc', label: 'Пришли: сначала больше' },
+              { key: 'opened', dir: 'desc', label: 'Открыли ссылку: сначала больше' },
+              { key: 'weeks', dir: 'desc', label: 'Бонусных недель: сначала больше' },
+              { key: 'last', dir: 'desc', label: 'Последнее: сначала новые' },
+              { key: 'name', dir: 'asc', label: 'Имя: А — Я' },
+              { key: 'flag', dir: 'asc', label: 'Сначала «Проверить»' },
+            ]}
+            empty={q || minWeeks || onlyFlag ? { icon: Users, title: 'Никого не нашли', text: 'Проверьте имя.' } : { icon: Gift, title: 'Приглашений пока нет', text: 'Когда моряк поделится ссылкой, он появится здесь.' }}
           />
         </>
       )}
@@ -233,7 +287,7 @@ export function A2Promo({ go }: ScreenProps) {
                 Скопировать код
               </Button>
               {code.state !== 'expired' && (
-                <Button variant={code.state === 'active' ? 'outline' : 'default'} onClick={() => toggle(code)}>
+                <Button variant={code.state === 'active' ? 'outline' : 'default'} onClick={() => (code.state === 'active' ? setConfirm('off') : toggle(code))}>
                   {code.state === 'active' ? 'Выключить' : 'Включить'}
                 </Button>
               )}
@@ -362,14 +416,7 @@ export function A2Promo({ go }: ScreenProps) {
                 </Button>
               )}
               {inv.flag && inv.weeks > 0 && (
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    setInviters(inviters.map((x) => (x.id === inv.id ? { ...x, weeks: 0, flag: undefined } : x)))
-                    showToast('Бонусные недели сняты')
-                    setOpenInv(null)
-                  }}
-                >
+                <Button variant="destructive" onClick={() => setConfirm('bonus')}>
                   Снять бонусы
                 </Button>
               )}
@@ -398,6 +445,43 @@ export function A2Promo({ go }: ScreenProps) {
           </>
         )}
       </SideSheet>
+      <WebDialog
+        open={confirm === 'off' && !!code}
+        onClose={() => setConfirm(null)}
+        title={code ? `Выключить код ${code.code}?` : ''}
+        description="Моряки больше не смогут ввести этот код. Уже начисленный премиум останется."
+        footer={
+          <>
+            <CancelButton onClick={() => setConfirm(null)} />
+            <Button variant="destructive" onClick={() => code && toggle(code)}>
+              Выключить
+            </Button>
+          </>
+        }
+      />
+      <WebDialog
+        open={confirm === 'bonus' && !!inv}
+        onClose={() => setConfirm(null)}
+        title={inv ? `Снять бонусы у ${inv.name}?` : ''}
+        description="Бонусные недели обнулятся, отметка «Проверить» пропадёт. Это действие нельзя отменить."
+        footer={
+          <>
+            <CancelButton onClick={() => setConfirm(null)} />
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (!inv) return
+                setInviters(inviters.map((x) => (x.id === inv.id ? { ...x, weeks: 0, flag: undefined } : x)))
+                showToast('Бонусные недели сняты')
+                setConfirm(null)
+                setOpenInv(null)
+              }}
+            >
+              Снять бонусы
+            </Button>
+          </>
+        }
+      />
     </AdminPage>
   )
 }

@@ -2,16 +2,18 @@ import { useState } from 'react'
 import { Receipt, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
-import { WebField, WebInput, WebTextarea } from '@/components/web/fields'
+import { WebField, WebTextarea } from '@/components/web/fields'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
-import { PAYMENTS, PAY_MONTH, PAY_STATE_LABEL, money, type PayChannel, type PayState, type Payment } from '@/lib/data-admin-2'
+import { PAY_MONTH, PAY_STATE_LABEL, money, type PayChannel, type PayState, type Payment } from '@/lib/data-admin-2'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { AdminPage, AdminTabs, CancelButton, Facts, Mono, Note, PeriodFilter, SideSheet, dt, inPeriod, useBagState } from '../a/_parts'
 import { SummaryLine } from './_parts'
+import { ALL_PAYMENTS, amountOptions } from '@/lib/data-admin-53-g'
+import { MoneyInput } from './a2-plans'
 
 const TONE: Record<PayState, Tone> = { paid: 'success', refunded: 'muted', failed: 'error', pending: 'warning' }
 const CHANNELS: PayChannel[] = ['App Store', 'Google Play', 'Карта', 'Счёт']
@@ -21,12 +23,14 @@ type Tab = 'all' | 'seafarer' | 'company' | 'refunded'
 
 export function A2Payments({ go }: ScreenProps) {
   const { showToast } = useProto()
-  const [pays, setPays] = useBagState<Payment[]>('a2.payments', PAYMENTS)
+  const [pays, setPays] = useBagState<Payment[]>('a2.payments', ALL_PAYMENTS)
   const [q, setQ] = useBagState('a2.payQ', '')
   const [, setSub] = useBagState('a2.sub', 's-104')
   const [, setOrg] = useBagState('a.org', 'org-mc')
   const [tab, setTab] = useState<Tab>('all')
   const [channel, setChannel] = useState('')
+  const [state, setState] = useState('')
+  const [minAmount, setMinAmount] = useState('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
@@ -39,6 +43,8 @@ export function A2Payments({ go }: ScreenProps) {
   const rows = pays
     .filter((p) => (tab === 'all' ? true : tab === 'refunded' ? p.state === 'refunded' : p.payerKind === tab))
     .filter((p) => !channel || p.channel === channel)
+    .filter((p) => !state || p.state === state)
+    .filter((p) => !minAmount || p.amount >= Number(minAmount))
     .filter((p) => inPeriod(p.at, from, to))
     .filter((p) => !q || (p.payer + p.item + p.id).toLowerCase().includes(q.toLowerCase()))
 
@@ -56,7 +62,7 @@ export function A2Payments({ go }: ScreenProps) {
     close()
   }
 
-  const partNum = Number(part.replace(',', '.'))
+  const partNum = Number(part)
   const refundAmount = open ? (full ? open.amount : partNum) : 0
   const refundOk = !!reason.trim() && (full || (partNum > 0 && open !== undefined && partNum <= open.amount))
 
@@ -74,7 +80,7 @@ export function A2Payments({ go }: ScreenProps) {
         </span>
       ),
     },
-    { key: 'item', header: 'За что', width: '22%', cell: (p) => <span className="truncate">{p.item}</span> },
+    { key: 'item', header: 'За что', width: '22%', sortValue: (p) => p.item, cell: (p) => <span className="block truncate" title={p.item}>{p.item}</span> },
     { key: 'ch', header: 'Как', width: '12%', sortValue: (p) => p.channel, cell: (p) => <span className="text-muted-foreground">{p.channel}</span> },
     {
       key: 'amount',
@@ -111,8 +117,10 @@ export function A2Payments({ go }: ScreenProps) {
         value={tab}
         onChange={setTab}
       />
-      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Плательщик или номер' }} onReset={channel || from || to || q ? () => (setChannel(''), setFrom(''), setTo(''), setQ('')) : undefined} count={rows.length}>
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Плательщик или номер' }} onReset={channel || state || minAmount || from || to || q ? () => (setChannel(''), setState(''), setMinAmount(''), setFrom(''), setTo(''), setQ('')) : undefined} count={rows.length}>
         <FilterSelect label="Как" value={channel} onChange={setChannel} options={CHANNELS} />
+        <FilterSelect label="Статус" value={state} onChange={setState} options={(Object.keys(PAY_STATE_LABEL) as PayState[]).map((k) => ({ value: k, label: PAY_STATE_LABEL[k] }))} />
+        <FilterSelect label="Сумма" value={minAmount} onChange={setMinAmount} options={amountOptions} allLabel="Любая" />
         <PeriodFilter label="Дата" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
       </FilterBar>
       <DataTable
@@ -122,8 +130,17 @@ export function A2Payments({ go }: ScreenProps) {
         onRowClick={(p) => setOpenId(p.id)}
         selectedKey={openId ?? undefined}
         initialSort={{ key: 'at', dir: 'desc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'at', dir: 'desc', label: 'Дата: сначала новые' },
+          { key: 'at', dir: 'asc', label: 'Дата: сначала старые' },
+          { key: 'amount', dir: 'desc', label: 'Сумма: сначала больше' },
+          { key: 'amount', dir: 'asc', label: 'Сумма: сначала меньше' },
+          { key: 'payer', dir: 'asc', label: 'Плательщик: А — Я' },
+          { key: 'state', dir: 'asc', label: 'Статус' },
+        ]}
         empty={
-          q || channel || from || to
+          q || channel || state || minAmount || from || to
             ? { icon: Receipt, title: 'Платежей не нашлось', text: 'Проверьте имя или сбросьте фильтр.' }
             : tab === 'refunded'
               ? { icon: Undo2, title: 'Возвратов не было', text: 'Здесь появятся платежи, по которым вернули деньги.' }
@@ -227,8 +244,8 @@ export function A2Payments({ go }: ScreenProps) {
               </div>
             </div>
             {!full && (
-              <WebField id="ref-part" label="Сумма, $" error={part && !(partNum > 0 && partNum <= open.amount) ? `От 0 до ${money(open.amount)}` : undefined}>
-                <WebInput id="ref-part" inputMode="decimal" value={part} onChange={(e) => setPart(e.target.value)} placeholder="50" className="font-mono" />
+              <WebField id="ref-part" label="Сумма возврата" error={part && !(partNum > 0 && partNum <= open.amount) ? `От 0 до ${money(open.amount)}` : undefined}>
+                <MoneyInput id="ref-part" label="Сумма возврата, $" value={part} onChange={setPart} placeholder="50" invalid={!!part && !(partNum > 0 && partNum <= open.amount)} className="h-10" />
               </WebField>
             )}
             <WebField id="ref-reason" label="Причина" hint={open.payerKind === 'company' ? 'Увидит владелец организации в письме.' : 'Увидит моряк в письме.'}>

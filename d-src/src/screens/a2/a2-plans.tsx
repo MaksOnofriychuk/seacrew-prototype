@@ -3,10 +3,13 @@ import { Building2, Layers, Pencil } from 'lucide-react'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
-import { WebCheckbox, WebField, WebInput, WebSelect } from '@/components/web/fields'
+import { WebCheckbox, WebField, WebSelect } from '@/components/web/fields'
 import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
-import { COMPANY_PLANS, ORG_PLANS, SEARCH_LABEL, money, type CompanyPlan, type OrgPlanRow } from '@/lib/data-admin-2'
+import { COMPANY_PLANS, SEARCH_LABEL, money, type CompanyPlan, type OrgPlanRow } from '@/lib/data-admin-2'
+import { ALL_ORG_PLANS, KNOWN_ORGS } from '@/lib/data-admin-53-g'
+import { WebDialog } from '@/components/web/dialog'
+import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
@@ -14,6 +17,27 @@ import { AdminPage, AdminTabs, CancelButton, Facts, Mono, Note, SideSheet, dt, u
 import { Sample } from './_parts'
 
 type Tab = 'plans' | 'orgs'
+
+/** Сумма с маской: пробелы между тысячами, до двух знаков после запятой, символ $ внутри поля. Значение — «1490» или «49.99». */
+export function maskMoney(raw: string) {
+  const clean = raw.replace(',', '.').replace(/[^\d.]/g, '')
+  const [int = '', ...rest] = clean.split('.')
+  const frac = rest.join('').slice(0, 2)
+  const head = int.replace(/^0+(?=\d)/, '').slice(0, 7)
+  return rest.length ? `${head}.${frac}` : head
+}
+const showMoney = (v: string) => {
+  const [i, f] = v.split('.')
+  return (i ? Number(i).toLocaleString('ru').replace(/\s/g, ' ') : '') + (f !== undefined ? ',' + f : '')
+}
+export function MoneyInput({ id, value, onChange, placeholder, invalid, className, label }: { id?: string; value: string; onChange: (v: string) => void; placeholder?: string; invalid?: boolean; className?: string; label?: string }) {
+  return (
+    <span className={cn('flex h-9 items-center gap-1 rounded-md border bg-surface px-2.5 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring', invalid ? 'border-signal' : 'border-input', className)}>
+      <span className="text-sm text-muted-foreground">$</span>
+      <input id={id} aria-label={label} inputMode="decimal" value={showMoney(value)} onChange={(e) => onChange(maskMoney(e.target.value))} placeholder={placeholder} className="min-w-0 flex-1 bg-transparent text-right font-mono text-sm outline-none placeholder:text-muted-foreground" />
+    </span>
+  )
+}
 const ORG_STATE: Record<OrgPlanRow['state'], { tone: Tone; label: string }> = {
   ok: { tone: 'success', label: 'Оплачен' },
   overdue: { tone: 'error', label: 'Оплата не прошла' },
@@ -36,13 +60,31 @@ export function A2Plans({ go }: ScreenProps) {
   const { showToast } = useProto()
   const [tab, setTab] = useState<Tab>('plans')
   const [plans, setPlans] = useBagState<CompanyPlan[]>('a2.plans', COMPANY_PLANS)
-  const [orgPlans, setOrgPlans] = useBagState<OrgPlanRow[]>('a2.orgPlans', ORG_PLANS)
+  const [orgPlans, setOrgPlans] = useBagState<OrgPlanRow[]>('a2.orgPlans', ALL_ORG_PLANS)
   const [, setOrg] = useBagState('a.org', 'org-mc')
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<Draft>(() => toDraft(plans))
   const [openOrg, setOpenOrg] = useState<string | null>(null)
   const [newPlan, setNewPlan] = useState('')
+  const [oq, setOq] = useState('')
+  const [oPlan, setOPlan] = useState('')
+  const [oState, setOState] = useState('')
+  const [oChannel, setOChannel] = useState('')
+  const [confirmDown, setConfirmDown] = useState(false)
+  const orgRows = orgPlans
+    .filter((o) => !oq || o.org.toLowerCase().includes(oq.toLowerCase()))
+    .filter((o) => !oPlan || o.plan === oPlan)
+    .filter((o) => !oState || o.state === oState)
+    .filter((o) => !oChannel || o.channel === oChannel)
   const org = orgPlans.find((o) => o.orgId === openOrg)
+
+  const applyPlan = () => {
+    if (!org) return
+    setOrgPlans(orgPlans.map((o) => (o.orgId === org.orgId ? { ...o, plan: newPlan, state: newPlan === 'Старт' ? 'free' : o.state === 'free' ? 'ok' : o.state, next: newPlan === 'Старт' ? null : (o.next ?? '2026-12-02') } : o)))
+    showToast(`${org.org}: тариф «${newPlan}»`)
+    setConfirmDown(false)
+    setOpenOrg(null)
+  }
 
   const setD = (id: string, k: string, v: string | boolean) => setDraft({ ...draft, [id]: { ...draft[id], [k]: v } })
   const bad = (s: string | boolean, allowEmpty = false) => typeof s === 'string' && (s === '' ? !allowEmpty : !(Number(s) >= 0 && Number.isFinite(Number(s))))
@@ -59,9 +101,7 @@ export function A2Plans({ go }: ScreenProps) {
     showToast('Тарифы сохранены. Новые цены — со следующей оплаты')
   }
 
-  const cellInput = (id: string, k: string, placeholder?: string) => (
-    <WebInput aria-label={k} inputMode="numeric" value={draft[id][k] as string} onChange={(e) => setD(id, k, e.target.value)} placeholder={placeholder} className={cn('h-9 font-mono', bad(draft[id][k], !!placeholder) && 'border-signal')} />
-  )
+  const cellInput = (id: string, k: string, label: string) => <MoneyInput label={label} value={draft[id][k] as string} onChange={(v) => setD(id, k, v)} placeholder="0" invalid={bad(draft[id][k])} />
 
   // лимиты выбираются из ряда значений (правило 4); «Без лимита» — пустое значение
   const limitSelect = (id: string, k: string, steps: number[]) => {
@@ -103,10 +143,10 @@ export function A2Plans({ go }: ScreenProps) {
   ]
 
   const orgCols: Column<OrgPlanRow>[] = [
-    { key: 'org', header: 'Организация', width: '30%', sortValue: (o) => o.org, cell: (o) => <span className="font-medium">{o.org}</span> },
+    { key: 'org', header: 'Организация', width: '27%', sortValue: (o) => o.org, cell: (o) => <span className="font-medium">{o.org}</span> },
     { key: 'plan', header: 'Тариф', width: '14%', sortValue: (o) => o.plan, cell: (o) => o.plan },
     { key: 'since', header: 'С', width: '13%', mono: true, sortValue: (o) => o.since, cell: (o) => dt(o.since) },
-    { key: 'next', header: 'Следующая оплата', width: '16%', mono: true, sortValue: (o) => o.next ?? '9999', cell: (o) => (o.next ? dt(o.next) : <span className="font-sans text-muted-foreground">—</span>) },
+    { key: 'next', header: 'Следующая оплата', width: '19%', mono: true, sortValue: (o) => o.next ?? '9999', cell: (o) => (o.next ? dt(o.next) : <span className="font-sans text-muted-foreground">—</span>) },
     { key: 'ch', header: 'Как', width: '10%', cell: (o) => <span className="text-muted-foreground">{o.channel}</span> },
     { key: 'state', header: 'Статус', sortValue: (o) => o.state, cell: (o) => <StatusDot tone={ORG_STATE[o.state].tone}>{ORG_STATE[o.state].label}</StatusDot> },
   ]
@@ -165,11 +205,11 @@ export function A2Plans({ go }: ScreenProps) {
                           <span className="grid grid-cols-2 gap-2">
                             <label className="flex flex-col gap-1 text-xs text-muted-foreground">
                               $ в месяц
-                              {cellInput(p.id, 'month')}
+                              {cellInput(p.id, 'month', 'Цена в месяц, $')}
                             </label>
                             <label className="flex flex-col gap-1 text-xs text-muted-foreground">
                               $ в год
-                              {cellInput(p.id, 'year')}
+                              {cellInput(p.id, 'year', 'Цена в год, $')}
                             </label>
                           </span>
                         ) : (
@@ -217,15 +257,39 @@ export function A2Plans({ go }: ScreenProps) {
           {!editing && <Note className="mt-6">Компания, которая не оплатила тариф, через 7 дней переходит на «Старт». Вакансии сверх лимита снимаются с публикации, но не удаляются.</Note>}
         </ViewState>
       ) : (
+        <>
+        <FilterBar
+          search={{ value: oq, onChange: setOq, placeholder: 'Название организации' }}
+          onReset={oq || oPlan || oState || oChannel ? () => (setOq(''), setOPlan(''), setOState(''), setOChannel('')) : undefined}
+          count={orgRows.length}
+        >
+          <FilterSelect label="Тариф" value={oPlan} onChange={setOPlan} options={plans.map((p) => p.name)} />
+          <FilterSelect label="Статус" value={oState} onChange={setOState} options={Object.entries(ORG_STATE).map(([value, v]) => ({ value, label: v.label }))} />
+          <FilterSelect label="Как" value={oChannel} onChange={setOChannel} options={['Карта', 'Счёт']} />
+        </FilterBar>
         <DataTable
           columns={orgCols}
-          rows={orgPlans}
+          rows={orgRows}
           rowKey={(o) => o.orgId}
           onRowClick={(o) => (setOpenOrg(o.orgId), setNewPlan(o.plan))}
           selectedKey={openOrg ?? undefined}
           initialSort={{ key: 'next', dir: 'asc' }}
-          empty={{ icon: Building2, title: 'Компаний на тарифах нет', text: 'Когда агентство выберет тариф, оно появится здесь.' }}
+          pageSizes={[10, 20, 50]}
+          sortOptions={[
+            { key: 'next', dir: 'asc', label: 'Оплата: сначала ближайшая' },
+            { key: 'next', dir: 'desc', label: 'Оплата: сначала дальняя' },
+            { key: 'org', dir: 'asc', label: 'Название: А — Я' },
+            { key: 'since', dir: 'desc', label: 'На тарифе: сначала новые' },
+            { key: 'plan', dir: 'asc', label: 'Тариф' },
+            { key: 'state', dir: 'asc', label: 'Статус' },
+          ]}
+          empty={
+            oq || oPlan || oState || oChannel
+              ? { icon: Building2, title: 'Никого не нашли', text: 'Проверьте название или сбросьте фильтр.' }
+              : { icon: Building2, title: 'Компаний на тарифах нет', text: 'Когда агентство выберет тариф, оно появится здесь.' }
+          }
         />
+        </>
       )}
 
       <SideSheet
@@ -236,17 +300,12 @@ export function A2Plans({ go }: ScreenProps) {
         footer={
           org && (
             <>
-              <Button variant="ghost" className="mr-auto text-primary" onClick={() => (setOrg(org.orgId), go('a-org'))}>
-                Карточка организации
-              </Button>
-              <Button
-                disabled={newPlan === org.plan}
-                onClick={() => {
-                  setOrgPlans(orgPlans.map((o) => (o.orgId === org.orgId ? { ...o, plan: newPlan, state: newPlan === 'Старт' ? 'free' : o.state === 'free' ? 'ok' : o.state, next: newPlan === 'Старт' ? null : (o.next ?? '2026-12-02') } : o)))
-                  showToast(`${org.org}: тариф «${newPlan}»`)
-                  setOpenOrg(null)
-                }}
-              >
+              {KNOWN_ORGS.has(org.orgId) && (
+                <Button variant="ghost" className="mr-auto text-primary" onClick={() => (setOrg(org.orgId), go('a-org'))}>
+                  Карточка организации
+                </Button>
+              )}
+              <Button disabled={newPlan === org.plan} onClick={() => (newPlan === 'Старт' && org.plan !== 'Старт' ? setConfirmDown(true) : applyPlan())}>
                 Сменить тариф
               </Button>
             </>
@@ -270,6 +329,22 @@ export function A2Plans({ go }: ScreenProps) {
           </>
         )}
       </SideSheet>
+      <WebDialog
+        open={confirmDown && !!org}
+        onClose={() => setConfirmDown(false)}
+        title="Перевести на «Старт»?"
+        description={org ? `${org.org} потеряет платные возможности тарифа «${org.plan}».` : undefined}
+        footer={
+          <>
+            <CancelButton onClick={() => setConfirmDown(false)} />
+            <Button variant="destructive" onClick={applyPlan}>
+              Перевести на «Старт»
+            </Button>
+          </>
+        }
+      >
+        <p className="text-[15px] text-muted-foreground">Вакансии сверх лимита «Старта» снимутся с публикации, но не удалятся. Компания получит письмо.</p>
+      </WebDialog>
     </AdminPage>
   )
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalendarPlus, Crown, Receipt, UserRound } from 'lucide-react'
+import { CalendarPlus, ChevronDown, Crown, Receipt, UserRound } from 'lucide-react'
 import { Paper } from '@/components/app/paper'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
@@ -52,10 +52,12 @@ export function A2Sub({ go }: ScreenProps) {
   const [days, setDays] = useState(30)
   const [reason, setReason] = useState(REASONS[0])
   const [comment, setComment] = useState('')
+  const [allHistory, setAllHistory] = useState(false)
 
   const base = s.until > TODAY ? s.until : TODAY
   const newUntil = addDays(base, days)
   const history = [...s.history].sort((a, b) => (a.at < b.at ? 1 : -1))
+  const shownHistory = allHistory ? history : history.slice(0, 5)
 
   const extend = () => {
     const ev: SubEvent = {
@@ -89,7 +91,7 @@ export function A2Sub({ go }: ScreenProps) {
       />
 
       <ViewState empty={{ icon: Crown, title: 'У моряка нет премиума', text: 'Он ни разу не оплачивал и не получал пробную неделю.' }} loading={{ kind: 'cards', rows: 2 }}>
-        <div className="grid grid-cols-[minmax(0,1fr)_340px] items-start gap-8">
+        <div className="grid grid-cols-[minmax(0,1fr)_320px] items-start gap-6">
           <div className="flex min-w-0 flex-col">
             <Paper title={`Премиум, ${SUB_PLAN_LABEL[s.plan].toLowerCase()}`}>
               <Facts
@@ -107,9 +109,9 @@ export function A2Sub({ go }: ScreenProps) {
 
             <SectionTitle>История</SectionTitle>
             <ol className="relative flex flex-col rounded-xl border border-border bg-surface px-6 py-2">
-              {history.map((e, i) => (
+              {shownHistory.map((e, i) => (
                 <li key={e.at + i} className="relative flex gap-4 py-3.5">
-                  {i < history.length - 1 && <span className="absolute top-8 bottom-[-14px] left-[5px] w-px bg-border" aria-hidden="true" />}
+                  {i < shownHistory.length - 1 && <span className="absolute top-8 bottom-[-14px] left-[5px] w-px bg-border" aria-hidden="true" />}
                   <span className={cn('mt-1.5 size-[11px] shrink-0 rounded-full ring-4 ring-surface', DOT[e.kind])} aria-hidden="true" />
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="text-[15px]">{e.text}</span>
@@ -122,6 +124,12 @@ export function A2Sub({ go }: ScreenProps) {
                 </li>
               ))}
             </ol>
+            {history.length > 5 && (
+              <button type="button" aria-expanded={allHistory} onClick={() => setAllHistory(!allHistory)} className="mt-2 flex h-10 items-center justify-center gap-1.5 rounded-md text-sm font-medium text-primary hover:bg-muted">
+                {allHistory ? 'Свернуть' : `Показать все события (${history.length})`}
+                <ChevronDown className={cn('size-4 transition-transform', allHistory && 'rotate-180')} />
+              </button>
+            )}
           </div>
 
           <aside className="sticky top-0 flex flex-col gap-4 rounded-xl border border-border bg-surface p-6">

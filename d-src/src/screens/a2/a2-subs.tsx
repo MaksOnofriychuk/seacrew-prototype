@@ -7,7 +7,6 @@ import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, WebAvatar, type Tone } from '@/components/web/status-badge'
 import {
   PREMIUM_PRICE,
-  SUBS,
   SUB_PLAN_LABEL,
   SUB_SOURCE_LABEL,
   SUB_STATE_LABEL,
@@ -15,9 +14,11 @@ import {
   money,
   type Sub,
   type SubEvent,
+  type SubPlan,
   type SubSource,
   type SubState,
 } from '@/lib/data-admin-2'
+import { ALL_SUBS, amountOptions } from '@/lib/data-admin-53-g'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { AdminPage, AdminTabs, Mono, PeriodFilter, dt, inPeriod, useBagState } from '../a/_parts'
@@ -30,7 +31,7 @@ type SubPatch = { until: string; state: SubState; events: SubEvent[] }
 /** підписки з урахуванням ручних продовжень на a2-sub */
 export function useSubs(): [Sub[], (id: string, p: SubPatch) => void] {
   const [over, setOver] = useBagState<Record<string, SubPatch>>('a2.subOver', {})
-  const subs = SUBS.map((s) => (over[s.id] ? { ...s, until: over[s.id].until, state: over[s.id].state, history: [...s.history, ...over[s.id].events] } : s))
+  const subs = ALL_SUBS.map((s) => (over[s.id] ? { ...s, until: over[s.id].until, state: over[s.id].state, history: [...s.history, ...over[s.id].events] } : s))
   return [subs, (id, p) => setOver({ ...over, [id]: p })]
 }
 
@@ -42,11 +43,15 @@ export function A2Subs({ go }: ScreenProps) {
   const [tab, setTab] = useBagState<Tab>('a2.subsTab', 'active')
   const [q, setQ] = useState('')
   const [source, setSource] = useState('')
+  const [plan, setPlan] = useState('')
+  const [minPaid, setMinPaid] = useState('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const rows = subs
     .filter((s) => tab === 'all' || s.state === tab)
     .filter((s) => !source || s.source === source)
+    .filter((s) => !plan || s.plan === plan)
+    .filter((s) => !minPaid || s.paid >= Number(minPaid))
     .filter((s) => inPeriod(s.until, from, to))
     .filter((s) => !q || (s.name + s.position).toLowerCase().includes(q.toLowerCase()))
 
@@ -147,8 +152,10 @@ export function A2Subs({ go }: ScreenProps) {
         value={tab}
         onChange={setTab}
       />
-      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Имя или должность' }} onReset={source || from || to ? () => (setSource(''), setFrom(''), setTo('')) : undefined} count={rows.length}>
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Имя или должность' }} onReset={source || plan || minPaid || from || to ? () => (setSource(''), setPlan(''), setMinPaid(''), setFrom(''), setTo('')) : undefined} count={rows.length}>
         <FilterSelect label="Откуда" value={source} onChange={setSource} options={(Object.keys(SUB_SOURCE_LABEL) as SubSource[]).map((k) => ({ value: k, label: SUB_SOURCE_LABEL[k] }))} />
+        <FilterSelect label="Срок" value={plan} onChange={setPlan} options={(Object.keys(SUB_PLAN_LABEL) as SubPlan[]).map((k) => ({ value: k, label: SUB_PLAN_LABEL[k] }))} />
+        <FilterSelect label="Оплачено" value={minPaid} onChange={setMinPaid} options={amountOptions} allLabel="Любая" />
         <PeriodFilter label="Действует до" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} future />
       </FilterBar>
       <DataTable
@@ -160,8 +167,17 @@ export function A2Subs({ go }: ScreenProps) {
           go('a2-sub')
         }}
         initialSort={{ key: 'until', dir: 'asc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'until', dir: 'asc', label: 'Действует до: сначала ближайшие' },
+          { key: 'until', dir: 'desc', label: 'Действует до: сначала дальние' },
+          { key: 'name', dir: 'asc', label: 'Имя: А — Я' },
+          { key: 'paid', dir: 'desc', label: 'Оплачено: сначала больше' },
+          { key: 'paid', dir: 'asc', label: 'Оплачено: сначала меньше' },
+          { key: 'state', dir: 'asc', label: 'Статус' },
+        ]}
         empty={
-          q || source || from || to
+          q || source || plan || minPaid || from || to
             ? { icon: Crown, title: 'Никого не нашли', text: 'Проверьте имя или сбросьте фильтр.' }
             : tab === 'ended'
               ? { icon: Crown, title: 'Закончившихся подписок нет', text: 'Здесь будут моряки, которые не продлили премиум.' }
