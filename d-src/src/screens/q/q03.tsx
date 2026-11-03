@@ -143,7 +143,7 @@ export function Q03Upload({ go }: ScreenProps) {
                 role="tab"
                 aria-selected={on}
                 onClick={() => choose(id)}
-                className={cn('flex flex-col items-start rounded-[9px] border px-3 py-2 text-left transition-colors', on ? 'border-primary bg-surface' : 'border-transparent')}
+                className={cn('flex flex-col items-start rounded-[9px] border px-3 py-1.5 text-left transition-colors', on ? 'border-primary bg-surface' : 'border-transparent')}
               >
                 <span className={cn('text-[15px] font-medium', on ? 'text-primary' : 'text-foreground')}>{DOC_TYPES[id].b}</span>
                 <span className="text-sm text-muted-foreground">{DOC_TYPES[id].s}</span>
@@ -192,7 +192,7 @@ export function Q03Upload({ go }: ScreenProps) {
             )}
           </div>
         ) : (
-          <Drop icon={ScanLine} title="Добавить документ" sub="Сфотографируйте или загрузите страницу с фото и данными." onClick={() => setSheet('doc')} />
+          <Drop icon={ScanLine} title="Добавить документ" sub="Страница с фото и данными" onClick={() => setSheet('doc')} />
         )}
 
         {docOk &&
@@ -208,7 +208,7 @@ export function Q03Upload({ go }: ScreenProps) {
             </button>
           ))}
 
-        <p className="text-sm text-muted-foreground">Загранпаспорт не подходит — он не подтверждает, что вы моряк.</p>
+        <p className="text-[13px] leading-snug text-muted-foreground">Загранпаспорт не подходит — он не подтверждает, что вы моряк.</p>
       </Section>
     </FlowScreen>
   )
@@ -216,9 +216,9 @@ export function Q03Upload({ go }: ScreenProps) {
 
 function Section({ title, done, extra, children }: { title: string; done: boolean; extra?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="mt-7 flex flex-col gap-3 border-t border-border pt-5">
+    <section className="mt-6 flex flex-col gap-2.5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">{title}</h2>
+        <h2 className="text-base font-semibold">{title}</h2>
         {done ? <Badge variant="success">Загружено</Badge> : extra}
       </div>
       {children}
@@ -228,8 +228,8 @@ function Section({ title, done, extra, children }: { title: string; done: boolea
 
 function Drop({ icon: Icon, title, sub, onClick }: { icon: typeof Plus; title: string; sub: string; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="flex items-center gap-4 rounded-xl border border-border bg-surface px-4 py-4 text-left">
-      <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
+    <button type="button" onClick={onClick} className="flex items-center gap-3.5 rounded-xl border border-border bg-surface px-4 py-3 text-left active:scale-[0.99]">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
         <Icon className="size-5" />
       </span>
       <span className="flex flex-col">
