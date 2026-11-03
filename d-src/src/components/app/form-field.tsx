@@ -2,17 +2,10 @@ import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import { FieldMsg } from '@/components/app/field-msg'
 
 // Поле форми: підпис, мітка джерела («из документа», «из CV»), поле, підказка або помилка.
-export function FormField({
-  id,
-  label,
-  source,
-  note,
-  error,
-  children,
-  className,
-}: {
+export function FormField(props: {
   id?: string
   label: string
   source?: string
@@ -21,6 +14,9 @@ export function FormField({
   children: ReactNode
   className?: string
 }) {
+  const { id, label, source, note, error, children, className } = props
+  // Якщо note / error передано (навіть порожнім) — під полем завжди є рядок з резервом.
+  const reserve = 'note' in props || 'error' in props
   return (
     <div className={cn('flex flex-col gap-2', className)}>
       <div className="flex items-center justify-between gap-3">
@@ -28,7 +24,7 @@ export function FormField({
         {source && <Badge variant="outline" className="font-normal text-muted-foreground">{source}</Badge>}
       </div>
       {children}
-      {error ? <p className="text-sm text-signal">{error}</p> : note ? <p className="text-sm text-muted-foreground">{note}</p> : null}
+      {reserve && <FieldMsg error={error} note={note} />}
     </div>
   )
 }

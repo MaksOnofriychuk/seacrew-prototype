@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { FieldMsg } from '@/components/app/field-msg'
 
 // Базові поля форм для вебу (поверх ui/*): висота 40 px, підпис над полем, підказка або помилка під ним.
 
@@ -11,7 +12,9 @@ export type Option = string | { value: string; label: ReactNode }
 const optValue = (o: Option) => (typeof o === 'string' ? o : o.value)
 const optLabel = (o: Option) => (typeof o === 'string' ? o : o.label)
 
-export function WebField({ id, label, hint, error, required, children, className }: { id?: string; label: string; hint?: ReactNode; error?: ReactNode; required?: boolean; children: ReactNode; className?: string }) {
+export function WebField(props: { id?: string; label: string; hint?: ReactNode; error?: ReactNode; required?: boolean; children: ReactNode; className?: string }) {
+  const { id, label, hint, error, required, children, className } = props
+  const reserve = 'hint' in props || 'error' in props
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
       <Label htmlFor={id} className="text-sm font-medium">
@@ -19,7 +22,7 @@ export function WebField({ id, label, hint, error, required, children, className
         {required && <span className="text-signal">*</span>}
       </Label>
       {children}
-      {error ? <p className="text-sm text-signal">{error}</p> : hint ? <p className="text-sm text-muted-foreground">{hint}</p> : null}
+      {reserve && <FieldMsg error={error} note={hint} />}
     </div>
   )
 }

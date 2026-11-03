@@ -5,6 +5,7 @@ import { countryLabel, findCountries } from '@/lib/countries'
 import { addYears, daysIn, fmtDate, inRange, MONTHS, parseDate, TODAY } from '@/lib/dates'
 import { findDials, flagFor, group, parsePhone, phoneIncomplete, toValue, type Dial } from '@/lib/phone'
 import { cn } from '@/lib/utils'
+import { FieldMsg } from '@/components/app/field-msg'
 
 // Вибір дати й країни для вебу: поле-кнопка + випадне вікно під ним. Вписати руками не можна.
 
@@ -293,7 +294,7 @@ export function WebPhoneField({ id, value, onChange, disabled, className }: { id
           className="min-w-0 flex-1 bg-transparent px-3 font-mono text-sm outline-none placeholder:text-muted-foreground/60"
         />
       </div>
-      {bad && <p className="text-xs text-signal">Номер неполный</p>}
+      <FieldMsg error={bad ? 'Номер неполный' : null} />
       {open && (
         <div ref={pref} role="dialog" aria-label="Код страны" className={cn(panel, pos, 'w-72 p-2')}>
           <div className="relative">

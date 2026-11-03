@@ -204,7 +204,7 @@ export function RFormImport({ go }: ScreenProps) {
               ))}
             </div>
           </div>
-          {tried && !kind && <p className="-mt-4 text-sm text-signal">Выберите файл анкеты.</p>}
+          <p className="-mt-4 min-h-5 text-sm text-signal">{tried && !kind ? 'Выберите файл анкеты.' : null}</p>
           <div>
             <Button onClick={next}>{kind === 'acro' || !kind ? 'Загрузить и прочитать поля' : 'Далее'}</Button>
           </div>

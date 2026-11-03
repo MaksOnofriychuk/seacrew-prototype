@@ -136,12 +136,14 @@ export function PrPromo({ go }: ScreenProps) {
             )}
           />
         </label>
-        {error && (
-          <p role="alert" className="mt-2 flex items-start gap-2 text-sm text-signal">
-            <AlertCircle className="mt-0.5 size-4 shrink-0" />
-            {clean.length < 6 ? 'В коде 8 символов, например SEA-4K7Q.' : 'Такого кода нет или он уже использован. Проверьте буквы и цифры.'}
-          </p>
-        )}
+        <div className="mt-2 min-h-5">
+          {error && (
+            <p role="alert" className="flex items-start gap-2 text-sm text-signal">
+              <AlertCircle className="mt-0.5 size-4 shrink-0" />
+              {clean.length < 6 ? 'В коде 8 символов, например SEA-4K7Q.' : 'Такого кода нет или он уже использован. Проверьте буквы и цифры.'}
+            </p>
+          )}
+        </div>
       </div>
       <Footer className="border-t border-border bg-background">
         <Button size="lg" disabled={!clean} onClick={apply}>

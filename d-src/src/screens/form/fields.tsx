@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AlertTriangle, Camera, Check, ChevronDown, CircleAlert, FileCheck2, FileText, FolderOpen, PenLine, Plus, ShieldCheck, X } from 'lucide-react'
+import { FieldMsg } from '@/components/app/field-msg'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { CountryPick, DatePick, MonthRangePick, PhoneField } from '@/components/app/pickers'
 import { Button } from '@/components/ui/button'
@@ -35,7 +36,7 @@ function SourceLine({ q, a, proved, readOnly, onPick }: { q: Question; a?: Answe
   const canPick = !readOnly && q.sources.length > 0
   const Icon = s.tone === 'auto' ? (q.proof && proved ? ShieldCheck : Check) : PenLine
   return (
-    <button type="button" disabled={!canPick} onClick={onPick} className="flex items-center gap-1.5 self-start text-left text-sm text-muted-foreground disabled:pointer-events-none">
+    <button type="button" disabled={!canPick} onClick={onPick} className="flex w-fit items-center gap-1.5 text-left text-sm text-muted-foreground disabled:pointer-events-none">
       <Icon className={cn('size-4 shrink-0', s.tone === 'auto' && typeof a?.src === 'number' && q.sources[a.src]?.unproved ? 'text-muted-foreground' : s.tone === 'auto' ? 'text-success' : s.tone === 'edited' ? 'text-warning' : 'text-muted-foreground')} strokeWidth={2.25} />
       <span>
         {s.text}
@@ -126,7 +127,10 @@ export function QuestionField({ q, st, showError, readOnly, go }: { q: Question;
         />
       )}
 
-      <SourceLine q={q} a={a} proved={proved && !st.proof[q.id]} readOnly={readOnly} onPick={() => setPick(true)} />
+      {/* один рядок під полем: помилка або джерело; місце зарезервовано, нічого нижче не зсувається */}
+      <div className="min-h-5">
+        {err ? <p className="text-sm text-signal">{err}</p> : <SourceLine q={q} a={a} proved={proved && !st.proof[q.id]} readOnly={readOnly} onPick={() => setPick(true)} />}
+      </div>
 
       {/* збережена відповідь з іншим написом або розділом — лише пропозиція */}
       {q.suggestion && !a?.v && !readOnly && (
@@ -162,8 +166,6 @@ export function QuestionField({ q, st, showError, readOnly, go }: { q: Question;
         />
       )}
       {q.proof && st.proof[q.id] && <Attached p={st.proof[q.id]} readOnly={readOnly} onRemove={() => st.setProof(q.id, null)} />}
-
-      {err && <p className="text-sm text-signal">{err}</p>}
 
       <SourceSheet
         q={pick ? q : null}
@@ -281,7 +283,7 @@ function SignField({ q, st, err, readOnly, head }: { q: Question; st: FormState;
         <CheckRow id={`fi-${q.id}`} checked={!!a} onChange={(v) => !readOnly && st.setAnswer(q.id, v ? { v: 'Согласен', src: 'manual' } : null)}>
           Я согласен / согласна
         </CheckRow>
-        {err && <p className="text-sm text-signal">{err}</p>}
+        <FieldMsg error={err} />
       </div>
     )
   const ok = !!st.answers[q.id + '.ok']
@@ -293,7 +295,7 @@ function SignField({ q, st, err, readOnly, head }: { q: Question; st: FormState;
       <CheckRow id={`fi-${q.id}-ok`} checked={ok} onChange={(v) => !readOnly && st.setAnswer(q.id + '.ok', v ? { v: 'yes', src: 'manual' } : null)}>
         Подтверждаю, что это моя подпись
       </CheckRow>
-      {err && <p className="text-sm text-signal">{err}</p>}
+      <FieldMsg error={err} />
     </div>
   )
 }
@@ -342,13 +344,16 @@ function ContractsTable({ q, st, showError, readOnly, head }: { q: Question; st:
           </li>
         )}
       </ul>
-      {list.length > 0 && (
-        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          {st.rows?.edited ? <PenLine className="size-4 text-warning" /> : <Check className="size-4 text-success" strokeWidth={2.25} />}
-          {st.rows?.edited ? 'Изменено вами' : `Из профиля: ${list.length} ${plural(list.length, 'запись', 'записи', 'записей')}`}
-        </span>
-      )}
-      {err && <p className="text-sm text-signal">{err}</p>}
+      <div className="min-h-5">
+        {err ? (
+          <p className="text-sm text-signal">{err}</p>
+        ) : list.length > 0 ? (
+          <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            {st.rows?.edited ? <PenLine className="size-4 text-warning" /> : <Check className="size-4 text-success" strokeWidth={2.25} />}
+            {st.rows?.edited ? 'Изменено вами' : `Из профиля: ${list.length} ${plural(list.length, 'запись', 'записи', 'записей')}`}
+          </span>
+        ) : null}
+      </div>
 
       <RowSheet
         edit={edit}
@@ -390,7 +395,7 @@ function RowSheet({ edit, onClose, onSave, onDelete }: { edit: { i: number; row:
           >
             Готово
           </Button>
-          {miss.length > 0 && cur && <p className="text-center text-sm text-muted-foreground">Неполную запись сохраним в черновике</p>}
+          <p className="min-h-5 text-center text-sm text-muted-foreground">{miss.length > 0 && cur ? 'Неполную запись сохраним в черновике' : null}</p>
           {edit && edit.i >= 0 && (
             <Button
               size="lg"

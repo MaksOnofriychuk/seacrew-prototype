@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
+import { FieldMsg } from '@/components/app/field-msg'
 
 // Спільні шматки екранів «Быстрая регистрация» (q02–q11). Лише для цієї теки.
 
@@ -121,14 +122,7 @@ export function SourceTag({ kind }: { kind: TagKind }) {
   )
 }
 
-export function Field({
-  id,
-  label,
-  tag,
-  note,
-  error,
-  children,
-}: {
+export function Field(props: {
   id: string
   label: string
   tag?: TagKind | null
@@ -136,6 +130,8 @@ export function Field({
   error?: ReactNode
   children: ReactNode
 }) {
+  const { id, label, tag, note, error, children } = props
+  const reserve = 'note' in props || 'error' in props
   return (
     <div className="flex flex-col gap-2">
       <div className="flex min-h-5 items-center justify-between gap-3">
@@ -145,7 +141,7 @@ export function Field({
         {tag && <SourceTag kind={tag} />}
       </div>
       {children}
-      {error ? <p className="text-sm text-signal">{error}</p> : note ? <p className="text-sm text-muted-foreground">{note}</p> : null}
+      {reserve && <FieldMsg error={error} note={note} />}
     </div>
   )
 }

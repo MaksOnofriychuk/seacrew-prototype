@@ -28,7 +28,7 @@ export function RRegister({ go }: ScreenProps) {
 
   const errors: Partial<Record<keyof Form, string>> = {}
   if (!f.name.trim()) errors.name = 'Укажите имя и фамилию'
-  if (!/^\S+@\S+\.\S+$/.test(f.email)) errors.email = 'Введите рабочий email, например name@company.com'
+  if (!/^\S+@\S+\.\S+$/.test(f.email)) errors.email = 'Введите рабочий email'
   if (f.password.length < 8) errors.password = 'Не короче 8 символов'
   if (!f.company.trim()) errors.company = 'Укажите название компании'
   if (!f.country) errors.country = 'Выберите страну'

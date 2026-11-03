@@ -140,7 +140,7 @@ export function Q06Account({ go }: ScreenProps) {
           </div>
         </Field>
 
-        <Field id="q06-pass2" label="Повторите пароль" error={mism ? 'Пароли не совпадают' : null}>
+        <Field id="q06-pass2" label="Повторите пароль" error={mism ? 'Пароли не совпадают' : null} note={match ? <span className="text-success">Пароли совпадают</span> : null}>
           <div className="relative">
             <TextInput
               id="q06-pass2"
@@ -154,7 +154,6 @@ export function Q06Account({ go }: ScreenProps) {
             />
             {eye('pass2')}
           </div>
-          {match && <p className="text-sm text-success">Пароли совпадают</p>}
         </Field>
       </div>
     </FlowScreen>

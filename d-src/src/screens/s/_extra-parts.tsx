@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import { CheckRow, TextInput } from '../q/_parts'
+import { FieldMsg } from '@/components/app/field-msg'
 
 // Спільні шматки додаткових кроків (s8–s13). Лише для цих екранів.
 
@@ -50,7 +51,9 @@ export function Section({ id, title, note, children, className }: { id?: string;
 
 /* ---------- поле: підпис, мітка праворуч, поле, підказка ---------- */
 
-export function XField({ id, label, tag, note, children, className }: { id?: string; label: string; tag?: ReactNode; note?: ReactNode; children: ReactNode; className?: string }) {
+export function XField(props: { id?: string; label: string; tag?: ReactNode; note?: ReactNode; error?: ReactNode; children: ReactNode; className?: string }) {
+  const { id, label, tag, note, error, children, className } = props
+  const reserve = 'note' in props || 'error' in props
   return (
     <div className={cn('flex min-w-0 flex-col gap-2', className)}>
       <div className="flex min-h-5 items-center justify-between gap-3">
@@ -60,7 +63,7 @@ export function XField({ id, label, tag, note, children, className }: { id?: str
         {tag}
       </div>
       {children}
-      {note && <p className="text-sm text-muted-foreground">{note}</p>}
+      {reserve && <FieldMsg error={error} note={note} />}
     </div>
   )
 }

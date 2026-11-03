@@ -7,6 +7,7 @@ import { countryLabel, findCountries } from '@/lib/countries'
 import { findDials, flagFor, group, parsePhone, phoneIncomplete, toValue, type Dial } from '@/lib/phone'
 import { clampDate, daysIn, fmtDate, fmtMonth, inRange, MONTHS, MONTHS_SHORT, parseDate, parseMonth, TODAY } from '@/lib/dates'
 import { cn } from '@/lib/utils'
+import { FieldMsg } from '@/components/app/field-msg'
 
 // Поле-кнопка: виглядає як поле вводу, тап відкриває вікно знизу. Вписати руками нічого не можна.
 function PickField({
@@ -417,19 +418,16 @@ export function MonthPick({
 
 /* ---------- телефон: код країни + номер з маскою ---------- */
 
-export function PhoneField({
-  id,
-  value,
-  onChange,
-  invalid,
-  disabled,
-}: {
+export function PhoneField(props: {
   id?: string
   value: string
   onChange: (v: string) => void
   invalid?: boolean
   disabled?: boolean
 }) {
+  const { id, value, onChange, invalid, disabled } = props
+  // Свій рядок «Номер неполный» з резервом; якщо вирішує батько (передав invalid) — рядок у його полі.
+  const own = !('invalid' in props)
   const parsed = parsePhone(value)
   const [dial, setDial] = useState<Dial>(parsed.dial)
   const [open, setOpen] = useState(false)
@@ -487,7 +485,7 @@ export function PhoneField({
           className="min-w-0 flex-1 bg-transparent px-3.5 font-mono text-base outline-none placeholder:text-muted-foreground/60 disabled:cursor-not-allowed"
         />
       </div>
-      {bad && !invalid && <p className="text-sm text-signal">Номер неполный</p>}
+      {own && <FieldMsg error={bad ? 'Номер неполный' : null} />}
       <BottomSheet
         open={open}
         onClose={close}

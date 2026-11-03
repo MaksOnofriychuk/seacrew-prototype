@@ -10,6 +10,7 @@ import type { FleetValue } from '@/components/app/fleet-picker'
 import { MainTopBar } from '@/components/app/top-bar'
 import { MOBILE_ROUTES } from '@/lib/mobile-routes'
 import { useAppCounts } from '../m/_parts'
+import { FieldMsg } from '@/components/app/field-msg'
 
 // Спільні шматки екранів документів і профілю (етап 5). Лише для теки dp.
 // Свої копії полів, приміток і тривалості — щоб не залежати від тек q і s, які міняють інші агенти.
@@ -118,7 +119,9 @@ export function SourceTag({ kind, className }: { kind: FieldSource | 'check'; cl
   )
 }
 
-export function Field({ id, label, tag, note, error, children }: { id: string; label: string; tag?: ReactNode; note?: ReactNode; error?: ReactNode; children: ReactNode }) {
+export function Field(props: { id: string; label: string; tag?: ReactNode; note?: ReactNode; error?: ReactNode; children: ReactNode }) {
+  const { id, label, tag, note, error, children } = props
+  const reserve = 'note' in props || 'error' in props
   return (
     <div className="flex flex-col gap-2">
       <div className="flex min-h-5 items-center justify-between gap-3">
@@ -128,7 +131,7 @@ export function Field({ id, label, tag, note, error, children }: { id: string; l
         {tag}
       </div>
       {children}
-      {error ? <p className="text-sm text-signal">{error}</p> : note ? <p className="text-sm text-muted-foreground">{note}</p> : null}
+      {reserve && <FieldMsg error={error} note={note} />}
     </div>
   )
 }

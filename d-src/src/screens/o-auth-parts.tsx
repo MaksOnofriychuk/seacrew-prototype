@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleAlert, Eye, EyeOff } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { FieldMsg } from '@/components/app/field-msg'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
@@ -36,11 +37,7 @@ export function AuthField({ id, label, error, aside, children }: { id: string; l
         {aside}
       </div>
       {children}
-      {error && (
-        <p id={`${id}-err`} className="text-sm text-signal">
-          {error}
-        </p>
-      )}
+      <FieldMsg id={`${id}-err`} error={error} />
     </div>
   )
 }

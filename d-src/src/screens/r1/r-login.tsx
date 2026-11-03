@@ -34,7 +34,7 @@ export function RLogin({ go }: ScreenProps) {
         </div>
 
         <div className="flex flex-col gap-4">
-          <WebField id="login-email" label="Email" error={touched && badEmail ? 'Введите email полностью, например name@company.com' : undefined}>
+          <WebField id="login-email" label="Email" error={touched && badEmail ? 'Введите email полностью' : undefined}>
             <WebInput id="login-email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={touched && badEmail} />
           </WebField>
           <WebField id="login-password" label="Пароль" error={touched && short ? 'Пароль не короче 8 символов' : undefined}>

@@ -207,7 +207,7 @@ export function RFormEdit({ go }: ScreenProps) {
                   className={cn('w-full bg-transparent text-[17px] font-semibold text-primary-foreground outline-none placeholder:text-primary-foreground/60', tried && !title.trim() && 'placeholder:text-primary-foreground')}
                 />
               </div>
-              {tried && !title.trim() && <p className="px-6 pt-3 text-sm text-signal">Укажите название анкеты.</p>}
+              <p className="min-h-5 px-6 pt-3 text-sm text-signal box-content">{tried && !title.trim() ? 'Укажите название анкеты.' : null}</p>
               {sections.map((s) => (
                 <section key={s.id} id={'sec-' + s.id} className={cn('scroll-mt-6 border-t border-border px-6 py-5 first:border-t-0', s.audience === 'AGENCY_ONLY' && 'bg-muted/60')}>
                   <button type="button" onClick={() => setSel({ s: s.id, f: null })} className="flex w-full items-baseline justify-between gap-4 text-left">

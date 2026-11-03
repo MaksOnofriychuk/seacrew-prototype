@@ -3,6 +3,7 @@ import { CountryPick, DatePick, PhoneField } from '@/components/app/pickers'
 import { parsePhone, phoneIncomplete } from '@/lib/phone'
 import { BOUNDS } from '@/lib/dates'
 import { Check, FileCheck, Info, Trash2 } from 'lucide-react'
+import { FieldMsg } from '@/components/app/field-msg'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { FleetPicker, type FleetValue } from '@/components/app/fleet-picker'
 import { ViewState } from '@/components/app/states'
@@ -108,7 +109,7 @@ function TextEditor({ k, go }: { k: TextField; go: ScreenProps['go'] }) {
               onKeyDown={(e) => e.key === 'Enter' && save(text)}
             />
           )}
-          {bad && <p className="text-sm text-signal">{ERR[k]}</p>}
+          {k in ERR && <FieldMsg error={bad ? ERR[k] : null} />}
           {src && (
             <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <SourceTag kind={src} />
