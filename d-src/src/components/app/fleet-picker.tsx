@@ -1,9 +1,12 @@
-import type { ReactNode } from 'react'
-import { Check } from 'lucide-react'
+import { useState } from 'react'
+import { Check, ChevronDown } from 'lucide-react'
+import { Popover } from 'radix-ui'
+import { usePhonePortal } from '@/lib/phone-portal'
 import { departmentsFor, FLEETS, positionsFor } from '@/lib/data'
 import { cn } from '@/lib/utils'
 
 // Правки №2, №25, №35: вибір Флот → Департамент → Должность; кожен наступний список — лише під вибране в попередньому.
+// Перевірка прототипу 03.11, №10б: три випадаючі списки в один рядок зліва направо; наступний активний, коли вибрано попередній.
 // Департамент завжди один. Флот і посада — один або кілька (multiFleet / multiPosition):
 //   фільтри вакансій: флот кілька, посада кілька; бажана посада (s11): флот і посада кілька;
 //   контракт в «Опыте работы»: усе по одному.
@@ -43,71 +46,125 @@ export function FleetPicker({
     onChange({ fleets, department: dep, positions: value.positions.filter((p) => allowed.includes(p)) })
   }
   const toggleFleet = (f: string) =>
-    setFleets(multiFleet ? (value.fleets.includes(f) ? value.fleets.filter((x) => x !== f) : [...value.fleets, f]) : value.fleets[0] === f ? [] : [f])
-  const setDepartment = (d: string) => onChange({ ...value, department: value.department === d ? null : d, positions: [] })
+    setFleets(multiFleet ? (value.fleets.includes(f) ? value.fleets.filter((x) => x !== f) : [...value.fleets, f]) : [f])
+  const setDepartment = (d: string) => onChange({ ...value, department: d, positions: value.department === d ? value.positions : [] })
   const togglePosition = (p: string) =>
     onChange({
       ...value,
-      positions: multiPosition ? (value.positions.includes(p) ? value.positions.filter((x) => x !== p) : [...value.positions, p]) : value.positions[0] === p ? [] : [p],
+      positions: multiPosition ? (value.positions.includes(p) ? value.positions.filter((x) => x !== p) : [...value.positions, p]) : [p],
     })
 
+  const fleetNote = multiFleet ? 'можно несколько' : undefined
+  const posNote = multiPosition ? 'можно несколько' : undefined
   return (
-    <div className={cn('flex flex-col gap-5', className)}>
-      <Level label={labels.fleet ?? 'Флот'} hint={multiFleet ? 'можно несколько' : undefined}>
-        {FLEETS.map((f) => (
-          <Chip key={f} on={value.fleets.includes(f)} multi={multiFleet} onClick={() => toggleFleet(f)}>
-            {f}
-          </Chip>
-        ))}
-      </Level>
-      {value.fleets.length > 0 && (
-        <Level label={labels.department ?? 'Департамент'}>
-          {departments.map((d) => (
-            <Chip key={d} on={value.department === d} onClick={() => setDepartment(d)}>
-              {d}
-            </Chip>
-          ))}
-        </Level>
-      )}
-      {value.department && (
-        <Level label={labels.position ?? 'Должность'} hint={multiPosition ? 'можно несколько' : undefined}>
-          {positions.map((p) => (
-            <Chip key={p} on={value.positions.includes(p)} multi={multiPosition} onClick={() => togglePosition(p)}>
-              {p}
-            </Chip>
-          ))}
-        </Level>
-      )}
+    <div className={cn('grid grid-cols-3 gap-2', className)}>
+      <Drop
+        label={labels.fleet ?? 'Флот'}
+        note={fleetNote}
+        options={FLEETS}
+        picked={value.fleets}
+        multi={multiFleet}
+        placeholder="Выбрать"
+        onPick={toggleFleet}
+      />
+      <Drop
+        label={labels.department ?? 'Департамент'}
+        options={departments}
+        picked={value.department ? [value.department] : []}
+        placeholder={value.fleets.length ? 'Выбрать' : '—'}
+        disabled={!value.fleets.length}
+        onPick={setDepartment}
+      />
+      <Drop
+        label={labels.position ?? 'Должность'}
+        note={posNote}
+        options={positions}
+        picked={value.positions}
+        multi={multiPosition}
+        placeholder={value.department ? 'Выбрать' : '—'}
+        disabled={!value.department}
+        onPick={togglePosition}
+      />
     </div>
   )
 }
 
-function Level({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+// Випадаючий список під полем. Один вибір — закривається після тапу; кілька — лишається відкритим, галочки біля вибраних.
+function Drop({
+  label,
+  note,
+  options,
+  picked,
+  multi,
+  placeholder,
+  disabled,
+  onPick,
+}: {
+  label: string
+  note?: string
+  options: string[]
+  picked: string[]
+  multi?: boolean
+  placeholder: string
+  disabled?: boolean
+  onPick: (v: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const container = usePhonePortal()
+  const shown = picked.length > 1 ? `${picked[0]} +${picked.length - 1}` : (picked[0] ?? '')
   return (
-    <fieldset className="screen-in flex flex-col gap-2">
-      <legend className="mb-2 flex items-baseline gap-2 text-sm font-medium">
+    <div className="flex min-w-0 flex-col gap-1.5">
+      <span className="truncate text-sm font-medium" title={note ? `${label}, ${note}` : label}>
         {label}
-        {hint && <span className="font-normal text-muted-foreground">{hint}</span>}
-      </legend>
-      <div className="flex flex-wrap gap-2">{children}</div>
-    </fieldset>
-  )
-}
-
-// Чіп вибору: вибраний — заливка primary (як фільтри стрічки); у множинному виборі — з галочкою.
-function Chip({ on, multi, onClick, children }: { on: boolean; multi?: boolean; onClick: () => void; children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={on}
-      onClick={onClick}
-      className={cn(
-        'flex h-9 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors active:scale-[0.98]',
-        on ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-surface text-foreground',
-      )}
-    >
-      {multi && on && <Check className="size-4" strokeWidth={2.5} />}
-      {children}
-    </button>
+      </span>
+      <Popover.Root open={open} onOpenChange={setOpen}>
+        <Popover.Trigger asChild disabled={disabled}>
+          <button
+            type="button"
+            className={cn(
+              'flex h-12 w-full min-w-0 items-center justify-between gap-1 rounded-md border border-input bg-surface px-3 text-left text-sm transition-colors disabled:opacity-50',
+              open && 'border-ring',
+            )}
+          >
+            <span className={cn('truncate', !shown && 'text-muted-foreground')}>{shown || placeholder}</span>
+            <ChevronDown className={cn('size-4 shrink-0 text-muted-foreground transition-transform duration-150', open && 'rotate-180')} />
+          </button>
+        </Popover.Trigger>
+        <Popover.Portal container={container}>
+          <Popover.Content
+            align="center"
+            sideOffset={4}
+            collisionPadding={12}
+            collisionBoundary={container}
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            className="z-50 max-h-[min(18rem,var(--radix-popover-content-available-height))] w-60 overflow-y-auto rounded-lg border border-border bg-surface p-1 shadow-lg data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
+          >
+            <p className="px-3 pt-2 pb-1 text-xs text-muted-foreground">{note ? `${label} — ${note}` : label}</p>
+            <ul role="listbox" aria-multiselectable={multi || undefined}>
+              {options.map((o) => {
+                const on = picked.includes(o)
+                return (
+                  <li key={o}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={on}
+                      onClick={() => {
+                        onPick(o)
+                        if (!multi) setOpen(false)
+                      }}
+                      className={cn('flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-[15px] active:bg-muted', on && 'font-medium text-primary')}
+                    >
+                      <span className="flex-1">{o}</span>
+                      {on && <Check className="size-4 shrink-0" strokeWidth={2.5} />}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
+    </div>
   )
 }

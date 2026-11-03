@@ -61,30 +61,36 @@ export function S2Personal({ go }: ScreenProps) {
           aria-label={f.photo ? 'Убрать фото' : 'Добавить фото'}
           className={
             f.photo
-              ? 'flex size-20 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-2xl font-semibold text-primary'
-              : 'flex size-20 shrink-0 flex-col items-center justify-center gap-0.5 rounded-full border border-border bg-surface text-xs leading-tight font-medium text-primary'
+              ? 'flex size-16 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xl font-semibold text-primary active:scale-[0.98]'
+              : 'flex size-16 shrink-0 items-center justify-center rounded-full border border-dashed border-primary/50 bg-surface text-primary active:scale-[0.98]'
           }
         >
-          {f.photo ? (
-            initials || '?'
-          ) : (
-            <>
-              <Camera className="size-5" />
-              Добавить
-              <br />
-              фото
-            </>
-          )}
+          {f.photo ? initials || '?' : <Camera className="size-6" />}
         </button>
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
-          <Field id="s2-first" label="Имя">
-            <TextInput id="s2-first" value={f.first} placeholder="Как в документе" autoComplete="given-name" onChange={(e) => put({ first: e.target.value })} />
-          </Field>
-          <Field id="s2-last" label="Фамилия">
-            <TextInput id="s2-last" value={f.last} placeholder="Как в документе" autoComplete="family-name" onChange={(e) => put({ last: e.target.value })} />
-          </Field>
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="text-[15px] font-medium">Фото профиля</span>
+          {f.photo ? (
+            <span className="flex gap-4 text-sm">
+              <button type="button" className="text-primary" onClick={() => put({ photo: true })}>
+                Заменить
+              </button>
+              <button type="button" className="text-muted-foreground" onClick={() => put({ photo: false })}>
+                Убрать
+              </button>
+            </span>
+          ) : (
+            <button type="button" className="text-left text-sm text-primary" onClick={() => put({ photo: true })}>
+              Добавить фото
+            </button>
+          )}
         </div>
       </div>
+      <Field id="s2-first" label="Имя">
+        <TextInput id="s2-first" value={f.first} placeholder="Как в документе" autoComplete="given-name" onChange={(e) => put({ first: e.target.value })} />
+      </Field>
+      <Field id="s2-last" label="Фамилия">
+        <TextInput id="s2-last" value={f.last} placeholder="Как в документе" autoComplete="family-name" onChange={(e) => put({ last: e.target.value })} />
+      </Field>
       <Field id="f-birth" label="Дата рождения">
         <DatePick id="f-birth" title="Дата рождения" value={f.birth} onChange={(birth) => put({ birth })} {...BOUNDS.birth} initial={new Date(1998, 5, 15)} />
       </Field>

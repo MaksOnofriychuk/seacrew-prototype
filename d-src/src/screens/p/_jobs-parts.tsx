@@ -222,7 +222,7 @@ export function FiltersSheet({ open, f, onChange, onClose }: { open: boolean; f:
       }
     >
       <div className="flex flex-col gap-6">
-        <FleetPicker value={f.fleet} onChange={(fleet) => set({ fleet })} multiFleet multiPosition labels={{ fleet: 'Тип флота' }} />
+        <FleetPicker value={f.fleet} onChange={(fleet) => set({ fleet })} multiFleet multiPosition labels={{ fleet: 'Флот' }} />
 
         <Group title="Зарплата">
           <div className="flex gap-2">
