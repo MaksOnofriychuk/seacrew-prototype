@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Camera, Check, FileQuestion, FolderOpen, HeartPulse, Image, LoaderCircle, Plus, RotateCw, Sparkles, Trash2, TriangleAlert } from 'lucide-react'
+import { Camera, Check, ChevronRight, FileQuestion, FolderOpen, HeartPulse, Image, LoaderCircle, Plus, RotateCw, Sparkles, Trash2, TriangleAlert } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { useView } from '@/components/app/states'
@@ -212,9 +212,16 @@ export function P18Add({ go }: ScreenProps) {
               )
             })}
           </div>
-          <button type="button" onClick={() => go('s5')} className="mt-3 flex items-center gap-2 px-1 text-sm text-muted-foreground">
-            <HeartPulse className="size-4 text-primary" />
-            Медицинские документы вводятся <span className="font-medium text-primary">вручную</span>
+          {/* Медичні — окремим рядком-переходом (перевірка 03.11, №37): їх не розпізнаємо, лише вводять вручну. */}
+          <button type="button" onClick={() => go('s5')} className="mt-3 flex w-full items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-left active:bg-muted/60">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
+              <HeartPulse className="size-[18px]" />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-[15px]">Медицинский документ</span>
+              <span className="text-sm text-muted-foreground">Без распознавания — заполните вручную</span>
+            </span>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
           </button>
         </section>
       </div>

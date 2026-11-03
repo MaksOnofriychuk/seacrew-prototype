@@ -7,7 +7,8 @@ import { Footer, NavBar } from '@/components/app/chrome'
 import { Paper } from '@/components/app/paper'
 import { EmptyState, useView } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
-import { READ, type AddCat, type OtherField, type ReadField } from '@/lib/data-docs-profile'
+import { READ, withBaseFields, type AddCat, type OtherField, type ReadField } from '@/lib/data-docs-profile'
+import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { Field, Note, PageArt, plural, SourceTag, TextInput, useDP } from './_parts'
@@ -29,22 +30,25 @@ export function P19Check({ go }: ScreenProps) {
   const st = bag<AddState>('dp.add', DEFAULT)
   const cat: AddCat = st.cat ?? 'visa'
   const read = READ[cat]
+  const fields = withBaseFields(cat, read.fields)
   const manual = st.manual
 
-  const [vals, setVals] = useState<Record<string, string>>(() => Object.fromEntries(read.fields.map((f) => [f.k, manual ? '' : f.value])))
+  const [vals, setVals] = useState<Record<string, string>>(() => Object.fromEntries(fields.map((f) => [f.k, manual ? '' : f.value])))
   const [other, setOther] = useState<OtherField[]>(() => (manual ? [] : read.other))
   const [adding, setAdding] = useState<{ label: string; value: string; tried: boolean } | null>(null)
   const [viewing, setViewing] = useState<number | null>(null)
   const [tried, setTried] = useState(false)
+  const [noExp, setNoExp] = useState(false)
   // Диплом: необов'язкове фото Endorsement (відповідь 75) — коли це окремий аркуш.
   const [endorse, setEndorse] = useState(false)
   const pages = st.pages
 
   const orig = (f: ReadField) => (manual ? '' : f.value)
   const edited = (f: ReadField) => !manual && vals[f.k] !== f.value
-  const lowLeft = read.fields.filter((f) => f.low && !edited(f) && !manual).length
-  const missing = (f: ReadField) => ((f.k === 'num' && cat !== 'vac') || f.k === 'name' || f.k === 'country') && !vals[f.k]?.trim()
-  const problems = read.fields.filter((f) => missing(f))
+  const lowLeft = fields.filter((f) => f.low && !edited(f) && !manual).length
+  const missing = (f: ReadField) =>
+    ((f.k === 'num' && cat !== 'vac') || f.k === 'name' || f.k === 'country' || f.k === 'issue' || (f.k === 'exp' && !noExp)) && !vals[f.k]?.trim()
+  const problems = fields.filter((f) => missing(f))
 
   const lowCls = (f: ReadField) => cn(f.low && !edited(f) && !manual && 'border-warning')
 
@@ -61,7 +65,7 @@ export function P19Check({ go }: ScreenProps) {
     const doc: AddedDoc = {
       id: `add-${Date.now()}`,
       cat,
-      fields: read.fields.map((f) => ({ ...f, value: vals[f.k].trim() })).filter((f) => f.value),
+      fields: fields.map((f) => ({ ...f, value: f.k === 'exp' && noExp ? 'Без срока' : vals[f.k].trim() })).filter((f) => f.value),
       other,
       pages: Math.max(pages.length, 1),
       manual,
@@ -74,7 +78,7 @@ export function P19Check({ go }: ScreenProps) {
   }
   const toManual = () => {
     setBag('dp.add', { ...st, cat, manual: true })
-    setVals(Object.fromEntries(read.fields.map((f) => [f.k, ''])))
+    setVals(Object.fromEntries(fields.map((f) => [f.k, ''])))
     setOther([])
     set({ view: 'normal' })
   }
@@ -192,7 +196,7 @@ export function P19Check({ go }: ScreenProps) {
 
         <Paper title={read.title} className="mt-5">
           <div className="flex flex-col gap-5 py-1">
-            {read.fields.map((f) => {
+            {fields.map((f) => {
               const id = `p19-${f.k}`
               const bad = tried && (missing(f))
               return (
@@ -205,15 +209,25 @@ export function P19Check({ go }: ScreenProps) {
                   note={edited(f) && orig(f) ? <>В документе: <span className={cn(f.mono && 'font-mono')}>{orig(f)}</span></> : null}
                 >
                   {isDate(f) ? (
-                    <DatePick
-                      id={id}
-                      title={f.label}
-                      value={vals[f.k]}
-                      invalid={bad}
-                      className={lowCls(f)}
-                      onChange={(v) => setVals({ ...vals, [f.k]: v })}
-                      {...(f.k === 'exp' ? BOUNDS.expiry(vals.issue) : BOUNDS.issue)}
-                    />
+                    <>
+                      <DatePick
+                        id={id}
+                        title={f.label}
+                        value={f.k === 'exp' && noExp ? '' : vals[f.k]}
+                        placeholder={f.k === 'exp' && noExp ? 'Без срока действия' : undefined}
+                        disabled={f.k === 'exp' && noExp}
+                        invalid={bad}
+                        className={lowCls(f)}
+                        onChange={(v) => setVals({ ...vals, [f.k]: v })}
+                        {...(f.k === 'exp' ? BOUNDS.expiry(vals.issue) : BOUNDS.issue)}
+                      />
+                      {f.k === 'exp' && (
+                        <label className="flex items-center gap-2.5 text-[15px]">
+                          <Checkbox checked={noExp} onCheckedChange={(v) => setNoExp(v === true)} />
+                          Без срока действия
+                        </label>
+                      )}
+                    </>
                   ) : f.k === 'country' ? (
                     <CountryPick id={id} title={f.label} value={vals[f.k]} invalid={bad} className={lowCls(f)} onChange={(v) => setVals({ ...vals, [f.k]: v })} />
                   ) : (
@@ -284,7 +298,7 @@ export function P19Check({ go }: ScreenProps) {
         </section>
 
         <div className="mt-8 flex flex-col gap-3">
-          {(manual || read.fields.some(edited)) && <Note icon={Info}>Администратор сверит {manual ? 'введённые данные' : 'исправления'} с фото документа.</Note>}
+          {(manual || fields.some(edited)) && <Note icon={Info}>Администратор сверит {manual ? 'введённые данные' : 'исправления'} с фото документа.</Note>}
           <p className="flex items-start gap-2 text-sm text-muted-foreground">
             <Lock className="mt-0.5 size-4 shrink-0" />
             Подтверждённое попадает в профиль и в анкеты. Файлы агентства не видят.

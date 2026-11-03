@@ -100,6 +100,22 @@ export type ReadField = { k: string; label: string; value: string; mono?: boolea
 export type OtherField = { k: string; label: string; value: string; mine?: boolean }
 
 // Що «прочитав» ИИ для кожного типу документа (для p19).
+// Мінімум полів будь-якого документа (перевірка прототипу 03.11, №36): назва, номер, дата видачі,
+// «действителен до» (або «без срока»), країна видачі. Решту моряк додає вручну («Другие поля»).
+// Візі назву заміняє «Тип визы», підфлажному країну — «Флаг».
+const BASE: ReadField[] = [
+  { k: 'name', label: 'Название документа', value: '' },
+  { k: 'num', label: 'Номер', value: '', mono: true },
+  { k: 'issue', label: 'Дата выдачи', value: '', mono: true },
+  { k: 'exp', label: 'Действителен до', value: '', mono: true },
+  { k: 'country', label: 'Страна выдачи', value: '' },
+]
+export function withBaseFields(cat: AddCat, fields: ReadField[]): ReadField[] {
+  const has = (k: string) => fields.some((f) => f.k === k)
+  const skip = (k: string) => (k === 'name' && (cat === 'visa' || cat === 'passport')) || (k === 'country' && has('flag'))
+  return [...fields, ...BASE.filter((b) => !has(b.k) && !skip(b.k))]
+}
+
 export const READ: Record<AddCat, { title: string; fields: ReadField[]; other: OtherField[] }> = {
   visa: {
     title: 'Виза',
@@ -179,6 +195,8 @@ export const READ: Record<AddCat, { title: string; fields: ReadField[]; other: O
       { k: 'name', label: 'Название документа', value: 'Ship Security Awareness' },
       { k: 'num', label: 'Номер', value: 'SSA-2023-0912', mono: true },
       { k: 'issue', label: 'Дата выдачи', value: '12.09.2023', mono: true },
+      { k: 'exp', label: 'Действителен до', value: '12.09.2028', mono: true },
+      { k: 'country', label: 'Страна выдачи', value: 'Украина' },
     ],
     other: [],
   },
