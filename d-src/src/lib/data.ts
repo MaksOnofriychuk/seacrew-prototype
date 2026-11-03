@@ -3,12 +3,10 @@
 export type Post =
   | { id: string; kind: 'news'; pin?: boolean; title: string; text: string; time: string }
   | { id: string; kind: 'user'; av: string; name: string; role: string; time: string; text: string; photo?: boolean; likes: number; comments: number }
-  | { id: string; kind: 'ad' }
 
 export const POSTS: Post[] = [
   { id: 'n1', kind: 'news', pin: true, title: 'Seafolio запущен', text: 'Сфотографируйте удостоверение, диплом и CV — данные из них появятся в профиле, останется проверить. Анкету агентства потом отправите в один тап.', time: 'Закреплено' },
   { id: 'u1', kind: 'user', av: 'МП', name: 'Марко Петров', role: 'Chief Officer · Bulk Carrier', time: '2 ч', text: 'Закончил 6-месячный контракт на MV Nordic Star. Отличный экипаж, ротация по графику, зарплата вовремя. Спрашивайте о компании что угодно.', photo: true, likes: 24, comments: 6 },
-  { id: 'ad', kind: 'ad' },
   { id: 'u2', kind: 'user', av: 'ИБ', name: 'Ирина Бондарь', role: '2nd Officer · Container Ship', time: '5 ч', text: 'Кто недавно проходил медосмотр в Одессе? Посоветуйте клинику, где делают за один день и без очередей.', likes: 8, comments: 14 },
   { id: 'n2', kind: 'news', title: 'Напоминание: сроки сертификатов STCW', text: 'Проверьте даты в разделе «Документы». Мы напомним за 180, 90 и 30 дней до окончания срока.', time: 'вчера' },
   { id: 'u3', kind: 'user', av: 'ОК', name: 'Олег Коваленко', role: 'Master · Chemical Tanker', time: '2 дня', text: 'Совет молодым офицерам: держите сканы всех документов в одном месте и следите за сроками. Половина отказов — из-за просроченного сертификата.', likes: 61, comments: 9 },

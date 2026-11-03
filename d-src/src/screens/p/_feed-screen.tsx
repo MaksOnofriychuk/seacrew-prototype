@@ -40,7 +40,6 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
   const words = searching ? query.toLowerCase().split(/\s+/).filter(Boolean) : []
   const byFilter = (p: Post) => f === 'all' || (f === 'people' ? p.kind === 'user' : p.kind === 'news')
   const matches = (p: Post) => {
-    if (p.kind === 'ad') return !words.length
     if (!words.length) return true
     const hay = (p.kind === 'news' ? p.title + ' ' + p.text : p.text).toLowerCase()
     return words.every((w) => hay.includes(w))

@@ -17,7 +17,7 @@ import { JobCard } from './_jobs-parts'
 // Закрита вакансія лишається сірою з поміткою «Вакансия закрыта», поки моряк сам не прибере (відповідь 106).
 // ?tab=posts відкриває вкладку публікацій, ?posts=demo кладе дві публікації — для знімків.
 type TabId = 'jobs' | 'posts'
-type UserOrNews = Exclude<Post, { kind: 'ad' }>
+type UserOrNews = Post
 
 export function P09Saved({ go }: ScreenProps) {
   const { bag, setBag, set } = useApp()
@@ -26,7 +26,7 @@ export function P09Saved({ go }: ScreenProps) {
   const tab = bag<TabId>('saved.ui.tab', params.get('tab') === 'posts' ? 'posts' : 'jobs')
   const jobs = bag<number[]>('saved.jobs', SAVED_JOBS_DEFAULT)
   const postIds = bag<string[]>('saved.posts', [])
-  const posts = postIds.map((id) => POSTS.find((p) => p.id === id)).filter((p): p is UserOrNews => !!p && p.kind !== 'ad')
+  const posts = postIds.map((id) => POSTS.find((p) => p.id === id)).filter((p): p is UserOrNews => !!p)
 
   useEffect(() => {
     if (params.get('posts') === 'demo') setBag('saved.posts', ['u1', 'n2'])

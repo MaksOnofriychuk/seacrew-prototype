@@ -25,7 +25,7 @@ export function P07Post({ go }: ScreenProps) {
 
   const [linked] = useState(() => hashParam('post'))
   const id = bag<string>('feed.post', linked ?? 'u1')
-  const p = POSTS.find((x) => x.id === id && x.kind !== 'ad') ?? POSTS[1]
+  const p = POSTS.find((x) => x.id === id) ?? POSTS[1]
   const myComments = bag<Record<string, string[]>>('post.mine', {})
   const own = myComments[p.id] ?? []
 

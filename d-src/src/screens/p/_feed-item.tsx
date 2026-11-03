@@ -62,23 +62,6 @@ export function FeedItem({ p, onOpen, onAuthor, words = [], flat }: ItemProps) {
     )
   }
 
-  if (p.kind === 'ad') {
-    return (
-      <article className="border-t border-border px-5 py-4 first:border-t-0">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-col">
-            <span className="text-[15px] font-semibold">Медосмотр за 1 день</span>
-            <span className="text-sm text-muted-foreground">Клиника «Пример», Одесса</span>
-          </div>
-          <Badge variant="outline">Реклама</Badge>
-        </div>
-        <p className="mt-2 text-[15px] leading-relaxed">Медкомиссия для моряков по требованиям ПДНВ. Запись онлайн, результат в тот же день.</p>
-        <button type="button" className="mt-2 text-sm font-medium text-primary">
-          Записаться
-        </button>
-      </article>
-    )
-  }
 
   const liked = likes.isLiked(p.id)
   return (
