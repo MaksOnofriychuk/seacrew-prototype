@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { CountryPick, DatePick, PhoneField } from '@/components/app/pickers'
 import { parsePhone, phoneIncomplete } from '@/lib/phone'
 import { BOUNDS } from '@/lib/dates'
-import { Check, FileCheck, Info, Trash2 } from 'lucide-react'
+import { Check, Info, Trash2 } from 'lucide-react'
 import { FieldMsg } from '@/components/app/field-msg'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { FleetPicker, type FleetValue } from '@/components/app/fleet-picker'
@@ -71,6 +71,7 @@ function TextEditor({ k, go }: { k: TextField; go: ScreenProps['go'] }) {
   const bad = tried && !valid(k, text.trim())
   // Що було в документі — для поля, яке вже виправили.
   const fromDoc = def.src === 'doc'
+  const docNote = src === 'doc' || (src === 'edited' && fromDoc) ? PROFILE_DOC : undefined
 
   const save = (v: string) => {
     setTried(true)
@@ -88,6 +89,10 @@ function TextEditor({ k, go }: { k: TextField; go: ScreenProps['go'] }) {
       <div className="screen-in min-h-0 flex-1 overflow-y-auto px-6 pt-2 pb-6">
         <h1 className="text-[32px] leading-[1.1] font-semibold tracking-tight">{def.label}</h1>
         <div className="mt-5 flex flex-col gap-2">
+          <div className="flex min-h-6 items-center justify-between gap-3">
+            <span className="text-[15px] font-medium">{def.label}</span>
+            {src && <SourceTag kind={src} />}
+          </div>
           {k === 'birth' ? (
             <DatePick id="p21-input" title={def.label} value={text} onChange={setText} {...BOUNDS.birth} initial={new Date(1998, 5, 15)} />
           ) : k === 'cit' ? (
@@ -109,18 +114,7 @@ function TextEditor({ k, go }: { k: TextField; go: ScreenProps['go'] }) {
               onKeyDown={(e) => e.key === 'Enter' && save(text)}
             />
           )}
-          {k in ERR && <FieldMsg error={bad ? ERR[k] : null} />}
-          {src && (
-            <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <SourceTag kind={src} />
-              {(src === 'doc' || (src === 'edited' && fromDoc)) && (
-                <span className="flex items-center gap-1.5">
-                  <FileCheck className="size-4 shrink-0 text-primary" />
-                  {PROFILE_DOC}
-                </span>
-              )}
-            </p>
-          )}
+          {(k in ERR || docNote) && <FieldMsg error={bad ? ERR[k] : null} note={docNote} />}
         </div>
 
         {fromDoc && <Note icon={Info} className="mt-5">Это значение пришло из документа. Если вы его измените, следующие документы уже не перезапишут его — только предложат своё значение.</Note>}

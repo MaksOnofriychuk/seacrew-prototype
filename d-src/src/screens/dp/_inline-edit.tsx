@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react'
-import { ChevronRight, FileCheck, Info } from 'lucide-react'
+import { ChevronRight, Info } from 'lucide-react'
 import { CountryPick, DatePick, PhoneField } from '@/components/app/pickers'
 import { FieldMsg } from '@/components/app/field-msg'
 import { FleetPicker, type FleetValue } from '@/components/app/fleet-picker'
@@ -74,6 +74,7 @@ export function FieldEditor({ k, open, onClose }: { k: TextField; open: boolean;
   }, [open])
   const bad = tried && !valid(k, text.trim())
   const fromDoc = def.src === 'doc'
+  const docNote = src === 'doc' || (src === 'edited' && fromDoc) ? PROFILE_DOC : undefined
 
   const save = () => {
     setTried(true)
@@ -88,6 +89,10 @@ export function FieldEditor({ k, open, onClose }: { k: TextField; open: boolean;
 
   return (
     <div className="flex flex-col gap-2">
+      <div className="flex min-h-6 items-center justify-between gap-3">
+        <span className="text-sm font-medium">{def.label}</span>
+        {src && k !== 'marital' && <SourceTag kind={src} />}
+      </div>
       {k === 'birth' ? (
         <DatePick title={def.label} value={text} onChange={setText} {...BOUNDS.birth} initial={new Date(1998, 5, 15)} />
       ) : k === 'cit' ? (
@@ -120,18 +125,7 @@ export function FieldEditor({ k, open, onClose }: { k: TextField; open: boolean;
           onKeyDown={(e) => e.key === 'Enter' && save()}
         />
       )}
-      {k in ERR && <FieldMsg error={bad ? ERR[k] : null} />}
-      {src && k !== 'marital' && (
-        <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          <SourceTag kind={src} />
-          {(src === 'doc' || (src === 'edited' && fromDoc)) && (
-            <span className="flex items-center gap-1.5">
-              <FileCheck className="size-4 shrink-0 text-primary" />
-              {PROFILE_DOC}
-            </span>
-          )}
-        </p>
-      )}
+      {(k in ERR || docNote) && <FieldMsg error={bad ? ERR[k] : null} note={docNote} />}
       {fromDoc && <Note icon={Info} className="mt-1">Это значение пришло из документа. Если вы его измените, следующие документы уже не перезапишут его — только предложат своё значение.</Note>}
       <Actions onSave={save} onCancel={onClose} />
     </div>
