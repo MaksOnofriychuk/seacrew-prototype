@@ -1,12 +1,13 @@
 import { useState, type FormEvent } from 'react'
-import { WebCountrySelect } from '@/components/web/web-pickers'
+import { WebCountrySelect, WebPhoneField } from '@/components/web/web-pickers'
 
 import { AlertTriangle, Clock } from 'lucide-react'
 import { useView } from '@/components/app/states'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
-import { WebField, WebInput } from '@/components/web/fields'
+import { WebCheckbox, WebField, WebInput } from '@/components/web/fields'
 import type { ScreenProps } from '../types'
+import { useOpenLegal } from '../r3/pub-legal'
 import { AuthLayout, Pitch } from './_parts'
 
 // r-register — реєстрація рекрутера й організації (contract-recruiter-web §7: register-recruiter
@@ -14,13 +15,15 @@ import { AuthLayout, Pitch } from './_parts'
 // кабінет працює, а звати моряків можна лише після перевірки (ORGANIZATION_NOT_VERIFIED).
 
 
-type Form = { name: string; email: string; password: string; company: string; country: string; city: string; site: string }
-const EMPTY: Form = { name: '', email: '', password: '', company: '', country: '', city: '', site: '' }
+type Form = { name: string; email: string; phone: string; password: string; company: string; country: string; city: string; site: string }
+const EMPTY: Form = { name: '', email: '', phone: '', password: '', company: '', country: '', city: '', site: '' }
 
 export function RRegister({ go }: ScreenProps) {
   const [f, setF] = useState<Form>(EMPTY)
   const [touched, setTouched] = useState(false)
   const [done, setDone] = useState(false)
+  const [agree, setAgree] = useState(false)
+  const legal = useOpenLegal(go, 'r-register')
   // Стан з панелі: «Ошибка» — email уже зайнятий, «Загрузка» — кнопка «Регистрируем…».
   const view = useView()
   const busy = view === 'loading'
@@ -37,7 +40,7 @@ export function RRegister({ go }: ScreenProps) {
   const submit = (e: FormEvent) => {
     e.preventDefault()
     setTouched(true)
-    if (Object.keys(errors).length === 0 && view === 'normal') setDone(true)
+    if (Object.keys(errors).length === 0 && agree && view === 'normal') setDone(true)
   }
 
   if (done) return <Pending company={f.company} country={f.country} email={f.email} go={go} />
@@ -58,6 +61,9 @@ export function RRegister({ go }: ScreenProps) {
             <WebField id="reg-email" label="Рабочий email" required error={err('email')}>
               <WebInput id="reg-email" type="email" autoComplete="email" placeholder="name@company.com" value={f.email} onChange={(e) => set('email')(e.target.value)} />
             </WebField>
+            <WebField id="reg-phone" label="Телефон">
+              <WebPhoneField id="reg-phone" value={f.phone} onChange={set('phone')} hint="Необязательно. Позвоним, если понадобится уточнить проверку компании." />
+            </WebField>
             <WebField id="reg-pass" label="Пароль" required hint="Не короче 8 символов" error={err('password')}>
               <WebInput id="reg-pass" type="password" autoComplete="new-password" value={f.password} onChange={(e) => set('password')(e.target.value)} />
             </WebField>
@@ -73,7 +79,7 @@ export function RRegister({ go }: ScreenProps) {
               <WebField id="reg-country" label="Страна" required error={err('country')}>
                 <WebCountrySelect id="reg-country" value={f.country} onChange={set('country')} />
               </WebField>
-              <WebField id="reg-city" label="Город">
+              <WebField id="reg-city" label="Город" hint={undefined}>
                 <WebInput id="reg-city" value={f.city} onChange={(e) => set('city')(e.target.value)} />
               </WebField>
             </div>
@@ -89,6 +95,22 @@ export function RRegister({ go }: ScreenProps) {
             Этот email уже зарегистрирован. Войдите или попросите владельца компании добавить вас.
           </p>
         )}
+
+        <div className="flex flex-col gap-1.5">
+          <WebCheckbox id="reg-agree" checked={agree} onChange={setAgree}>
+            <span>
+              Принимаю{' '}
+              <button type="button" onClick={() => legal('terms')} className="text-primary hover:underline">
+                Условия сервиса
+              </button>{' '}
+              и{' '}
+              <button type="button" onClick={() => legal('privacy')} className="text-primary hover:underline">
+                Политику конфиденциальности
+              </button>
+            </span>
+          </WebCheckbox>
+          <p className="min-h-5 pl-[26px] text-sm text-signal">{touched && !agree ? 'Без согласия зарегистрировать компанию нельзя' : null}</p>
+        </div>
 
         <Button type="submit" className="h-11 text-[15px]" disabled={busy}>
           {busy ? 'Регистрируем…' : 'Зарегистрировать компанию'}

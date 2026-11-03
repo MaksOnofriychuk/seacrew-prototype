@@ -5,6 +5,7 @@ import { WebField, WebInput } from '@/components/web/fields'
 import { useView } from '@/components/app/states'
 import { ME_RECRUITER } from '@/lib/data-web'
 import type { ScreenProps } from '../types'
+import { useOpenLegal } from '../r3/pub-legal'
 import { AuthLayout, Pitch } from './_parts'
 
 // r-login — вхід у кабінет рекрутера (contract-recruiter-web §1, /login у коді). Без оболонки.
@@ -18,6 +19,7 @@ export function RLogin({ go }: ScreenProps) {
   const badEmail = !/^\S+@\S+\.\S+$/.test(email)
   const invalid = touched && (badEmail || short)
   const busy = view === 'loading'
+  const legal = useOpenLegal(go, 'r-login')
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -52,6 +54,18 @@ export function RLogin({ go }: ScreenProps) {
         <Button type="submit" className="h-11 text-[15px]" disabled={busy}>
           {busy ? 'Входим…' : 'Войти'}
         </Button>
+
+        <p className="-mt-2 text-sm text-muted-foreground">
+          Входя, вы принимаете{' '}
+          <button type="button" onClick={() => legal('terms')} className="text-primary hover:underline">
+            Условия сервиса
+          </button>{' '}
+          и{' '}
+          <button type="button" onClick={() => legal('privacy')} className="text-primary hover:underline">
+            Политику конфиденциальности
+          </button>
+          .
+        </p>
 
         <p className="border-t border-border pt-5 text-sm text-muted-foreground">
           Компании ещё нет в Seafolio?{' '}

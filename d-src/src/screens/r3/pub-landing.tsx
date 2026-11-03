@@ -9,7 +9,7 @@ export function PubLanding({ go }: ScreenProps) {
   const [app, setApp] = useState(false)
 
   return (
-    <PublicLayout go={go} onGetApp={() => setApp(true)}>
+    <PublicLayout here="pub-landing" go={go} onGetApp={() => setApp(true)}>
       <div className="mx-auto flex max-w-[1120px] flex-col px-10 pt-24 pb-20">
         <h1 className="max-w-[820px] text-[56px] leading-[1.04] font-semibold tracking-tight">Документы, стаж и работа в море — в одном приложении</h1>
         <p className="mt-6 max-w-[600px] text-lg text-muted-foreground">

@@ -1,4 +1,5 @@
 import { defineGroups } from '../types'
+import { PubLegal } from '../r3/pub-legal'
 import { PubJob } from '../r3/pub-job'
 import { PubLanding } from '../r3/pub-landing'
 import { PubProfile } from '../r3/pub-profile'
@@ -15,6 +16,7 @@ export const groups = defineGroups('recruiter', [
     screens: [
       { id: 'pub-landing', title: 'Seafolio — главная', Component: PubLanding, path: '/' },
       { id: 'pub-job', title: 'Вакансия (публичная страница)', Component: PubJob, path: '/job/j01' },
+      { id: 'pub-legal', title: 'Условия, политика, поддержка (текст)', Component: PubLegal, path: '/legal' },
       { id: 'pub-profile', title: 'Профиль моряка (публичный превью)', Component: PubProfile, path: '/s/andrii-k' },
     ],
   },

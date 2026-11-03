@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { WebMultiSelect } from '@/components/web/web-pickers'
+import { useProto } from '@/lib/proto-state'
 import { SearchX } from 'lucide-react'
 import { MonoNums } from '@/components/app/mono-nums'
 import { Button } from '@/components/ui/button'
@@ -10,22 +12,21 @@ import { AvailabilityDot, WebAvatar } from '@/components/web/status-badge'
 import { departmentsFor, FLEETS, positionsFor } from '@/lib/data'
 import { SEAFARERS, type WebSeafarer } from '@/lib/data-web'
 import { AIRPORT_OPTIONS, AVAIL_FILTER, CERT_OPTIONS, EXP_OPTIONS, expForFilter, monthsText, VISA_OPTIONS } from '@/lib/data-recruiter-1'
-import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { IncompleteMark, useSelected } from './_parts'
 
 // r-search — пошук моряків (правка №30; фільтри: флот → департамент → посада за №2, №25; відповіді 108, 136, 142).
 // Рекрутер бачить «Andrii K.» — без прізвища, фото й контактів; аватар — лише ініціали.
 
-type Filters = { q: string; fleet: string; department: string; position: string; exp: string; cert: string; avail: string; visa: string; airport: string }
-const NONE: Filters = { q: '', fleet: '', department: '', position: '', exp: '', cert: '', avail: '', visa: '', airport: '' }
+type Filters = { q: string; fleet: string[]; department: string; position: string[]; exp: string; cert: string; avail: string; visa: string; airport: string }
+const NONE: Filters = { q: '', fleet: [], department: '', position: [], exp: '', cert: '', avail: '', visa: '', airport: '' }
 
 function match(s: WebSeafarer, f: Filters) {
   const q = f.q.trim().toLowerCase()
   if (q && !`${s.name} ${s.position} ${s.nationality}`.toLowerCase().includes(q)) return false
-  if (f.fleet && s.fleet !== f.fleet) return false
+  if (f.fleet.length && !f.fleet.includes(s.fleet)) return false
   if (f.department && s.department !== f.department) return false
-  if (f.position && s.position !== f.position) return false
+  if (f.position.length && !f.position.includes(s.position)) return false
   if (f.exp && expForFilter(s) < Number(f.exp)) return false
   if (f.cert && !s.certificates.includes(f.cert)) return false
   if (f.avail && s.availability.kind !== f.avail) return false
@@ -35,15 +36,22 @@ function match(s: WebSeafarer, f: Filters) {
 }
 
 export function RSearch({ go }: ScreenProps) {
-  const [f, setF] = useState<Filters>(NONE)
+  // Поиск из верхней строки кабинета (Enter) приходит сюда готовым запросом.
+  const { bag, setBag } = useProto()
+  const [f, setF] = useState<Filters>(() => ({ ...NONE, q: bag<string>('shell.q', '') }))
+  useEffect(() => {
+    if (bag<string>('shell.q', '')) setBag('shell.q', '')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [, select] = useSelected('r1.seafarer', 'sf01')
   const set = (patch: Partial<Filters>) => setF((s) => ({ ...s, ...patch }))
   const rows = SEAFARERS.filter((s) => match(s, f))
-  const anyFilter = Object.entries(f).some(([, v]) => v)
+  const anyFilter = Object.values(f).some((v) => (Array.isArray(v) ? v.length > 0 : !!v))
 
   // Кожен наступний список — лише під вибране в попередньому.
-  const departments = departmentsFor(f.fleet ? [f.fleet] : FLEETS)
-  const positions = positionsFor(f.fleet ? [f.fleet] : FLEETS, f.department || null)
+  const fleets = f.fleet.length ? f.fleet : FLEETS
+  const departments = departmentsFor(fleets)
+  const positions = positionsFor(fleets, f.department || null)
 
   const open = (s: WebSeafarer) => {
     select(s.id)
@@ -99,12 +107,30 @@ export function RSearch({ go }: ScreenProps) {
     <WebShell variant="recruiter" active="r-search" go={go}>
       <PageHeader title="Поиск моряков" description="Имя, должность, документы и готовность к контракту. Фамилию, контакты и фото моряки не показывают." />
 
-      <FilterBar search={{ value: f.q, onChange: (q) => set({ q }), placeholder: 'Имя, должность, гражданство' }} className="mb-2">
-        <FilterSelect label="Флот" value={f.fleet} onChange={(fleet) => set({ fleet, department: '', position: '' })} options={[...FLEETS]} />
-        <FilterSelect label="Департамент" value={f.department} onChange={(department) => set({ department, position: '' })} options={departments} />
-        <span className={cn(!f.department && 'pointer-events-none opacity-50')} title={f.department ? undefined : 'Сначала выберите департамент'}>
-          <FilterSelect label="Должность" value={f.position} onChange={(position) => set({ position })} options={positions} />
-        </span>
+      <FilterBar search={{ value: f.q, onChange: (q) => set({ q }), placeholder: 'Имя, должность, гражданство' }} className="mb-2 items-start">
+        <WebMultiSelect
+          label="Флот"
+          className="w-[330px]"
+          values={f.fleet}
+          options={[...FLEETS]}
+          onChange={(fleet) => {
+            const deps = departmentsFor(fleet.length ? fleet : FLEETS)
+            const department = deps.includes(f.department) ? f.department : ''
+            const allowed = department ? positionsFor(fleet.length ? fleet : FLEETS, department) : []
+            set({ fleet, department, position: f.position.filter((p) => allowed.includes(p)) })
+          }}
+        />
+        <FilterSelect label="Департамент" value={f.department} onChange={(department) => set({ department, position: [] })} options={departments} />
+        <WebMultiSelect
+          label="Должность"
+          className="w-[300px]"
+          values={f.position}
+          options={positions}
+          searchPlaceholder="Найти должность"
+          disabled={!f.department}
+          disabledHint="Сначала выберите департамент"
+          onChange={(position) => set({ position })}
+        />
       </FilterBar>
       <FilterBar onReset={anyFilter ? () => setF(NONE) : undefined} count={rows.length}>
         <FilterSelect label="Опыт" value={f.exp} onChange={(exp) => set({ exp })} options={EXP_OPTIONS} allLabel="Любой" />

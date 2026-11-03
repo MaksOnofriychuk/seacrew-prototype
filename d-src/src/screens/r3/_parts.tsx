@@ -29,8 +29,8 @@ export function ExampleMark({ className, children = 'пример' }: { classNam
 /* ---------- публічні сторінки ---------- */
 
 // Звичайна веб-сторінка без кабінету: шапка з «Seafolio», вміст, тихий низ.
-export function PublicLayout({ go, onGetApp, children }: { go: Go; onGetApp: () => void; children: ReactNode }) {
-  const { showToast } = useProto()
+export function PublicLayout({ go, onGetApp, here, children }: { go: Go; onGetApp: () => void; /** id этой страницы: «Назад» из текстов вернёт сюда */ here?: string; children: ReactNode }) {
+  const { setBag } = useProto()
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
       <header className="flex h-16 shrink-0 items-center gap-8 border-b border-border bg-surface px-10">
@@ -38,7 +38,7 @@ export function PublicLayout({ go, onGetApp, children }: { go: Go; onGetApp: () 
           <Wordmark />
         </button>
         <nav className="flex items-center gap-6 text-sm font-medium text-muted-foreground" aria-label="Разделы сайта">
-          <button type="button" onClick={() => showToast('Вакансии открываются в приложении Seafolio')} className="hover:text-foreground">
+          <button type="button" onClick={() => go('pub-job')} className="hover:text-foreground">
             Вакансии
           </button>
           <button type="button" onClick={() => go('r-login')} className="hover:text-foreground">
@@ -61,8 +61,23 @@ export function PublicLayout({ go, onGetApp, children }: { go: Go; onGetApp: () 
             <span>
               © <span className="font-mono">2026</span> Seafolio
             </span>
-            {['Условия использования', 'Конфиденциальность', 'Поддержка'].map((t) => (
-              <button key={t} type="button" onClick={() => showToast(`Откроется страница «${t}»`)} className="hover:text-foreground">
+            {(
+              [
+                ['terms', 'Условия сервиса'],
+                ['privacy', 'Конфиденциальность'],
+                ['support', 'Поддержка'],
+              ] as const
+            ).map(([id, t]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => {
+                  setBag('legal.web', id)
+                  setBag('back.pub-legal', here ?? 'pub-landing')
+                  go('pub-legal')
+                }}
+                className="hover:text-foreground"
+              >
                 {t}
               </button>
             ))}

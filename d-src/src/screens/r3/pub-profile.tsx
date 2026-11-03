@@ -16,7 +16,7 @@ export function PubProfile({ go }: ScreenProps) {
   const [app, setApp] = useState(false)
 
   return (
-    <PublicLayout go={go} onGetApp={() => setApp(true)}>
+    <PublicLayout here="pub-profile" go={go} onGetApp={() => setApp(true)}>
       <div className="mx-auto max-w-[1120px] px-10 py-12">
         <ViewState
           loading={{ kind: 'cards' }}

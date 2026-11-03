@@ -1,6 +1,8 @@
-import { Users } from 'lucide-react'
+import { useState } from 'react'
+import { SearchX, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
+import { FilterBar } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { ApplicationStatusDot, StatusDot, WebAvatar } from '@/components/web/status-badge'
@@ -17,6 +19,13 @@ import { useSelected } from './_parts'
 export function RCandidates({ go }: ScreenProps) {
   const [, select] = useSelected('r1.candidate', 'sf01')
   const { chats } = useR2()
+  const [q, setQ] = useState('')
+  const needle = q.trim().toLowerCase()
+  const rows = CANDIDATES.filter((c) => {
+    if (!needle) return true
+    const j = jobById(c.jobId ?? '')
+    return [seafarerById(c.seafarerId)!.name, seafarerById(c.seafarerId)!.position, j?.position ?? '', j?.vesselName ?? ''].some((t) => t.toLowerCase().includes(needle))
+  })
 
   const columns: Column<Candidate>[] = [
     {
@@ -109,16 +118,20 @@ export function RCandidates({ go }: ScreenProps) {
           </Button>
         }
       />
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Имя, должность, вакансия' }} count={needle ? rows.length : undefined} />
       <DataTable
         columns={columns}
-        rows={CANDIDATES}
+        rows={rows}
         rowKey={(c) => c.seafarerId}
         initialSort={{ key: 'last', dir: 'desc' }}
         onRowClick={(c) => {
           select(c.seafarerId)
           go('r-candidate')
         }}
-        empty={{
+        empty={
+          needle
+            ? { icon: SearchX, title: 'Никого не нашли', text: 'Измените запрос.' }
+            : {
           icon: Users,
           title: 'Кандидатов пока нет',
           text: 'Моряки появятся здесь, когда откликнутся на вакансию или примут приглашение.',
@@ -127,7 +140,8 @@ export function RCandidates({ go }: ScreenProps) {
               Найти моряков
             </Button>
           ),
-        }}
+        }
+        }
       />
     </WebShell>
   )
