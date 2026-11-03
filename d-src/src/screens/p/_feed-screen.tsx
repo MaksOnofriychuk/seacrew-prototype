@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ImageIcon, Newspaper, Search, X } from 'lucide-react'
+import { Newspaper, Plus, Search, X } from 'lucide-react'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { TAB_SCREENS as TAB_TO } from '@/components/app/tab-bar'
@@ -139,14 +139,20 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
         <div className="flex flex-col gap-4 px-6 pt-4">
           {offline && <OfflineBanner />}
           {!searching && (
+            // Не поле вводу, а дія (перевірка прототипу 03.11, №25): картка-кнопка з «+», веде на екран нової публікації.
             <button
               type="button"
               onClick={() => go('p06')}
-              className="flex h-12 items-center gap-3 rounded-md border border-border bg-surface px-3 text-left text-[15px] text-muted-foreground"
+              className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-left transition-transform active:scale-[0.99]"
             >
               <Avatar size="sm">{me.initials}</Avatar>
-              <span className="min-w-0 flex-1 truncate">Расскажите что-то интересное</span>
-              <ImageIcon className="size-5 text-primary" />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="text-[15px] font-medium">Новая публикация</span>
+                <span className="truncate text-sm text-muted-foreground">Поделитесь опытом с моряками</span>
+              </span>
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <Plus className="size-5" strokeWidth={2.25} />
+              </span>
             </button>
           )}
           <div className="flex gap-2" role="group" aria-label="Что показывать">
