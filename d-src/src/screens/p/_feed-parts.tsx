@@ -63,13 +63,17 @@ export function useSaved() {
   return { isSaved: (id: string) => saved.includes(id), toggle }
 }
 
-// «Нравится» (C: like:id) — перемикач, лічильник +1.
+// «Нравится» (C: like:id) — перемикач, лічильник +1; тост «додано / прибрано» (перевірка прототипу 03.11, №28).
 export function useLikes() {
-  const { bag, setBag } = useProto()
+  const { bag, setBag, showToast } = useProto()
   const liked = bag<Record<string, boolean>>('feed.liked', {})
   return {
     isLiked: (id: string) => !!liked[id],
-    toggle: (id: string) => setBag('feed.liked', { ...liked, [id]: !liked[id] }),
+    toggle: (id: string) => {
+      const on = !liked[id]
+      setBag('feed.liked', { ...liked, [id]: on })
+      showToast(on ? 'Добавлено в понравившиеся' : 'Убрано из понравившихся')
+    },
   }
 }
 
