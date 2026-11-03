@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { PhoneField } from '@/components/app/pickers'
+import { NumberPick, PhoneField, SIZE_RANGES } from '@/components/app/pickers'
 import { Check, ChevronDown, Search } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { StepShell } from './_stepper'
@@ -31,7 +31,6 @@ type Info = {
 const EMPTY: Info = { height: '', weight: '', suit: '', shoe: '', marks: '', airport: '', kinName: '', kinRel: '', kinPhone: '', kinEmail: '', kinAddr: '' }
 const SUITS = ['M', 'L', 'XL', 'XXL'] as const
 
-const num = (v: string, n: number) => v.replace(/\D/g, '').slice(0, n)
 
 export function S12Extra({ go }: ScreenProps) {
   const { bag, setBag } = useBag()
@@ -45,16 +44,16 @@ export function S12Extra({ go }: ScreenProps) {
       <Section id="f-size" title="Рост, вес и размеры" note="Нужны агентству для спецодежды и обуви.">
         <div className="grid grid-cols-2 gap-x-3 gap-y-4">
           <XField id="s12-height" label="Рост, см">
-            <TextInput id="s12-height" mono inputMode="numeric" value={f.height} onChange={(e) => patch({ height: num(e.target.value, 3) })} placeholder="180" />
+            <NumberPick id="s12-height" title="Рост" value={f.height} onChange={(height) => patch({ height })} {...SIZE_RANGES.height} />
           </XField>
           <XField id="s12-weight" label="Вес, кг">
-            <TextInput id="s12-weight" mono inputMode="numeric" value={f.weight} onChange={(e) => patch({ weight: num(e.target.value, 3) })} placeholder="80" />
+            <NumberPick id="s12-weight" title="Вес" value={f.weight} onChange={(weight) => patch({ weight })} {...SIZE_RANGES.weight} />
           </XField>
           <XField id="s12-suit" label="Комбинезон">
-            <XSelect id="s12-suit" value={f.suit} onChange={(suit) => patch({ suit })} options={SUITS} placeholder="Размер" />
+            <XSelect id="s12-suit" value={f.suit} onChange={(suit) => patch({ suit })} options={SUITS} placeholder="Выбрать" />
           </XField>
           <XField id="s12-shoe" label="Обувь">
-            <TextInput id="s12-shoe" mono inputMode="numeric" value={f.shoe} onChange={(e) => patch({ shoe: num(e.target.value, 2) })} placeholder="43" />
+            <NumberPick id="s12-shoe" title="Размер обуви" value={f.shoe} onChange={(shoe) => patch({ shoe })} {...SIZE_RANGES.shoe} />
           </XField>
         </div>
         <XField id="s12-marks" label="Особые приметы">

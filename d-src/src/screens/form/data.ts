@@ -14,7 +14,7 @@ export type Src = { kind: SrcKind; label: string; value: string; /** профі�
 /** Збережена відповідь з іншим написом або розділом — лише пропозиція (ADR-073 п. 16.1). */
 export type Suggestion = { question: string; section: string; org: string; value: string }
 
-export type QKind = 'text' | 'phone' | 'country' | 'date' | 'textarea' | 'photo' | 'table' | 'consent' | 'signature'
+export type QKind = 'text' | 'phone' | 'country' | 'date' | 'size' | 'textarea' | 'photo' | 'table' | 'consent' | 'signature'
 
 export type Question = {
   id: string
@@ -32,6 +32,8 @@ export type Question = {
   /** пояснення у вікні вибору, коли значень кілька */
   ask?: string
   numeric?: boolean
+  /** для kind 'size': який діапазон (SIZE_RANGES у components/app/pickers) */
+  size?: 'height' | 'weight' | 'shoe'
   /** для kind 'date': допустимі межі (див. BOUNDS у lib/dates) */
   bound?: 'birth' | 'issue' | 'future'
 }
@@ -103,9 +105,9 @@ export function useFormDef(empty: boolean): Section[] {
         {
           id: 'shoes',
           label: 'Размер обуви',
-          kind: 'text',
+          kind: 'size',
+          size: 'shoe',
           mono: true,
-          numeric: true,
           savable: true,
           sources: [],
           suggestion: empty ? undefined : { question: 'Shoe size', section: 'Снаряжение', org: 'Meridian Crew', value: '43' },

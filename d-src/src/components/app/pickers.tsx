@@ -601,3 +601,67 @@ export function YearPick({
     </>
   )
 }
+
+// Число з діапазону (рост, вес, размер обуви): барабан, без введення. Порожнє значення — барабан стає на `initial`.
+export function NumberPick({
+  id,
+  value,
+  onChange,
+  title,
+  min,
+  max,
+  initial,
+  unit,
+  placeholder = 'Выбрать',
+  invalid,
+  disabled,
+}: {
+  id?: string
+  value: string
+  onChange: (v: string) => void
+  title: string
+  min: number
+  max: number
+  initial: number
+  unit?: string
+  placeholder?: string
+  invalid?: boolean
+  disabled?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const fit = (n: number) => Math.min(max, Math.max(min, n))
+  const [draft, setDraft] = useState(() => fit(Number(value) || initial))
+  const show = () => {
+    setDraft(fit(Number(value) || initial))
+    setOpen(true)
+  }
+  return (
+    <>
+      <PickField id={id} value={value} placeholder={placeholder} icon={<ChevronDown className="size-4" />} mono invalid={invalid} disabled={disabled} onOpen={show} />
+      <BottomSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        title={title}
+        footer={
+          <Button
+            className="h-12 text-base"
+            onClick={() => {
+              onChange(String(draft))
+              setOpen(false)
+            }}
+          >
+            Готово
+          </Button>
+        }
+      >
+        <Wheel label={unit ?? title} mono value={draft} items={range(min, max).map((v) => ({ v, label: String(v) }))} onChange={setDraft} />
+      </BottomSheet>
+    </>
+  )
+}
+
+export const SIZE_RANGES = {
+  height: { min: 140, max: 220, initial: 180, unit: 'см' },
+  weight: { min: 40, max: 160, initial: 80, unit: 'кг' },
+  shoe: { min: 35, max: 50, initial: 43, unit: 'EU' },
+} as const
