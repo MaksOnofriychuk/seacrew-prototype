@@ -30,9 +30,9 @@ export function Q08Done({ go }: ScreenProps) {
         <h1 className="mt-5 text-[32px] leading-[1.1] font-semibold tracking-tight">Аккаунт создан</h1>
         <p className="mt-3 text-base text-muted-foreground">Добро пожаловать, {first || 'моряк'}!</p>
 
-        <ul className="mt-8 rounded-xl border border-border bg-surface px-4">
+        <ul className="mt-8 grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-xl border border-border bg-surface px-4">
           {rows.map(([t, v]) => (
-            <li key={t} className="flex items-center justify-between gap-3 border-t border-border py-3.5 first:border-t-0">
+            <li key={t} className="col-span-2 grid grid-cols-subgrid items-center border-t border-border py-3.5 first:border-t-0">
               <span className="text-[15px]">{t}</span>
               <Status kind="ok">{v}</Status>
             </li>

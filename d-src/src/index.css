@@ -98,15 +98,6 @@
   body {
     @apply bg-card font-sans text-foreground antialiased;
   }
-  /* Автозаповнення браузера не перефарбовує поле в білий: фон і текст — з теми. */
-  input:-webkit-autofill,
-  input:-webkit-autofill:hover,
-  input:-webkit-autofill:focus {
-    -webkit-text-fill-color: var(--foreground);
-    caret-color: var(--foreground);
-    -webkit-box-shadow: 0 0 0 1000px var(--surface) inset;
-    transition: background-color 600000s 0s;
-  }
 }
 
 /* Перехід між екранами: короткий зсув і проявлення */
@@ -129,4 +120,18 @@
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
   }
+}
+
+/* Автозаповнення браузера не перефарбовує поле в білий: фон і текст — з теми.
+   Поза @layer, бо інакше тінь з утиліт (shadow-xs) перебиває цю. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+input:autofill {
+  -webkit-text-fill-color: var(--foreground);
+  caret-color: var(--foreground);
+  -webkit-box-shadow: 0 0 0 1000px var(--surface) inset !important;
+  box-shadow: 0 0 0 1000px var(--surface) inset !important;
+  transition: background-color 600000s 0s, color 600000s 0s;
 }
