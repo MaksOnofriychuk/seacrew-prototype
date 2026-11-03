@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { Users } from 'lucide-react'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, WebAvatar, type Tone } from '@/components/web/status-badge'
 import { A_USERS, USTATUS_LABEL, type AUser, type UStatus } from '@/lib/data-admin'
 import type { ScreenProps } from '../types'
-import { AdminPage, Mono, dt, useBagState } from './_parts'
+import { AdminPage, AdminTabs, Mono, PeriodFilter, dt, inPeriod, useBagState } from './_parts'
 
 export const USTATUS_TONE: Record<UStatus, Tone> = { active: 'success', blocked: 'error', banned: 'error' }
 
@@ -28,9 +28,14 @@ export function AUsers({ go }: ScreenProps) {
   const [tab, setTab] = useState<Tab>('blocked')
   const [q, setQ] = useState('')
   const [role, setRole] = useState('')
+  const [st, setSt] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const blocked = users.filter((u) => u.status !== 'active')
   const rows = (tab === 'blocked' ? blocked : users)
     .filter((u) => !role || u.role === role)
+    .filter((u) => !st || u.status === st)
+    .filter((u) => inPeriod(u.created, from, to))
     .filter((u) => !q || (u.name + u.email).toLowerCase().includes(q.toLowerCase()))
 
   const columns: Column<AUser>[] = [
@@ -95,7 +100,7 @@ export function AUsers({ go }: ScreenProps) {
         title="Пользователи"
         description="Моряка блокирует сама система, если он дважды подряд загрузил не документ моряка. Разблокировать можно после обращения в поддержку — счётчик ошибок обнулится."
       />
-      <PageTabs<Tab>
+      <AdminTabs<Tab>
         tabs={[
           { id: 'blocked', label: 'Заблокированные', count: blocked.length },
           { id: 'all', label: 'Все', count: users.length },
@@ -103,8 +108,10 @@ export function AUsers({ go }: ScreenProps) {
         value={tab}
         onChange={setTab}
       />
-      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Имя или email' }} onReset={role || q ? () => (setRole(''), setQ('')) : undefined} count={rows.length}>
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Имя или email' }} onReset={role || st || from || to || q ? () => (setRole(''), setSt(''), setFrom(''), setTo(''), setQ('')) : undefined} count={rows.length}>
         <FilterSelect label="Кто" value={role} onChange={setRole} options={[{ value: 'seafarer', label: 'Моряки' }, { value: 'recruiter', label: 'Рекрутеры' }]} />
+        {tab === 'all' && <FilterSelect label="Статус" value={st} onChange={setSt} options={(Object.keys(USTATUS_LABEL) as UStatus[]).map((k) => ({ value: k, label: USTATUS_LABEL[k] }))} />}
+        <PeriodFilter label="Регистрация" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
       </FilterBar>
       <DataTable
         columns={columns}

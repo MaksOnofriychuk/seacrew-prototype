@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Ban, FileText, LockOpen, UserX } from 'lucide-react'
+import { Ban, FileText, Lock, LockOpen, UserX } from 'lucide-react'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/web/data-table'
@@ -13,6 +13,7 @@ import type { ScreenProps } from '../types'
 import { USTATUS_TONE, useUserOverrides } from './a-users'
 import { AdminPage, CancelButton, Facts, Mono, Note, SectionTitle, SideSheet, dt, useBagState } from './_parts'
 
+const BLOCK_REASONS = ['Жалоба на поведение', 'Подозрение на чужой аккаунт', 'Просьба самого пользователя', 'Другое']
 const BAN_REASONS = ['Жалоба рекрутера: чужой документ', 'Поддельный документ', 'Спам в публикациях', 'Оплата за трудоустройство', 'Другое']
 
 export function AUserScreen({ go }: ScreenProps) {
@@ -21,7 +22,7 @@ export function AUserScreen({ go }: ScreenProps) {
   const [over, setOver] = useUserOverrides()
   const [, setRegTab] = useBagState('a.regTab', 'attempts')
   const u = { ...aUser(id), ...over[id] }
-  const [sheet, setSheet] = useState<'unblock' | 'ban' | 'unban' | null>(null)
+  const [sheet, setSheet] = useState<'unblock' | 'block' | 'ban' | 'unban' | null>(null)
   const [reason, setReason] = useState('')
   const [note, setNote] = useState('')
   const seafarer = u.role === 'seafarer'
@@ -51,12 +52,17 @@ export function AUserScreen({ go }: ScreenProps) {
         }
         actions={
           <>
+            {u.status === 'active' && (
+              <Button variant="outline" onClick={() => (setReason(''), setNote(''), setSheet('block'))}>
+                <Lock /> Заблокировать
+              </Button>
+            )}
             {u.status === 'banned' ? (
               <Button variant="outline" onClick={() => setSheet('unban')}>
                 Снять бан
               </Button>
             ) : (
-              <Button variant="outline" className="text-signal" onClick={() => setSheet('ban')}>
+              <Button variant="outline" className="text-signal" onClick={() => (setReason(''), setNote(''), setSheet('ban'))}>
                 <Ban /> Забанить
               </Button>
             )}
@@ -177,7 +183,7 @@ export function AUserScreen({ go }: ScreenProps) {
             ]}
           />
         )}
-        <WebField id="unblock-note" label="Комментарий для команды">
+        <WebField id="unblock-note" label="Комментарий для команды" hint="Видно только команде.">
           <WebTextarea id="unblock-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder={seafarer ? 'Как обратился в поддержку, что проверили' : 'Почему разблокировали'} />
         </WebField>
       </SideSheet>
@@ -196,6 +202,28 @@ export function AUserScreen({ go }: ScreenProps) {
       />
 
       <SideSheet
+        open={sheet === 'block'}
+        onOpenChange={(v) => !v && setSheet(null)}
+        title={`Заблокировать ${u.name}?`}
+        description="Вход закроется, пока вы не разблокируете. В бан-лист ничего не попадёт: с этими данными можно зарегистрироваться снова."
+        footer={
+          <>
+            <CancelButton onClick={() => setSheet(null)} />
+            <Button variant="destructive" disabled={!reason} onClick={() => patch({ status: 'blocked', reason }, 'Пользователь заблокирован')}>
+              Заблокировать
+            </Button>
+          </>
+        }
+      >
+        <WebField id="block-reason" label="Причина" required hint="Пользователь увидит её в письме.">
+          <WebSelect id="block-reason" value={reason} onChange={setReason} options={BLOCK_REASONS} />
+        </WebField>
+        <WebField id="block-note" label="Комментарий для команды" hint="Видно только команде.">
+          <WebTextarea id="block-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ссылка на жалобу, что проверили" />
+        </WebField>
+      </SideSheet>
+
+      <SideSheet
         open={sheet === 'ban'}
         onOpenChange={(v) => !v && setSheet(null)}
         title={`Забанить ${u.name}?`}
@@ -209,10 +237,10 @@ export function AUserScreen({ go }: ScreenProps) {
           </>
         }
       >
-        <WebField id="ban-reason" label="Причина" required>
+        <WebField id="ban-reason" label="Причина" required hint="Попадёт в бан-лист вместе со следами.">
           <WebSelect id="ban-reason" value={reason} onChange={setReason} options={BAN_REASONS} />
         </WebField>
-        <WebField id="ban-note" label="Комментарий для команды">
+        <WebField id="ban-note" label="Комментарий для команды" hint="Видно только команде.">
           <WebTextarea id="ban-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ссылка на жалобу, что проверили" />
         </WebField>
         <div className="flex flex-col gap-2">

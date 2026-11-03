@@ -4,14 +4,15 @@ import { EmptyState, ErrorState, LoadingState, useView } from '@/components/app/
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebSelect } from '@/components/web/fields'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
+import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, WebAvatar } from '@/components/web/status-badge'
 import { ATTEMPTS, BANLIST, LINKED, TRACES, TRACE_LABEL, USTATUS_LABEL, type Attempt, type BanEntry, type LinkedGroup, type Trace } from '@/lib/data-admin'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { useUserOverrides } from './a-users'
-import { AdminPage, CancelButton, Mono, Note, SideSheet, dt, useBagState } from './_parts'
+import { AdminPage, AdminTabs, CancelButton, Mono, Note, PeriodFilter, SideSheet, dt, inPeriod, useBagState } from './_parts'
 
 type Tab = 'attempts' | 'linked' | 'banlist'
 
@@ -62,7 +63,7 @@ export function ARegistrations({ go }: ScreenProps) {
         title="Незавершённые регистрации и связанные аккаунты"
         description="Человека узнаём не по email, а по следам: документ моряка, имя с датой рождения, файл, устройство. Сам блокирует только документ из бан-листа, остальное решаете вы."
       />
-      <PageTabs<Tab>
+      <AdminTabs<Tab>
         tabs={[
           { id: 'attempts', label: 'Незавершённые', count: attempts.length },
           { id: 'linked', label: 'Связанные аккаунты', count: open.length },
@@ -80,6 +81,11 @@ export function ARegistrations({ go }: ScreenProps) {
 
 function Attempts({ rows, onDelete }: { rows: Attempt[]; onDelete: (id: string) => void }) {
   const { showToast } = useProto()
+  const [q, setQ] = useState('')
+  const [path, setPath] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const shown = rows.filter((a) => (!path || a.path === path) && inPeriod(a.started, from, to) && (!q || (a.email ?? '').includes(q.toLowerCase()) || (a.doc ?? '').toLowerCase().includes(q.toLowerCase())))
   const columns: Column<Attempt>[] = [
     {
       key: 'started',
@@ -153,7 +159,11 @@ function Attempts({ rows, onDelete }: { rows: Attempt[]; onDelete: (id: string) 
   return (
     <>
       <Note className="mb-4">Аккаунт не создан. Файлы и распознанные данные храним 30 дней, потом они удаляются сами — остаётся запись о попытке: дата и какой след совпал.</Note>
-      <DataTable columns={columns} rows={rows} rowKey={(a) => a.id} initialSort={{ key: 'started', dir: 'desc' }} empty={{ icon: UserX, title: 'Незавершённых регистраций нет', text: 'Здесь появятся те, кто начал регистрацию и не дошёл до конца.' }} />
+      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Email или документ' }} onReset={path || from || to || q ? () => (setPath(''), setFrom(''), setTo(''), setQ('')) : undefined} count={shown.length}>
+        <FilterSelect label="Путь" value={path} onChange={setPath} options={[{ value: 'quick', label: 'Быстрая' }, { value: 'stepper', label: 'Пошаговая' }]} />
+        <PeriodFilter label="Начата" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
+      </FilterBar>
+      <DataTable columns={columns} rows={shown} rowKey={(a) => a.id} initialSort={{ key: 'started', dir: 'desc' }} empty={{ icon: UserX, title: 'Незавершённых регистраций нет', text: 'Здесь появятся те, кто начал регистрацию и не дошёл до конца.' }} />
     </>
   )
 }
@@ -316,7 +326,7 @@ function Linked({ groups, go, onState }: { groups: LinkedGroup[]; go: (id: strin
           </>
         }
       >
-        <WebField id="lb-reason" label="Причина" required>
+        <WebField id="lb-reason" label="Причина" required hint="Попадёт в бан-лист вместе со следами.">
           <WebSelect id="lb-reason" value={reason} onChange={setReason} options={['Один человек под разными аккаунтами', 'Обход бана', 'Чужие документы', 'Другое']} />
         </WebField>
         <ul className="flex flex-col divide-y divide-border rounded-md border border-border">
@@ -333,7 +343,11 @@ function Linked({ groups, go, onState }: { groups: LinkedGroup[]; go: (id: strin
   )
 }
 
-function BanList({ rows }: { rows: BanEntry[] }) {
+function BanList({ rows: all }: { rows: BanEntry[] }) {
+  const [trace, setTrace] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const rows = all.filter((b) => (!trace || b.trace === trace) && inPeriod(b.date, from, to))
   const columns: Column<BanEntry>[] = [
     { key: 'trace', header: 'След', width: '18%', cell: (b) => <span className="font-medium">{TRACE_LABEL[b.trace]}</span> },
     { key: 'acc', header: 'Аккаунт', width: '16%', cell: (b) => b.account },
@@ -345,6 +359,10 @@ function BanList({ rows }: { rows: BanEntry[] }) {
   return (
     <>
       <Note className="mb-4">Храним отпечатки, а не сами номера и имена. Бан-лист остаётся и после удаления аккаунта.</Note>
+      <FilterBar onReset={trace || from || to ? () => (setTrace(''), setFrom(''), setTo('')) : undefined} count={rows.length}>
+        <FilterSelect label="След" value={trace} onChange={setTrace} options={TRACES.map((t) => ({ value: t, label: TRACE_LABEL[t] }))} />
+        <PeriodFilter label="Дата" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
+      </FilterBar>
       <DataTable columns={columns} rows={rows} rowKey={(b) => b.id} empty={{ icon: Ban, title: 'Бан-лист пуст', text: 'Здесь появятся следы забаненных аккаунтов.' }} />
     </>
   )
