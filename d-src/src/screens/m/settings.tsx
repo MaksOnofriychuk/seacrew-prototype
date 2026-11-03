@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { Bell, Check, Crown, Download, FileText, Globe, LifeBuoy, LogOut, ShieldCheck, Trash2, UserRound } from 'lucide-react'
-import { BottomSheet } from '@/components/app/bottom-sheet'
-import { ThemeRow } from '@/components/app/theme-select'
+import { Bell, Crown, Download, FileText, LifeBuoy, LogOut, ShieldCheck, Trash2, UserRound } from 'lucide-react'
+import { LangRow, ThemeRow } from '@/components/app/theme-select'
 import { NavBar } from '@/components/app/chrome'
 import { MOBILE_ROUTES } from '@/lib/mobile-routes'
 import { useProto } from '@/lib/proto-state'
@@ -15,14 +14,10 @@ import { SettingsGroup, SettingsRow } from './_parts'
 // m-settings — «Настройки» (gaps №7, відповіді 52 і 125, код settings): акаунт, сповіщення,
 // підтримка, юридичне; унизу — вихід і видалення акаунта.
 
-const LANGS = ['Русский', 'Українська', 'English']
-
 export function MSettings({ go }: ScreenProps) {
   const { bag, setBag, showToast } = useProto()
   const back = bag<string>('back.m-settings', 'p04')
-  const lang = bag<string>('dp.lang', 'Русский')
-  const [langOpen, setLangOpen] = useState(false)
-  const [themeOpen, setThemeOpen] = useState(false)
+  const [open, setOpen] = useState<'lang' | 'theme' | null>(null)
   const openLegal = useOpenLegal(go, 'm-settings')
   const email = useQ().bag<Acct | null>('q.acct', null)?.email || 'you@example.com'
   const [sheet, setSheet] = useState<'logout' | null>(null)
@@ -33,8 +28,8 @@ export function MSettings({ go }: ScreenProps) {
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-3 pb-8">
         {/* Усі налаштування — тут (перевірка 03.11, №39): у профілі лише рядок «Настройки», у меню — без перемикача теми. */}
         <SettingsGroup title="Вид">
-          <SettingsRow icon={Globe} title="Язык" value={lang} onClick={() => setLangOpen(true)} />
-          <ThemeRow open={themeOpen} onToggle={() => setThemeOpen(!themeOpen)} />
+          <LangRow open={open === 'lang'} onToggle={() => setOpen(open === 'lang' ? null : 'lang')} />
+          <ThemeRow open={open === 'theme'} onToggle={() => setOpen(open === 'theme' ? null : 'theme')} />
         </SettingsGroup>
 
         <SettingsGroup title="Аккаунт">
@@ -87,26 +82,6 @@ export function MSettings({ go }: ScreenProps) {
         </p>
       </div>
 
-      <BottomSheet open={langOpen} onClose={() => setLangOpen(false)} title="Язык">
-        <div role="radiogroup" aria-label="Язык" className="flex flex-col">
-          {LANGS.map((l) => (
-            <button
-              key={l}
-              type="button"
-              role="radio"
-              aria-checked={l === lang}
-              onClick={() => {
-                setBag('dp.lang', l)
-                setLangOpen(false)
-              }}
-              className="flex min-h-13 items-center gap-3 border-t border-border py-3 text-left first:border-t-0"
-            >
-              <span className="flex-1 text-base">{l}</span>
-              {l === lang && <Check className="size-5 text-primary" strokeWidth={2.5} />}
-            </button>
-          ))}
-        </div>
-      </BottomSheet>
       <LogoutSheet open={sheet === 'logout'} onClose={() => setSheet(null)} onConfirm={() => go(MOBILE_ROUTES.login)} />
     </div>
   )

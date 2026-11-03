@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Check, Moon } from 'lucide-react'
+import { Check, Globe, Moon } from 'lucide-react'
 import { ExpandRow } from '@/screens/dp/_inline-edit'
 import { useProto } from '@/lib/proto-state'
 import { setTheme, useDark } from '@/screens/m/_parts'
@@ -61,6 +61,43 @@ export function ThemeRow({ open, onToggle }: { open: boolean; onToggle: () => vo
               {t.id === 'system' && <span className="text-sm leading-snug text-muted-foreground">Как в настройках телефона</span>}
             </span>
             {t.id === pref && <Check className="size-5 shrink-0 text-primary" strokeWidth={2.5} />}
+          </button>
+        ))}
+      </div>
+    </ExpandRow>
+  )
+}
+
+// Строка «Язык» — так само, як «Тема»: тап розгортає блок із мовами, вибір застосовує й згортає (перевірка 03.11, №44).
+export const APP_LANGS: { id: string; label: string; native: string }[] = [
+  { id: 'Русский', label: 'Русский', native: 'Русский' },
+  { id: 'Українська', label: 'Украинский', native: 'Українська' },
+  { id: 'English', label: 'Английский', native: 'English' },
+]
+
+export function LangRow({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+  const { bag, setBag } = useProto()
+  const lang = bag<string>('dp.lang', 'Русский')
+  return (
+    <ExpandRow icon={Globe} title="Язык" value={lang} open={open} onToggle={onToggle}>
+      <div role="radiogroup" aria-label="Язык" className="overflow-hidden rounded-xl border border-border bg-surface">
+        {APP_LANGS.map((l) => (
+          <button
+            key={l.id}
+            type="button"
+            role="radio"
+            aria-checked={l.id === lang}
+            onClick={() => {
+              setBag('dp.lang', l.id)
+              onToggle()
+            }}
+            className="flex min-h-14 w-full items-center gap-3 border-t border-border px-4 py-3 text-left transition-colors first:border-t-0 active:bg-muted"
+          >
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <span className="text-[15px] leading-snug">{l.native}</span>
+              {l.native !== l.label && <span className="text-sm leading-snug text-muted-foreground">{l.label}</span>}
+            </span>
+            {l.id === lang && <Check className="size-5 shrink-0 text-primary" strokeWidth={2.5} />}
           </button>
         ))}
       </div>
