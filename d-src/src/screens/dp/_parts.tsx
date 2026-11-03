@@ -27,7 +27,7 @@ export function useDP() {
   return { ...p, bag }
 }
 
-// Параметр з адреси (#p21?f=birth) — для посилань і скріншотів. Читаємо один раз.
+// Параметр з адреси (#p14?f=birth) — для посилань і скріншотів. Читаємо один раз.
 export function useHashParam(name: string) {
   const [v] = useState(() => new URLSearchParams(location.hash.split('?')[1] ?? '').get(name))
   return v
@@ -50,7 +50,7 @@ export function useDarkClass() {
 
 /* ---------- профіль: значення, джерела, правки (bag dp.profile) ---------- */
 
-/** Текстові поля профілю (рядок → p21); «Должность» і «Желаемая зарплата» — окремо. */
+/** Текстові поля профілю (рядок профілю); «Должность» і «Желаемая зарплата» — окремо. */
 export type TextField = Exclude<ProfileField, 'rank' | 'salary'>
 type Edits = Partial<Record<TextField, string>>
 

@@ -8,12 +8,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BOUNDS } from '@/lib/dates'
 import { CURRENCIES, MARITAL, PROFILE_DOC, PROFILE_FIELDS, SALARY_PER, type Salary } from '@/lib/data-docs-profile'
 import { cn } from '@/lib/utils'
-import { ERR, Seg, valid } from './p21-field'
+import { parsePhone, phoneIncomplete } from '@/lib/phone'
 import { Note, SourceTag, TextInput, useDP, useProfile, type TextField } from './_parts'
 
-// Правка №19д: поля профиля редактируются тут же, под строкой — без перехода на p21.
+// Правка №19д: поля профиля редактируются тут же, под строкой (отдельного экрана «Изменить поле» больше нет).
 // Тап по строке раскрывает блок (одновременно открыт один — следит экран), «Сохранить» обновляет значение
-// и сворачивает, «Отмена» просто сворачивает. Проверки и тексты — те же, что в p21.
+// и сворачивает, «Отмена» просто сворачивает. Проверки (ERR, valid) и переключатель Seg — здесь же.
+
+export const ERR: Partial<Record<TextField, string>> = {
+  phone: 'Номер неполный',
+  email: 'Введите email, например name@example.com.',
+}
+
+export const valid = (k: TextField, v: string) => {
+  if (!v) return true
+  if (k === 'phone') return !phoneIncomplete(parsePhone(v).dial, parsePhone(v).digits)
+  if (k === 'email') return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+  return true
+}
+
 
 export type EditKey = TextField | 'rank' | 'salary' | 'theme'
 
@@ -190,6 +203,26 @@ export function SalaryEditor({ open, onClose }: { open: boolean; onClose: () => 
       </div>
       <Seg label="Период" value={v.per} options={SALARY_PER.map((o) => [o.id, o.label])} onChange={(per) => setV({ ...v, per })} />
       <Actions onSave={save} onCancel={onClose} />
+    </div>
+  )
+}
+
+// Перемикач на 2–3 варіанти — як «Валюта» і «Период оплаты» у фільтрах вакансій.
+export function Seg<T extends string>({ label, value, options, onChange, mono, className }: { label: string; value: T; options: [T, string][]; onChange: (v: T) => void; mono?: boolean; className?: string }) {
+  return (
+    <div role="radiogroup" aria-label={label} className={cn('flex h-12 gap-1 rounded-md border border-border bg-surface p-1', className)}>
+      {options.map(([o, l]) => (
+        <button
+          key={o}
+          type="button"
+          role="radio"
+          aria-checked={value === o}
+          onClick={() => onChange(o)}
+          className={cn('flex-1 rounded-[6px] px-2 text-[15px] font-medium transition-colors duration-150', mono && 'font-mono', value === o ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}
+        >
+          {l}
+        </button>
+      ))}
     </div>
   )
 }

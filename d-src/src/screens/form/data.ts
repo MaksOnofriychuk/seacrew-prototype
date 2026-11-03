@@ -1,6 +1,6 @@
 import { useProto } from '@/lib/proto-state'
 import { FORM_DEFAULTS, type QForm } from '../q/_parts'
-import type { Acct } from '../q/q06'
+import type { Acct } from '../q/account'
 
 // Анкета BlueWave Crewing для моряка: розділи й написи — як у бланку агентства (ADR-073 п. 7, 19:
 // назви розділів і полів не перекладаємо й не переіменовуємо). Розділи — ті самі, що бачить рекрутер

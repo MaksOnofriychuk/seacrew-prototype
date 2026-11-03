@@ -8,7 +8,7 @@ import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { useQ } from '../q/_parts'
-import type { Acct } from '../q/q06'
+import type { Acct } from '../q/account'
 import { SettingsGroup, SettingsRow, hashParam } from './_parts'
 
 // m-support — «Поддержка» (правка №12, відповідь 125): головна дія — «Написать в поддержку».

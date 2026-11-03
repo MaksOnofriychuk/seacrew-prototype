@@ -3,15 +3,19 @@ import { NavBar } from '@/components/app/chrome'
 import { MonoNums } from '@/components/app/mono-nums'
 import { EmptyState, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
+import { FOLLOW_COUNTS, FOLLOWING_DEFAULT } from '@/lib/data-premium'
 import { useProto } from '@/lib/proto-state'
+import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { durText } from '../q/_parts'
 import { AUTHORS, authorByName, Avatar, hashParam, postsBy } from './_feed-parts'
+import { plural } from './_app-parts'
 
 // p16 — короткий профіль моряка: тап на автора в стрічці (p01) чи в публікації (p07).
 // registration-c-redesign п. 16: фото, ім'я, «документ моряка проверен», посада, тип судна, загальний стаж, публікації.
 // Не показуємо: «Написать» (моряки між собою не переписуються), документи, контакти, дату народження, статус, розбивку стажу.
 // Загальний стаж іншим морякам видно завжди — «Скрыть общий стаж» (№34) ховає його лише від агентств.
+// «Подписаться» / «Вы подписаны» — логика бывшего pr-follow (id pr-follow в реестре показывает этот же экран).
 // ?author=Ирина%20Бондарь — відкрити конкретного автора посиланням.
 export function P16Author({ go }: ScreenProps) {
   const { bag, setBag, showToast } = useProto()
@@ -19,12 +23,13 @@ export function P16Author({ go }: ScreenProps) {
   const back = bag<string>('feed.author.back', 'p01')
   const a = authorByName(name) ?? AUTHORS[0]
   const posts = postsBy(a.name)
-  // підписка на моряка (преміум-розділ «Подписки», pr-following): його публікації першими в стрічці
-  const follows = bag<string[]>('follow.people', [])
+  // Подписка на моряка (раздел «Подписки», pr-following): bag pr.follow — имена, те же, что в списке подписок.
+  const follows = bag<string[]>('pr.follow', FOLLOWING_DEFAULT)
   const following = follows.includes(a.name)
+  const [followers, followed] = FOLLOW_COUNTS[a.name] ?? [0, 0]
   const toggleFollow = () => {
-    setBag('follow.people', following ? follows.filter((x) => x !== a.name) : [...follows, a.name])
-    showToast(following ? `Вы отписались от ${a.name}` : `Вы подписались на ${a.name}`)
+    setBag('pr.follow', following ? follows.filter((x) => x !== a.name) : [...follows, a.name])
+    showToast(following ? `Вы отписались от ${a.name}` : 'Вы подписаны. Публикации появятся в ленте')
   }
 
   const facts: [string, string, boolean][] = [
@@ -51,10 +56,25 @@ export function P16Author({ go }: ScreenProps) {
               </div>
             </div>
 
-            <Button variant="outline" aria-pressed={following} onClick={toggleFollow} className={following ? 'mt-5 h-11 w-full text-[15px] text-muted-foreground' : 'mt-5 h-11 w-full text-[15px] text-primary'}>
-              {following ? <Check className="text-success" strokeWidth={2.5} /> : <UserPlus />}
-              {following ? 'Вы подписаны' : 'Подписаться'}
-            </Button>
+            <div className="mt-5 flex items-center gap-5">
+              <span className="flex flex-col">
+                <span className="font-mono text-lg font-semibold">{followers + (following ? 1 : 0)}</span>
+                <span className="text-sm text-muted-foreground">{plural(followers, 'подписчик', 'подписчика', 'подписчиков')}</span>
+              </span>
+              <span className="flex flex-col">
+                <span className="font-mono text-lg font-semibold">{followed}</span>
+                <span className="text-sm text-muted-foreground">{plural(followed, 'подписка', 'подписки', 'подписок')}</span>
+              </span>
+              <Button
+                variant={following ? 'outline' : 'default'}
+                aria-pressed={following}
+                onClick={toggleFollow}
+                className={cn('ml-auto h-11 min-w-36 text-[15px]', following && 'text-foreground')}
+              >
+                {following ? <Check className="size-4 text-success" strokeWidth={2.5} /> : <UserPlus className="size-4" />}
+                {following ? 'Вы подписаны' : 'Подписаться'}
+              </Button>
+            </div>
 
             <dl className="mt-6 flex flex-col border-y border-border">
               {facts.map(([l, v, mono]) => (
