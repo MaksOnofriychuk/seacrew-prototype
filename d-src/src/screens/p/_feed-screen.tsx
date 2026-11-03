@@ -40,15 +40,15 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
   const words = searching ? query.toLowerCase().split(/\s+/).filter(Boolean) : []
   const byFilter = (p: Post) => f === 'all' || (f === 'people' ? p.kind === 'user' : p.kind === 'news')
   const matches = (p: Post) => {
-    if (p.kind === 'ad') return !searching
+    if (p.kind === 'ad') return !words.length
     if (!words.length) return true
     const hay = (p.kind === 'news' ? p.title + ' ' + p.text : p.text).toLowerCase()
     return words.every((w) => hay.includes(w))
   }
   const list = POSTS.filter((p) => byFilter(p) && matches(p))
-  const pinned = !searching ? list.find((p) => p.kind === 'news' && p.pin) : undefined
+  const pinned = !words.length ? list.find((p) => p.kind === 'news' && p.pin) : undefined
   const rest = list.filter((p) => p !== pinned)
-  const showMine = !searching && f !== 'news' && mine.length > 0
+  const showMine = !words.length && f !== 'news' && mine.length > 0
 
   const openPost = (id: string) => {
     setBag('feed.post', id)
@@ -68,17 +68,17 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
 
   // Без мережі (стан «Ошибка» / сценарій «Нет интернета») — збережена стрічка і плашка вгорі (відповідь 21).
   const posts = (
-  <div className={cn('flex flex-col gap-3 pb-4', searching && words.length ? 'mt-2' : 'mt-4')}>
+  <div className={cn('flex flex-col gap-3 pb-4', words.length ? 'mt-2' : 'mt-4')}>
     {pinned && <FeedItem p={pinned} onOpen={openPost} onAuthor={openAuthor} />}
     {(rest.length > 0 || showMine) && (
       <div className="mx-4 overflow-hidden rounded-xl border border-border bg-surface">
         {showMine && mine.map((p) => <MyPostItem key={p.id} p={p} />)}
         {rest.map((p) => (
-          <FeedItem key={p.id} p={p} onOpen={openPost} onAuthor={openAuthor} words={words} flat={searching} />
+          <FeedItem key={p.id} p={p} onOpen={openPost} onAuthor={openAuthor} words={words} />
         ))}
       </div>
     )}
-    {rest.length === 0 && !showMine && searching && (
+    {rest.length === 0 && !showMine && words.length > 0 && (
       <div className="px-6 pt-6">
         <p className="text-lg font-semibold">Ничего не нашли</p>
         <p className="mt-1 text-[15px] text-muted-foreground">
@@ -92,30 +92,32 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
   return (
     <div className="relative flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {searching ? (
-          <div className="flex items-center gap-3 px-4 pt-2">
-            <label className="flex h-11 flex-1 items-center gap-2 rounded-md border border-border bg-surface px-3 focus-within:border-primary">
-              <Search className="size-5 shrink-0 text-muted-foreground" />
-              <input
-                autoFocus
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Слова из публикаций и новостей"
-                aria-label="Поиск по ленте"
-                className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
-              />
-              {query && (
-                <button type="button" aria-label="Очистить" onClick={() => setQuery('')} className="text-muted-foreground">
-                  <X className="size-4" />
-                </button>
-              )}
-            </label>
-            <button type="button" onClick={closeSearch} className="text-[15px] font-medium text-primary">
-              Отмена
-            </button>
-          </div>
-        ) : (
-          <div className="px-6 pt-2">
+        {/* Пошук — на цьому ж екрані (перевірка прототипу 03.11, №24): поле розгортається у верхній панелі,
+            заголовок і стрічка лишаються, стрічка фільтрується під полем; «Отмена» повертає панель. */}
+        <div className="px-6 pt-2">
+          {searching ? (
+            <div className="flex h-10 items-center gap-3 animate-in fade-in-0 slide-in-from-right-4 duration-200 motion-reduce:animate-none">
+              <label className="flex h-10 flex-1 items-center gap-2 rounded-md border border-primary bg-surface px-3">
+                <Search className="size-5 shrink-0 text-muted-foreground" />
+                <input
+                  autoFocus
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Поиск по ленте"
+                  aria-label="Поиск по ленте"
+                  className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
+                />
+                {query && (
+                  <button type="button" aria-label="Очистить" onClick={() => setQuery('')} className="text-muted-foreground">
+                    <X className="size-4" />
+                  </button>
+                )}
+              </label>
+              <button type="button" onClick={closeSearch} className="text-[15px] font-medium text-primary">
+                Отмена
+              </button>
+            </div>
+          ) : (
             <MainTopBar
               onBell={() => {
                 setBag('back.p10', 'p01')
@@ -130,11 +132,11 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
                 </TopBarButton>
               }
             />
-            <h1 className="mt-3 text-[32px] leading-tight font-semibold tracking-tight">Лента</h1>
-          </div>
-        )}
+          )}
+          <h1 className="mt-3 text-[32px] leading-tight font-semibold tracking-tight">Лента</h1>
+        </div>
 
-        <div className={cn('flex flex-col gap-4 px-6', searching ? 'pt-3' : 'pt-4')}>
+        <div className="flex flex-col gap-4 px-6 pt-4">
           {offline && <OfflineBanner />}
           {!searching && (
             <button
@@ -163,7 +165,7 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
               </button>
             ))}
           </div>
-          {searching && words.length > 0 && rest.length > 0 && (
+          {words.length > 0 && rest.length > 0 && (
             <p className="text-sm text-muted-foreground" aria-live="polite">
               Найдено: <span className="font-mono">{rest.length}</span>
             </p>
