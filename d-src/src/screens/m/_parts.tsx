@@ -194,27 +194,44 @@ export function SettingsRow({
 }
 
 // Перемикач вкладок (як у колишніх «Входящих»): рівні кнопки з лічильником; три й більше — дрібнішим шрифтом.
+// Вкладки в рамці. Ширина вкладки — за вмістом (довгий підпис не тисне сусідів); лічильник — кругла плашка,
+// понад 99 — «99+» (перевірка прототипу 03.11, №31: двозначні й тризначні числа мають вміщатися).
+export const countText = (n: number) => (n > 99 ? '99+' : String(n))
+
 export function Segmented<T extends string>({ value, onChange, items, label, zero }: { value: T; onChange: (v: T) => void; items: { id: T; label: string; n?: number }[]; label: string; zero?: boolean }) {
   const many = items.length > 2
   return (
-    <div role="tablist" aria-label={label} className="grid gap-1 rounded-md border border-border bg-surface p-1" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
-      {items.map((it) => (
-        <button
-          key={it.id}
-          type="button"
-          role="tab"
-          aria-selected={value === it.id}
-          onClick={() => onChange(it.id)}
-          className={cn(
-            'flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-[9px] border font-medium whitespace-nowrap transition-colors',
-            many ? 'text-sm' : 'text-[15px]',
-            value === it.id ? 'border-primary bg-muted text-primary' : 'border-transparent text-foreground',
-          )}
-        >
-          {it.label}
-          {(zero ? it.n !== undefined : !!it.n) && <span className="font-mono text-sm text-muted-foreground">{it.n}</span>}
-        </button>
-      ))}
+    <div role="tablist" aria-label={label} className="flex gap-1 rounded-md border border-border bg-surface p-1">
+      {items.map((it) => {
+        const on = value === it.id
+        const show = zero ? it.n !== undefined : !!it.n
+        return (
+          <button
+            key={it.id}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onChange(it.id)}
+            className={cn(
+              'flex h-9 min-w-0 flex-auto items-center justify-center gap-1.5 rounded-[9px] border px-2.5 font-medium whitespace-nowrap transition-colors',
+              many ? 'text-sm' : 'text-[15px]',
+              on ? 'border-primary bg-muted text-primary' : 'border-transparent text-foreground',
+            )}
+          >
+            <span className="truncate">{it.label}</span>
+            {show && (
+              <span
+                className={cn(
+                  'inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 font-mono text-xs leading-none',
+                  on ? 'bg-primary/15 text-primary' : 'bg-border text-muted-foreground',
+                )}
+              >
+                {countText(it.n ?? 0)}
+              </span>
+            )}
+          </button>
+        )
+      })}
     </div>
   )
 }
