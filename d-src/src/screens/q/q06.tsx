@@ -22,14 +22,14 @@ function strength(p: string) {
   return Math.min(4, Math.max(p.length >= 8 ? 1 : 0, s))
 }
 
-const METER = ['', 'bg-signal', 'bg-warning', 'bg-primary', 'bg-success']
+const METER = ['', 'bg-signal', 'bg-warning', 'bg-[color-mix(in_oklab,var(--warning),var(--success))]', 'bg-success']
 const METER_TEXT = ['', 'Слабый пароль', 'Нормальный пароль', 'Хороший пароль', 'Надёжный пароль']
 
 export function Q06Account({ go }: ScreenProps) {
   const { state, bag, setBag } = useQ()
   const a = bag<Acct>('q.acct', { email: '', pass: '', pass2: '' })
   const put = (patch: Partial<Acct>) => setBag('q.acct', { ...a, ...patch })
-  const [show, setShow] = useState(false)
+  const [show, setShow] = useState({ pass: false, pass2: false })
   const [emailFocus, setEmailFocus] = useState(false)
   const [p2blur, setP2blur] = useState(false)
   const [taken, setTaken] = useState(false)
@@ -63,9 +63,9 @@ export function Q06Account({ go }: ScreenProps) {
     go(id)
   }
 
-  const eye = (
-    <button type="button" aria-label={show ? 'Скрыть пароль' : 'Показать пароль'} onClick={() => setShow(!show)} className="absolute top-1/2 right-1 flex size-10 -translate-y-1/2 items-center justify-center text-muted-foreground">
-      {show ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+  const eye = (k: 'pass' | 'pass2') => (
+    <button type="button" aria-label={show[k] ? 'Скрыть пароль' : 'Показать пароль'} onClick={() => setShow({ ...show, [k]: !show[k] })} className="absolute top-1/2 right-1 flex size-10 -translate-y-1/2 items-center justify-center text-muted-foreground">
+      {show[k] ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
     </button>
   )
 
@@ -130,8 +130,8 @@ export function Q06Account({ go }: ScreenProps) {
 
         <Field id="q06-pass" label="Пароль" note={passMsg}>
           <div className="relative">
-            <TextInput id="q06-pass" type={show ? 'text' : 'password'} autoComplete="new-password" placeholder="Не менее 8 символов" value={a.pass} className="pr-12" onChange={(e) => put({ pass: e.target.value })} />
-            {eye}
+            <TextInput id="q06-pass" type={show.pass ? 'text' : 'password'} autoComplete="new-password" placeholder="Не менее 8 символов" value={a.pass} className="pr-12" onChange={(e) => put({ pass: e.target.value })} />
+            {eye('pass')}
           </div>
           <div className="grid grid-cols-4 gap-1.5" aria-hidden="true">
             {[0, 1, 2, 3].map((i) => (
@@ -144,7 +144,7 @@ export function Q06Account({ go }: ScreenProps) {
           <div className="relative">
             <TextInput
               id="q06-pass2"
-              type={show ? 'text' : 'password'}
+              type={show.pass2 ? 'text' : 'password'}
               autoComplete="new-password"
               value={a.pass2}
               invalid={mism}
@@ -152,7 +152,7 @@ export function Q06Account({ go }: ScreenProps) {
               onBlur={() => setP2blur(true)}
               onChange={(e) => put({ pass2: e.target.value })}
             />
-            {eye}
+            {eye('pass2')}
           </div>
           {match && <p className="text-sm text-success">Пароли совпадают</p>}
         </Field>
