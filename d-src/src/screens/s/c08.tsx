@@ -58,7 +58,7 @@ export function C08Resume({ go }: ScreenProps) {
           )}
         </ProgressState>
       </div>
-      <Footer className="border-t border-border bg-surface">
+      <Footer className="border-t border-border bg-background">
         <Button size="lg" onClick={() => go(stepId(next))}>
           Продолжить
         </Button>

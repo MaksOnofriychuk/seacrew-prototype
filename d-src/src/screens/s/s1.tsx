@@ -84,7 +84,7 @@ export function S1Account({ go }: ScreenProps) {
       step={1}
       go={go}
       footer={
-        <Footer className="border-t border-border bg-surface">
+        <Footer className="border-t border-border bg-background">
           <Button size="lg" disabled={!valid || creating} aria-busy={creating} onClick={next}>
             {creating ? (
               <>

@@ -549,3 +549,55 @@ export function PhoneField(props: {
     </div>
   )
 }
+
+// Рік «ГГГГ» (роки навчання тощо). Межі min/max — роки; недоступні тьмяні.
+export function YearPick({
+  id,
+  value,
+  onChange,
+  title,
+  min = 1960,
+  max = TODAY.getFullYear(),
+  placeholder = 'Выбрать',
+  invalid,
+}: {
+  id?: string
+  value: string
+  onChange: (v: string) => void
+  title: string
+  min?: number
+  max?: number
+  placeholder?: string
+  invalid?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const fit = (y: number) => Math.min(max, Math.max(min, y))
+  const [draft, setDraft] = useState(() => fit(Number(value) || max))
+  const show = () => {
+    setDraft(fit(Number(value) || max))
+    setOpen(true)
+  }
+  return (
+    <>
+      <PickField id={id} value={value} placeholder={placeholder} icon={<CalendarDays className="size-4" />} mono invalid={invalid} onOpen={show} />
+      <BottomSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        title={title}
+        footer={
+          <Button
+            className="h-12 text-base"
+            onClick={() => {
+              onChange(String(draft))
+              setOpen(false)
+            }}
+          >
+            Готово
+          </Button>
+        }
+      >
+        <Wheel label="Год" mono value={draft} items={range(min, max).reverse().map((v) => ({ v, label: String(v) }))} onChange={setDraft} />
+      </BottomSheet>
+    </>
+  )
+}

@@ -242,7 +242,7 @@ export function StepShell({ step, go, children, canNext = true, optional = false
       </div>
 
       {footer ?? (
-        <Footer className="border-t border-border bg-surface">
+        <Footer className="border-t border-border bg-background">
           {missing.length > 0 && (
             <button type="button" onClick={() => setSheet('missing')} className="flex items-center gap-2 text-left text-sm">
               <AlertTriangle className="size-4 shrink-0 text-warning" />

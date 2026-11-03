@@ -150,7 +150,7 @@ function SectionStep({ i, sections, st, go, onChat, toast }: { i: number; sectio
       sub={s.sub}
       onBack={() => st.setStep(i > 0 ? i - 1 : null)}
       footer={
-        <Footer className="border-t border-border bg-surface">
+        <Footer className="border-t border-border bg-background">
           <Button size="lg" onClick={next}>
             Продолжить
           </Button>
@@ -210,7 +210,7 @@ function ReviewStep({ sections, st, go, onChat }: { sections: Section[]; st: For
       sub="Так анкету увидит агентство. Нажмите раздел, чтобы исправить."
       onBack={() => st.setStep(sections.length - 1)}
       footer={
-        <Footer className="border-t border-border bg-surface">
+        <Footer className="border-t border-border bg-background">
           <Button size="lg" disabled={issues.length > 0} onClick={() => setConfirm(true)}>
             Отправить
           </Button>
@@ -338,7 +338,7 @@ function StartView({ sections, st, go, onChat }: { sections: Section[]; st: Form
           )}
         </div>
       </div>
-      <Footer className="border-t border-border bg-surface">
+      <Footer className="border-t border-border bg-background">
         {empty ? (
           <>
             <Button size="lg" onClick={() => st.setStep(0)}>
@@ -407,7 +407,7 @@ function SentView({ sections, st, onChat }: { sections: Section[]; st: FormState
           <FormPaper sections={sections} st={st} />
         </div>
       </div>
-      <Footer className="border-t border-border bg-surface">
+      <Footer className="border-t border-border bg-background">
         <Button size="lg" variant="outline" className="text-primary" onClick={onChat}>
           Вернуться в чат
         </Button>

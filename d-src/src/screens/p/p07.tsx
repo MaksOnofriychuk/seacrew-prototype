@@ -101,7 +101,7 @@ export function P07Post({ go }: ScreenProps) {
         ) : null}
       </div>
       {p.kind === 'user' && (
-        <Footer className="flex-row items-center gap-2 border-t border-border bg-surface">
+        <Footer className="flex-row items-center gap-2 border-t border-border bg-background">
           <input
             ref={input}
             value={draft}

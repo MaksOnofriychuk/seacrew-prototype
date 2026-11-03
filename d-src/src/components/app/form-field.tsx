@@ -20,7 +20,7 @@ export function FormField(props: {
   const reserve = 'note' in props || 'error' in props
   return (
     <div className={cn('flex flex-col gap-2', className)}>
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex min-h-5 flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <Label htmlFor={id}>{label}</Label>
         {source && <Badge variant="outline" className="font-normal text-muted-foreground">{source}</Badge>}
       </div>

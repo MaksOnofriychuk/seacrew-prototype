@@ -56,7 +56,7 @@ export function XField(props: { id?: string; label: string; tag?: ReactNode; not
   const reserve = 'note' in props || 'error' in props
   return (
     <div className={cn('flex min-w-0 flex-col gap-2', className)}>
-      <div className="flex min-h-5 items-center justify-between gap-3">
+      <div className="flex min-h-5 flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <Label htmlFor={id} className="text-[15px] font-medium">
           {label}
         </Label>

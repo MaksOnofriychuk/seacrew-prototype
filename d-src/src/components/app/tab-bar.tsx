@@ -42,7 +42,7 @@ export function TabBar({
 }) {
   const press = (t: Tab) => (onTab ? onTab(t) : t !== active && go?.(TAB_SCREENS[t]))
   return (
-    <nav className="grid shrink-0 grid-cols-5 border-t border-border bg-surface pt-2">
+    <nav className="grid shrink-0 grid-cols-5 border-t border-border bg-background pt-2">
       {TABS.map((t) => (
         <button
           key={t.id}

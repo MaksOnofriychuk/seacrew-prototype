@@ -122,7 +122,7 @@ export function G04GuestJob({ go }: ScreenProps) {
         </ViewState>
       </div>
       {view === 'normal' && (
-        <Footer className="flex-row border-t border-border bg-surface">
+        <Footer className="flex-row border-t border-border bg-background">
           <Button variant="outline" aria-label="Сохранить" className="size-12 shrink-0" onClick={() => gate('save')}>
             <Bookmark className="size-5" />
           </Button>

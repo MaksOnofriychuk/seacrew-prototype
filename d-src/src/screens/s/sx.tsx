@@ -67,7 +67,7 @@ export function SxCoreDone({ go }: ScreenProps) {
           </ul>
         </ProgressState>
       </div>
-      <Footer className="border-t border-border bg-surface">
+      <Footer className="border-t border-border bg-background">
         <Button size="lg" onClick={() => go('s8')}>
           Заполнить дополнительное
         </Button>

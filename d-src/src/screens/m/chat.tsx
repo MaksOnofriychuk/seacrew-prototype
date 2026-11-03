@@ -102,7 +102,7 @@ export function MChat({ go, fixed }: ScreenProps & { fixed?: string }) {
           onFile={() => send(chat.id, { kind: 'file', from: 'me', name: 'Сертификат STCW.pdf', size: '860 КБ' })}
         />
       ) : (
-        <div className="shrink-0 border-t border-border bg-surface px-6 pt-3 pb-5 text-center text-sm text-muted-foreground">Написать можно будет, когда рекрутер ответит.</div>
+        <div className="shrink-0 border-t border-border bg-background px-6 pt-3 pb-5 text-center text-sm text-muted-foreground">Написать можно будет, когда рекрутер ответит.</div>
       )}
 
       <CvSheet
@@ -347,7 +347,7 @@ function Composer({ onText, onPhoto, onFile }: { onText: (t: string) => void; on
     setText('')
   }
   return (
-    <div className="flex shrink-0 items-end gap-2 border-t border-border bg-surface px-3 pt-2.5 pb-4">
+    <div className="flex shrink-0 items-end gap-2 border-t border-border bg-background px-3 pt-2.5 pb-4">
       <button
         type="button"
         aria-label="Прикрепить фото или файл"

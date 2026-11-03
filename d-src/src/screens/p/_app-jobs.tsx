@@ -444,7 +444,7 @@ export function JobScreen({ go, applyOpen = false }: { go: Go; applyOpen?: boole
         </ViewState>
       </div>
       {jobView === 'normal' && (
-      <Footer className="flex-row border-t border-border bg-surface">
+      <Footer className="flex-row border-t border-border bg-background">
         <SaveButton on={isSaved(k)} onClick={() => toggle(k)} className="size-12 border border-border" />
         {closed ? (
           <Button size="lg" variant="outline" className="flex-1 text-muted-foreground" disabled>

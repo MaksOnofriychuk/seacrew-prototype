@@ -1,4 +1,6 @@
 import { Group } from '@/components/app/group'
+import { YearPick } from '@/components/app/pickers'
+import { TODAY } from '@/lib/dates'
 import { StepShell } from './_stepper'
 import type { ScreenProps } from '../registry'
 import { SourceTag, TextInput } from '../q/_parts'
@@ -13,7 +15,6 @@ const EMPTY: Edu = { inst: '', spec: '', from: '', to: '', src: false }
 // Вигадані дані «з документа».
 const REC = { inst: 'Морская академия', spec: 'Судовые энергетические установки', from: '2008', to: '2013' }
 
-const year = (v: string) => v.replace(/\D/g, '').slice(0, 4)
 
 export function S10Education({ go }: ScreenProps) {
   const { bag, setBag, showToast } = useBag()
@@ -43,10 +44,10 @@ export function S10Education({ go }: ScreenProps) {
           </XField>
           <div className="grid grid-cols-2 gap-3">
             <XField id="s10-from" label="Начало" tag={tag('from')}>
-              <TextInput id="s10-from" mono inputMode="numeric" value={f.from} onChange={(e) => patch({ from: year(e.target.value) })} placeholder="ГГГГ" />
+              <YearPick id="s10-from" title="Начало учёбы" value={f.from} max={f.to ? Number(f.to) : TODAY.getFullYear()} onChange={(from) => patch({ from })} />
             </XField>
             <XField id="s10-to" label="Окончание" tag={tag('to')}>
-              <TextInput id="s10-to" mono inputMode="numeric" value={f.to} onChange={(e) => patch({ to: year(e.target.value) })} placeholder="ГГГГ" />
+              <YearPick id="s10-to" title="Окончание учёбы" value={f.to} min={f.from ? Number(f.from) : 1960} max={TODAY.getFullYear() + 6} onChange={(to) => patch({ to })} />
             </XField>
           </div>
         </div>

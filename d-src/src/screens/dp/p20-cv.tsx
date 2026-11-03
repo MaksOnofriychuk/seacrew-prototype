@@ -68,7 +68,7 @@ export function P20Cv({ go }: ScreenProps) {
         </ViewState>
       </div>
       {ready && (
-        <Footer className="border-t border-border bg-surface pt-4">
+        <Footer className="border-t border-border bg-background pt-4">
           <Button size="lg" disabled={busy} onClick={download}>
             {busy ? <LoaderCircle className="animate-spin" /> : <Download />}
             {busy ? 'Сохраняем…' : 'Скачать PDF'}

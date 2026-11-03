@@ -161,7 +161,7 @@ export function P11Doc({ go }: ScreenProps) {
         </div>
       </ViewState>
       {edit && (
-        <Footer className="flex-row border-t border-border bg-surface">
+        <Footer className="flex-row border-t border-border bg-background">
           <Button size="lg" variant="ghost" className="w-auto text-muted-foreground" onClick={() => setEdit(null)}>
             Отмена
           </Button>
