@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { EyeOff, Users, Wallet } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
+import { moneyText, NumberWheel } from '@/components/app/pickers'
 import { NavBar } from '@/components/app/chrome'
 import { EmptyState, ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
@@ -192,8 +193,7 @@ function FewData({ go }: { go: (id: string) => void }) {
 /* ---------- вікно «изменить зарплату» ---------- */
 
 function EditSheet({ open, title, hint, value, onClose, onSave }: { open: boolean; title: string; hint: string; value: number; onClose: () => void; onSave: (v: number) => void }) {
-  const [v, setV] = useState(String(value))
-  const n = Number(v.replace(/[^\d]/g, '')) || 0
+  const [n, setN] = useState(value || 4000)
   return (
     <BottomSheet
       open={open}
@@ -206,17 +206,7 @@ function EditSheet({ open, title, hint, value, onClose, onSave }: { open: boolea
         </Button>
       }
     >
-      <label className="flex h-12 items-center gap-2 rounded-md border border-input bg-surface px-3 focus-within:border-primary">
-        <span className="text-base text-muted-foreground">$</span>
-        <input
-          inputMode="numeric"
-          aria-label={title}
-          value={n ? n.toLocaleString('ru-RU').replace(/ /g, ' ') : ''}
-          onChange={(e) => setV(e.target.value)}
-          className="min-w-0 flex-1 bg-transparent font-mono text-lg outline-none"
-        />
-        <span className="text-base text-muted-foreground">/ мес</span>
-      </label>
+      <NumberWheel label="$ в месяц" value={n} onChange={setN} min={500} max={30000} step={100} format={moneyText} />
     </BottomSheet>
   )
 }

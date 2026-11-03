@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Check, Lock } from 'lucide-react'
 import { FleetPicker } from '@/components/app/fleet-picker'
+import { moneyText, NumberPick } from '@/components/app/pickers'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { departmentsFor, positionsFor } from '@/lib/data'
@@ -163,21 +164,6 @@ export function Segmented<T extends string>({ label, value, options, onChange, m
   )
 }
 
-function NumField({ label, prefix, value, onChange, placeholder, className }: { label: string; prefix: string; value: string; onChange: (v: string) => void; placeholder: string; className?: string }) {
-  return (
-    <label className={cn('flex h-11 min-w-0 items-center gap-2 rounded-md border border-input bg-surface px-3 focus-within:border-primary', className)}>
-      <span className="text-[15px] text-muted-foreground">{prefix}</span>
-      <input
-        inputMode="numeric"
-        aria-label={label}
-        value={value ? money(num(value)) : ''}
-        onChange={(e) => onChange(String(num(e.target.value) || ''))}
-        placeholder={placeholder}
-        className="min-w-0 flex-1 bg-transparent font-mono text-base outline-none placeholder:font-sans placeholder:text-muted-foreground"
-      />
-    </label>
-  )
-}
 
 function Group({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
@@ -226,7 +212,19 @@ export function FiltersSheet({ open, f, onChange, onClose }: { open: boolean; f:
 
         <Group title="Зарплата">
           <div className="flex gap-2">
-            <NumField label="Зарплата от" prefix="от" value={f.salary} onChange={(salary) => set({ salary })} placeholder="любая" className="flex-1" />
+            <div className="min-w-0 flex-1">
+              <NumberPick
+                title="Зарплата от"
+                prefix="от"
+                value={f.salary}
+                onChange={(salary) => set({ salary })}
+                placeholder="Любая"
+                emptyLabel="Любая"
+                format={moneyText}
+                unit={`${f.cur} ${f.per === 'month' ? 'в месяц' : 'в день'}`}
+                {...(f.per === 'month' ? { min: 500, max: 20000, step: 100, initial: 4000 } : { min: 50, max: 1000, step: 10, initial: 150 })}
+              />
+            </div>
             <Segmented<Currency> label="Валюта" value={f.cur} onChange={(cur) => set({ cur })} options={[['$', '$'], ['€', '€'], ['£', '£']]} mono className="w-[132px] shrink-0" />
           </div>
           <Segmented
@@ -269,7 +267,18 @@ export function FiltersSheet({ open, f, onChange, onClose }: { open: boolean; f:
 
         <Group title="Длительность контракта">
           <div className="flex gap-2">
-            <NumField label="Длительность контракта, не больше" prefix="до" value={f.dur} onChange={(dur) => set({ dur })} placeholder="любая" className="w-36" />
+            <div className="w-36 shrink-0">
+              <NumberPick
+                title="Длительность контракта"
+                prefix="до"
+                value={f.dur}
+                onChange={(dur) => set({ dur })}
+                placeholder="Любая"
+                emptyLabel="Любая"
+                unit={f.durUnit === 'month' ? 'месяцев' : 'недель'}
+                {...(f.durUnit === 'month' ? { min: 1, max: 12, initial: 6 } : { min: 1, max: 52, initial: 26 })}
+              />
+            </div>
             <Segmented
               label="Единица"
               value={f.durUnit}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react'
 import { ChevronRight, Info } from 'lucide-react'
-import { CountryPick, DatePick, PhoneField } from '@/components/app/pickers'
+import { CountryPick, DatePick, moneyText, NumberPick, PhoneField } from '@/components/app/pickers'
 import { FieldMsg } from '@/components/app/field-msg'
 import { FleetPicker, type FleetValue } from '@/components/app/fleet-picker'
 import { Button } from '@/components/ui/button'
@@ -189,16 +189,17 @@ export function SalaryEditor({ open, onClose }: { open: boolean; onClose: () => 
     <div className="flex flex-col gap-3">
       <p className="text-sm text-muted-foreground">Её видят только агентства. В рейтинге моряков не участвует.</p>
       <div className="flex gap-2">
-        <TextInput
-          aria-label="Сумма"
-          mono
-          inputMode="numeric"
-          placeholder="Сумма"
-          value={digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}
-          onChange={(e) => setV({ ...v, amount: e.target.value.replace(/\D/g, '').slice(0, 7) })}
-          onKeyDown={(e) => e.key === 'Enter' && save()}
-          className="min-w-0 flex-1"
-        />
+        <div className="min-w-0 flex-1">
+          <NumberPick
+            title="Желаемая зарплата"
+            value={digits}
+            onChange={(amount) => setV({ ...v, amount })}
+            placeholder="Сумма"
+            format={moneyText}
+            unit={`${v.cur} ${v.per === 'month' ? 'в месяц' : 'в день'}`}
+            {...(v.per === 'month' ? { min: 500, max: 30000, step: 100, initial: 4000 } : { min: 50, max: 1500, step: 10, initial: 150 })}
+          />
+        </div>
         <Seg label="Валюта" mono value={v.cur} options={CURRENCIES.map((c) => [c, c])} onChange={(cur) => setV({ ...v, cur })} className="w-[132px] shrink-0" />
       </div>
       <Seg label="Период" value={v.per} options={SALARY_PER.map((o) => [o.id, o.label])} onChange={(per) => setV({ ...v, per })} />

@@ -602,7 +602,8 @@ export function YearPick({
   )
 }
 
-// Число з діапазону (рост, вес, размер обуви): барабан, без введення. Порожнє значення — барабан стає на `initial`.
+// Число з діапазону (рост, вес, размер обуви, зарплата, тривалість): барабан, без введення.
+// Порожнє значення — барабан стає на `initial` (або на «Любая», якщо є emptyLabel).
 export function NumberPick({
   id,
   value,
@@ -615,6 +616,10 @@ export function NumberPick({
   placeholder = 'Выбрать',
   invalid,
   disabled,
+  step = 1,
+  format,
+  emptyLabel,
+  prefix,
 }: {
   id?: string
   value: string
@@ -627,17 +632,31 @@ export function NumberPick({
   placeholder?: string
   invalid?: boolean
   disabled?: boolean
+  /** крок барабана (зарплата — 100, за день — 10) */
+  step?: number
+  /** як показати число в полі й у барабані («4 000») */
+  format?: (n: number) => string
+  /** перший рядок барабана — «без значення» (фільтри: «Любая»); вибір дає '' */
+  emptyLabel?: string
+  /** текст поля перед числом («от») */
+  prefix?: string
 }) {
   const [open, setOpen] = useState(false)
-  const fit = (n: number) => Math.min(max, Math.max(min, n))
-  const [draft, setDraft] = useState(() => fit(Number(value) || initial))
-  const show = () => {
-    setDraft(fit(Number(value) || initial))
+  const show = (n: number) => (format ? format(n) : String(n))
+  const snap = (n: number) => Math.min(max, Math.max(min, Math.round((n - min) / step) * step + min))
+  const start = () => (Number(value) ? snap(Number(value)) : emptyLabel ? 0 : snap(initial))
+  const [draft, setDraft] = useState(start)
+  const openSheet = () => {
+    setDraft(start())
     setOpen(true)
   }
+  const values: Item[] = []
+  for (let v = min; v <= max; v += step) values.push({ v, label: show(v) })
+  const items = emptyLabel ? [{ v: 0, label: emptyLabel }, ...values] : values
+  const shown = Number(value) ? `${prefix ? prefix + ' ' : ''}${show(Number(value))}` : ''
   return (
     <>
-      <PickField id={id} value={value} placeholder={placeholder} icon={<ChevronDown className="size-4" />} mono invalid={invalid} disabled={disabled} onOpen={show} />
+      <PickField id={id} value={shown} placeholder={placeholder} icon={<ChevronDown className="size-4" />} mono invalid={invalid} disabled={disabled} onOpen={openSheet} />
       <BottomSheet
         open={open}
         onClose={() => setOpen(false)}
@@ -646,7 +665,7 @@ export function NumberPick({
           <Button
             className="h-12 text-base"
             onClick={() => {
-              onChange(String(draft))
+              onChange(draft ? String(draft) : '')
               setOpen(false)
             }}
           >
@@ -654,7 +673,7 @@ export function NumberPick({
           </Button>
         }
       >
-        <Wheel label={unit ?? title} mono value={draft} items={range(min, max).map((v) => ({ v, label: String(v) }))} onChange={setDraft} />
+        <Wheel label={unit ?? title} mono value={draft} items={items} onChange={setDraft} />
       </BottomSheet>
     </>
   )
@@ -665,3 +684,13 @@ export const SIZE_RANGES = {
   weight: { min: 40, max: 160, initial: 80, unit: 'кг' },
   shoe: { min: 35, max: 50, initial: 43, unit: 'EU' },
 } as const
+
+export const moneyText = (n: number) => n.toLocaleString('ru-RU').replace(/[\u00a0\u202f]/g, ' ')
+
+// Барабан числа без поля (для вікон, що вже відкриті, — напр. «Моя зарплата»).
+export function NumberWheel({ value, onChange, min, max, step = 1, format, label }: { value: number; onChange: (n: number) => void; min: number; max: number; step?: number; format?: (n: number) => string; label: string }) {
+  const items: Item[] = []
+  for (let v = min; v <= max; v += step) items.push({ v, label: format ? format(v) : String(v) })
+  const snapped = Math.min(max, Math.max(min, Math.round((value - min) / step) * step + min))
+  return <Wheel label={label} mono value={snapped} items={items} onChange={onChange} />
+}
