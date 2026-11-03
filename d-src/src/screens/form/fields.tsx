@@ -140,7 +140,7 @@ export function QuestionField({
   else tag = <FieldTag tag={tagOf(q, a, proved && !st.proof[q.id])} />
 
   // порожнє обов'язкове після автозаповнення — легка підсвітка рядка
-  const hint = st.filled && !readOnly && q.required && !hasValue && !open && !err
+  const hint = st.filled && !readOnly && !hasValue && !open && !err
 
   const detail = a?.base !== undefined && a.v ? `${IN_DOC[q.sources[a.base]?.kind ?? 'profile']}: ${q.sources[a.base]?.value}` : null
 
@@ -202,7 +202,7 @@ export function QuestionField({
           st={st}
           invalid={!!err}
           wrong={wrong}
-          onAttach={(kind) => {
+          onAttach={(kind, name) => {
             if (state.scenario === 'notSeafarer') {
               if (bag<number>('q.wrongDocs', 0) >= 1) return go('e08')
               setBag('q.wrongDocs', 1)
@@ -211,7 +211,7 @@ export function QuestionField({
             }
             setBag('q.wrongDocs', null)
             setWrong(false)
-            st.setProof(q.id, kind === 'photo' ? { name: 'medical_photo.jpg', size: '1,2 МБ' } : { name: 'Medical_certificate.pdf', size: '480 КБ' })
+            st.setProof(q.id, kind === 'photo' ? { name: 'medical_photo.jpg', size: '1,2 МБ' } : kind === 'doc' ? { name: name ?? 'Документ', size: 'из профиля' } : { name: 'Medical_certificate.pdf', size: '480 КБ' })
             showToast('Подтверждение прикреплено')
           }}
         />
@@ -252,7 +252,6 @@ export function QuestionField({
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="text-muted-foreground">
               {q.label}
-              {q.required && '\u00a0*'}
             </span>
             {tag}
           </span>
@@ -343,15 +342,16 @@ const docName = (label: string) => {
   return t[0].toLowerCase() + t.slice(1)
 }
 
-function ProofBox({ q, st, invalid, wrong, onAttach }: { q: Question; st: FormState; invalid: boolean; wrong: boolean; onAttach: (k: 'photo' | 'file') => void }) {
+function ProofBox({ q, st, invalid, wrong, onAttach }: { q: Question; st: FormState; invalid: boolean; wrong: boolean; onAttach: (k: 'photo' | 'file' | 'doc', name?: string) => void }) {
   const a = st.answers[q.id]
+  const [docs, setDocs] = useState(false)
   const fromProfile = a && typeof a.src === 'number' && q.sources[a.src]?.unproved
   return (
     <div className={cn('flex flex-col gap-3 rounded-md border border-dashed px-4 py-3', invalid ? 'border-signal' : 'border-warning')}>
       <p className="flex items-start gap-2 text-sm">
         <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
         <span>
-          {fromProfile ? 'В профиле это введено без документа.' : 'Значение введено вручную.'} Прикрепите фото или файл, который это подтверждает.
+          {fromProfile ? 'В профиле это введено без документа.' : 'Значение введено вручную.'} Агентство просит подтверждение — прикрепите фото, файл или документ из профиля.
         </span>
       </p>
       {wrong && (
@@ -367,10 +367,36 @@ function ProofBox({ q, st, invalid, wrong, onAttach }: { q: Question; st: FormSt
         <Button size="sm" variant="outline" className="flex-1 text-primary" onClick={() => onAttach('file')}>
           <FolderOpen /> Файл
         </Button>
+        <Button size="sm" variant="outline" className="flex-1 text-primary" onClick={() => setDocs(true)}>
+          <FileCheck2 /> Из документов
+        </Button>
       </div>
+      <SourceSheet
+        open={docs}
+        onClose={() => setDocs(false)}
+        title="Из моих документов"
+        description="Документ из профиля прикрепится к этому полю как подтверждение."
+        items={PROOF_DOCS.map((d) => ({
+          icon: FileText,
+          title: d.title,
+          sub: d.sub,
+          onClick: () => {
+            setDocs(false)
+            onAttach('doc', d.title)
+          },
+        }))}
+      />
     </div>
   )
 }
+
+// Документи з профілю, які можна прикріпити як підтвердження (приклад).
+const PROOF_DOCS = [
+  { title: 'Медицинский сертификат', sub: 'Фото, 1 стр.' },
+  { title: 'Удостоверение личности моряка', sub: 'Фото, 1 стр.' },
+  { title: 'Диплом (CoC)', sub: 'PDF, 2 стр.' },
+  { title: 'Загранпаспорт', sub: 'Фото, 1 стр.' },
+]
 
 function Attached({ p, readOnly, onRemove }: { p: { name: string; size: string }; readOnly?: boolean; onRemove: () => void }) {
   return (

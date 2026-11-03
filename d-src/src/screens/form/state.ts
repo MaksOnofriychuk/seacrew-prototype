@@ -120,7 +120,8 @@ export function useFormState(sections: Section[]) {
     const a = answers[q.id]
     if (needsChoice(q, a)) return 'Выберите значение'
     if (q.kind === 'signature' && answers[q.id]?.v.trim() && !answers[q.id + '.ok']) return 'Подтвердите подпись'
-    if (q.required && !has(q)) return q.kind === 'table' ? 'Добавьте хотя бы одну запись' : q.kind === 'consent' ? 'Без согласия анкету не отправить' : 'Обязательное поле'
+    // В анкеті рекрутера обов'язкові всі поля: з даних або вручну (перевірка 03.11, №47).
+    if (!has(q)) return q.kind === 'table' ? 'Добавьте хотя бы одну запись' : q.kind === 'consent' ? 'Без согласия анкету не отправить' : 'Обязательное поле'
     if ((q.kind === 'doc' || q.kind === 'nok') && has(q) && !splitComposite(q.kind, answers[q.id]!.v).a.trim()) return q.kind === 'doc' ? 'Укажите данные документа' : 'Укажите имя'
     if (q.kind === 'doc' && has(q) && !splitComposite('doc', answers[q.id]!.v).b) return 'Укажите, до какого числа действует'
     if (q.kind === 'nok' && has(q) && !splitComposite('nok', answers[q.id]!.v).b) return 'Укажите телефон'

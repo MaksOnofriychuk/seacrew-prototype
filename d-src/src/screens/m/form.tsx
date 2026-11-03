@@ -142,18 +142,6 @@ function SectionStep({ i, sections, st, go, onChat, toast }: { i: number; sectio
           <Button size="lg" onClick={next}>
             Продолжить
           </Button>
-          <Button
-            size="lg"
-            variant="ghost"
-            className="text-primary"
-            onClick={() => {
-              if (st.done[s.id] !== 'done') st.mark(s.id, 'skip')
-              toast('Пропущено — вернуться можно в любой момент')
-              st.setStep(i + 1)
-            }}
-          >
-            Пропустить
-          </Button>
         </Footer>
       }
     >
