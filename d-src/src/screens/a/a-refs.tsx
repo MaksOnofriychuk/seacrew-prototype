@@ -4,14 +4,14 @@ import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebInput, WebSelect } from '@/components/web/fields'
-import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { FilterBar } from '@/components/web/filter-bar'
+import { PageHeader } from '@/components/web/page-header'
 import { FLEETS, FLEET_TREE, SECONDARY_DEPARTMENTS, type Fleet } from '@/lib/data'
 import { OTHER_ENTRIES, VESSEL_TYPES, type OtherEntry } from '@/lib/data-admin'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { AdminPage, CancelButton, Mono, SideSheet, dt, useBagState } from './_parts'
+import { AdminPage, AdminTabs, CancelButton, Mono, MultiFilter, SideSheet, dt, useBagState } from './_parts'
 
 type Tab = 'tree' | 'vessels' | 'other'
 type Tree = Record<string, Record<string, string[]>>
@@ -21,14 +21,16 @@ const sortDepts = (ds: string[]) => [...ds.filter((d) => !SECONDARY_DEPARTMENTS.
 export function ARefs({ go }: ScreenProps) {
   const [others] = useBagState<string[]>('a.otherDone', [])
   const pending = OTHER_ENTRIES.filter((o) => !others.includes(o.id)).length
+  const [tree] = useBagState<Tree>('a.tree', FLEET_TREE as Tree)
+  const [vessels] = useBagState('a.vessels', VESSEL_TYPES)
   const [tab, setTab] = useBagState<Tab>('a.refsTab', 'tree')
   return (
     <AdminPage active="a-refs" go={go}>
       <PageHeader title="Справочники" description="Списки, из которых моряки и агентства выбирают флот, департамент, должность и тип судна. Меняете их только вы — в приложении новое видно сразу." />
-      <PageTabs<Tab>
+      <AdminTabs<Tab>
         tabs={[
-          { id: 'tree', label: 'Флоты, департаменты, должности' },
-          { id: 'vessels', label: 'Типы судов', count: VESSEL_TYPES.length },
+          { id: 'tree', label: 'Флоты, департаменты, должности', count: Object.values(tree).reduce((n, f) => n + Object.values(f).flat().length, 0) },
+          { id: 'vessels', label: 'Типы судов', count: vessels.length },
           { id: 'other', label: '«Other» на проверке', count: pending },
         ]}
         value={tab}
@@ -49,6 +51,8 @@ function TreeView() {
   const [dept, setDept] = useState<string>('Engine')
   const [add, setAdd] = useState<'fleet' | 'dept' | 'pos' | null>(null)
   const [name, setName] = useState('')
+  const [editPos, setEditPos] = useState<string | null>(null)
+  const [newName, setNewName] = useState('')
   const depts = sortDepts(Object.keys(tree[fleet] ?? {}))
   const positions = [...(tree[fleet]?.[dept] ?? [])].sort()
 
@@ -87,12 +91,37 @@ function TreeView() {
         </MillerCol>
         <MillerCol title="Должность" count={positions.length} onAdd={dept ? () => setAdd('pos') : undefined} last>
           {positions.map((p) => (
-            <Item key={p} label={p} onClick={() => showToast(`${p}: переименовать или убрать можно после согласования списков`)} />
+            <Item key={p} label={p} onClick={() => (setEditPos(p), setNewName(p))} />
           ))}
           {!positions.length && <p className="px-5 py-4 text-sm text-muted-foreground">{dept ? 'Должностей пока нет.' : 'Выберите департамент.'}</p>}
         </MillerCol>
       </div>
       <p className="mt-3 text-sm text-muted-foreground">Вторичные департаменты (Hotel & Entertainment, Other) в приложении стоят в конце списка.</p>
+
+      <SideSheet
+        open={editPos !== null}
+        onOpenChange={(v) => !v && setEditPos(null)}
+        title={editPos ?? ''}
+        description={`${fleet} → ${dept}`}
+        footer={
+          <>
+            <Button variant="ghost" className="mr-auto text-signal" onClick={() => editPos && (setTree({ ...tree, [fleet]: { ...tree[fleet], [dept]: tree[fleet][dept].filter((x) => x !== editPos) } }), showToast(`Убрано: ${editPos}. У моряков значение сохранится как есть`), setEditPos(null))}>
+              Убрать из списка
+            </Button>
+            <CancelButton onClick={() => setEditPos(null)} />
+            <Button
+              disabled={!newName.trim() || newName.trim() === editPos}
+              onClick={() => editPos && (setTree({ ...tree, [fleet]: { ...tree[fleet], [dept]: tree[fleet][dept].map((x) => (x === editPos ? newName.trim() : x)) } }), showToast(`Переименовано: ${newName.trim()}`), setEditPos(null))}
+            >
+              Переименовать
+            </Button>
+          </>
+        }
+      >
+        <WebField id="pos-name" label="Название" hint="Как в морских документах, на английском.">
+          <WebInput id="pos-name" value={newName} onChange={(e) => setNewName(e.target.value)} />
+        </WebField>
+      </SideSheet>
 
       <SideSheet
         open={!!add}
@@ -175,12 +204,14 @@ function Item({ label, hint, active, chevron, muted, onClick }: { label: string;
 function Vessels() {
   const { showToast } = useProto()
   const [list, setList] = useBagState('a.vessels', VESSEL_TYPES)
-  const [fleet, setFleet] = useState('')
+  const [fleets, setFleets] = useState<string[]>([])
   const [q, setQ] = useState('')
+  const [edit, setEdit] = useState<string | null>(null)
+  const [vname, setVname] = useState('')
   const [adding, setAdding] = useState(false)
   const [name, setName] = useState('')
   const [nf, setNf] = useState('')
-  const rows = list.filter((v) => !fleet || v.fleet === fleet).filter((v) => !q || v.name.toLowerCase().includes(q.toLowerCase()))
+  const rows = list.filter((v) => !fleets.length || fleets.includes(v.fleet)).filter((v) => !q || v.name.toLowerCase().includes(q.toLowerCase()))
   const columns: Column2[] = [
     { key: 'n', header: 'Тип судна', width: '40%', sortValue: (v) => v.name, cell: (v) => <span className="font-medium">{v.name}</span> },
     { key: 'f', header: 'Флот', width: '30%', sortValue: (v) => v.fleet, cell: (v) => v.fleet },
@@ -196,12 +227,38 @@ function Vessels() {
   return (
     <>
       <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Тип судна' }} count={rows.length}>
-        <FilterSelect label="Флот" value={fleet} onChange={setFleet} options={[...FLEETS]} />
+        <MultiFilter label="Флот" value={fleets} onChange={setFleets} options={[...FLEETS]} />
         <Button variant="outline" className="h-10 text-primary" onClick={() => setAdding(true)}>
           <Plus /> Добавить тип
         </Button>
       </FilterBar>
-      <DataTable columns={columns} rows={rows} rowKey={(v) => v.name} onRowClick={(v) => showToast(v.jobs ? `${v.name} есть в вакансиях — его можно только переименовать` : `${v.name} нигде не используется — можно убрать`)} empty={{ icon: BookOpen, title: 'Типов судов нет', text: 'Добавьте первый тип и выберите, к какому флоту он относится.' }} />
+      <DataTable columns={columns} rows={rows} rowKey={(v) => v.name} onRowClick={(v) => (setEdit(v.name), setVname(v.name))} empty={{ icon: BookOpen, title: 'Типов судов нет', text: 'Добавьте первый тип и выберите, к какому флоту он относится.' }} />
+      <SideSheet
+        open={edit !== null}
+        onOpenChange={(v) => !v && setEdit(null)}
+        title={edit ?? ''}
+        description={(() => {
+          const j = list.find((v) => v.name === edit)?.jobs ?? 0
+          return j ? `Есть в вакансиях: ${j}. Убрать нельзя, переименовать можно.` : 'Нигде не используется, можно убрать.'
+        })()}
+        footer={
+          <>
+            {!(list.find((v) => v.name === edit)?.jobs) && (
+              <Button variant="ghost" className="mr-auto text-signal" onClick={() => (setList(list.filter((v) => v.name !== edit)), showToast(`Убрано: ${edit}`), setEdit(null))}>
+                Убрать
+              </Button>
+            )}
+            <CancelButton onClick={() => setEdit(null)} />
+            <Button disabled={!vname.trim() || vname.trim() === edit} onClick={() => (setList(list.map((v) => (v.name === edit ? { ...v, name: vname.trim() } : v))), showToast(`Переименовано: ${vname.trim()}`), setEdit(null))}>
+              Переименовать
+            </Button>
+          </>
+        }
+      >
+        <WebField id="vt-edit" label="Название" hint="Как в морских документах, на английском.">
+          <WebInput id="vt-edit" value={vname} onChange={(e) => setVname(e.target.value)} />
+        </WebField>
+      </SideSheet>
       <SideSheet
         open={adding}
         onOpenChange={setAdding}

@@ -4,29 +4,33 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebSelect } from '@/components/web/fields'
+import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
 import { ENGINES, ENGINE_CHANGES, ENGINE_STATE_LABEL, POLICY_LABEL, type Engine, type EngineChange, type EngineState } from '@/lib/data-admin'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { AdminPage, Mono, Note, SectionTitle, dt, useBagState } from './_parts'
+import { AdminPage, Mono, Note, PeriodFilter, SectionTitle, dt, inPeriod, useBagState } from './_parts'
 
 const TONE: Record<EngineState, Tone> = { working: 'success', 'disabled-by-admin': 'muted', 'daily-limit': 'warning', 'missing-key': 'error', 'rate-limited': 'warning' }
 const usd = (n: number) => '$' + n.toFixed(2).replace('.', ',')
 const now = () => '2026-11-02 ' + new Date().toTimeString().slice(0, 5)
 
-function LimitInput({ label, value, onChange, placeholder, w = 'w-24' }: { label: string; value: string; onChange: (v: string) => void; placeholder: string; w?: string }) {
+const NONE = 'none'
+
+// Лимит выбирается из ряда значений, а не вводится (правило 4); если сохранено другое число, оно тоже в списке.
+function LimitPick({ label, value, onChange, steps, none, unit = '', w = 'w-[100px]' }: { label: string; value: string; onChange: (v: string) => void; steps: number[]; none: string; unit?: string; w?: string }) {
+  const v = value || NONE
+  const all = [...new Set([...steps, ...(value ? [Number(value)] : [])])].sort((a, b) => a - b)
   return (
-    <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+    <label className="flex flex-col gap-1 text-xs text-muted-foreground" onClick={(e) => e.stopPropagation()}>
       {label}
-      <input
-        value={value}
-        inputMode="decimal"
-        onChange={(e) => onChange(e.target.value.replace(/[^\d.,]/g, ''))}
-        onClick={(e) => e.stopPropagation()}
-        placeholder={placeholder}
-        className={cn('h-8 rounded-md border border-border bg-surface px-2 font-mono text-sm text-foreground outline-none placeholder:font-sans placeholder:text-muted-foreground focus:border-primary', w)}
+      <WebSelect
+        value={v}
+        onChange={(x) => onChange(x === NONE ? '' : x)}
+        options={[{ value: NONE, label: none }, ...all.map((n) => ({ value: String(n), label: `${n.toLocaleString('ru')}${unit}` }))]}
+        className={cn('h-8 data-[size=default]:h-8 px-2 text-sm text-foreground', w)}
       />
     </label>
   )
@@ -38,7 +42,6 @@ function Limits({ e, onSave }: { e: Engine; onSave: (patch: Partial<Engine>, wha
   const [to, setTo] = useState(e.timeout?.toString() ?? '')
   const dirty = req !== (e.reqLimit?.toString() ?? '') || usdL !== (e.usdLimit?.toString() ?? '') || to !== (e.timeout?.toString() ?? '')
   const num = (s: string) => (s ? Number(s.replace(',', '.')) : null)
-  const badTimeout = !!to && (Number(to) < 10 || Number(to) > 300)
   const save = () => {
     const what: string[] = []
     const show = (v: number | null, unit = '') => (v === null ? 'без лимита' : v + unit)
@@ -49,10 +52,10 @@ function Limits({ e, onSave }: { e: Engine; onSave: (patch: Partial<Engine>, wha
   }
   return (
     <div className="flex items-end gap-2 py-1">
-      <LimitInput label="Запусков" value={req} onChange={setReq} placeholder="без лимита" />
-      <LimitInput label="USD" value={usdL} onChange={setUsd} placeholder="без лимита" />
-      <LimitInput label="Тайм-аут, с" value={to} onChange={setTo} placeholder="60" w="w-16" />
-      <Button size="sm" variant={dirty ? 'default' : 'outline'} disabled={!dirty || badTimeout} onClick={save} title={badTimeout ? 'Тайм-аут — от 10 до 300 с' : undefined}>
+      <LimitPick label="Запусков" value={req} onChange={setReq} steps={[50, 100, 200, 500, 1000, 2000, 5000]} none="Без лимита" />
+      <LimitPick label="USD" value={usdL} onChange={setUsd} steps={[1, 2, 5, 10, 20, 50, 100]} none="Без лимита" />
+      <LimitPick label="Тайм-аут" value={to} onChange={setTo} steps={[30, 60, 90, 120, 180, 300]} none="Стандарт" unit=" с" w="w-[100px]" />
+      <Button size="sm" variant={dirty ? 'default' : 'outline'} disabled={!dirty} onClick={save}>
         Сохранить
       </Button>
     </div>
@@ -65,6 +68,10 @@ export function AEngines({ go }: ScreenProps) {
   const [log, setLog] = useBagState<EngineChange[]>('a.engineLog', ENGINE_CHANGES)
   const [docs, setDocs] = useBagState('a.engineDocs', 'claude-sonnet')
   const [blanks, setBlanks] = useBagState('a.engineBlanks', 'gpt-vision')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [eng, setEng] = useState('')
+  const logRows = log.filter((c) => (!eng || c.engine === eng) && inPeriod(c.when, from, to))
 
   const write = (engine: string, what: string[]) => setLog([...what.map((w, i) => ({ id: `n${Date.now()}${i}`, when: now(), who: 'admin@seafolio.example', engine, what: w })), ...log])
 
@@ -94,7 +101,7 @@ export function AEngines({ go }: ScreenProps) {
     {
       key: 'engine',
       header: 'Движок',
-      width: '22%',
+      width: '19%',
       sortValue: (e) => e.label,
       cell: (e) => (
         <span className="flex flex-col leading-tight">
@@ -110,7 +117,7 @@ export function AEngines({ go }: ScreenProps) {
     {
       key: 'on',
       header: 'Включён',
-      width: '8%',
+      width: '6%',
       cell: (e) => (
         <Switch
           aria-label={`${e.label}: включён`}
@@ -124,7 +131,7 @@ export function AEngines({ go }: ScreenProps) {
     {
       key: 'today',
       header: 'Сегодня',
-      width: '11%',
+      width: '10%',
       sortValue: (e) => e.runs,
       cell: (e) => (
         <span className="flex flex-col leading-tight">
@@ -163,7 +170,11 @@ export function AEngines({ go }: ScreenProps) {
       <DataTable columns={columns} rows={engines} rowKey={(e) => e.id} empty={{ icon: Cpu, title: 'Движков нет', text: 'Подключённые движки появятся здесь после настройки ключей на сервере.' }} />
 
       <SectionTitle>Журнал изменений</SectionTitle>
-      <DataTable columns={logCols} rows={log} rowKey={(c) => c.id} initialSort={{ key: 'when', dir: 'desc' }} empty={{ icon: History, title: 'Изменений пока нет', text: 'Здесь появится, кто и когда менял движки и лимиты.' }} />
+      <FilterBar onReset={from || to || eng ? () => (setFrom(''), setTo(''), setEng('')) : undefined} count={logRows.length}>
+        <FilterSelect label="Движок" value={eng} onChange={setEng} options={engines.map((e) => ({ value: e.id, label: e.label }))} />
+        <PeriodFilter label="Когда" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
+      </FilterBar>
+      <DataTable columns={logCols} rows={logRows} rowKey={(c) => c.id} initialSort={{ key: 'when', dir: 'desc' }} empty={{ icon: History, title: 'Изменений пока нет', text: 'Здесь появится, кто и когда менял движки и лимиты.' }} />
     </AdminPage>
   )
 }

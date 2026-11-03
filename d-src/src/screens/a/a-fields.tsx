@@ -1,16 +1,16 @@
 import { useState } from 'react'
-import { Database, Minus, Plus } from 'lucide-react'
+import { Database } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebSelect } from '@/components/web/fields'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
 import { CATALOG, KNOWN_FIELDS, SYN_STATE_LABEL, type CatalogField, type SynState } from '@/lib/data-admin'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
-import { AdminPage, Facts, Mono, Note, SideSheet, useBagState } from './_parts'
+import { AdminPage, AdminTabs, Facts, Mono, Note, SideSheet, useBagState } from './_parts'
 
 const TONE: Record<SynState, Tone> = { auto: 'success', admin: 'success', offer: 'warning', off: 'muted', none: 'muted' }
 type Tab = 'all' | 'disputed' | 'none'
@@ -110,24 +110,16 @@ export function AFields({ go }: ScreenProps) {
         description="Названия полей из подтверждённых документов — без значений. Синоним раскладывает такое поле в известное поле профиля; в инструкцию для ИИ каталог не попадает."
       />
 
-      <div className="mb-6 flex items-center gap-6 rounded-xl border border-border bg-surface px-6 py-4">
-        <div className="flex items-center gap-1">
-          <Button variant="outline" size="icon" aria-label="Меньше" disabled={n <= 1} onClick={() => setN(n - 1)}>
-            <Minus />
-          </Button>
-          <span className="w-12 text-center font-mono text-2xl font-semibold text-primary" aria-live="polite">
-            {n}
-          </span>
-          <Button variant="outline" size="icon" aria-label="Больше" disabled={n >= 20} onClick={() => setN(n + 1)}>
-            <Plus />
-          </Button>
-        </div>
-        <p className="max-w-[640px] text-[15px]">
+      <div className="mb-6 flex items-end gap-6 rounded-xl border border-border bg-surface px-6 py-4">
+        <WebField id="syn-n" label="Подтвердили моряков" className="w-40 shrink-0">
+          <WebSelect id="syn-n" value={String(n)} onChange={(v) => setN(Number(v))} options={Array.from({ length: 20 }, (_, i) => String(i + 1))} />
+        </WebField>
+        <p className="max-w-[640px] pb-2 text-[15px]">
           Синоним включается сам, когда его подтвердили <Mono>{n}</Mono> разных моряков и отклонений меньше, чем подтверждений. Включённые вами вручную автоматика не трогает.
         </p>
       </div>
 
-      <PageTabs<Tab>
+      <AdminTabs<Tab>
         tabs={[
           { id: 'all', label: 'Все', count: fields.length },
           { id: 'disputed', label: 'Спорные', count: fields.filter(disputed).length },

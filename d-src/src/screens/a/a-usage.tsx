@@ -2,14 +2,15 @@ import { useState } from 'react'
 import { Coins } from 'lucide-react'
 import { ViewState } from '@/components/app/states'
 import { DataTable, type Column } from '@/components/web/data-table'
-import { PageHeader, PageTabs } from '@/components/web/page-header'
+import { WebSelect } from '@/components/web/fields'
+import { PageHeader } from '@/components/web/page-header'
 import { BUDGET, DAILY_COST, PHOTOS, USAGE, type Period, type UsageRow } from '@/lib/data-admin'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { AdminPage, Mono, useBagState } from './_parts'
+import { AdminPage, Mono, PeriodFilter, useBagState } from './_parts'
 
 const usd = (n: number) => '$' + n.toFixed(2).replace('.', ',')
-const k = (n: number) => (n >= 1_000_000 ? (n / 1_000_000).toFixed(1).replace('.', ',') + ' млн' : n >= 1000 ? Math.round(n / 1000) + ' тыс.' : String(n))
+const kfmt = (n: number) => (n >= 1_000_000 ? (n / 1_000_000).toFixed(1).replace('.', ',') + ' млн' : n >= 1000 ? Math.round(n / 1000) + ' тыс.' : String(n))
 
 // Витрати по днях: один ряд, стовпчики від нуля з округленим верхом, підказка на наведенні, лінія денного бюджету.
 function DailyBars() {
@@ -53,9 +54,16 @@ function DailyBars() {
 }
 
 export function AUsage({ go }: ScreenProps) {
-  const [period, setPeriod] = useBagState<Period>('a.usagePeriod', 'today')
-  const rows = USAGE[period]
-  const photos = PHOTOS[period]
+  const [period, setPeriod] = useBagState<Period | 'custom'>('a.usagePeriod', 'today')
+  const [from, setFrom] = useBagState('a.usageFrom', '')
+  const [to, setTo] = useBagState('a.usageTo', '')
+  // свой период: берём месяц и пропорционально тому, сколько потрачено в выбранные дни
+  const monthSum = DAILY_COST.reduce((n, d) => n + d.usd, 0)
+  const rangeSum = DAILY_COST.filter((d) => (!from || '2026-' + d.day >= from) && (!to || '2026-' + d.day <= to)).reduce((n, d) => n + d.usd, 0)
+  const k = period === 'custom' ? rangeSum / monthSum : 1
+  const scale = (r: UsageRow): UsageRow => ({ ...r, runs: Math.round(r.runs * k), ok: Math.round(r.ok * k), failed: Math.round(r.failed * k), running: 0, tokensIn: Math.round(r.tokensIn * k), tokensOut: Math.round(r.tokensOut * k), cost: r.cost * k })
+  const rows = period === 'custom' ? USAGE.month.map(scale) : USAGE[period]
+  const photos = period === 'custom' ? { sent: Math.round(PHOTOS.month.sent * k), atLimit: Math.round(PHOTOS.month.atLimit * k) } : PHOTOS[period]
   const pct = Math.min(100, (BUDGET.spentToday / BUDGET.daily) * 100)
 
   const columns: Column<UsageRow>[] = [
@@ -74,7 +82,7 @@ export function AUsage({ go }: ScreenProps) {
       ),
     },
     { key: 'fail', header: 'Ошибки по типам', width: '21%', cell: (r) => <span className="text-muted-foreground" title={r.failures}>{r.failures}</span> },
-    { key: 'tok', header: 'Токены', width: '15%', align: 'right', sortValue: (r) => r.tokensIn, cell: (r) => <span className="text-sm" title="вход / выход">{k(r.tokensIn)} / {k(r.tokensOut)}</span> },
+    { key: 'tok', header: 'Токены', width: '15%', align: 'right', sortValue: (r) => r.tokensIn, cell: (r) => <span className="text-sm" title="вход / выход">{kfmt(r.tokensIn)} / {kfmt(r.tokensOut)}</span> },
     { key: 'cost', header: 'Стоимость', width: '11%', align: 'right', sortValue: (r) => r.cost, cell: (r) => (r.tier === 'free' ? <span className="text-muted-foreground">бесплатно</span> : <Mono>{usd(r.cost)}</Mono>) },
     { key: 'time', header: 'Время', align: 'right', sortValue: (r) => r.avgSec, cell: (r) => (
         <span className={r.avgSec > 60 ? 'text-warning' : ''}>
@@ -111,16 +119,16 @@ export function AUsage({ go }: ScreenProps) {
         </section>
       </ViewState>
 
-      <PageTabs<Period>
-        tabs={[
-          { id: 'today', label: 'Сегодня' },
-          { id: 'week', label: '7 дней' },
-          { id: 'month', label: 'Этот месяц' },
-        ]}
-        value={period}
-        onChange={setPeriod}
-        className="mb-4"
-      />
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <span className="text-sm text-muted-foreground">Период:</span>
+        <WebSelect
+          value={period}
+          onChange={(v) => setPeriod(v as Period | 'custom')}
+          options={[{ value: 'today', label: 'Сегодня' }, { value: 'week', label: '7 дней' }, { value: 'month', label: 'Этот месяц' }, { value: 'custom', label: 'Свой период' }]}
+          className="w-44"
+        />
+        {period === 'custom' && <PeriodFilter label="Даты" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />}
+      </div>
       <p className="mb-4 text-[15px]">
         Фото отправлено движкам: <Mono>{photos.sent.toLocaleString('ru')}</Mono>
         <span className="text-muted-foreground">

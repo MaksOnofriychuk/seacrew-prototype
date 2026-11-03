@@ -4,13 +4,14 @@ import { MonoNums } from '@/components/app/mono-nums'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
+import { WebSelect } from '@/components/web/fields'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, type Tone } from '@/components/web/status-badge'
 import { AGREEMENT, EFFECT, EFFECT_ENGINES, EFFECT_FIELDS, LAB, LAB_FIELDS, LAB_RUNS, LAB_STATUS_LABEL, type EffRow, type LabField, type LabItem, type LabRun, type LabStatus } from '@/lib/data-admin'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { AdminPage, Facts, Mono, Note, SectionTitle, dt, useBagState } from './_parts'
+import { AdminPage, FileViewer, Facts, Mono, Note, PeriodFilter, SectionTitle, dt, inPeriod, useBagState } from './_parts'
 
 const TONE: Record<LabStatus, Tone> = { CONFIRMED: 'success', NEEDS_REVIEW: 'warning', FAILED: 'error', PROCESSING: 'primary' }
 const CATEGORIES = [...new Set(LAB.map((l) => l.category))]
@@ -22,7 +23,10 @@ export function ALab({ go }: ScreenProps) {
   const [cat, setCat] = useState('')
   const [status, setStatus] = useState('')
   const [kind, setKind] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const rows = LAB.filter((l) => !cat || l.category === cat)
+    .filter((l) => inPeriod(l.when, from, to))
     .filter((l) => !status || l.status === status)
     .filter((l) => !kind || (kind === 'test' ? l.test : !l.test))
 
@@ -60,10 +64,11 @@ export function ALab({ go }: ScreenProps) {
           </Button>
         }
       />
-      <FilterBar onReset={cat || status || kind ? () => (setCat(''), setStatus(''), setKind('')) : undefined} count={rows.length}>
+      <FilterBar onReset={cat || status || kind || from || to ? () => (setCat(''), setStatus(''), setKind(''), setFrom(''), setTo('')) : undefined} count={rows.length}>
         <FilterSelect label="Документ" value={cat} onChange={setCat} options={CATEGORIES} />
         <FilterSelect label="Состояние" value={status} onChange={setStatus} options={Object.entries(LAB_STATUS_LABEL).map(([value, label]) => ({ value, label }))} />
         <FilterSelect label="Какие" value={kind} onChange={setKind} options={[{ value: 'test', label: 'Тестовые' }, { value: 'real', label: 'Реальные' }]} />
+        <PeriodFilter label="Когда" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
       </FilterBar>
       <DataTable columns={columns} rows={rows} rowKey={(l) => l.id} onRowClick={(l) => (setRun(l.id), go('a-lab-run'))} initialSort={{ key: 'when', dir: 'desc' }} empty={{ icon: FlaskConical, title: 'Подходящих распознаваний нет', text: 'Сбросьте фильтры или загрузите тестовый документ с лабораторного аккаунта.' }} />
     </AdminPage>
@@ -75,6 +80,7 @@ export function ALab({ go }: ScreenProps) {
 export function ALabRun({ go }: ScreenProps) {
   const [id] = useBagState('a.labRun', 'ex-7f3a')
   const item = LAB.find((l) => l.id === id) ?? LAB[0]
+  const [page, setPage] = useState<number | null>(null)
 
   const runCols: Column<LabRun>[] = [
     { key: 'e', header: 'Движок', width: '22%', cell: (r) => <span className="font-medium">{r.engine}</span> },
@@ -126,13 +132,13 @@ export function ALabRun({ go }: ScreenProps) {
           {item.test && (
             <div className="flex flex-col gap-3">
               {Array.from({ length: Math.min(item.photos, 2) }, (_, i) => (
-                <div key={i} className="flex aspect-[3/2] flex-col items-center justify-center gap-2 rounded-xl border border-border bg-muted text-sm text-muted-foreground">
+                <button key={i} type="button" onClick={() => setPage(i)} aria-label={`Открыть страницу ${i + 1}`} className="flex aspect-[3/2] flex-col items-center justify-center gap-2 rounded-xl border border-border bg-muted text-sm text-muted-foreground transition-colors hover:border-primary">
                   <FileText className="size-6" />
                   <span>
                     Страница <Mono>{i + 1}</Mono>
                   </span>
-                  <span className="text-xs">тестовый образец</span>
-                </div>
+                  <span className="text-xs">тестовый образец, нажмите, чтобы открыть</span>
+                </button>
               ))}
               <Facts cols={2} items={[['Фото', <Mono key="p">{item.photos}</Mono>], ['Запуски', <Mono key="r">{item.runs}</Mono>]]} className="mt-2" />
             </div>
@@ -150,6 +156,7 @@ export function ALabRun({ go }: ScreenProps) {
           </div>
         </div>
       </ViewState>
+      <FileViewer open={page !== null} onClose={() => setPage(null)} title={`Распознавание: ${item.category}`} subtitle="тестовый образец" pages={Math.min(item.photos, 2)} startPage={page ?? 0} />
     </AdminPage>
   )
 }
@@ -174,6 +181,7 @@ function Accuracy({ r }: { r: EffRow }) {
 
 export function ALabEffect({ go }: ScreenProps) {
   const [cat, setCat] = useState('')
+  const [per, setPer] = useState('all')
   const cats = ['Seafarer’s ID', 'Диплом', 'Загранпаспорт', 'Сертификат', 'Медицинский']
 
   const cols: Column<EffRow>[] = [
@@ -229,8 +237,14 @@ export function ALabEffect({ go }: ScreenProps) {
             {c || 'Все документы'}
           </button>
         ))}
-        <span className="ml-auto text-sm text-muted-foreground">
-          подтверждённых документов: <Mono>{cat ? 37 : 184}</Mono>
+        <WebSelect
+          value={per}
+          onChange={setPer}
+          options={[{ value: 'all', label: 'За всё время' }, { value: 'month', label: 'Этот месяц' }, { value: 'quarter', label: 'Три месяца' }]}
+          className="ml-auto w-44"
+        />
+        <span className="text-sm text-muted-foreground">
+          подтверждённых документов: <Mono>{Math.round((cat ? 37 : 184) * (per === 'month' ? 0.4 : per === 'quarter' ? 0.8 : 1))}</Mono>
         </span>
       </div>
       <DataTable columns={cols} rows={EFFECT} rowKey={(r) => r.engine} initialSort={{ key: 'a', dir: 'desc' }} empty={{ icon: BarChart3, title: 'Пока ничего не подтверждено', text: 'Цифры появятся, когда моряки подтвердят первые документы.' }} />
