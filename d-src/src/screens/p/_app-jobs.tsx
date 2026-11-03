@@ -73,7 +73,7 @@ export function JobsTabs({ active, onChange }: { active: JobsTab; onChange: (t: 
         onChange={onChange}
         items={[
           { id: 'all', label: 'Все' },
-          { id: 'rec', label: 'Рекомендации', n: RECOMMENDED.length },
+          { id: 'rec', label: 'Для вас', n: RECOMMENDED.length },
           { id: 'mine', label: 'Отклики', n: none ? undefined : list.length },
         ]}
       />
