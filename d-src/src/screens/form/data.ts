@@ -14,7 +14,7 @@ export type Src = { kind: SrcKind; label: string; value: string; /** профі�
 /** Збережена відповідь з іншим написом або розділом — лише пропозиція (ADR-073 п. 16.1). */
 export type Suggestion = { question: string; section: string; org: string; value: string }
 
-export type QKind = 'text' | 'phone' | 'country' | 'date' | 'size' | 'textarea' | 'photo' | 'table' | 'consent' | 'signature'
+export type QKind = 'text' | 'phone' | 'country' | 'date' | 'size' | 'choice' | 'airport' | 'doc' | 'nok' | 'textarea' | 'photo' | 'table' | 'consent' | 'signature'
 
 export type Question = {
   id: string
@@ -34,6 +34,10 @@ export type Question = {
   numeric?: boolean
   /** для kind 'size': який діапазон (SIZE_RANGES у components/app/pickers) */
   size?: 'height' | 'weight' | 'shoe'
+  /** для kind 'choice': варіанти списку */
+  options?: readonly string[]
+  /** для kind 'doc' / 'nok': підпис першої частини (друга — «Действителен до» / «Телефон») */
+  part?: string
   /** для kind 'date': допустимі межі (див. BOUNDS у lib/dates) */
   bound?: 'birth' | 'issue' | 'future'
 }
@@ -63,6 +67,9 @@ export const PROFILE_CONTRACTS: ContractRow[] = [
 export const rowMissing = (r: ContractRow) => CONTRACT_COLS.filter((c) => !r[c.key].trim()).map((c) => c.label)
 
 /* ---------- анкета ---------- */
+
+/** Размер комбинезона — как в «Дополнительной информации» регистрации (s12). */
+export const COVERALLS = ['M', 'L', 'XL', 'XXL'] as const
 
 export const FORM_ORG = 'BlueWave Crewing'
 export const FORM_TITLE = 'Анкета BlueWave Crewing'
@@ -100,7 +107,7 @@ export function useFormDef(empty: boolean): Section[] {
         },
         { id: 'photo', label: 'Фото на документы', kind: 'photo', required: true, sources: s([{ kind: 'profile', label: profile, value: 'Фото 3×4' }]) },
         // той самий напис і той самий розділ, що й у минулій анкеті, — підставляється «из профиля» (16.1)
-        { id: 'coverall', label: 'Размер комбинезона', kind: 'text', savable: true, sources: s([{ kind: 'profile', label: profile, value: '52' }]) },
+        { id: 'coverall', label: 'Размер комбинезона', kind: 'choice', options: COVERALLS, savable: true, sources: s([{ kind: 'profile', label: profile, value: 'L' }]) },
         // інший напис і розділ — лише пропозиція з «Использовать»
         {
           id: 'shoes',
@@ -125,7 +132,7 @@ export function useFormDef(empty: boolean): Section[] {
         {
           id: 'airport',
           label: 'Ближайший аэропорт',
-          kind: 'text',
+          kind: 'airport',
           required: true,
           savable: true,
           ask: 'Есть в профиле и в вашей прежней анкете. Выберите, что отправить:',
@@ -134,7 +141,7 @@ export function useFormDef(empty: boolean): Section[] {
             { kind: 'past', label: 'Из вашей анкеты для Nordline', value: 'Кишинёв (KIV)' },
           ]),
         },
-        { id: 'nok', label: 'Контакт на случай ЧС', kind: 'text', required: true, savable: true, sources: s([{ kind: 'profile', label: profile, value: 'Ольга Коваль, жена, +380 00 000 0001' }]) },
+        { id: 'nok', label: 'Контакт на случай ЧС', kind: 'nok', part: 'Имя и кем приходится', required: true, savable: true, sources: s([{ kind: 'profile', label: profile, value: 'Ольга Коваль, жена, +380 00 000 0001' }]) },
       ],
     },
     {
@@ -145,7 +152,8 @@ export function useFormDef(empty: boolean): Section[] {
         {
           id: 'sid',
           label: 'Паспорт моряка',
-          kind: 'text',
+          kind: 'doc',
+          part: 'Номер',
           required: true,
           ask: 'Есть в 2 ваших документах. Выберите тот, о котором вопрос:',
           sources: s([
@@ -156,7 +164,8 @@ export function useFormDef(empty: boolean): Section[] {
         {
           id: 'coc',
           label: 'Диплом (CoC)',
-          kind: 'text',
+          kind: 'doc',
+          part: 'Должность и конвенция',
           required: true,
           proof: true,
           sources: s([{ kind: 'doc', label: 'Из документа: Диплом', value: `${f.dipRank}, ${f.dipStcw}, до ${f.dipExp}` }]),
@@ -172,7 +181,7 @@ export function useFormDef(empty: boolean): Section[] {
           proof: true,
           sources: s([{ kind: 'profile', label: 'Из профиля, без документа', value: '30.06.2027', unproved: true }]),
         },
-        { id: 'bst', label: 'Basic Safety Training', kind: 'text', sources: s([{ kind: 'doc', label: 'Из документа: Сертификат BST', value: 'STCW VI/1, до 15.03.2029' }]) },
+        { id: 'bst', label: 'Basic Safety Training', kind: 'doc', part: 'Сертификат', sources: s([{ kind: 'doc', label: 'Из документа: Сертификат BST', value: 'STCW VI/1, до 15.03.2029' }]) },
       ],
     },
     {

@@ -130,6 +130,8 @@ export function MChatApplied(props: ScreenProps) {
 function Messages({ chat, go, onJob, unreadFrom }: { chat: Chat; go: (id: string) => void; onJob: () => void; unreadFrom: number }) {
   const { bag, setBag, showToast } = useProto()
   const formSent = bag<boolean>('form.sent', false)
+  // анкету вже почато (степер пам'ятає крок) — кнопка веде далі, а не спочатку
+  const formDraft = bag<number | null>('form.step', null) !== null || bag<boolean>('form.filled', false)
   const msgs = chat.messages
   const mineIdx = msgs.flatMap((m, i) => ('from' in m && m.from === 'me' ? [i] : []))
   const lastMine = mineIdx.at(-1) ?? -1
@@ -150,6 +152,7 @@ function Messages({ chat, go, onJob, unreadFrom }: { chat: Chat; go: (id: string
               go={go}
               onJob={onJob}
               formSent={formSent}
+              formDraft={formDraft}
               onToast={showToast}
               onOpenForm={() => {
                 setBag('chat.sel', chat.id)
@@ -175,6 +178,7 @@ function Message({
   chat,
   onJob,
   formSent,
+  formDraft,
   onToast,
   onOpenForm,
 }: {
@@ -183,6 +187,7 @@ function Message({
   go: (id: string) => void
   onJob: () => void
   formSent: boolean
+  formDraft: boolean
   onToast: (t: string) => void
   onOpenForm: () => void
 }) {
@@ -207,13 +212,17 @@ function Message({
             <span className="flex items-center gap-1 text-sm text-muted-foreground">
               <Check className="size-4 text-success" strokeWidth={2.25} /> Отправлено
             </span>
+          ) : formDraft ? (
+            <span className="text-sm text-muted-foreground">
+              Черновик сохранён · до <span className="font-mono">{m.due}</span>
+            </span>
           ) : (
             <span className="text-sm text-muted-foreground">
               Заполнить до <span className="font-mono">{m.due}</span>
             </span>
           )}
           <Button className="mt-3 h-10 text-[15px]" variant={formSent ? 'outline' : 'default'} onClick={onOpenForm}>
-            {formSent ? 'Посмотреть отправленное' : 'Заполнить'}
+            {formSent ? 'Посмотреть отправленное' : formDraft ? 'Продолжить' : 'Заполнить'}
           </Button>
           <Time className="mt-1 self-end">{m.time}</Time>
         </div>

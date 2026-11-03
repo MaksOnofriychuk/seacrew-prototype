@@ -71,7 +71,7 @@ function FormFlow({ go, preset }: { go: (id: string) => void; preset?: Preset })
       </div>
     )
 
-  if (st.sent) return <SentView sections={sections} st={st} onChat={toChat} />
+  if (st.sent) return <SentView sections={sections} st={st} go={go} onChat={toChat} />
   if (st.step === null) return <StartView sections={sections} st={st} go={go} onChat={toChat} />
   if (st.step >= sections.length) return <ReviewStep sections={sections} st={st} go={go} onChat={toChat} />
   return <SectionStep key={st.step} i={st.step} sections={sections} st={st} go={go} onChat={toChat} toast={showToast} />
@@ -96,29 +96,14 @@ function shellProps(st: FormState, steps: FStep[], onChat: () => void, toast: (t
   }
 }
 
-// Відповідь 117: AI-заповнення анкети «пока для всех, потом — для премиумов». Тому лише тихий підпис;
-// кнопка працює для всіх. Тап — екран преміуму pr-lock (є в full-proto).
-function PremiumSoon({ go, className }: { go: (id: string) => void; className?: string }) {
+// Автозаповнення — будь-коли (ADR-073 п. 6.1), але не картка на кожному кроці: на старті одна головна дія,
+// у розділі — тихе посилання, лише якщо ще є що підставити з профілю.
+function QuietFill({ st, sec }: { st: FormState; sec: Section }) {
+  const left = sec.questions.some((q) => (q.kind === 'table' ? !st.rows && q.sources.length > 0 : q.sources.length > 0 && !st.answers[q.id]))
+  if (!left) return null
   return (
-    <button type="button" onClick={() => go('pr-lock')} className={'text-sm text-muted-foreground ' + (className ?? '')}>
-      Скоро — в Премиум
-    </button>
-  )
-}
-
-// «Заполнить из профиля» на кожному кроці — та сама картка, що «Заполнить из документа» у s2.
-function AutofillCard({ st, empty }: { st: FormState; empty: boolean }) {
-  return (
-    <button type="button" onClick={() => st.autofill()} className="flex items-center gap-4 rounded-xl border border-border bg-surface px-4 py-4 text-left">
-      <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
-        <Sparkles className="size-5" />
-      </span>
-      <span className="flex flex-col gap-0.5">
-        <span className="text-[15px] font-medium">Заполнить из профиля</span>
-        <span className="text-sm text-muted-foreground">
-          {empty ? 'В профиле пока нет данных для этой анкеты' : st.filled ? 'Подтянем новое из профиля. Ваши правки не тронем' : 'Профиль, документы и прежние анкеты. Всё можно поменять'}
-        </span>
-      </span>
+    <button type="button" onClick={() => st.autofill()} className="flex w-fit items-center gap-2 text-[15px] font-medium text-primary">
+      <Sparkles className="size-4" /> Подставить из профиля
     </button>
   )
 }
@@ -129,12 +114,15 @@ function SectionStep({ i, sections, st, go, onChat, toast }: { i: number; sectio
   const view = useView()
   // помилки показуємо після «Продолжить» або якщо розділ уже пройдено / пропущено
   const [showErr, setShowErr] = useState(!!st.done[s.id])
+  const [openId, setOpenId] = useState<string | null>(null)
 
   const next = () => {
     const bad = st.sectionIssues(s)
     if (bad.length) {
       setShowErr(true)
       toast(`Проверьте ${bad.length} ${plural(bad.length, 'поле', 'поля', 'полей')}: ${bad.map((q) => q.label).join(', ')}`)
+      // «Продолжить» з порожніми обов'язковими розгортає перше з них
+      setOpenId(bad[0].id)
       flash(`fq-${bad[0].id}`)
       return
     }
@@ -169,13 +157,12 @@ function SectionStep({ i, sections, st, go, onChat, toast }: { i: number; sectio
         </Footer>
       }
     >
-      <div className="flex flex-col gap-1.5">
-        <AutofillCard st={st} empty={view === 'empty'} />
-        <PremiumSoon go={go} className="self-end px-1" />
+      {view !== 'empty' && <QuietFill st={st} sec={s} />}
+      <div className="overflow-hidden rounded-xl border border-border bg-surface">
+        {s.questions.map((q) => (
+          <QuestionField key={q.id} q={q} st={st} showError={showErr} go={go} open={openId === q.id} onToggle={() => setOpenId(openId === q.id ? null : q.id)} />
+        ))}
       </div>
-      {s.questions.map((q) => (
-        <QuestionField key={q.id} q={q} st={st} showError={showErr} go={go} />
-      ))}
     </FormStepShell>
   )
 }
@@ -186,12 +173,14 @@ function ReviewStep({ sections, st, go, onChat }: { sections: Section[]; st: For
   const { showToast, setBag } = useProto()
   const steps = useSteps(sections, st)
   const [confirm, setConfirm] = useState(false)
-  const issues = sections.flatMap((s, i) => st.sectionIssues(s, true).map((q) => ({ q, s, i })))
+  const [openId, setOpenId] = useState<string | null>(null)
+  const issues = sections.flatMap((s) => st.sectionIssues(s, true).map((q) => ({ q, s })))
   const saving = st.saveCandidates.filter((q) => st.save.includes(q.id))
 
-  const open = (i: number, qid?: string) => {
-    st.setStep(i)
-    if (qid) flash(`fq-${qid}`)
+  // виправити там же: розгортаємо рядок на «Проверке», без переходу в розділ
+  const open = (qid: string) => {
+    setOpenId(qid)
+    flash(`fq-${qid}`)
   }
 
   const send = () => {
@@ -207,7 +196,7 @@ function ReviewStep({ sections, st, go, onChat }: { sections: Section[]; st: For
       {...shellProps(st, steps, onChat, showToast)}
       cur={sections.length}
       title="Проверка"
-      sub="Так анкету увидит агентство. Нажмите раздел, чтобы исправить."
+      sub="Так анкету увидит агентство. Нажмите строку, чтобы исправить."
       onBack={() => st.setStep(sections.length - 1)}
       footer={
         <Footer className="border-t border-border bg-background">
@@ -230,9 +219,9 @@ function ReviewStep({ sections, st, go, onChat }: { sections: Section[]; st: For
         <section className="flex flex-col gap-2">
           <h2 className="px-1 text-sm font-medium text-muted-foreground">Чтобы отправить, исправьте</h2>
           <ul className="overflow-hidden rounded-xl border border-border bg-surface">
-            {issues.map(({ q, s, i }) => (
+            {issues.map(({ q, s }) => (
               <li key={q.id} className="border-t border-border first:border-t-0">
-                <button type="button" onClick={() => open(i, q.id)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
+                <button type="button" onClick={() => open(q.id)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
                   <AlertTriangle className="size-4 shrink-0 text-warning" />
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="text-[15px]">{q.label}</span>
@@ -247,7 +236,7 @@ function ReviewStep({ sections, st, go, onChat }: { sections: Section[]; st: For
           </ul>
         </section>
       )}
-      <FormPaper sections={sections} st={st} onOpen={(i) => open(i)} />
+      <FormPaper sections={sections} st={st} go={go} openId={openId} onOpen={setOpenId} />
       <SaveToProfile st={st} />
 
       <BottomSheet
@@ -334,7 +323,7 @@ function StartView({ sections, st, go, onChat }: { sections: Section[]; st: Form
               В профиле пока нет данных для этой анкеты. Заполните вручную или сначала дополните профиль — тогда анкета заполнится сама.
             </Note>
           ) : (
-            <Note icon={Info}>Каждый раздел вы проверите перед отправкой. Пока не отправите, агентство ответов не видит.</Note>
+            <Note icon={Sparkles}>Подставим данные из профиля и документов — раздел за разделом. Всё можно поменять, а пока не отправите, агентство ответов не видит.</Note>
           )}
         </div>
       </div>
@@ -351,7 +340,7 @@ function StartView({ sections, st, go, onChat }: { sections: Section[]; st: Form
         ) : draft ? (
           <>
             <Button size="lg" onClick={() => st.setStep(firstOpen)}>
-              Продолжить заполнение
+              Продолжить
             </Button>
             <Button
               size="lg"
@@ -362,9 +351,8 @@ function StartView({ sections, st, go, onChat }: { sections: Section[]; st: Form
                 st.setStep(firstOpen)
               }}
             >
-              <Sparkles /> Заполнить из профиля
+              <Sparkles /> Подставить из профиля ещё раз
             </Button>
-            <PremiumSoon go={go} className="-mt-2 self-center" />
           </>
         ) : (
           <>
@@ -375,10 +363,9 @@ function StartView({ sections, st, go, onChat }: { sections: Section[]; st: Form
                 st.setStep(0)
               }}
             >
-              <Sparkles /> Заполнить из профиля
+              <Sparkles /> Заполнить
             </Button>
-            <PremiumSoon go={go} className="-mt-1 self-center" />
-            <Button size="lg" variant="ghost" className="text-primary" onClick={() => st.setStep(0)}>
+            <Button size="lg" variant="ghost" className="text-muted-foreground" onClick={() => st.setStep(0)}>
               Заполнить вручную
             </Button>
           </>
@@ -390,7 +377,8 @@ function StartView({ sections, st, go, onChat }: { sections: Section[]; st: Form
 
 /* ---------- надіслано: лише перегляд ---------- */
 
-function SentView({ sections, st, onChat }: { sections: Section[]; st: FormState; onChat: () => void }) {
+function SentView({ sections, st, go, onChat }: { sections: Section[]; st: FormState; go: (id: string) => void; onChat: () => void }) {
+  const [openId, setOpenId] = useState<string | null>(null)
   const saved = st.saveCandidates.filter((q) => st.save.includes(q.id))
   return (
     <div className="flex h-full flex-col">
@@ -404,7 +392,7 @@ function SentView({ sections, st, onChat }: { sections: Section[]; st: FormState
         </div>
         <div className="flex flex-col gap-4 px-6 pt-5 pb-6">
           {saved.length > 0 && <Note icon={Check}>В профиль сохранено: {saved.map((q) => q.label).join(', ')}.</Note>}
-          <FormPaper sections={sections} st={st} />
+          <FormPaper sections={sections} st={st} go={go} readOnly openId={openId} onOpen={setOpenId} />
         </div>
       </div>
       <Footer className="border-t border-border bg-background">

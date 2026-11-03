@@ -16,6 +16,19 @@ export type Proof = { name: string; size: string }
 export type Rows = { list: ContractRow[]; edited: boolean } | null
 export type SectionMark = 'done' | 'skip'
 
+// Складені відповіді: документ — «номер, до ДД.ММ.ГГГГ», близька людина — «ім'я, родство, +380 …».
+// Окремі частини вибираються й вводяться окремо (дата — лише вибір, телефон — лише вибір коду й номер).
+export function splitComposite(kind: Question['kind'], v: string): { a: string; b: string } {
+  const sep = kind === 'nok' ? ', +' : ', до '
+  const i = v.lastIndexOf(sep)
+  if (i < 0) return { a: v, b: '' }
+  return { a: v.slice(0, i), b: v.slice(i + (kind === 'nok' ? 2 : sep.length)) }
+}
+export function joinComposite(kind: Question['kind'], a: string, b: string) {
+  if (!b) return a
+  return kind === 'nok' ? `${a}, ${b}` : `${a}, до ${b}`
+}
+
 export const uniqValues = (q: Question) => [...new Set(q.sources.map((s) => s.value))]
 export const needsChoice = (q: Question, a?: Answer) => !a && uniqValues(q).length > 1
 
@@ -25,7 +38,7 @@ export function proofOk(q: Question, a: Answer | undefined, proof: Record<string
   if (proof[q.id]) return true
   if (!a || typeof a.src !== 'number') return false
   const s = q.sources[a.src]
-  return s.kind === 'doc' && !s.unproved
+  return s?.kind === 'doc' && !s.unproved
 }
 
 export function useFormState(sections: Section[]) {
@@ -108,9 +121,28 @@ export function useFormState(sections: Section[]) {
     if (needsChoice(q, a)) return 'Выберите значение'
     if (q.kind === 'signature' && answers[q.id]?.v.trim() && !answers[q.id + '.ok']) return 'Подтвердите подпись'
     if (q.required && !has(q)) return q.kind === 'table' ? 'Добавьте хотя бы одну запись' : q.kind === 'consent' ? 'Без согласия анкету не отправить' : 'Обязательное поле'
+    if ((q.kind === 'doc' || q.kind === 'nok') && has(q) && !splitComposite(q.kind, answers[q.id]!.v).a.trim()) return q.kind === 'doc' ? 'Укажите данные документа' : 'Укажите имя'
+    if (q.kind === 'doc' && has(q) && !splitComposite('doc', answers[q.id]!.v).b) return 'Укажите, до какого числа действует'
+    if (q.kind === 'nok' && has(q) && !splitComposite('nok', answers[q.id]!.v).b) return 'Укажите телефон'
     if (q.proof && has(q) && !proofOk(q, a, proof)) return 'Прикрепите фото или файл, который это подтверждает'
     if (incomplete && q.kind === 'table' && rows?.list.some((r) => rowMissing(r).length)) return 'Дополните неполную запись'
     return null
+  }
+
+  /** Знімок відповіді на час розгортання рядка: «Отмена» повертає його (рядок, підпис, підтвердження, таблиця). */
+  const snapshot = (q: Question) => ({ a: answers[q.id], ok: answers[q.id + '.ok'], proof: proof[q.id], rows })
+  const restore = (q: Question, snap: ReturnType<typeof snapshot>) => {
+    const next = { ...answers }
+    for (const [k, v] of [[q.id, snap.a], [q.id + '.ok', snap.ok]] as const) {
+      if (v) next[k] = v
+      else delete next[k]
+    }
+    setBag('form.answers', next)
+    const pr = { ...proof }
+    if (snap.proof) pr[q.id] = snap.proof
+    else delete pr[q.id]
+    setBag('form.proof', pr)
+    if (q.kind === 'table') setBag('form.rows', snap.rows)
   }
 
   const sectionIssues = (s: Section, incomplete = false) => s.questions.filter((q) => issue(q, incomplete))
@@ -144,6 +176,8 @@ export function useFormState(sections: Section[]) {
     type,
     autofill,
     issue,
+    snapshot,
+    restore,
     sectionIssues,
     incompleteRows,
     saveCandidates,

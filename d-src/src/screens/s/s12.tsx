@@ -105,7 +105,7 @@ export function S12Extra({ go }: ScreenProps) {
 }
 
 // Поле-кнопка: тап відкриває вікно знизу з пошуком за містом, назвою, країною або кодом.
-function AirportPick({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+export function AirportPick({ value, onChange, id = 's12-airport', invalid, disabled }: { value: string; onChange: (v: string) => void; id?: string; invalid?: boolean; disabled?: boolean }) {
   const [open, setOpen] = useState(false)
   const [q, setQ] = useState('')
   const needle = q.trim().toLowerCase()
@@ -118,10 +118,11 @@ function AirportPick({ value, onChange }: { value: string; onChange: (v: string)
     <>
       <button
         type="button"
-        id="s12-airport"
+        id={id}
         aria-haspopup="dialog"
+        disabled={disabled}
         onClick={() => setOpen(true)}
-        className="flex h-12 w-full items-center justify-between gap-3 rounded-md border border-input bg-surface px-4 text-left text-base active:scale-[0.99]"
+        className={cn('flex h-12 w-full items-center justify-between gap-3 rounded-md border bg-surface px-4 text-left text-base active:scale-[0.99] disabled:opacity-100', invalid ? 'border-signal' : 'border-input')}
       >
         <span className={cn('truncate', !value && 'text-muted-foreground')}>{value || 'Выберите аэропорт'}</span>
         <ChevronDown className="size-4 shrink-0 text-muted-foreground" />

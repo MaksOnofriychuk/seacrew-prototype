@@ -1,11 +1,13 @@
 import type { ComponentType } from 'react'
-import { Camera, FolderOpen, Image, PenLine, ScanLine } from 'lucide-react'
+import { Camera, Check, FolderOpen, Image, PenLine, ScanLine } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 
 export type SourceItem = {
   icon: ComponentType<{ className?: string }>
   title: string
   sub?: string
+  /** уже выбранный пункт (галочка справа) */
+  selected?: boolean
   onClick: () => void
 }
 
@@ -35,6 +37,7 @@ export function SourceSheet({
                 <span className="text-[15px] leading-snug">{it.title}</span>
                 {it.sub && <span className="text-sm leading-snug text-muted-foreground">{it.sub}</span>}
               </span>
+              {it.selected && <Check className="size-4 shrink-0 text-primary" strokeWidth={2.25} />}
             </button>
           </li>
         ))}
