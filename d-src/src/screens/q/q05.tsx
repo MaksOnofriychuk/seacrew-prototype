@@ -4,7 +4,7 @@ import { MonoNums } from '@/components/app/mono-nums'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CountryPick, DatePick, MonthRangePick } from '@/components/app/pickers'
+import { CountryPick, DatePick, MonthRangePick, PhoneField } from '@/components/app/pickers'
 import { BOUNDS } from '@/lib/dates'
 import type { ScreenProps } from '../registry'
 import { CheckRow, contractsText, DOC_TYPES, durText, Field, FlowScreen, Footer, FORM_DEFAULTS, Hint, months, Note, TextInput, Title, type DocTypeId, type QForm, type TagKind, useQ } from './_parts'
@@ -153,7 +153,9 @@ export function Q05Check({ go }: ScreenProps) {
         {text('last', 'Фамилия', { ph: 'Как в документе', ac: 'family-name', need: true })}
         {date('birth', 'Дата рождения', BOUNDS.birth, true)}
         {country('cit', 'Гражданство')}
-        {text('phone', 'Телефон', { ph: '+380 …', mono: true })}
+        <Field id="q05-phone" label="Телефон" tag={tag('phone')}>
+          <PhoneField id="q05-phone" value={s('phone')} onChange={(val) => put('phone', val)} />
+        </Field>
       </Group>
 
       <Paper title={DOC_TYPES[type].n} className="mt-8">

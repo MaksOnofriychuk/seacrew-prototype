@@ -1,5 +1,5 @@
 import { Camera, ScanLine } from 'lucide-react'
-import { CountryPick, DatePick } from '@/components/app/pickers'
+import { CountryPick, DatePick, PhoneField } from '@/components/app/pickers'
 import { BOUNDS } from '@/lib/dates'
 import { FleetPicker, FLEET_EMPTY, fleetSummary, type FleetValue } from '@/components/app/fleet-picker'
 import { StepShell } from './_stepper'
@@ -94,7 +94,7 @@ export function S2Personal({ go }: ScreenProps) {
         </Field>
       </div>
       <Field id="f-phone" label="Телефон">
-        <TextInput id="f-phone" type="tel" mono value={f.phone} placeholder="+380 …" className="placeholder:font-sans" onChange={(e) => put({ phone: e.target.value })} />
+        <PhoneField id="f-phone" value={f.phone} onChange={(phone) => put({ phone })} />
       </Field>
       <section className="mt-2 flex flex-col gap-4 border-t border-border pt-5">
         <div className="flex flex-col gap-1">

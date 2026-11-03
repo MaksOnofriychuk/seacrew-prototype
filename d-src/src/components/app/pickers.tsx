@@ -4,6 +4,7 @@ import { BottomSheet } from '@/components/app/bottom-sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { countryLabel, findCountries } from '@/lib/countries'
+import { findDials, flagFor, group, parsePhone, phoneIncomplete, toValue, type Dial } from '@/lib/phone'
 import { clampDate, daysIn, fmtDate, fmtMonth, inRange, MONTHS, MONTHS_SHORT, parseDate, parseMonth, TODAY } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 
@@ -406,3 +407,115 @@ export function MonthPick({
   )
 }
 
+
+/* ---------- телефон: код країни + номер з маскою ---------- */
+
+export function PhoneField({
+  id,
+  value,
+  onChange,
+  invalid,
+  disabled,
+}: {
+  id?: string
+  value: string
+  onChange: (v: string) => void
+  invalid?: boolean
+  disabled?: boolean
+}) {
+  const parsed = parsePhone(value)
+  const [dial, setDial] = useState<Dial>(parsed.dial)
+  const [open, setOpen] = useState(false)
+  const [q, setQ] = useState('')
+  const [touched, setTouched] = useState(false)
+  // Значення змінили ззовні (скинули, підставили з іншого джерела) — підтягуємо код.
+  useEffect(() => {
+    if (value && parsed.dial.dial !== dial.dial) setDial(parsed.dial)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
+  const digits = parsePhone(value, dial).digits
+  const bad = invalid || (touched && phoneIncomplete(dial, digits))
+  const list = findDials(q)
+  const close = () => {
+    setOpen(false)
+    setQ('')
+  }
+  const type = (raw: string) => {
+    // Вставили номер із кодом — розкладаємо його на код і цифри.
+    if (raw.trim().startsWith('+')) {
+      const p = parsePhone(raw, dial)
+      setDial(p.dial)
+      return onChange(toValue(p.dial, p.digits))
+    }
+    onChange(toValue(dial, raw.replace(/\D/g, '').slice(0, dial.max)))
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      <div className={cn('flex h-12 items-stretch overflow-hidden rounded-md border border-input bg-surface focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/40', bad && 'border-signal', disabled && 'opacity-50')}>
+        <button
+          type="button"
+          disabled={disabled}
+          aria-label={`Код страны: ${dial.country.ru}, +${dial.dial}`}
+          aria-haspopup="dialog"
+          onClick={() => setOpen(true)}
+          className="flex shrink-0 items-center gap-1.5 border-r border-input pr-2.5 pl-3.5 text-base active:bg-muted"
+        >
+          <span aria-hidden="true" className="text-lg leading-none">
+            {flagFor(dial)}
+          </span>
+          <span className="font-mono">+{dial.dial}</span>
+          <ChevronDown className="size-4 text-muted-foreground" />
+        </button>
+        <input
+          id={id}
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel-national"
+          disabled={disabled}
+          aria-invalid={bad || undefined}
+          value={group(digits, dial)}
+          placeholder={group('0'.repeat(dial.min), dial)}
+          onChange={(e) => type(e.target.value)}
+          onBlur={() => setTouched(true)}
+          className="min-w-0 flex-1 bg-transparent px-3.5 font-mono text-base outline-none placeholder:text-muted-foreground/60 disabled:cursor-not-allowed"
+        />
+      </div>
+      {bad && !invalid && <p className="text-sm text-signal">Номер неполный</p>}
+      <BottomSheet open={open} onClose={close} title="Код страны">
+        <div className="relative">
+          <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input aria-label="Поиск страны или кода" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Страна или код" className="h-12 pl-10 text-base md:text-base" />
+        </div>
+        {list.length ? (
+          <ul className="mt-3 overflow-hidden rounded-xl border border-border">
+            {list.map((d) => {
+              const on = d.country.en === dial.country.en
+              return (
+                <li key={d.country.en} className="border-t border-border first:border-t-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDial(d)
+                      onChange(toValue(d, digits.slice(0, d.max)))
+                      close()
+                    }}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left active:bg-muted"
+                  >
+                    <span aria-hidden="true" className="text-xl leading-none">
+                      {flagFor(d)}
+                    </span>
+                    <span className={cn('flex-1 text-[15px]', on && 'font-semibold')}>{d.country.ru}</span>
+                    <span className="font-mono text-sm text-muted-foreground">+{d.dial}</span>
+                    {on && <Check className="size-4 shrink-0 text-primary" />}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        ) : (
+          <p className="mt-4 text-[15px] text-muted-foreground">Такой страны или кода нет в списке.</p>
+        )}
+      </BottomSheet>
+    </div>
+  )
+}

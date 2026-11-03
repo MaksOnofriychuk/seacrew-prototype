@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { AlertTriangle, Camera, Check, ChevronDown, CircleAlert, FileCheck2, FileText, FolderOpen, PenLine, Plus, ShieldCheck, X } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
-import { CountryPick, DatePick, MonthRangePick } from '@/components/app/pickers'
+import { CountryPick, DatePick, MonthRangePick, PhoneField } from '@/components/app/pickers'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { BOUNDS } from '@/lib/dates'
@@ -97,6 +97,8 @@ export function QuestionField({ q, st, showError, readOnly, go }: { q: Question;
         </button>
       ) : q.kind === 'textarea' ? (
         <TextArea id={`fi-${q.id}`} value={a?.v ?? ''} placeholder={q.placeholder} readOnly={readOnly} onChange={(e) => st.type(q, e.target.value)} />
+      ) : q.kind === 'phone' ? (
+        <PhoneField id={`fi-${q.id}`} value={a?.v ?? ''} invalid={!!err} disabled={readOnly} onChange={(v) => st.type(q, v)} />
       ) : q.kind === 'country' ? (
         <CountryPick id={`fi-${q.id}`} title={q.label} value={a?.v ?? ''} invalid={!!err} disabled={readOnly} onChange={(v) => st.type(q, v)} />
       ) : q.kind === 'date' ? (

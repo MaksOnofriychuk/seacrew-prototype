@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { CountryPick, DatePick } from '@/components/app/pickers'
+import { CountryPick, DatePick, PhoneField } from '@/components/app/pickers'
+import { parsePhone, phoneIncomplete } from '@/lib/phone'
 import { BOUNDS } from '@/lib/dates'
 import { Check, FileCheck, Info, Trash2 } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
@@ -19,13 +20,13 @@ import { Note, SourceTag, TextInput, useDP, useHashParam, useProfile, type TextF
 // #p21?f=birth | last | first | cit | phone | email | marital | rank | salary.
 
 const ERR: Partial<Record<TextField, string>> = {
-  phone: 'Введите номер с кодом страны, например +380 …',
+  phone: 'Номер неполный',
   email: 'Введите email, например name@example.com.',
 }
 
 const valid = (k: TextField, v: string) => {
   if (!v) return true
-  if (k === 'phone') return v.replace(/\D/g, '').length >= 9
+  if (k === 'phone') return !phoneIncomplete(parsePhone(v).dial, parsePhone(v).digits)
   if (k === 'email') return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
   return true
 }
@@ -90,8 +91,10 @@ function TextEditor({ k, go }: { k: TextField; go: ScreenProps['go'] }) {
             <DatePick id="p21-input" title={def.label} value={text} onChange={setText} {...BOUNDS.birth} initial={new Date(1998, 5, 15)} />
           ) : k === 'cit' ? (
             <CountryPick id="p21-input" title={def.label} value={text} onChange={setText} />
+          ) : k === 'phone' ? (
+            <PhoneField id="p21-input" value={text} invalid={bad} onChange={setText} />
           ) : (
-          <TextInput
+            <TextInput
               id="p21-input"
               aria-label={def.label}
               autoFocus
@@ -99,8 +102,8 @@ function TextEditor({ k, go }: { k: TextField; go: ScreenProps['go'] }) {
               value={text}
               invalid={bad}
               placeholder={def.ph}
-              inputMode={k === 'phone' ? 'tel' : k === 'email' ? 'email' : undefined}
-              autoComplete={k === 'email' ? 'email' : k === 'phone' ? 'tel' : undefined}
+              inputMode={k === 'email' ? 'email' : undefined}
+              autoComplete={k === 'email' ? 'email' : undefined}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && save(text)}
             />

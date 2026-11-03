@@ -14,7 +14,7 @@ export type Src = { kind: SrcKind; label: string; value: string; /** профі�
 /** Збережена відповідь з іншим написом або розділом — лише пропозиція (ADR-073 п. 16.1). */
 export type Suggestion = { question: string; section: string; org: string; value: string }
 
-export type QKind = 'text' | 'country' | 'date' | 'textarea' | 'photo' | 'table' | 'consent' | 'signature'
+export type QKind = 'text' | 'phone' | 'country' | 'date' | 'textarea' | 'photo' | 'table' | 'consent' | 'signature'
 
 export type Question = {
   id: string
@@ -117,7 +117,7 @@ export function useFormDef(empty: boolean): Section[] {
       title: 'Контакты',
       sub: 'Куда агентству звонить и откуда вас отправлять.',
       questions: [
-        { id: 'phone', label: 'Телефон', kind: 'text', mono: true, required: true, savable: true, sources: s([{ kind: 'profile', label: profile, value: String(f.phone) }]) },
+        { id: 'phone', label: 'Телефон', kind: 'phone', mono: true, required: true, savable: true, sources: s([{ kind: 'profile', label: profile, value: String(f.phone) }]) },
         { id: 'email', label: 'Email', kind: 'text', savable: true, sources: s([{ kind: 'profile', label: profile, value: email }]) },
         // різні значення в профілі й у минулій анкеті — моряк вибирає, нічого не змішуємо (ADR-077 п. 6)
         {

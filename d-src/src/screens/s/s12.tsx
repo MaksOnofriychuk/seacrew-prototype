@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { PhoneField } from '@/components/app/pickers'
 import { Check, ChevronDown, Search } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { StepShell } from './_stepper'
@@ -69,12 +70,12 @@ export function S12Extra({ go }: ScreenProps) {
         <XField id="s12-kin-name" label="Имя и фамилия">
           <TextInput id="s12-kin-name" value={f.kinName} onChange={(e) => patch({ kinName: e.target.value })} placeholder="Например, Olena Koval" autoComplete="off" />
         </XField>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-4">
           <XField id="s12-kin-rel" label="Кем приходится">
             <TextInput id="s12-kin-rel" value={f.kinRel} onChange={(e) => patch({ kinRel: e.target.value })} placeholder="Жена" />
           </XField>
           <XField id="s12-kin-phone" label="Телефон">
-            <TextInput id="s12-kin-phone" mono type="tel" inputMode="tel" value={f.kinPhone} onChange={(e) => patch({ kinPhone: e.target.value })} placeholder="+380 …" />
+            <PhoneField id="s12-kin-phone" value={f.kinPhone} onChange={(kinPhone) => patch({ kinPhone })} />
           </XField>
         </div>
         <XField
