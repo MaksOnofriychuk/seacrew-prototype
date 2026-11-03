@@ -1,11 +1,10 @@
 import { useState, type ComponentType, type ReactNode } from 'react'
-import { Anchor, BarChart3, ChevronRight, Crown, FileText, Files, LifeBuoy, LogOut, MessagesSquare, Moon, Settings, ShieldCheck, TriangleAlert, UserPlus, UserRound, Users, Wallet } from 'lucide-react'
+import { Anchor, BarChart3, ChevronRight, Crown, FileText, Files, LifeBuoy, LogOut, MessagesSquare, Settings, ShieldCheck, TriangleAlert, UserPlus, UserRound, Users, Wallet } from 'lucide-react'
 import { AvailabilityButton, AvailabilitySheet } from '@/components/app/availability'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { ProfileFillLine } from '@/components/app/profile-fill'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
-import { Switch } from '@/components/ui/switch'
 import { MOBILE_ROUTES } from '@/lib/mobile-routes'
 import { useProto } from '@/lib/proto-state'
 import { readiness, useQ } from '../q/_parts'
@@ -13,7 +12,6 @@ import type { Acct } from '../q/account'
 import { Avatar, useMe } from '../p/_feed-parts'
 import { daysLeft, useDocs } from '../dp/_docs'
 import { plural } from '../p/_app-parts'
-import { setTheme, useDark } from './_parts'
 
 // Бокове меню (p04; ТЗ §6 — як у LinkedIn, панель зліва; відповідь 125): інформація профілю, документи, що скоро
 // закінчуються (нагадування за 180 / 90 / 30 днів — відповідь 71), швидкий доступ «Мои документы», «Опыт работы»,
@@ -24,7 +22,6 @@ import { setTheme, useDark } from './_parts'
 export function SideMenu({ open, onClose, go }: { open: boolean; onClose: () => void; go: (id: string) => void }) {
   const me = useMe()
   const { setBag } = useProto()
-  const dark = useDark()
   const [availOpen, setAvailOpen] = useState(false)
   const [logout, setLogout] = useState(false)
   const r = readiness(false)
@@ -100,7 +97,14 @@ export function SideMenu({ open, onClose, go }: { open: boolean; onClose: () => 
           <Item icon={UserPlus} label="Пригласить коллегу" onClick={() => openPr('pr-invite')} />
         </nav>
         <nav className="mt-1 flex flex-col border-t border-border pt-1">
-          <Item icon={Settings} label="Настройки" onClick={() => go('m-settings')} />
+          <Item
+            icon={Settings}
+            label="Настройки"
+            onClick={() => {
+              setBag('back.m-settings', 'p04')
+              go('m-settings')
+            }}
+          />
           <Item
             icon={LifeBuoy}
             label="Поддержка"
@@ -109,11 +113,6 @@ export function SideMenu({ open, onClose, go }: { open: boolean; onClose: () => 
               go('m-support')
             }}
           />
-          <label className="flex min-h-11 cursor-pointer items-center gap-4 py-1.5">
-            <Moon className="size-5 shrink-0 text-primary" />
-            <span className="flex-1 text-[15px]">Тёмная тема</span>
-            <Switch checked={dark} onCheckedChange={(v) => setTheme(v)} aria-label="Тёмная тема" />
-          </label>
         </nav>
         <div className="min-h-4 flex-1" />
         <div className="border-t border-border pt-1">

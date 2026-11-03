@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import { Banknote, Bookmark, Briefcase, Check, ChartColumn, Download, FileText, Globe, HeartPulse, ShieldCheck, Ship, UsersRound } from 'lucide-react'
+import { Banknote, Bookmark, Briefcase, ChartColumn, FileText, HeartPulse, Settings, ShieldCheck, Ship, UsersRound } from 'lucide-react'
 import { AvailabilityButton, AvailabilitySheet } from '@/components/app/availability'
-import { ThemeRow } from '@/components/app/theme-select'
-import { BottomSheet } from '@/components/app/bottom-sheet'
 import { ProfileFillCard } from '@/components/app/profile-fill'
 import { ViewState } from '@/components/app/states'
 import { TabBar } from '@/components/app/tab-bar'
@@ -24,10 +22,9 @@ import { useAppCounts } from '../m/_parts'
 // «Моё CV» → p20. «Медосмотр действителен до …» (ТЗ §8), «Желаемая зарплата» і «Семейное положение»
 // (відповіді 46, 134) — на місці, у рядку. Стаж і відсоток — ті самі, що в реєстрації (s6, q09). ?full=1 — 100 %.
 
-const LANGS = ['Русский', 'Українська', 'English']
 
 export function P14Profile({ go }: ScreenProps) {
-  const { bag, setBag, showToast } = useDP()
+  const { bag, setBag } = useDP()
   const p = useProfile()
   // Премиум-екрани: «Назад» там повертає сюди (back.<id>).
   const goBack = (id: string) => {
@@ -35,9 +32,7 @@ export function P14Profile({ go }: ScreenProps) {
     go(id)
   }
   const [availOpen, setAvailOpen] = useState(false)
-  const [langOpen, setLangOpen] = useState(false)
   const full = useHashParam('full') === '1'
-  const lang = bag<string>('dp.lang', 'Русский')
 
   const { docs } = useDocs()
   const counts = useAppCounts()
@@ -139,11 +134,8 @@ export function P14Profile({ go }: ScreenProps) {
         <MenuRow icon={ChartColumn} title="Моя зарплата" onClick={() => goBack('pr-salary')} />
       </ListGroup>
 
-      <ListGroup title="Настройки">
-        <MenuRow icon={Globe} title="Язык" value={lang} onClick={() => setLangOpen(true)} />
-        <ThemeRow open={editing === 'theme'} onToggle={() => toggle('theme')} />
-        <MenuRow icon={ShieldCheck} title="Согласия" onClick={() => go('q10')} />
-        <MenuRow icon={Download} title="Скачать мои данные" onClick={() => showToast('Копию данных отправим на ваш email')} />
+      <ListGroup>
+        <MenuRow icon={Settings} title="Настройки" onClick={() => goBack('m-settings')} />
       </ListGroup>
     </div>
   )
@@ -160,26 +152,6 @@ export function P14Profile({ go }: ScreenProps) {
       </div>
       <TabBar active="profile" go={go} counts={{ msg: counts.messages }} />
       <AvailabilitySheet open={availOpen} onClose={() => setAvailOpen(false)} />
-      <BottomSheet open={langOpen} onClose={() => setLangOpen(false)} title="Язык">
-        <div role="radiogroup" aria-label="Язык" className="flex flex-col">
-          {LANGS.map((l) => (
-            <button
-              key={l}
-              type="button"
-              role="radio"
-              aria-checked={l === lang}
-              onClick={() => {
-                setBag('dp.lang', l)
-                setLangOpen(false)
-              }}
-              className="flex min-h-13 items-center gap-3 border-t border-border py-3 text-left first:border-t-0"
-            >
-              <span className="flex-1 text-base">{l}</span>
-              {l === lang && <Check className="size-5 text-primary" strokeWidth={2.5} />}
-            </button>
-          ))}
-        </div>
-      </BottomSheet>
     </div>
   )
 }
