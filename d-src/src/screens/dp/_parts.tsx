@@ -195,22 +195,6 @@ export function Note({ icon: I, tone = 'muted', children, className }: { icon: I
   )
 }
 
-// Рядок дії у вікні знизу: іконка в кружку, назва, підпис.
-export function ActionRow({ icon: I, title, sub, onClick }: { icon: Icon; title: string; sub?: string; onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className="flex items-center gap-4 border-t border-border py-3 text-left first:border-t-0 active:bg-muted/60">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
-        <I className="size-5" />
-      </span>
-      <span className="flex flex-1 flex-col">
-        <span className="text-base font-medium">{title}</span>
-        {sub && <span className="text-sm text-muted-foreground">{sub}</span>}
-      </span>
-      <ChevronRight className="size-5 text-muted-foreground" />
-    </button>
-  )
-}
-
 // Біла група з роздільниками й заголовком над нею (як «Мой профиль» у q09).
 export function ListGroup({ title, aside, children, className }: { title?: ReactNode; aside?: ReactNode; children: ReactNode; className?: string }) {
   return (

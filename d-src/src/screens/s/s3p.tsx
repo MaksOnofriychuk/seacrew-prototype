@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { CountryPick, DatePick } from '@/components/app/pickers'
 import { BOUNDS } from '@/lib/dates'
-import { Camera, FolderOpen, Image, LoaderCircle, Lock, Pencil, PenLine, Plus, Stamp, Trash2 } from 'lucide-react'
+import { Camera, Image, LoaderCircle, Lock, Pencil, Plus, Stamp, Trash2 } from 'lucide-react'
 import { Paper } from '@/components/app/paper'
 import { Button } from '@/components/ui/button'
 import type { ScreenProps } from '../registry'
-import { Field, QSheet, TextInput } from '../q/_parts'
+import { Field, TextInput } from '../q/_parts'
 import { AddPanel, RowList, ScrollAnchor, SectionTitle, useBusy, useHashParams, useS } from './_core-parts'
 import { PASS, StepShell } from './_stepper'
+import { SourceSheet, srcCamera, srcFile, srcManual } from '@/components/app/source-sheet'
 
 // s3p — «Загранпаспорт и визы» (правка №36), крок «Основного» після документа моряка.
 // Паспорт один: номер, страна выдачи, дата выдачи, действителен до, фото страницы с данными.
@@ -161,31 +162,16 @@ export function S3pPassport({ go }: ScreenProps) {
         )}
       </section>
 
-      <QSheet open={visaSheet} onClose={() => setVisaSheet(false)} title="Добавить визу">
-        <ul className="overflow-hidden rounded-xl border border-border">
-          {(
-            [
-              [Camera, 'Сфотографировать страницу с визой', uploadVisa],
-              [FolderOpen, 'Загрузить файл', uploadVisa],
-              [PenLine, 'Ввести вручную', () => setVisaForm({ v: EMPTY_VISA, isNew: true })],
-            ] as const
-          ).map(([Icon, label, act]) => (
-            <li key={label} className="border-t border-border first:border-t-0">
-              <button
-                type="button"
-                onClick={() => {
-                  setVisaSheet(false)
-                  act()
-                }}
-                className="flex w-full items-center gap-3 px-4 py-3.5 text-left text-[15px] active:bg-muted"
-              >
-                <Icon className="size-5 shrink-0 text-primary" />
-                {label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </QSheet>
+      <SourceSheet
+        open={visaSheet}
+        onClose={() => setVisaSheet(false)}
+        title="Добавить визу"
+        items={[
+          srcCamera(() => { setVisaSheet(false); uploadVisa() }, { title: 'Сфотографировать страницу с визой' }),
+          srcFile(() => { setVisaSheet(false); uploadVisa() }),
+          srcManual(() => { setVisaSheet(false); setVisaForm({ v: EMPTY_VISA, isNew: true }) }),
+        ]}
+      />
     </StepShell>
   )
 }

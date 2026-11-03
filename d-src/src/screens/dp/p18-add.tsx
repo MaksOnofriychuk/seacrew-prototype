@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button'
 import { ADD_CATS, DETECTED, MAX_PAGES, READ, type AddCat } from '@/lib/data-docs-profile'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { ActionRow, Note, PageArt, PageThumb, useDP, useLater } from './_parts'
+import { Note, PageArt, PageThumb, useDP, useLater } from './_parts'
 import { ADD_START, type AddState } from './_docs'
+import { SourceSheet, srcCamera, srcFile, srcGallery } from '@/components/app/source-sheet'
 
 // p18 — «Добавить документ» (gaps №5; add.tsx у застосунку): сторінки одного документа (до 10) —
 // кожну можна відкрити, повернути, прибрати; тип документа (ИИ підказує, моряк може змінити);
@@ -232,11 +233,13 @@ export function P18Add({ go }: ScreenProps) {
         </Button>
       </Footer>
 
-      <BottomSheet open={source} onClose={() => setSource(false)} title="Ещё страница" description="Только страницы этого же документа.">
-        <ActionRow icon={Camera} title="Сфотографировать" onClick={addPage} />
-        <ActionRow icon={Image} title="Выбрать из галереи" onClick={addPage} />
-        <ActionRow icon={FolderOpen} title="Выбрать файл" sub="PDF или изображение" onClick={addPage} />
-      </BottomSheet>
+      <SourceSheet
+        open={source}
+        onClose={() => setSource(false)}
+        title="Ещё страница"
+        description="Только страницы этого же документа."
+        items={[srcCamera(addPage), srcGallery(addPage), srcFile(addPage, { title: 'Выбрать файл', sub: 'PDF или изображение' })]}
+      />
 
       <BottomSheet
         open={viewing !== null}

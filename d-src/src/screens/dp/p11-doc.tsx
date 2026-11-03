@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Camera, FolderOpen, Image, Lock, PenLine, Stamp, Trash2 } from 'lucide-react'
+import { Camera, Lock, PenLine, Stamp, Trash2 } from 'lucide-react'
 import { BottomSheet } from '@/components/app/bottom-sheet'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { Paper } from '@/components/app/paper'
@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
-import { ActionRow, MenuRow, PageArt, plural, TextInput, useDP } from './_parts'
+import { MenuRow, PageArt, plural, TextInput, useDP } from './_parts'
 import { expiry, useDocs } from './_docs'
+import { SourceSheet, srcCamera, srcFile, srcGallery } from '@/components/app/source-sheet'
 
 // p11 — документ (будь-який з p02, зокрема загранпаспорт і візи — правка №36): документ як папір,
 // сторінки зашифровані, дані з документа. «Изменить данные» — поля прямо на папері; правку видно
@@ -169,22 +170,23 @@ export function P11Doc({ go }: ScreenProps) {
           </Button>
         </Footer>
       )}
-      <BottomSheet open={sheet === 'photo'} onClose={() => setSheet(null)} title={d.photo} description={isFile ? 'PDF или документ Word.' : 'Сфотографируйте или загрузите страницу с фото и данными.'}>
-        {!isFile && <ActionRow icon={Camera} title="Сфотографировать" onClick={replaced} />}
-        {!isFile && <ActionRow icon={Image} title="Выбрать из галереи" onClick={replaced} />}
-        <ActionRow icon={FolderOpen} title="Выбрать файл" sub={isFile ? undefined : 'PDF или изображение'} onClick={replaced} />
-        <Button size="lg" variant="ghost" className="mt-3 text-primary" onClick={() => setSheet(null)}>
-          Отмена
-        </Button>
-      </BottomSheet>
-      <BottomSheet open={sheet === 'endorse'} onClose={() => setSheet(null)} title="Фото Endorsement" description="Необязательно. Нужно, если Endorsement — отдельный лист.">
-        <ActionRow icon={Camera} title="Сфотографировать" onClick={endorsePicked} />
-        <ActionRow icon={Image} title="Выбрать из галереи" onClick={endorsePicked} />
-        <ActionRow icon={FolderOpen} title="Выбрать файл" sub="PDF или изображение" onClick={endorsePicked} />
-        <Button size="lg" variant="ghost" className="mt-3 text-primary" onClick={() => setSheet(null)}>
-          Отмена
-        </Button>
-      </BottomSheet>
+      <SourceSheet
+        open={sheet === 'photo'}
+        onClose={() => setSheet(null)}
+        title={d.photo}
+        description={isFile ? 'PDF или документ Word.' : 'Сфотографируйте или загрузите страницу с фото и данными.'}
+        items={[
+          ...(isFile ? [] : [srcCamera(replaced), srcGallery(replaced)]),
+          srcFile(replaced, { title: 'Выбрать файл', sub: isFile ? undefined : 'PDF или изображение' }),
+        ]}
+      />
+      <SourceSheet
+        open={sheet === 'endorse'}
+        onClose={() => setSheet(null)}
+        title="Фото Endorsement"
+        description="Необязательно. Нужно, если Endorsement — отдельный лист."
+        items={[srcCamera(endorsePicked), srcGallery(endorsePicked), srcFile(endorsePicked, { title: 'Выбрать файл', sub: 'PDF или изображение' })]}
+      />
       <BottomSheet
         open={sheet === 'delete'}
         onClose={() => setSheet(null)}

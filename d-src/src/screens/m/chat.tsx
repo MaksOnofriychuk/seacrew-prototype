@@ -9,8 +9,8 @@ import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { useMe } from '../p/_feed-parts'
-import { ActionRow } from '../q/_parts'
 import { ChatAvatar, EVENT_TEXT, useChats, useSelectedChat } from './_parts'
+import { SourceSheet } from '@/components/app/source-sheet'
 
 // m-chat — чат з рекрутером (правка №22, відповіді 112–116, gaps №4, код conversation/[id]).
 // Текст, фото, файли, посилання; «Прочитано» під моїм повідомленням; «онлайн» у шапці.
@@ -379,29 +379,31 @@ function Composer({ onText, onPhoto, onFile }: { onText: (t: string) => void; on
       >
         <SendHorizontal className="size-5" />
       </button>
-      <BottomSheet open={attach} onClose={() => setAttach(false)} title="Прикрепить">
-        <ActionRow
-          icon={Camera}
-          title="Фото"
-          sub="Снять или выбрать из галереи"
-          onClick={() => {
-            setAttach(false)
-            onPhoto()
-          }}
-        />
-        <ActionRow
-          icon={FileText}
-          title="Файл"
-          sub="PDF, документ или изображение"
-          onClick={() => {
-            setAttach(false)
-            onFile()
-          }}
-        />
-        <Button size="lg" variant="ghost" className="mt-3 text-primary" onClick={() => setAttach(false)}>
-          Отмена
-        </Button>
-      </BottomSheet>
+      <SourceSheet
+        open={attach}
+        onClose={() => setAttach(false)}
+        title="Прикрепить"
+        items={[
+          {
+            icon: Camera,
+            title: 'Фото',
+            sub: 'Снять или выбрать из галереи',
+            onClick: () => {
+              setAttach(false)
+              onPhoto()
+            },
+          },
+          {
+            icon: FileText,
+            title: 'Файл',
+            sub: 'PDF, документ или изображение',
+            onClick: () => {
+              setAttach(false)
+              onFile()
+            },
+          },
+        ]}
+      />
     </div>
   )
 }

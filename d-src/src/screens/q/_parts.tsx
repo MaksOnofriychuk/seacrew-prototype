@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react'
-import { ChevronRight } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { ProfileFillCard } from '@/components/app/profile-fill'
 import { StepProgress } from '@/components/app/form-field'
@@ -225,22 +224,6 @@ export function QSheet({
         <div className="mt-5 flex flex-col">{children}</div>
       </SheetContent>
     </Sheet>
-  )
-}
-
-// Рядок дії у вікні знизу: іконка, назва, підпис.
-export function ActionRow({ icon: Icon, title, sub, onClick }: { icon: ComponentType<{ className?: string }>; title: string; sub?: string; onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className="flex items-center gap-4 border-t border-border py-3 text-left first:border-t-0">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
-        <Icon className="size-5" />
-      </span>
-      <span className="flex flex-1 flex-col">
-        <span className="text-base font-medium">{title}</span>
-        {sub && <span className="text-sm text-muted-foreground">{sub}</span>}
-      </span>
-      <ChevronRight className="size-5 text-muted-foreground" />
-    </button>
   )
 }
 

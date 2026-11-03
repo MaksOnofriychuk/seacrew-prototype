@@ -1,6 +1,5 @@
 import { useState, type ReactNode } from 'react'
 import { Download, FolderDown, LoaderCircle, Mail, MessageCircle, Send, Share2 } from 'lucide-react'
-import { BottomSheet } from '@/components/app/bottom-sheet'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { useView, ViewState } from '@/components/app/states'
 import { useAvailability } from '@/components/app/availability'
@@ -8,9 +7,10 @@ import { Button } from '@/components/ui/button'
 import { CV_FILE, CV_UPDATED, EN_CIT, EN_COUNTRY, type Contract } from '@/lib/data-docs-profile'
 import { ruDate } from '@/lib/data'
 import type { ScreenProps } from '../types'
-import { ActionRow, useBusy, useDP, useProfile } from './_parts'
+import { useBusy, useDP, useProfile } from './_parts'
 import { useDocs } from './_docs'
 import { cMonths, durEn, useContracts } from './_contracts'
+import { SourceSheet } from '@/components/app/source-sheet'
 
 // p20 — «Моё CV · PDF» (відповіді 86–90, бриф S45): CV збирається з профілю, завжди англійською (89),
 // без логотипів (87), поки безкоштовно (86). «Скачать PDF» — файл на телефон; «Поделиться» — куди
@@ -78,12 +78,18 @@ export function P20Cv({ go }: ScreenProps) {
           </Button>
         </Footer>
       )}
-      <BottomSheet open={share} onClose={() => setShare(false)} title="Поделиться CV" description={CV_FILE}>
-        <ActionRow icon={Mail} title="Почта" onClick={() => shared('почта')} />
-        <ActionRow icon={MessageCircle} title="WhatsApp" onClick={() => shared('WhatsApp')} />
-        <ActionRow icon={Send} title="Telegram" onClick={() => shared('Telegram')} />
-        <ActionRow icon={FolderDown} title="Сохранить в «Файлы»" onClick={() => shared('«Файлы»')} />
-      </BottomSheet>
+      <SourceSheet
+        open={share}
+        onClose={() => setShare(false)}
+        title="Поделиться CV"
+        description={CV_FILE}
+        items={[
+          { icon: Mail, title: 'Почта', onClick: () => shared('почта') },
+          { icon: MessageCircle, title: 'WhatsApp', onClick: () => shared('WhatsApp') },
+          { icon: Send, title: 'Telegram', onClick: () => shared('Telegram') },
+          { icon: FolderDown, title: 'Сохранить в «Файлы»', onClick: () => shared('«Файлы»') },
+        ]}
+      />
     </div>
   )
 }

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Camera, FileText, FolderOpen, IdCard, Image, Lock, Plus, ScanLine, Trash2 } from 'lucide-react'
+import { FileText, IdCard, Lock, Plus, ScanLine, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
-import { ActionRow, Bar, DOC_TYPES, FlowScreen, Footer, Hint, otherType, QSheet, Title, useTimers, useToast, type DocTypeId, type DocUpload, type Upload, useQ } from './_parts'
+import { Bar, DOC_TYPES, FlowScreen, Footer, Hint, otherType, Title, useTimers, useToast, type DocTypeId, type DocUpload, type Upload, useQ } from './_parts'
+import { SourceSheet, srcCamera, srcFile, srcGallery, srcScan } from '@/components/app/source-sheet'
 
 // q03 — CV і один документ моряка на вибір (удостоверение або диплом). Другий документ — за бажанням.
 // Правка п. 4: підпис другої кнопки — «Diploma / CoC | CoP». Правка №17: «Сфотографируйте или загрузите
@@ -97,28 +98,28 @@ export function Q03Upload({ go }: ScreenProps) {
       overlay={
         <>
           {toastNode}
-          <QSheet open={sheet === 'cv'} onClose={() => setSheet(null)} title="Добавить CV">
-            <ActionRow icon={FolderOpen} title="Выбрать файл" sub="PDF или Word" onClick={pickCv} />
-            <ActionRow icon={ScanLine} title="Сканировать" sub="Если CV напечатано" onClick={pickCv} />
-            <ActionRow icon={Image} title="Выбрать из галереи" sub="Фото или скриншот" onClick={pickCv} />
-            <Button size="lg" variant="outline" className="mt-4" onClick={() => setSheet(null)}>
-              Отмена
-            </Button>
-          </QSheet>
-          <QSheet
+          <SourceSheet
+            open={sheet === 'cv'}
+            onClose={() => setSheet(null)}
+            title="Добавить CV"
+            items={[
+              srcFile(pickCv, { title: 'Выбрать файл', sub: 'PDF или Word' }),
+              srcScan(pickCv, { title: 'Сканировать', sub: 'Если CV напечатано' }),
+              srcGallery(pickCv, { sub: 'Фото или скриншот' }),
+            ]}
+          />
+          <SourceSheet
             open={sheet === 'doc'}
             onClose={() => setSheet(null)}
             title={DOC_TYPES[type].n}
             description="Сфотографируйте или загрузите страницу с фото и данными. Если на развороте есть другие данные — добавьте их второй страницей."
-          >
-            <ActionRow icon={ScanLine} title="Сканировать документ" onClick={pickDoc} />
-            <ActionRow icon={Camera} title="Сфотографировать" sub="При хорошем свете, без бликов" onClick={pickDoc} />
-            <ActionRow icon={FolderOpen} title="Выбрать файл" sub="PDF или изображение" onClick={pickDoc} />
-            <ActionRow icon={Image} title="Выбрать из галереи" onClick={pickDoc} />
-            <Button size="lg" variant="outline" className="mt-4" onClick={() => setSheet(null)}>
-              Отмена
-            </Button>
-          </QSheet>
+            items={[
+              srcScan(pickDoc),
+              srcCamera(pickDoc, { sub: 'При хорошем свете, без бликов' }),
+              srcFile(pickDoc, { title: 'Выбрать файл', sub: 'PDF или изображение' }),
+              srcGallery(pickDoc),
+            ]}
+          />
         </>
       }
     >

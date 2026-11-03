@@ -1,15 +1,15 @@
 import { useState } from 'react'
-import { Camera, ChevronRight, FolderOpen, HeartPulse, Image, Lock, PenLine, Plus, TriangleAlert } from 'lucide-react'
-import { BottomSheet } from '@/components/app/bottom-sheet'
+import { ChevronRight, HeartPulse, Lock, Plus, TriangleAlert } from 'lucide-react'
 import { ViewState } from '@/components/app/states'
 import { TabBar } from '@/components/app/tab-bar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { AddCat } from '@/lib/data-docs-profile'
 import type { ScreenProps } from '../types'
-import { ActionRow, Note, TabHeader, useDP, type Icon } from './_parts'
+import { Note, TabHeader, useDP, type Icon } from './_parts'
 import { ADD_START, daysLeft, expiry, GROUPS, remindersLeft, useDocs, type AddState, type Doc, type DocGroup } from './_docs'
 import { useAppCounts } from '../m/_parts'
+import { SourceSheet, srcCamera, srcFile, srcGallery, srcManual } from '@/components/app/source-sheet'
 
 // p02 — документы. Групи: документ моряка, загранпаспорт і визы (правка №36), дипломи, медичні, CV;
 // «Прививки» з «+» (відповідь 76); «Подфлажные» і «Другие» — лише коли є. Номер прихований, крім останніх цифр; плашка строку — лише
@@ -127,16 +127,19 @@ export function P02Docs({ go }: ScreenProps) {
         </ViewState>
       </div>
       <TabBar active="docs" go={go} counts={{ msg: counts.messages }} />
-      <BottomSheet open={!!add} onClose={() => setAdd(null)} title="Добавить документ" description="Сфотографируйте или загрузите страницу с фото и данными.">
-        <ActionRow icon={Camera} title="Сфотографировать" onClick={picked} />
-        <ActionRow icon={Image} title="Выбрать из галереи" onClick={picked} />
-        <ActionRow icon={FolderOpen} title="Выбрать файл" sub="PDF или изображение" onClick={picked} />
-        <ActionRow icon={PenLine} title="Ввести вручную" onClick={manual} />
-        <ActionRow icon={HeartPulse} title="Медицинский документ" sub="Вводится вручную" onClick={() => go('s5')} />
-        <Button size="lg" variant="ghost" className="mt-3 text-primary" onClick={() => setAdd(null)}>
-          Отмена
-        </Button>
-      </BottomSheet>
+      <SourceSheet
+        open={!!add}
+        onClose={() => setAdd(null)}
+        title="Добавить документ"
+        description="Сфотографируйте или загрузите страницу с фото и данными."
+        items={[
+          srcCamera(picked),
+          srcGallery(picked),
+          srcFile(picked, { title: 'Выбрать файл', sub: 'PDF или изображение' }),
+          srcManual(manual),
+          { icon: HeartPulse, title: 'Медицинский документ', sub: 'Вводится вручную', onClick: () => go('s5') },
+        ]}
+      />
     </div>
   )
 }
