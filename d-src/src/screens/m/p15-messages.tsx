@@ -66,7 +66,6 @@ export function P15Messages({ go }: ScreenProps) {
         )
       })}
     </ul>
-    <p className="mt-3 px-2 text-sm text-muted-foreground">Переписка хранится полгода.</p>
     </>
   )
 

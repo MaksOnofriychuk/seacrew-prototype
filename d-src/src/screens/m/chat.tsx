@@ -11,6 +11,8 @@ import type { ScreenProps } from '../types'
 import { useMe } from '../p/_feed-parts'
 import { ChatAvatar, EVENT_TEXT, useChats, useSelectedChat } from './_parts'
 import { SourceSheet } from '@/components/app/source-sheet'
+import { MediaViewer } from '@/components/app/media-viewer'
+import { ShareSheet } from '@/components/app/share-sheet'
 
 // m-chat — чат з рекрутером (правка №22, відповіді 112–116, gaps №4, код conversation/[id]).
 // Текст, фото, файли, посилання; «Прочитано» під моїм повідомленням; «онлайн» у шапці.
@@ -86,7 +88,6 @@ export function MChat({ go, fixed }: ScreenProps & { fixed?: string }) {
 
       <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto bg-background px-4 pt-3 pb-4">
         <ViewState empty={{ title: 'Сообщений пока нет', text: 'Напишите первое.' }} error={{ title: 'Не удалось загрузить переписку' }} loading={{ kind: 'cards', rows: 3 }}>
-          <p className="mb-2 text-center text-xs text-muted-foreground">Переписка хранится полгода</p>
           <Messages chat={chat} go={go} onJob={openJob} unreadFrom={unreadFrom} />
         </ViewState>
       </div>
@@ -185,6 +186,8 @@ function Message({
   onToast: (t: string) => void
   onOpenForm: () => void
 }) {
+  const [view, setView] = useState(false)
+  const [share, setShare] = useState(false)
   if (m.kind === 'day') return <Divider>{m.text}</Divider>
   if (m.kind === 'event') {
     if (m.event === 'applied') return <AppliedCard chat={chat} time={m.time} onJob={onJob} />
@@ -231,17 +234,28 @@ function Message({
     )
   if (m.kind === 'photo')
     return (
-      <button type="button" onClick={() => onToast('Фото откроется на весь экран (пример)')} className={cn(bubble, 'flex w-[72%] flex-col gap-1 p-1 pb-1.5 text-left')}>
-        <ShipPhoto />
-        <span className="flex items-end justify-between gap-3 px-2.5">
-          <span className="text-sm">{m.caption}</span>
-          {time}
-        </span>
-      </button>
+      <>
+        <button type="button" onClick={() => setView(true)} className={cn(bubble, 'flex w-[72%] flex-col gap-1 p-1 pb-1.5 text-left')}>
+          <ShipPhoto />
+          <span className="flex items-end justify-between gap-3 px-2.5">
+            <span className="text-sm">{m.caption}</span>
+            {time}
+          </span>
+        </button>
+        <MediaViewer open={view} onClose={() => setView(false)} title={mine ? "Вы" : chat.person?.name ?? chat.org} caption={m.caption} onShare={() => setShare(true)}>
+          <ShipPhoto />
+        </MediaViewer>
+        <ShareSheet open={share} onClose={() => setShare(false)} title="Поделиться фото" />
+      </>
     )
   if (m.kind === 'file')
     return (
-      <button type="button" onClick={() => onToast(`${m.name} откроется в просмотре (пример)`)} className={cn(bubble, 'flex items-center gap-3 py-2.5 pr-3.5 pl-3 text-left')}>
+      <>
+      <MediaViewer open={view} onClose={() => setView(false)} title={m.name} zoomable={false} onShare={() => setShare(true)}>
+        <DocPage name={m.name} />
+      </MediaViewer>
+      <ShareSheet open={share} onClose={() => setShare(false)} title="Поделиться файлом" description={m.name} />
+      <button type="button" onClick={() => setView(true)} className={cn(bubble, 'flex items-center gap-3 py-2.5 pr-3.5 pl-3 text-left')}>
         <span className={cn('flex size-10 shrink-0 items-center justify-center rounded-md', mine ? 'bg-primary-foreground/15' : 'bg-muted text-primary')}>
           <FileText className="size-5" />
         </span>
@@ -253,6 +267,7 @@ function Message({
           </span>
         </span>
       </button>
+      </>
     )
   // link
   return (
@@ -445,5 +460,20 @@ function CvSheet({ open, onClose, onSend, onProfile }: { open: boolean; onClose:
         </ul>
       </div>
     </BottomSheet>
+  )
+}
+
+// Умовна сторінка документа для перегляду файлу: аркуш з шапкою й рядками тексту.
+function DocPage({ name }: { name: string }) {
+  return (
+    <div className="mx-auto w-[86%] rounded-md bg-white p-5 text-left text-slate-900 shadow-lg">
+      <p className="text-sm font-semibold">{name.replace(/\.pdf$/i, '')}</p>
+      <div className="mt-3 h-px bg-slate-200" />
+      <div className="mt-3 flex flex-col gap-2">
+        {[92, 80, 88, 64, 90, 72, 84, 58, 86, 70].map((w, i) => (
+          <span key={i} className="h-2 rounded-full bg-slate-200" style={{ width: `${w}%` }} />
+        ))}
+      </div>
+    </div>
   )
 }
