@@ -100,7 +100,7 @@ export function RJobEdit({ go }: ScreenProps) {
             </Block>
 
             <Block title="Условия">
-              <div className="grid grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)_minmax(0,1fr)_84px] items-start gap-4">
+              <div className="grid grid-cols-[minmax(0,2.6fr)_minmax(0,1fr)_minmax(0,1.1fr)_80px] items-start gap-4">
                 <WebField label="Зарплата" required error={err('amount')}>
                   <Segmented value={sal.mode} onChange={(mode) => commitSalary({ ...sal, mode })} options={[['range', 'От–до'], ['fixed', 'Точная'], ['nego', 'Договорная']]} />
                 </WebField>
@@ -111,7 +111,7 @@ export function RJobEdit({ go }: ScreenProps) {
                     </WebField>
                     {sal.mode === 'range' ? (
                       <WebField id="je-hi" label="До" hint="">
-                        <WebSelect id="je-hi" searchable disabled={!sal.lo} className="data-[size=default]:h-10 font-mono" value={sal.hi} onChange={(hi) => commitSalary({ ...sal, hi })} options={salaryOptions(j.salary.period, sal.hi).filter((o) => toNum(o) > toNum(sal.lo))} placeholder={sal.lo ? 'Выберите' : 'Сначала «от»'} />
+                        <WebSelect id="je-hi" searchable disabled={!sal.lo} className="data-[size=default]:h-10 font-mono" value={sal.hi} onChange={(hi) => commitSalary({ ...sal, hi })} options={salaryOptions(j.salary.period, sal.hi).filter((o) => toNum(o) > toNum(sal.lo))} placeholder={sal.lo ? 'Выберите' : 'Нужно «от»'} />
                       </WebField>
                     ) : (
                       <span />
@@ -187,11 +187,9 @@ export function RJobEdit({ go }: ScreenProps) {
           </div>
 
           <aside className="sticky top-0 flex flex-col gap-3 self-start">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-sm text-muted-foreground">Так вакансию увидят в приложении</span>
-              <div className="w-[170px]">
-                <Segmented value={previewOpen ? 'open' : 'card'} onChange={(v) => setPreviewOpen(v === 'open')} options={[['card', 'В списке'], ['open', 'Открытая']]} />
-              </div>
+            <span className="text-sm text-muted-foreground">Так вакансию увидят в приложении</span>
+            <div className="w-full max-w-[340px] self-center">
+              <Segmented value={previewOpen ? 'open' : 'card'} onChange={(v) => setPreviewOpen(v === 'open')} options={[['card', 'В списке'], ['open', 'Открытая']]} />
             </div>
             <Preview j={j} meta={meta} open={previewOpen} />
           </aside>

@@ -313,7 +313,7 @@ export function RSettings({ go }: ScreenProps) {
                       </span>
                     ),
                   },
-                  { key: 'st', header: 'Статус', width: '112px', cell: (x) => <StatusDot tone={x.st}>{x.stText}</StatusDot> },
+                  { key: 'st', header: 'Статус', width: '136px', cell: (x) => <StatusDot tone={x.st}>{x.stText}</StatusDot> },
                 ]}
                 rows={SAMPLE}
                 rowKey={(x) => String(x.id)}
