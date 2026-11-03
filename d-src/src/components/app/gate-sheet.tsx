@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/
 import { MOBILE_ROUTES } from '@/lib/mobile-routes'
 
 // Правка №9: гість натиснув будь-яку дію (лайк, коментар, збереження, відгук, публікацію) → вікно знизу
-// «Зарегистрируйтесь, чтобы откликаться и общаться», «Быстрая регистрация» / «Пошаговая регистрация»,
+// «Создайте аккаунт, чтобы продолжить» (перевірка прототипу 03.11, №18), «Быстрая регистрация» / «Пошаговая регистрация»,
 // під ними «Уже есть аккаунт? Войти». Текст однаковий для всіх дій; закривається тапом поза вікном.
 // gate(action) — action лишився для сумісності (напр. 'apply', 'save'), на текст не впливає.
 export function useGate(go: (id: string) => void, initial: string | null = null) {
@@ -25,7 +25,7 @@ export function GateSheet({ go, open, onClose }: { go: (id: string) => void; ope
         <span className="flex size-11 items-center justify-center rounded-full bg-muted text-primary">
           <Lock className="size-5" />
         </span>
-        <SheetTitle className="mt-4 text-2xl leading-tight font-semibold tracking-tight">Зарегистрируйтесь, чтобы откликаться и общаться</SheetTitle>
+        <SheetTitle className="mt-4 text-2xl leading-tight font-semibold tracking-tight">Создайте аккаунт, чтобы продолжить</SheetTitle>
         <SheetDescription className="sr-only">Выберите способ регистрации или войдите</SheetDescription>
         <div className="mt-6 flex flex-col gap-3">
           <Button size="lg" onClick={() => go(MOBILE_ROUTES.quick)}>
