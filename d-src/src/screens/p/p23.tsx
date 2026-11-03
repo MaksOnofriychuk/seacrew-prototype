@@ -1,7 +1,7 @@
 import type { ScreenProps } from '../registry'
-import { MyApplicationsScreen } from './_app-jobs'
+import { JobsScreen } from './_app-jobs'
 
-// p23 — «Вакансии · Мои отклики» (відповідь 98): статуси Отправлено / Ожидание / Метч / Отклонено.
+// p23 — «Вакансии · Мои отклики» (відповідь 98): це вкладка «Отклики» екрана p05, окремого екрана немає.
 export function P23Applications({ go }: ScreenProps) {
-  return <MyApplicationsScreen go={go} />
+  return <JobsScreen go={go} initialTab="mine" />
 }

@@ -1,8 +1,9 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { ArrowUpDown, BadgeCheck, BellRing, Briefcase, Check, ChevronRight, Crown, Lock, MessageSquare, Plus, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
+import { ArrowUpDown, BadgeCheck, BellRing, Briefcase, Check, ChevronRight, Compass, Crown, Lock, MessageSquare, Plus, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
 import { Footer, NavBar } from '@/components/app/chrome'
 import { EmptyState, useView, ViewState } from '@/components/app/states'
 import { TabBar } from '@/components/app/tab-bar'
+import { MonoNums } from '@/components/app/mono-nums'
 import { Button } from '@/components/ui/button'
 import { ApplicationStatusDot } from '@/components/web/status-badge'
 import {
@@ -19,6 +20,7 @@ import {
   type SavedSearch,
   type SortId,
 } from '@/lib/data-feed-jobs'
+import { RECOMMENDED } from '@/lib/data-premium'
 import type { ApplicationStatus } from '@/lib/data-web'
 import { cn } from '@/lib/utils'
 import { Dateish, JobTags } from '../g02-guest-jobs'
@@ -55,27 +57,23 @@ export function useMyApplications() {
   return { list, statusOf: (k: number) => list.find((a) => a.job === k)?.status ?? null }
 }
 
-// Перемикач під заголовком «Вакансии» (той самий, що на pr-recommend): усі (p05), рекомендації (pr-recommend,
-// преміум), мої відгуки (p23).
-export function JobsTabs({ active, go }: { active: 'all' | 'mine'; go: Go }) {
-  const { setBag } = useApp()
+// Перемикач під заголовком «Вакансии»: міняє лише вміст під ним на тому самому екрані p05.
+// id pr-recommend і p23 у реєстрі відкривають p05 одразу на «Рекомендации» / «Отклики».
+export type JobsTab = 'all' | 'rec' | 'mine'
+
+export function JobsTabs({ active, onChange }: { active: JobsTab; onChange: (t: JobsTab) => void }) {
   const { list } = useMyApplications()
-  // стан «Пусто» на p23 — лічильник відгуків теж порожній
-  const none = useView() === 'empty' && active === 'mine'
-  const to = { all: 'p05', rec: 'pr-recommend', mine: 'p23' } as const
+  // стан «Пусто» — лічильник відгуків теж порожній
+  const none = useView() === 'empty'
   return (
     <div className="px-6 pt-3">
-      <Segmented<'all' | 'rec' | 'mine'>
+      <Segmented<JobsTab>
         label="Вакансии"
         value={active}
-        onChange={(v) => {
-          if (v === active) return
-          if (v === 'rec') setBag('back.pr-recommend', to[active])
-          go(to[v])
-        }}
+        onChange={onChange}
         items={[
           { id: 'all', label: 'Все' },
-          { id: 'rec', label: 'Рекомендации' },
+          { id: 'rec', label: 'Рекомендации', n: RECOMMENDED.length },
           { id: 'mine', label: 'Отклики', n: none ? undefined : list.length },
         ]}
       />
@@ -95,7 +93,10 @@ export function PicksButton({ go }: { go: Go }) {
   )
 }
 
-export function JobsScreen({ go, filtersOpen = false }: { go: Go; filtersOpen?: boolean }) {
+// Куди повертає сповіщення «Назад» і вакансія: екран-псевдонім відкриває p05 на потрібній вкладці.
+const HERE: Record<JobsTab, string> = { all: 'p05', rec: 'pr-recommend', mine: 'p23' }
+
+export function JobsScreen({ go, filtersOpen = false, initialTab = 'all' }: { go: Go; filtersOpen?: boolean; initialTab?: JobsTab }) {
   const { bag, setBag, set, showToast } = useApp()
   const { isSaved, toggle } = useSavedJobs()
   const { searches, setSearches } = useSearches()
@@ -107,6 +108,7 @@ export function JobsScreen({ go, filtersOpen = false }: { go: Go; filtersOpen?: 
   const [sheet, setSheet] = useState(filtersOpen)
   const [sortOpen, setSortOpen] = useState(false)
   const [limit, setLimit] = useState(false)
+  const [tab, setTab] = useState<JobsTab>(initialTab)
 
   const view = useView()
   const list = jobList(f, sort, q)
@@ -172,10 +174,12 @@ export function JobsScreen({ go, filtersOpen = false }: { go: Go; filtersOpen?: 
           title="Вакансии"
           onMenu={() => go('p04')}
           go={go}
-          here="p05"
+          here={HERE[tab]}
           action={<PicksButton go={go} />}
         />
-        <JobsTabs active="all" go={go} />
+        <JobsTabs active={tab} onChange={setTab} />
+        {tab === 'all' && (
+        <>
         <div className="flex flex-col gap-3 px-6 pt-4">
           {offline && <OfflineBanner />}
           <div className="flex gap-2">
@@ -244,6 +248,10 @@ export function JobsScreen({ go, filtersOpen = false }: { go: Go; filtersOpen?: 
         >
           {results}
         </ViewState>
+        </>
+        )}
+        {tab === 'rec' && <RecommendedTab go={go} />}
+        {tab === 'mine' && <ApplicationsTab go={go} />}
       </div>
       <TabBar active="vac" go={go} counts={{ msg: counts.messages }} />
       <FiltersSheet open={sheet} f={f} onChange={setF} onClose={closeSheet} />
@@ -510,69 +518,114 @@ function ApplySheet({ open, k, onClose, onSend }: { open: boolean; k: number; on
   )
 }
 
-/* ================= p23 — мої відгуки (відповідь 98) ================= */
+/* ================= вкладки «Рекомендации» (раніше pr-recommend) і «Отклики» (раніше p23) ================= */
 
-// Та сама вкладка «Вакансии», друга вкладка зверху. Статуси — як бачить рекрутер (APPLICATIONS у data-web):
-// Отправлено → Ожидание → Метч / Отклонено. Тап — вакансія; там же «Открыть чат с рекрутером».
-export function MyApplicationsScreen({ go }: { go: Go }) {
+// Під кожною вакансією — чому ми її радимо (посада, тип судна, зарплата, перегляди); відповідність вимогам
+// не показуємо (відповідь 99). Порожньо — мало даних у профілі: ведемо заповнити досвід роботи.
+function RecommendedTab({ go }: { go: Go }) {
+  const { set, setBag } = useApp()
+  const { isSaved, toggle } = useSavedJobs()
+  const open = (k: number) => {
+    set({ job: k })
+    setBag('job.back', 'pr-recommend')
+    go('p08')
+  }
+  return (
+    <>
+      <p className="px-6 pt-4 text-sm text-muted-foreground">Подобраны по вашему профилю и тому, что вы смотрели. Обновляются каждый день.</p>
+      <ViewState
+        loading={{ kind: 'list', rows: 4 }}
+        empty={{
+          icon: Compass,
+          title: 'Пока нечего рекомендовать',
+          text: 'Добавьте опыт работы — подберём вакансии под вашу должность и тип судна.',
+          action: (
+            <Button variant="outline" className="h-11 text-[15px] text-primary" onClick={() => go('p22')}>
+              Добавить опыт
+            </Button>
+          ),
+        }}
+      >
+        <ul className="mx-4 mt-3 mb-4 overflow-hidden rounded-xl border border-border bg-surface">
+          {RECOMMENDED.map(({ k, why }) => {
+            const j = FJ_JOBS[k]
+            return (
+              <li key={k} className="flex gap-3 border-t border-border py-4 pr-3 pl-5 first:border-t-0">
+                <button type="button" onClick={() => open(k)} className="flex min-w-0 flex-1 flex-col gap-1 text-left">
+                  <span className="text-sm text-muted-foreground">{why}</span>
+                  <span className="text-[17px] font-semibold">{j.t}</span>
+                  <span className="text-[15px] font-semibold text-primary"><MonoNums text={j.sal} /></span>
+                  <span className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-muted-foreground">
+                    <span>{j.ship}</span>
+                    <span>
+                      контракт <Dateish v={j.dur} />
+                    </span>
+                    <span>
+                      посадка <Dateish v={j.board} />
+                    </span>
+                  </span>
+                </button>
+                <SaveButton on={isSaved(k)} onClick={() => toggle(k)} className="self-start" />
+              </li>
+            )
+          })}
+        </ul>
+      </ViewState>
+    </>
+  )
+}
+
+// Статуси — как бачить рекрутер (APPLICATIONS у data-web): Отправлено → Ожидание → Метч / Отклонено (відповідь 98).
+// Тап — вакансія; там же «Открыть чат с рекрутером».
+function ApplicationsTab({ go }: { go: Go }) {
   const { set, setBag } = useApp()
   const { list } = useMyApplications()
-  const counts = useAppCounts()
-
   const open = (k: number) => {
     set({ job: k })
     setBag('job.back', 'p23')
     go('p08')
   }
-
   return (
-    <div className="relative flex h-full flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto pb-6">
-        <TabHead title="Вакансии" onMenu={() => go('p04')} go={go} here="p23" action={<PicksButton go={go} />} />
-        <JobsTabs active="mine" go={go} />
-        <ViewState
-          loading={{ kind: 'list', rows: 3 }}
-          empty={{
-            icon: Briefcase,
-            title: 'Откликов пока нет',
-            text: 'Откликнитесь на вакансию — здесь будет видно, что с откликом, а ответ рекрутера придёт в «Сообщения».',
-            action: (
-              <Button variant="outline" className="h-11 text-[15px] text-primary" onClick={() => go('p05')}>
-                Смотреть вакансии
-              </Button>
-            ),
-          }}
-        >
-          <ul className="mx-4 mt-4 overflow-hidden rounded-xl border border-border bg-surface">
-            {list.map((a) => {
-              const j = FJ_JOBS[a.job]
-              const dim = a.status === 'rejected'
-              return (
-                <li key={a.job} className="border-t border-border first:border-t-0">
-                  <button type="button" onClick={() => open(a.job)} className="flex w-full items-center gap-3 px-5 py-4 text-left active:bg-muted">
-                    <span className="flex min-w-0 flex-1 flex-col gap-1">
-                      <span className={cn('text-[17px] font-semibold', dim && 'text-muted-foreground')}>{j.t}</span>
-                      <span className={cn('text-[15px] font-semibold', dim ? 'text-muted-foreground' : 'text-primary')}>{j.sal}</span>
-                      <span className="truncate text-sm text-muted-foreground">
-                        {j.co}, {j.ship}
-                      </span>
-                      <span className="mt-1 flex items-center justify-between gap-3">
-                        <ApplicationStatusDot s={a.status} />
-                        <span className="text-sm text-muted-foreground">
-                          отклик <span className="font-mono">{a.date}</span>
-                        </span>
-                      </span>
+    <ViewState
+      loading={{ kind: 'list', rows: 3 }}
+      empty={{
+        icon: Briefcase,
+        title: 'Откликов пока нет',
+        text: 'Откликнитесь на вакансию — здесь будет видно, что с откликом, а ответ рекрутера придёт в «Сообщения».',
+        action: (
+          <Button variant="outline" className="h-11 text-[15px] text-primary" onClick={() => go('p05')}>
+            Смотреть вакансии
+          </Button>
+        ),
+      }}
+    >
+      <ul className="mx-4 mt-4 overflow-hidden rounded-xl border border-border bg-surface">
+        {list.map((a) => {
+          const j = FJ_JOBS[a.job]
+          const dim = a.status === 'rejected'
+          return (
+            <li key={a.job} className="border-t border-border first:border-t-0">
+              <button type="button" onClick={() => open(a.job)} className="flex w-full items-center gap-3 px-5 py-4 text-left active:bg-muted">
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span className={cn('text-[17px] font-semibold', dim && 'text-muted-foreground')}>{j.t}</span>
+                  <span className={cn('text-[15px] font-semibold', dim ? 'text-muted-foreground' : 'text-primary')}>{j.sal}</span>
+                  <span className="truncate text-sm text-muted-foreground">
+                    {j.co}, {j.ship}
+                  </span>
+                  <span className="mt-1 flex items-center justify-between gap-3">
+                    <ApplicationStatusDot s={a.status} />
+                    <span className="text-sm text-muted-foreground">
+                      отклик <span className="font-mono">{a.date}</span>
                     </span>
-                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-          <p className="mt-3 px-6 text-sm text-muted-foreground">Статус меняет рекрутер. Ответ придёт в «Сообщения».</p>
-        </ViewState>
-      </div>
-      <TabBar active="vac" go={go} counts={{ msg: counts.messages }} />
-    </div>
+                  </span>
+                </span>
+                <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+      <p className="mt-3 mb-6 px-6 text-sm text-muted-foreground">Статус меняет рекрутер. Ответ придёт в «Сообщения».</p>
+    </ViewState>
   )
 }
