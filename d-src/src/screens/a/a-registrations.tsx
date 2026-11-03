@@ -3,11 +3,13 @@ import { Ban, Link2, ShieldOff, UserX } from 'lucide-react'
 import { EmptyState, ErrorState, LoadingState, useView } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
+import { WebDialog } from '@/components/web/dialog'
 import { WebField, WebSelect } from '@/components/web/fields'
 import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, WebAvatar } from '@/components/web/status-badge'
 import { ATTEMPTS, BANLIST, LINKED, TRACES, TRACE_LABEL, USTATUS_LABEL, type Attempt, type BanEntry, type LinkedGroup, type Trace } from '@/lib/data-admin'
+import { EXTRA_ATTEMPTS, EXTRA_BANS, EXTRA_LINKED } from '@/lib/data-admin-53-e'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
@@ -31,10 +33,10 @@ export function ARegistrations({ go }: ScreenProps) {
   // сліди груп, забанених тут: потрапляють у бан-лист (ADR-087 п. 3)
   const [userOver, setUserOver] = useUserOverrides()
   const [groupBans, setGroupBans] = useBagState<Record<string, BanEntry[]>>('a.linkedBans', {})
-  const attempts = ATTEMPTS.filter((a) => !gone.includes(a.id))
-  const groups = LINKED.map((g) => ({ ...g, state: groupState[g.id] ?? g.state }))
+  const attempts = [...ATTEMPTS, ...EXTRA_ATTEMPTS].filter((a) => !gone.includes(a.id))
+  const groups = [...LINKED, ...EXTRA_LINKED].map((g) => ({ ...g, state: groupState[g.id] ?? g.state }))
   const open = groups.filter((g) => g.state === 'new')
-  const banlist = [...Object.values(groupBans).flat(), ...BANLIST]
+  const banlist = [...Object.values(groupBans).flat(), ...BANLIST, ...EXTRA_BANS]
 
   const setGroup = (g: LinkedGroup, s: LinkedGroup['state'], reason?: string) => {
     setGroupState({ ...groupState, [g.id]: s })
@@ -85,12 +87,13 @@ function Attempts({ rows, onDelete }: { rows: Attempt[]; onDelete: (id: string) 
   const [path, setPath] = useState('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
+  const [del, setDel] = useState<Attempt | null>(null)
   const shown = rows.filter((a) => (!path || a.path === path) && inPeriod(a.started, from, to) && (!q || (a.email ?? '').includes(q.toLowerCase()) || (a.doc ?? '').toLowerCase().includes(q.toLowerCase())))
   const columns: Column<Attempt>[] = [
     {
       key: 'started',
       header: 'Начата',
-      width: '18%',
+      width: '22%',
       sortValue: (a) => a.started,
       cell: (a) => (
         <span className="flex flex-col leading-tight">
@@ -102,7 +105,8 @@ function Attempts({ rows, onDelete }: { rows: Attempt[]; onDelete: (id: string) 
     {
       key: 'step',
       header: 'Где остановился',
-      width: '17%',
+      width: '16%',
+      sortValue: (a) => a.step,
       cell: (a) => (
         <span className="flex flex-col leading-tight">
           <span>{a.step}</span>
@@ -113,7 +117,8 @@ function Attempts({ rows, onDelete }: { rows: Attempt[]; onDelete: (id: string) 
     {
       key: 'doc',
       header: 'Документ',
-      width: '25%',
+      width: '21%',
+      sortValue: (a) => a.doc ?? '',
       cell: (a) =>
         a.doc ? (
           <span className="flex flex-col gap-0.5 leading-tight">
@@ -124,11 +129,11 @@ function Attempts({ rows, onDelete }: { rows: Attempt[]; onDelete: (id: string) 
           <span className="text-muted-foreground">не загружен</span>
         ),
     },
-    { key: 'match', header: 'Совпадение', width: '18%', cell: (a) => (a.match ? <StatusDot tone="error">{a.match}</StatusDot> : <span className="text-muted-foreground">нет</span>) },
+    { key: 'match', header: 'Совпадение', width: '19%', sortValue: (a) => a.match ?? '', cell: (a) => (a.match ? <span title={a.match}><StatusDot tone="error">{a.match}</StatusDot></span> : <span className="text-muted-foreground">нет</span>) },
     {
       key: 'left',
       header: 'Удалится',
-      width: '12%',
+      width: '11%',
       sortValue: (a) => a.daysLeft,
       cell: (a) => (
         <span className={cn('text-sm', a.daysLeft <= 3 ? 'text-warning' : 'text-muted-foreground')}>
@@ -146,8 +151,7 @@ function Attempts({ rows, onDelete }: { rows: Attempt[]; onDelete: (id: string) 
           title="Удалить попытку и файлы сейчас"
           onClick={(e) => {
             e.stopPropagation()
-            onDelete(a.id)
-            showToast('Попытка удалена вместе с файлами')
+            setDel(a)
           }}
           className="rounded-md px-1.5 py-1 text-sm font-medium text-primary hover:bg-muted"
         >
@@ -163,7 +167,42 @@ function Attempts({ rows, onDelete }: { rows: Attempt[]; onDelete: (id: string) 
         <FilterSelect label="Путь" value={path} onChange={setPath} options={[{ value: 'quick', label: 'Быстрая' }, { value: 'stepper', label: 'Пошаговая' }]} />
         <PeriodFilter label="Начата" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
       </FilterBar>
-      <DataTable columns={columns} rows={shown} rowKey={(a) => a.id} initialSort={{ key: 'started', dir: 'desc' }} empty={{ icon: UserX, title: 'Незавершённых регистраций нет', text: 'Здесь появятся те, кто начал регистрацию и не дошёл до конца.' }} />
+      <DataTable
+        columns={columns}
+        rows={shown}
+        rowKey={(a) => a.id}
+        initialSort={{ key: 'started', dir: 'desc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'started', dir: 'desc', label: 'Начата: сначала новые' },
+          { key: 'started', dir: 'asc', label: 'Начата: сначала старые' },
+          { key: 'left', dir: 'asc', label: 'Удалится: сначала скоро' },
+          { key: 'step', dir: 'asc', label: 'Шаг: А — Я' },
+          { key: 'match', dir: 'desc', label: 'Совпадение: сначала с совпадением' },
+        ]}
+        empty={{ icon: UserX, title: 'Незавершённых регистраций нет', text: 'Здесь появятся те, кто начал регистрацию и не дошёл до конца.' }}
+      />
+      <WebDialog
+        open={!!del}
+        onClose={() => setDel(null)}
+        title="Удалить попытку?"
+        description="Файлы и распознанные данные удалятся сразу, не дожидаясь 30 дней. Останется только запись о попытке."
+        footer={
+          <>
+            <CancelButton onClick={() => setDel(null)} />
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (del) onDelete(del.id)
+                setDel(null)
+                showToast('Попытка удалена вместе с файлами')
+              }}
+            >
+              Удалить
+            </Button>
+          </>
+        }
+      />
     </>
   )
 }
@@ -181,7 +220,8 @@ function Linked({ groups, go, onState }: { groups: LinkedGroup[]; go: (id: strin
     {
       key: 'acc',
       header: 'Аккаунты',
-      width: '46%',
+      width: '40%',
+      sortValue: (g) => g.accounts[0]?.name ?? '',
       cell: (g) => (
         <span className="flex flex-col leading-tight">
           <span className="font-medium">
@@ -194,27 +234,46 @@ function Linked({ groups, go, onState }: { groups: LinkedGroup[]; go: (id: strin
     {
       key: 'by',
       header: 'Совпало',
-      width: '30%',
-      cell: (g) => (
-        <span className="flex flex-col text-sm leading-tight whitespace-normal text-muted-foreground">
-          {[...new Set(g.accounts.flatMap((a) => a.traces))].map((t) => (
-            <span key={t}>{TRACE_SHORT[t]}</span>
-          ))}
-        </span>
-      ),
+      width: '34%',
+      cell: (g) => {
+        const t = [...new Set(g.accounts.flatMap((a) => a.traces))].map((x) => TRACE_SHORT[x]).join(', ')
+        return (
+          <span title={t} className="line-clamp-2 text-sm leading-tight whitespace-normal text-muted-foreground">
+            {t}
+          </span>
+        )
+      },
     },
+    { key: 'found', header: 'Найдено', hidden: true, sortValue: (g) => g.found, cell: (g) => dt(g.found) },
+    { key: 'cnt', header: 'Число аккаунтов', hidden: true, sortValue: (g) => g.accounts.length, cell: (g) => g.accounts.length },
     {
       key: 'state',
       header: 'Решение',
+      sortValue: (g) => g.state,
       cell: (g) => (g.state === 'new' ? <StatusDot tone="warning">ждёт</StatusDot> : g.state === 'banned' ? <StatusDot tone="error">бан</StatusDot> : <StatusDot tone="muted">разные</StatusDot>),
     },
   ]
 
   return (
     <div className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.3fr)] items-start gap-6">
-      <DataTable columns={columns} rows={groups} rowKey={(g) => g.id} onRowClick={(g) => setSelId(g.id)} selectedKey={sel?.id} empty={{ icon: Link2, title: 'Связанных аккаунтов нет', text: 'Если у двух аккаунтов совпадёт хотя бы один след, они появятся здесь.' }} />
+      <DataTable
+        columns={columns}
+        rows={groups}
+        rowKey={(g) => g.id}
+        onRowClick={(g) => setSelId(g.id)}
+        selectedKey={sel?.id}
+        initialSort={{ key: 'found', dir: 'desc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'found', dir: 'desc', label: 'Найдено: сначала новые' },
+          { key: 'found', dir: 'asc', label: 'Найдено: сначала старые' },
+          { key: 'cnt', dir: 'desc', label: 'Аккаунтов: сначала больше' },
+          { key: 'state', dir: 'asc', label: 'Решение' },
+        ]}
+        empty={{ icon: Link2, title: 'Связанных аккаунтов нет', text: 'Если у двух аккаунтов совпадёт хотя бы один след, они появятся здесь.' }}
+      />
 
-      <section className="rounded-xl border border-border bg-surface">
+      <section className="sticky top-4 rounded-xl border border-border bg-surface">
         {view === 'loading' ? (
           <LoadingState kind="table" rows={3} />
         ) : view === 'error' ? (
@@ -349,11 +408,11 @@ function BanList({ rows: all }: { rows: BanEntry[] }) {
   const [to, setTo] = useState('')
   const rows = all.filter((b) => (!trace || b.trace === trace) && inPeriod(b.date, from, to))
   const columns: Column<BanEntry>[] = [
-    { key: 'trace', header: 'След', width: '18%', cell: (b) => <span className="font-medium">{TRACE_LABEL[b.trace]}</span> },
-    { key: 'acc', header: 'Аккаунт', width: '16%', cell: (b) => b.account },
-    { key: 'reason', header: 'Причина', width: '28%', cell: (b) => <span className="text-muted-foreground">{b.reason}</span> },
+    { key: 'trace', header: 'След', width: '16%', sortValue: (b) => TRACE_LABEL[b.trace], cell: (b) => <span className="font-medium">{TRACE_LABEL[b.trace]}</span> },
+    { key: 'acc', header: 'Аккаунт', width: '16%', sortValue: (b) => b.account, cell: (b) => b.account },
+    { key: 'reason', header: 'Причина', width: '28%', sortValue: (b) => b.reason, cell: (b) => <span title={b.reason} className="text-muted-foreground">{b.reason}</span> },
     { key: 'date', header: 'Дата', width: '12%', mono: true, sortValue: (b) => b.date, cell: (b) => dt(b.date) },
-    { key: 'who', header: 'Кто', width: '14%', cell: (b) => b.who },
+    { key: 'who', header: 'Кто', width: '14%', sortValue: (b) => b.who, cell: (b) => b.who },
     { key: 'tries', header: 'Попыток после', width: '12%', align: 'right', sortValue: (b) => b.tries, cell: (b) => <Mono className={b.tries ? 'text-signal' : 'text-muted-foreground'}>{b.tries}</Mono> },
   ]
   return (
@@ -363,7 +422,21 @@ function BanList({ rows: all }: { rows: BanEntry[] }) {
         <FilterSelect label="След" value={trace} onChange={setTrace} options={TRACES.map((t) => ({ value: t, label: TRACE_LABEL[t] }))} />
         <PeriodFilter label="Дата" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
       </FilterBar>
-      <DataTable columns={columns} rows={rows} rowKey={(b) => b.id} empty={{ icon: Ban, title: 'Бан-лист пуст', text: 'Здесь появятся следы забаненных аккаунтов.' }} />
+      <DataTable
+        columns={columns}
+        rows={rows}
+        rowKey={(b) => b.id}
+        initialSort={{ key: 'date', dir: 'desc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'date', dir: 'desc', label: 'Дата: сначала новые' },
+          { key: 'date', dir: 'asc', label: 'Дата: сначала старые' },
+          { key: 'tries', dir: 'desc', label: 'Попыток после: сначала больше' },
+          { key: 'trace', dir: 'asc', label: 'След: А — Я' },
+          { key: 'acc', dir: 'asc', label: 'Аккаунт: А — Я' },
+        ]}
+        empty={{ icon: Ban, title: 'Бан-лист пуст', text: 'Здесь появятся следы забаненных аккаунтов.' }}
+      />
     </>
   )
 }

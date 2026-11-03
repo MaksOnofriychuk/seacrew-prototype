@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Building2 } from 'lucide-react'
 import { DataTable, type Column } from '@/components/web/data-table'
-import { FilterBar } from '@/components/web/filter-bar'
+import { FilterBar, FilterSelect, PeriodFilter, inPeriod } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
 import { OrgStatusDot } from '@/components/web/status-badge'
 import { ADMIN_ORGS, type AdminOrg, type OrgStatus } from '@/lib/data-web'
-import { orgDetail } from '@/lib/data-admin'
+import { EXTRA_ORGS, orgDetail53 } from '@/lib/data-admin-53-e'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
 import { VERIFY_REQS } from '@/lib/data-admin-2'
@@ -34,9 +34,15 @@ export function AOrgs({ go }: ScreenProps) {
     setBag('shell.q', '')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shellQ])
-  const orgs = ADMIN_ORGS.map((o) => ({ ...o, status: over[o.id] ?? o.status }))
+  const orgs = [...ADMIN_ORGS, ...EXTRA_ORGS].map((o) => ({ ...o, status: over[o.id] ?? o.status }))
   const pending = orgs.filter((o) => o.status === 'pending')
+  const [country, setCountry] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const countries = [...new Set(orgs.map((o) => o.country))].sort((a, b) => a.localeCompare(b, 'ru'))
   const rows = orgs
+    .filter((o) => !country || o.country === country)
+    .filter((o) => inPeriod(o.created, from, to))
     .filter((o) => (tab === 'pending' ? o.status === 'pending' : tab === 'verified' ? o.status === 'verified' : true))
     .filter((o) => !q || o.name.toLowerCase().includes(q.toLowerCase()))
 
@@ -65,7 +71,8 @@ export function AOrgs({ go }: ScreenProps) {
         </span>
       ),
     },
-    { key: 'owner', header: 'Владелец', width: '24%', cell: (o) => <span className="text-muted-foreground">{orgDetail(o.id).owner.email}</span> },
+    { key: 'country', header: 'Страна', hidden: true, sortValue: (o) => o.country, cell: (o) => o.country },
+    { key: 'owner', header: 'Владелец', width: '24%', sortValue: (o) => orgDetail53(o.id).owner.email, cell: (o) => <span title={orgDetail53(o.id).owner.email} className="text-muted-foreground">{orgDetail53(o.id).owner.email}</span> },
     { key: 'members', header: 'Участники', width: '10%', align: 'right', mono: true, sortValue: (o) => o.members, cell: (o) => o.members },
     { key: 'created', header: 'Регистрация', width: '12%', mono: true, sortValue: (o) => o.created, cell: (o) => dt(o.created) },
     { key: 'status', header: 'Статус', width: '14%', sortValue: (o) => o.status, cell: (o) => <OrgStatusDot s={o.status} /> },
@@ -93,13 +100,29 @@ export function AOrgs({ go }: ScreenProps) {
         value={tab}
         onChange={setTab}
       />
-      <FilterBar search={{ value: q, onChange: setQ, placeholder: 'Название организации' }} count={rows.length} />
+      <FilterBar
+        search={{ value: q, onChange: setQ, placeholder: 'Название организации' }}
+        onReset={country || from || to || q ? () => (setCountry(''), setFrom(''), setTo(''), setQ('')) : undefined}
+        count={rows.length}
+      >
+        <FilterSelect label="Страна" value={country} onChange={setCountry} options={countries} />
+        <PeriodFilter label="Регистрация" from={from} to={to} onChange={(a, b) => (setFrom(a), setTo(b))} />
+      </FilterBar>
       <DataTable
         columns={columns}
         rows={rows}
         rowKey={(o) => o.id}
         onRowClick={(o) => (o.status === 'pending' ? check(o) : open(o))}
         initialSort={{ key: 'created', dir: 'desc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'created', dir: 'desc', label: 'Регистрация: сначала новые' },
+          { key: 'created', dir: 'asc', label: 'Регистрация: сначала старые' },
+          { key: 'name', dir: 'asc', label: 'Название: А — Я' },
+          { key: 'members', dir: 'desc', label: 'Участники: сначала больше' },
+          { key: 'status', dir: 'asc', label: 'Статус' },
+          { key: 'country', dir: 'asc', label: 'Страна: А — Я' },
+        ]}
         empty={
           tab === 'pending' && !q
             ? { icon: Building2, title: 'Новых заявок нет', text: 'Когда агентство зарегистрируется, оно появится здесь.' }

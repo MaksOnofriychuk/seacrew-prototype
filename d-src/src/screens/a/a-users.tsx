@@ -5,6 +5,7 @@ import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
 import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, WebAvatar, type Tone } from '@/components/web/status-badge'
 import { A_USERS, USTATUS_LABEL, type AUser, type UStatus } from '@/lib/data-admin'
+import { EXTRA_USERS } from '@/lib/data-admin-53-e'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
 import { AdminPage, AdminTabs, Mono, PeriodFilter, dt, inPeriod, useBagState } from './_parts'
@@ -18,7 +19,7 @@ export function useUserOverrides() {
 
 export function useUsers() {
   const [over] = useUserOverrides()
-  return A_USERS.map((u) => ({ ...u, ...over[u.id] }))
+  return [...A_USERS, ...EXTRA_USERS].map((u) => ({ ...u, ...over[u.id] }))
 }
 
 type Tab = 'all' | 'blocked'
@@ -53,7 +54,7 @@ export function AUsers({ go }: ScreenProps) {
     {
       key: 'name',
       header: 'Пользователь',
-      width: '26%',
+      width: '27%',
       sortValue: (u) => u.name,
       cell: (u) => (
         <span className="flex items-center gap-3">
@@ -68,7 +69,7 @@ export function AUsers({ go }: ScreenProps) {
     {
       key: 'role',
       header: 'Кто',
-      width: '18%',
+      width: '19%',
       sortValue: (u) => u.role,
       cell: (u) => (
         <span className="flex flex-col leading-tight">
@@ -85,7 +86,7 @@ export function AUsers({ go }: ScreenProps) {
       cell: (u) => (
         <span className="flex flex-col gap-0.5 leading-tight">
           <StatusDot tone={USTATUS_TONE[u.status]}>{USTATUS_LABEL[u.status]}</StatusDot>
-          {u.status !== 'active' && u.reason && <span className="truncate pl-4 text-sm text-muted-foreground">{u.reason}</span>}
+          {u.status !== 'active' && u.reason && <span title={u.reason} className="truncate pl-4 text-sm text-muted-foreground">{u.reason}</span>}
         </span>
       ),
     },
@@ -102,7 +103,7 @@ export function AUsers({ go }: ScreenProps) {
           <Mono className={u.wrongDocs >= 2 ? 'text-signal' : u.wrongDocs === 1 ? 'text-warning' : 'text-muted-foreground'}>{u.wrongDocs} из 2</Mono>
         ),
     },
-    { key: 'created', header: 'Регистрация', width: '16%', mono: true, sortValue: (u) => u.created, cell: (u) => dt(u.created) },
+    { key: 'created', header: 'Регистрация', width: '14%', mono: true, sortValue: (u) => u.created, cell: (u) => dt(u.created) },
   ]
 
   return (
@@ -129,6 +130,16 @@ export function AUsers({ go }: ScreenProps) {
         rows={rows}
         rowKey={(u) => u.id}
         onRowClick={(u) => (setSel(u.id), go('a-user'))}
+        initialSort={{ key: 'created', dir: 'desc' }}
+        pageSizes={[10, 20, 50]}
+        sortOptions={[
+          { key: 'created', dir: 'desc', label: 'Регистрация: сначала новые' },
+          { key: 'created', dir: 'asc', label: 'Регистрация: сначала старые' },
+          { key: 'name', dir: 'asc', label: 'Имя: А — Я' },
+          { key: 'status', dir: 'asc', label: 'Статус' },
+          { key: 'wrong', dir: 'desc', label: 'Ошибки: сначала больше' },
+          { key: 'role', dir: 'asc', label: 'Кто: моряки, рекрутеры' },
+        ]}
         empty={tab === 'blocked' && !q && !role ? { icon: Users, title: 'Заблокированных нет', text: 'Если моряк дважды подряд загрузит не тот документ, он появится здесь.' } : { icon: Users, title: 'Никого не нашли', text: 'Проверьте имя или сбросьте фильтры.' }}
       />
     </AdminPage>

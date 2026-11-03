@@ -1,17 +1,19 @@
 import { useState } from 'react'
-import { Ban, FileText, Lock, LockOpen, UserX } from 'lucide-react'
+import { Ban, FileText, History, Lock, LockOpen, UserX } from 'lucide-react'
 import { ViewState } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/web/data-table'
 import { WebField, WebSelect, WebTextarea } from '@/components/web/fields'
 import { PageHeader } from '@/components/web/page-header'
 import { StatusDot, WebAvatar } from '@/components/web/status-badge'
-import { DOC_STATE_LABEL, USTATUS_LABEL, aUser } from '@/lib/data-admin'
+import { DOC_STATE_LABEL, USTATUS_LABEL } from '@/lib/data-admin'
+import { aUser53, userLog } from '@/lib/data-admin-53-e'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../types'
 import { USTATUS_TONE, useUserOverrides } from './a-users'
-import { AdminPage, CancelButton, Facts, Mono, Note, SectionTitle, SideSheet, dt, useBagState } from './_parts'
+import { AdminPage, CancelButton, Facts, Mono, Note, SideSheet, dt, useBagState } from './_parts'
+import { Fold } from './e-fold'
 
 const BLOCK_REASONS = ['Жалоба на поведение', 'Подозрение на чужой аккаунт', 'Просьба самого пользователя', 'Другое']
 const BAN_REASONS = ['Жалоба рекрутера: чужой документ', 'Поддельный документ', 'Спам в публикациях', 'Оплата за трудоустройство', 'Другое']
@@ -21,7 +23,8 @@ export function AUserScreen({ go }: ScreenProps) {
   const [id] = useBagState('a.user', 'u02')
   const [over, setOver] = useUserOverrides()
   const [, setRegTab] = useBagState('a.regTab', 'attempts')
-  const u = { ...aUser(id), ...over[id] }
+  const u = { ...aUser53(id), ...over[id] }
+  const log = userLog(u.id)
   const [sheet, setSheet] = useState<'unblock' | 'block' | 'ban' | 'unban' | null>(null)
   const [reason, setReason] = useState('')
   const [note, setNote] = useState('')
@@ -76,34 +79,8 @@ export function AUserScreen({ go }: ScreenProps) {
       />
 
       <ViewState empty={{ icon: UserX, title: 'Аккаунт удалён', text: 'Моряк удалил аккаунт. Отпечатки из бан-листа остались.' }} loading={{ kind: 'cards', rows: 2 }}>
-        {autoBlocked && (
-          <section className="mb-8 rounded-xl border border-border bg-surface">
-            <div className="flex items-baseline justify-between gap-4 border-b border-border px-6 py-4">
-              <h2 className="text-base font-semibold">Заблокирован автоматически</h2>
-              <span className="text-sm text-muted-foreground">
-                <Mono>{dt(u.blockedAt ?? '')}</Mono>
-              </span>
-            </div>
-            <ol className="flex flex-col px-6 py-5">
-              {u.attempts.map((a, i) => (
-                <li key={a.at} className="relative flex gap-4 pb-6 last:pb-0">
-                  {i < u.attempts.length - 1 && <span className="absolute top-7 bottom-0 left-[13px] w-px bg-border" aria-hidden="true" />}
-                  <span className={cn('flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-xs', i === 0 ? 'bg-warning/15 text-warning' : 'bg-signal/15 text-signal')}>{i + 1}</span>
-                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="text-[15px] font-medium">Загружен не документ моряка: {a.detected.toLowerCase()}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {a.where}, <Mono>{dt(a.at)}</Mono>
-                    </span>
-                    <span className="text-sm text-muted-foreground">{i === 0 ? 'Моряк увидел: «Ещё одна ошибка — и аккаунт будет заблокирован»' : 'Моряк увидел: «Аккаунт заблокирован. Для разблокировки свяжитесь с поддержкой»'}</span>
-                  </div>
-                </li>
-              ))}
-            </ol>
-            <p className="border-t border-border px-6 py-3 text-sm text-muted-foreground">Сами файлы не сохраняются и здесь не показываются — только что распознал ИИ.</p>
-          </section>
-        )}
         {u.status !== 'active' && !autoBlocked && u.reason && (
-          <Note tone="error" className="mb-8">
+          <Note tone="error" className="mb-4">
             {u.reason}
             {u.blockedAt && (
               <span className="text-muted-foreground">
@@ -113,53 +90,97 @@ export function AUserScreen({ go }: ScreenProps) {
           </Note>
         )}
         {u.status === 'active' && u.wrongDocs === 1 && (
-          <Note tone="warning" className="mb-8">
+          <Note tone="warning" className="mb-4">
             Одна ошибка с документом: {u.attempts[0]?.detected.toLowerCase()}, <Mono>{dt(u.attempts[0]?.at ?? '')}</Mono>. Ещё одна подряд — и аккаунт заблокируется.
           </Note>
         )}
 
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-10">
-          <div>
-            <h2 className="mb-4 text-lg font-semibold">Аккаунт</h2>
-            <Facts
-              items={[
-                ['Email', u.email],
-                ['Регистрация', <Mono key="c">{dt(u.created)}</Mono>],
-                ['Последний вход', /\d/.test(u.lastSeen) && u.lastSeen.includes('-') ? <Mono key="l">{dt(u.lastSeen)}</Mono> : u.lastSeen],
-                ['Не те документы подряд', seafarer ? <Mono key="w">{u.wrongDocs} из 2</Mono> : '—'],
-              ]}
-            />
-            {u.linked > 0 && (
-              <button type="button" onClick={() => (setRegTab('linked'), go('a-registrations'))} className="mt-6 flex w-full items-center justify-between rounded-md border border-border bg-surface px-4 py-3 text-left hover:bg-muted">
-                <span className="flex flex-col">
-                  <span className="text-[15px] font-medium">
-                    Связанные аккаунты: <Mono>{u.linked}</Mono>
-                  </span>
-                  <span className="text-sm text-muted-foreground">Совпали устройство, имя или файл</span>
-                </span>
-                <span className="text-sm font-medium text-primary">Открыть</span>
-              </button>
-            )}
-          </div>
-          {seafarer && (
-            <div>
-              <SectionTitle className="mt-0 mb-4" aside={<span className="text-sm text-muted-foreground">только сведения, без фото</span>}>
-                Документы
-              </SectionTitle>
-              <DataTable
-                ignoreView
-                rows={u.docs}
-                rowKey={(d) => d.type}
-                empty={{ icon: FileText, title: 'Документов нет', text: 'Моряк не добавил ни одного документа.' }}
-                columns={[
-                  { key: 't', header: 'Документ', width: '34%', cell: (d) => <span className="font-medium">{d.type}</span> },
-                  { key: 'a', header: 'Добавлен', width: '20%', mono: true, cell: (d) => dt(d.added) },
-                  { key: 'p', header: 'Стр.', width: '10%', align: 'right', mono: true, cell: (d) => d.pages },
-                  { key: 's', header: 'Состояние', cell: (d) => <StatusDot tone={d.state === 'confirmed' ? 'success' : 'warning'}>{DOC_STATE_LABEL[d.state]}</StatusDot> },
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-6">
+          <div className="flex min-w-0 flex-col gap-4">
+            <Fold title="Аккаунт" summary={u.email}>
+              <Facts
+                items={[
+                  ['Email', u.email],
+                  ['Регистрация', <Mono key="c">{dt(u.created)}</Mono>],
+                  ['Последний вход', /\d/.test(u.lastSeen) && u.lastSeen.includes('-') ? <Mono key="l">{dt(u.lastSeen)}</Mono> : u.lastSeen],
+                  ['Не те документы подряд', seafarer ? <Mono key="w">{u.wrongDocs} из 2</Mono> : '—'],
                 ]}
               />
-            </div>
-          )}
+              {u.linked > 0 && (
+                <button type="button" onClick={() => (setRegTab('linked'), go('a-registrations'))} className="mt-4 flex w-full items-center justify-between rounded-md border border-border bg-surface px-4 py-3 text-left hover:bg-muted">
+                  <span className="flex flex-col">
+                    <span className="text-[15px] font-medium">
+                      Связанные аккаунты: <Mono>{u.linked}</Mono>
+                    </span>
+                    <span className="text-sm text-muted-foreground">Совпали устройство, имя или файл</span>
+                  </span>
+                  <span className="text-sm font-medium text-primary">Открыть</span>
+                </button>
+              )}
+            </Fold>
+            {seafarer && (
+              <Fold title="Документы" summary={`${u.docs.length} · только сведения, без фото`} flush>
+                <DataTable
+                  ignoreView
+                  className="rounded-none border-0"
+                  rows={u.docs}
+                  rowKey={(d) => d.type}
+                  pageSizes={u.docs.length > 5 ? [10, 20, 50] : undefined}
+                  empty={{ icon: FileText, title: 'Документов нет', text: 'Моряк не добавил ни одного документа.' }}
+                  columns={[
+                    { key: 't', header: 'Документ', width: '30%', sortValue: (d) => d.type, cell: (d) => <span className="font-medium">{d.type}</span> },
+                    { key: 'a', header: 'Добавлен', width: '26%', mono: true, sortValue: (d) => d.added, cell: (d) => dt(d.added) },
+                    { key: 'p', header: 'Стр.', width: '10%', align: 'right', mono: true, sortValue: (d) => d.pages, cell: (d) => d.pages },
+                    { key: 's', header: 'Состояние', sortValue: (d) => d.state, cell: (d) => <StatusDot tone={d.state === 'confirmed' ? 'success' : 'warning'}>{DOC_STATE_LABEL[d.state]}</StatusDot> },
+                  ]}
+                />
+              </Fold>
+            )}
+          </div>
+
+          <div className="flex min-w-0 flex-col gap-4">
+            {autoBlocked && (
+              <Fold title="Заблокирован автоматически" summary={<Mono>{dt(u.blockedAt ?? '')}</Mono>}>
+                <ol className="flex flex-col">
+                  {u.attempts.map((a, i) => (
+                    <li key={a.at} className="relative flex gap-4 pb-5 last:pb-0">
+                      {i < u.attempts.length - 1 && <span className="absolute top-7 bottom-0 left-[13px] w-px bg-border" aria-hidden="true" />}
+                      <span className={cn('flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-xs', i === 0 ? 'bg-warning/15 text-warning' : 'bg-signal/15 text-signal')}>{i + 1}</span>
+                      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                        <span className="text-[15px] font-medium">Загружен не документ моряка: {a.detected.toLowerCase()}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {a.where}, <Mono>{dt(a.at)}</Mono>
+                        </span>
+                        <span className="text-sm text-muted-foreground">{i === 0 ? 'Моряк увидел: «Ещё одна ошибка — и аккаунт будет заблокирован»' : 'Моряк увидел: «Аккаунт заблокирован. Для разблокировки свяжитесь с поддержкой»'}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+                <p className="mt-4 border-t border-border pt-3 text-sm text-muted-foreground">Сами файлы не сохраняются и здесь не показываются — только что распознал ИИ.</p>
+              </Fold>
+            )}
+            <Fold title="Журнал входов и действий" summary={`${log.length} записей`} flush defaultOpen>
+              <DataTable
+                ignoreView
+                className="rounded-none border-0"
+                rows={log}
+                rowKey={(r) => r.id}
+                initialSort={{ key: 'at', dir: 'desc' }}
+                pageSizes={[10, 20, 50]}
+                sortOptions={[
+                  { key: 'at', dir: 'desc', label: 'Дата: сначала новые' },
+                  { key: 'at', dir: 'asc', label: 'Дата: сначала старые' },
+                  { key: 'what', dir: 'asc', label: 'Действие: А — Я' },
+                ]}
+                empty={{ icon: History, title: 'Записей нет', text: 'Действия пользователя появятся здесь.' }}
+                columns={[
+                  { key: 'at', header: 'Когда', width: '34%', mono: true, sortValue: (r) => r.at, cell: (r) => dt(r.at) },
+                  { key: 'what', header: 'Действие', width: '36%', sortValue: (r) => r.what, cell: (r) => r.what },
+                  { key: 'where', header: 'Откуда', sortValue: (r) => r.where, cell: (r) => <span title={r.where} className="text-muted-foreground">{r.where}</span> },
+                ]}
+              />
+            </Fold>
+          </div>
         </div>
       </ViewState>
 
