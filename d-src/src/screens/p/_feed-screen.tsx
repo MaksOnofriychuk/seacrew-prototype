@@ -148,7 +148,7 @@ export function FeedScreen({ go, drawer: drawerAtStart = false }: { go: (id: str
               <Avatar size="sm">{me.initials}</Avatar>
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="text-[15px] font-medium">Новая публикация</span>
-                <span className="truncate text-sm text-muted-foreground">Что нового на борту?</span>
+                <span className="truncate text-sm text-muted-foreground">Поделитесь новостью…</span>
               </span>
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Plus className="size-5" strokeWidth={2.25} />
