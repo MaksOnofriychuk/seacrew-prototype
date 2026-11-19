@@ -11,7 +11,7 @@ import { RECRUITERS, salaryText, seafarerById, type Application } from '@/lib/da
 import { JOB_EXTRA } from '@/lib/data-recruiter-2'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../registry'
-import { EMPTY_META, requirementLines, type JobMeta } from './_job-meta'
+import { jobMetaFor, requirementLines, type JobMeta } from './_job-meta'
 import { BlockHead, ConfirmDialog, plural, ruDate, useR2, ViewBars } from './_parts'
 
 // r-job — вакансія очима рекрутера: умови, опис, вимоги, перегляди (відп. 101) і відгуки.
@@ -22,11 +22,11 @@ export function RJob({ go }: ScreenProps) {
   const { bag } = useProto()
   const [closing, setClosing] = useState(false)
   const j = r.jobs.find((x) => x.id === r.jobId) ?? r.jobs[0]
-  const extra = JOB_EXTRA[j.id] ?? { views: 0, daily: Array(14).fill(0), requirements: '' }
+  const extra = JOB_EXTRA[j.id] ?? { views: 0, daily: Array(14).fill(0) }
   const apps = r.apps.filter((a) => a.jobId === j.id)
   const week = extra.daily.slice(-7).reduce((s, v) => s + v, 0)
-  const meta = bag<Record<string, JobMeta>>('r2.jobMeta', {})[j.id]
-  const reqLines = meta ? requirementLines({ ...EMPTY_META, ...meta }) : []
+  const saved = bag<Record<string, JobMeta>>('r2.jobMeta', {})[j.id]
+  const reqLines = requirementLines(jobMetaFor(j.id, saved))
   const recruiter = RECRUITERS.find((x) => x.id === j.recruiterId)
 
   const facts: [string, ReactNode][] = [
@@ -37,7 +37,7 @@ export function RJob({ go }: ScreenProps) {
     ['Посадка', <span className="font-mono">{ruDate(j.board)}</span>],
     ['Контракт', <MonoNums text={j.duration} />],
     ['Регион', j.region],
-    ...(meta ? ([['Нужно человек', <span className="font-mono">{meta.seats}</span>]] as [string, ReactNode][]) : []),
+    ...(saved ? ([['Нужно человек', <span className="font-mono">{saved.seats}</span>]] as [string, ReactNode][]) : []),
   ]
 
   const openApp = (a: Application) => {
@@ -74,7 +74,7 @@ export function RJob({ go }: ScreenProps) {
               ))}
             </ul>
           ) : (
-            <p className="max-w-[640px] text-[15px] leading-relaxed">{meta ? 'Не указаны.' : extra.requirements || 'Не указаны.'}</p>
+            <p className="max-w-[640px] text-[15px] leading-relaxed">Не указаны.</p>
           )}
         </section>
       </div>

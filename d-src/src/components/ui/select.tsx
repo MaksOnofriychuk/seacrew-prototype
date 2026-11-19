@@ -3,6 +3,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { usePhonePortal } from "@/lib/phone-portal"
+import { useFrameKind } from "@/lib/frame"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 import { Select as SelectPrimitive } from "radix-ui"
 
@@ -55,12 +56,19 @@ function SelectContent({
   className,
   children,
   position: positionProp = "item-aligned",
-  align = "center",
+  align: alignProp,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
   const phone = usePhonePortal()
+  const web = useFrameKind() === "web"
   const position = phone ? "popper" : positionProp
-  const phoneProps = phone ? { side: "top" as const, collisionBoundary: phone, avoidCollisions: false } : {}
+  // У вебі (вікно браузера) — під полем, угору лише коли внизу немає місця; у межах вікна.
+  const phoneProps = !phone
+    ? {}
+    : web
+      ? { side: "bottom" as const, collisionBoundary: phone, collisionPadding: 8, avoidCollisions: true }
+      : { side: "top" as const, collisionBoundary: phone, avoidCollisions: false }
+  const align = alignProp ?? (phone && web ? "start" : "center")
   return (
     <SelectPrimitive.Portal container={phone ?? undefined}>
       <SelectPrimitive.Content
