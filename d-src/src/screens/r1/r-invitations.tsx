@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Info, Mail, Send } from 'lucide-react'
+import { Mail, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { WebField, WebInput, WebTextarea } from '@/components/web/fields'
+import { InfoTip } from '@/components/web/info-tip'
 import { PageHeader, PageTabs } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { WebAvatar } from '@/components/web/status-badge'
@@ -149,11 +150,7 @@ export function RInvitations({ go }: ScreenProps) {
           </Button>
         }
       />
-      <PageTabs tabs={TABS.map((t) => ({ ...t, count: count(t.id) }))} value={tab} onChange={setTab} />
-      <p className="mb-3 flex items-start gap-2 text-sm text-muted-foreground">
-        <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
-        {TAB_HINT[tab]}
-      </p>
+      <PageTabs tabs={TABS.map((t) => ({ ...t, count: count(t.id) }))} value={tab} onChange={setTab} trailing={<InfoTip align="right" label="Что значит статус" text={TAB_HINT[tab]} />} />
       <DataTable
         columns={columns}
         rows={rows}

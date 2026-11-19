@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import { useContext, type ReactNode } from 'react'
 import { ChevronLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { DescriptionAsTip, InfoTip } from './info-tip'
 
 // Заголовок сторінки вебу: «назад» до списку (необов'язково), заголовок ліворуч, пояснення, дії праворуч.
 export function PageHeader({
@@ -9,6 +10,7 @@ export function PageHeader({
   back,
   actions,
   meta,
+  plainDescription,
   className,
 }: {
   title: ReactNode
@@ -19,8 +21,11 @@ export function PageHeader({
   actions?: ReactNode
   /** тихий рядок під заголовком (напр. статус і дата) */
   meta?: ReactNode
+  /** в кабинете рекрутера description по умолчанию уходит в подсказку «i»; true — оставить строкой (если это данные, а не пояснение) */
+  plainDescription?: boolean
   className?: string
 }) {
+  const asTip = useContext(DescriptionAsTip) && !plainDescription && !!description
   return (
     <div className={cn('mb-6 flex flex-col gap-2', className)}>
       {back && (
@@ -31,8 +36,15 @@ export function PageHeader({
       )}
       <div className="flex items-start justify-between gap-6">
         <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="text-[28px] leading-tight font-semibold tracking-tight">{title}</h1>
-          {description && <p className="max-w-[720px] text-[15px] text-muted-foreground">{description}</p>}
+          {asTip ? (
+            <div className="flex items-center gap-2">
+              <h1 className="text-[28px] leading-tight font-semibold tracking-tight">{title}</h1>
+              <InfoTip text={description} />
+            </div>
+          ) : (
+            <h1 className="text-[28px] leading-tight font-semibold tracking-tight">{title}</h1>
+          )}
+          {description && !asTip && <p className="max-w-[720px] text-[15px] text-muted-foreground">{description}</p>}
           {meta && <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">{meta}</div>}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
@@ -47,15 +59,18 @@ export function PageTabs<T extends string>({
   tabs,
   value,
   onChange,
+  trailing,
   className,
 }: {
   tabs: { id: T; label: string; count?: number }[]
   value: T
   onChange: (id: T) => void
+  /** справа от вкладок, вне прокрутки (напр. значок «i» с подсказкой) */
+  trailing?: ReactNode
   className?: string
 }) {
-  return (
-    <div role="tablist" className={cn('mb-6 flex gap-6 overflow-x-auto border-b border-border', className)}>
+  const list = (cls: string) => (
+    <div role="tablist" className={cls}>
       {tabs.map((t) => {
         const on = t.id === value
         return (
@@ -85,6 +100,13 @@ export function PageTabs<T extends string>({
           </button>
         )
       })}
+    </div>
+  )
+  if (!trailing) return list(cn('mb-6 flex gap-6 overflow-x-auto border-b border-border', className))
+  return (
+    <div className={cn('mb-6 flex items-stretch', className)}>
+      {list('flex min-w-0 flex-1 gap-6 overflow-x-auto border-b border-border')}
+      <div className="flex shrink-0 items-center border-b border-border pl-4">{trailing}</div>
     </div>
   )
 }

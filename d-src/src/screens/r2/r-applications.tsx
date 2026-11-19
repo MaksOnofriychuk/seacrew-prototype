@@ -5,12 +5,14 @@ import { useView } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { DataTable, type Column } from '@/components/web/data-table'
 import { usePrefs } from '@/components/web/web-prefs'
-import { FilterBar, FilterSelect } from '@/components/web/filter-bar'
+import { FilterBar } from '@/components/web/filter-bar'
+import { WebMultiSelect } from '@/components/web/web-pickers'
 import { PageHeader, PageTabs } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { ApplicationStatusDot, AvailabilityDot, WebAvatar } from '@/components/web/status-badge'
 import { APPLICATION_STATUS_LABEL, seafarerById, type Application, type ApplicationStatus } from '@/lib/data-web'
 import type { ScreenProps } from '../registry'
+import { seafarerShownName } from '@/lib/data-seafarer-names'
 import { expForFilter, monthsText } from '@/lib/data-recruiter-1'
 import { useProto } from '@/lib/proto-state'
 import { ConfirmDialog, ruDate, useR2 } from './_parts'
@@ -22,8 +24,8 @@ const TABS: ApplicationStatus[] = ['sent', 'waiting', 'match', 'rejected']
 const SEAFARER_SEES: Record<ApplicationStatus, string> = {
   sent: 'Моряк видит «Отправлено». Решите: метч, ожидание или отказ.',
   waiting: 'Моряк видит «Ожидание» — вы рассматриваете отклик.',
-  match: 'Моряк видит «Метч». Договоритесь о деталях в разговоре.',
-  rejected: 'Моряк видит «Отклонено». Разговор остаётся в истории.',
+  match: 'Моряк видит «Метч». Договоритесь о деталях в диалоге.',
+  rejected: 'Моряк видит «Отклонено». Диалог остаётся в истории.',
 }
 
 // r-applications — відгуки на вакансії: статуси отправлено / ожидание / метч / отклонено (відп. 98),
@@ -35,16 +37,18 @@ export function RApplications({ go }: ScreenProps) {
   const { setBag } = useProto()
   const [tab, setTab] = useState<Tab>('all')
   const [q, setQ] = useState('')
-  const [job, setJob] = useState('')
+  const [jobs, setJobs] = useState<string[]>([])
   const [rejecting, setRejecting] = useState(false)
 
   const needle = q.trim().toLowerCase()
   const jobOf = (a: Application) => r.jobs.find((j) => j.id === a.jobId)!
+  const jobLabel = (j: { position: string; vesselName: string }) => `${j.position}, ${j.vesselName}`
+  const shownName = (a: Application) => seafarerShownName(seafarerById(a.seafarerId)!, a.status)
   const rows = r.apps
     .filter((a) => tab === 'all' || a.status === tab)
-    .filter((a) => !job || a.jobId === job)
-    .filter((a) => !needle || [seafarerById(a.seafarerId)!.name, seafarerById(a.seafarerId)!.position].some((s) => s.toLowerCase().includes(needle)))
-  const filtered = !!(needle || job)
+    .filter((a) => !jobs.length || jobs.includes(jobLabel(jobOf(a))))
+    .filter((a) => !needle || [shownName(a), seafarerById(a.seafarerId)!.position].some((s) => s.toLowerCase().includes(needle)))
+  const filtered = !!(needle || jobs.length)
   const sel = r.apps.find((a) => a.id === r.appId) ?? r.apps[0]
 
   const set = (s: ApplicationStatus) => {
@@ -61,14 +65,14 @@ export function RApplications({ go }: ScreenProps) {
       key: 'who',
       header: 'Моряк',
       width: '33%',
-      sortValue: (a) => seafarerById(a.seafarerId)!.name,
+      sortValue: (a) => shownName(a),
       cell: (a) => {
         const s = seafarerById(a.seafarerId)!
         return (
           <span className="flex items-center gap-3">
             <WebAvatar initials={s.initials} size="sm" />
             <span className="flex min-w-0 flex-col">
-              <span className="truncate font-medium">{s.name}</span>
+              <span className="truncate font-medium">{shownName(a)}</span>
               <span className="truncate text-[13px] text-muted-foreground">
                 {s.experienceMonths !== null && (
                   <>
@@ -114,7 +118,7 @@ export function RApplications({ go }: ScreenProps) {
 
   return (
     <WebShell variant="recruiter" active="r-applications" go={go}>
-      <PageHeader title="Отклики" description="Моряк откликается из приложения — у вас сразу появляется разговор с ним." />
+      <PageHeader title="Отклики" description="Моряк откликается из приложения — у вас сразу появляется диалог с ним." />
       <PageTabs<Tab>
         value={tab}
         onChange={setTab}
@@ -128,13 +132,24 @@ export function RApplications({ go }: ScreenProps) {
               filtered
                 ? () => {
                     setQ('')
-                    setJob('')
+                    setJobs([])
                   }
                 : undefined
             }
             count={rows.length}
           >
-            <FilterSelect label="Вакансия" value={job} onChange={setJob} options={r.jobs.filter((j) => r.apps.some((a) => a.jobId === j.id)).map((j) => ({ value: j.id, label: `${j.position}, ${j.vesselName}` }))} className="max-w-[300px] data-[size=default]:h-10" />
+            <WebMultiSelect
+              label="Вакансия"
+              className="w-[340px]"
+              values={jobs}
+              onChange={setJobs}
+              options={r.jobs.filter((j) => r.apps.some((a) => a.jobId === j.id)).map(jobLabel)}
+              placeholder="Все"
+              searchPlaceholder="Найти вакансию"
+              alwaysSearch
+              panelClassName="w-[400px]"
+              listClassName="max-h-[28rem]"
+            />
           </FilterBar>
           <DataTable
             columns={columns}
@@ -167,7 +182,7 @@ export function RApplications({ go }: ScreenProps) {
               <div className="flex items-center gap-3">
                 <WebAvatar initials={s.initials} size="lg" className="size-12 text-base" />
                 <div className="flex min-w-0 flex-col">
-                  <span className="truncate text-lg font-semibold">{s.name}</span>
+                  <span className="truncate text-lg font-semibold">{seafarerShownName(s, sel.status)}</span>
                   <span className="truncate text-sm text-muted-foreground">{s.position}</span>
                 </div>
               </div>
@@ -235,7 +250,7 @@ export function RApplications({ go }: ScreenProps) {
 
             <div className="border-t border-border p-5">
               <Button variant={sel.status === 'match' ? 'default' : 'outline'} className="w-full" onClick={openChat}>
-                <MessageSquare /> Открыть разговор
+                <MessageSquare /> Открыть диалог
               </Button>
             </div>
           </aside>

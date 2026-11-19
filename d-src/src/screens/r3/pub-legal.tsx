@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { CircleCheck } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { WebField, WebTextarea } from '@/components/web/fields'
 import { PageTabs } from '@/components/web/page-header'
 import { useProto } from '@/lib/proto-state'
 import type { ScreenProps } from '../types'
@@ -41,13 +44,53 @@ const TABS: { id: LegalTab; label: string }[] = [
   { id: 'support', label: 'Поддержка' },
 ]
 
+// Написать в поддержку прямо со страницы (мок: ничего не уходит).
+function SupportForm() {
+  const [text, setText] = useState('')
+  const [sent, setSent] = useState(false)
+  if (sent)
+    return (
+      <div role="status" className="flex flex-col items-start gap-3 rounded-xl border border-border bg-surface px-5 py-4">
+        <p className="flex items-start gap-2 text-[15px]">
+          <CircleCheck className="mt-0.5 size-5 shrink-0 text-success" />
+          Сообщение отправлено. Ответим в течение рабочего дня.
+        </p>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setText('')
+            setSent(false)
+          }}
+        >
+          Написать ещё
+        </Button>
+      </div>
+    )
+  return (
+    <form
+      className="flex flex-col gap-3"
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (text.trim()) setSent(true)
+      }}
+    >
+      <WebField id="support-text" label="Написать в поддержку">
+        <WebTextarea id="support-text" value={text} onChange={(e) => setText(e.target.value)} placeholder="Опишите вопрос. Если он про моряка или вакансию, приложите ссылку на страницу." className="min-h-32" />
+      </WebField>
+      <Button type="submit" className="self-start" disabled={!text.trim()}>
+        Отправить
+      </Button>
+    </form>
+  )
+}
+
 export function PubLegal({ go }: ScreenProps) {
   const { bag, setBag } = useProto()
   const [app, setApp] = useState(false)
   const tab = bag<LegalTab>('legal.web', 'terms')
   const back = bag<string>('back.pub-legal', 'pub-landing')
   return (
-    <PublicLayout here="pub-legal" go={go} onGetApp={() => setApp(true)}>
+    <PublicLayout here="pub-legal" inCabinet={back === 'r-settings'} go={go} onGetApp={() => setApp(true)}>
       <div className="mx-auto max-w-[760px] px-10 py-12">
         <button type="button" onClick={() => go(back)} className="mb-6 text-sm font-medium text-primary hover:underline">
           ← Назад
@@ -67,6 +110,9 @@ export function PubLegal({ go }: ScreenProps) {
                 <dd>в течение рабочего дня</dd>
               </div>
             </dl>
+            <div className="mt-4">
+              <SupportForm />
+            </div>
           </article>
         ) : (
           <article>

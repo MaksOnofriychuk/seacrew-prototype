@@ -348,6 +348,9 @@ export function WebMultiSelect({
   disabled,
   disabledHint,
   className,
+  alwaysSearch,
+  panelClassName,
+  listClassName,
 }: {
   id?: string
   /** підпис всередині поля: «Флот» */
@@ -361,6 +364,12 @@ export function WebMultiSelect({
   /** підказка, чому поле неактивне */
   disabledHint?: string
   className?: string
+  /** поле пошуку завжди, а не лише коли значень більше восьми */
+  alwaysSearch?: boolean
+  /** розмір вікна (за замовчуванням w-72) */
+  panelClassName?: string
+  /** висота списку (за замовчуванням max-h-60) */
+  listClassName?: string
 }) {
   const [open, setOpen] = useState(false)
   const [q, setQ] = useState('')
@@ -423,14 +432,14 @@ export function WebMultiSelect({
         <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
       </div>
       {open && (
-        <div ref={pref} role="dialog" aria-label={label ?? 'Выбор'} className={cn(panel, pos, 'w-72 p-2')}>
-          {options.length > 8 && (
+        <div ref={pref} role="dialog" aria-label={label ?? 'Выбор'} className={cn(panel, pos, 'w-72 p-2', panelClassName)}>
+          {(alwaysSearch || options.length > 8) && (
             <div className="relative mb-2">
               <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input autoFocus aria-label={searchPlaceholder} value={q} onChange={(e) => setQ(e.target.value)} placeholder={searchPlaceholder} className="h-9 pl-9 text-sm md:text-sm" />
             </div>
           )}
-          <ul role="listbox" aria-multiselectable="true" className="max-h-60 overflow-y-auto">
+          <ul role="listbox" aria-multiselectable="true" className={cn('max-h-60 overflow-y-auto', listClassName)}>
             {list.map((o) => {
               const on = values.includes(o)
               return (
