@@ -27,7 +27,7 @@ export const groups = defineGroups('recruiter', [
     title: 'Сообщения',
     screens: [
       { id: 'r-messages', title: 'Сообщения', Component: RMessages, path: '/messages' },
-      { id: 'r-chat', title: 'Разговор', Component: RChat, path: '/messages/ap01' },
+      { id: 'r-chat', title: 'Диалог', Component: RChat, path: '/messages/ap01' },
     ],
   },
   {

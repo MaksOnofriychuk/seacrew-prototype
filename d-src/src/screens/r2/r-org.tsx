@@ -20,7 +20,7 @@ import { ruDate, useR2 } from './_parts'
 export function ROrg({ go }: ScreenProps) {
   const r = useR2()
   const { bag } = useProto()
-  const [org, setOrg] = useState({ name: RECRUITER_ORG.name, country: RECRUITER_ORG.country, city: RECRUITER_ORG.city, site: RECRUITER_ORG.site, type: ORG_TYPES[0], size: ORG_SIZES[1], founded: '2012', languages: ['Русский', 'Английский'], fleets: ['Merchant', 'Offshore'], about: 'Набираем офицеров и рядовой состав на танкеры, балкеры и суда снабжения. Работаем с судовладельцами из ЕС и Азии.' })
+  const [org, setOrg] = useState({ name: RECRUITER_ORG.name, country: RECRUITER_ORG.country, city: RECRUITER_ORG.city, site: RECRUITER_ORG.site, type: ORG_TYPES[0], size: ORG_SIZES[1], founded: '2012', languages: ['Русский', 'Английский'], fleets: ['Merchant', 'Offshore'], publicEmail: 'crewing@bluewave-crewing.example', telegram: '@bluewave_crewing', whatsapp: '+357 25 000 123', viber: '', linkedin: 'linkedin.com/company/bluewave-crewing', facebook: '', instagram: '', about: 'Набираем офицеров и рядовой состав на танкеры, балкеры и суда снабжения. Работаем с судовладельцами из ЕС и Азии.' })
   const cities = [...(ORG_CITIES[org.country] ?? []), OTHER_CITY]
   const iAmOwner = bag<TeamMember[]>('r3.team', TEAM).find((m) => m.id === ME_RECRUITER.id)?.role === 'owner'
 
@@ -79,6 +79,29 @@ export function ROrg({ go }: ScreenProps) {
               </WebField>
               <WebField id="org-site" label="Сайт" className="col-span-3" hint={undefined}>
                 <WebInput id="org-site" value={org.site} disabled={!iAmOwner} onChange={(e) => setOrg({ ...org, site: e.target.value })} />
+              </WebField>
+              <WebField id="org-public-email" label="Публичный email для связи для кандидатов" className="col-span-3" hint={undefined}>
+                <WebInput id="org-public-email" type="email" value={org.publicEmail} disabled={!iAmOwner} onChange={(e) => setOrg({ ...org, publicEmail: e.target.value })} placeholder="crewing@company.com" />
+              </WebField>
+              <h3 className="col-span-3 mt-3 text-sm font-medium">Мессенджеры</h3>
+              <WebField id="org-telegram" label="Telegram" hint={undefined}>
+                <WebInput id="org-telegram" value={org.telegram} disabled={!iAmOwner} onChange={(e) => setOrg({ ...org, telegram: e.target.value })} placeholder="@username" />
+              </WebField>
+              <WebField id="org-whatsapp" label="WhatsApp" hint={undefined}>
+                <WebInput id="org-whatsapp" type="tel" value={org.whatsapp} disabled={!iAmOwner} onChange={(e) => setOrg({ ...org, whatsapp: e.target.value })} placeholder="+000 00 000 000" />
+              </WebField>
+              <WebField id="org-viber" label="Viber" hint={undefined}>
+                <WebInput id="org-viber" type="tel" value={org.viber} disabled={!iAmOwner} onChange={(e) => setOrg({ ...org, viber: e.target.value })} placeholder="+000 00 000 000" />
+              </WebField>
+              <h3 className="col-span-3 mt-3 text-sm font-medium">Соцсети</h3>
+              <WebField id="org-linkedin" label="LinkedIn" hint={undefined}>
+                <WebInput id="org-linkedin" value={org.linkedin} disabled={!iAmOwner} onChange={(e) => setOrg({ ...org, linkedin: e.target.value })} placeholder="linkedin.com/company/…" />
+              </WebField>
+              <WebField id="org-facebook" label="Facebook" hint={undefined}>
+                <WebInput id="org-facebook" value={org.facebook} disabled={!iAmOwner} onChange={(e) => setOrg({ ...org, facebook: e.target.value })} placeholder="facebook.com/…" />
+              </WebField>
+              <WebField id="org-instagram" label="Instagram" hint={undefined}>
+                <WebInput id="org-instagram" value={org.instagram} disabled={!iAmOwner} onChange={(e) => setOrg({ ...org, instagram: e.target.value })} placeholder="instagram.com/…" />
               </WebField>
               <WebField id="org-about" label="О компании" hint="Моряки видят это на вакансиях агентства" className="col-span-3">
                 <WebTextarea id="org-about" value={org.about} disabled={!iAmOwner} onChange={(e) => setOrg({ ...org, about: e.target.value })} className="min-h-24" />

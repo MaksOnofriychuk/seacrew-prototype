@@ -117,7 +117,6 @@ export function RJobs({ go }: ScreenProps) {
     <WebShell variant="recruiter" active="r-jobs" go={go}>
       <PageHeader
         title="Вакансии"
-        description="Открытые вакансии моряки видят в приложении и откликаются в одно касание."
         actions={
           <Button
             onClick={() => {

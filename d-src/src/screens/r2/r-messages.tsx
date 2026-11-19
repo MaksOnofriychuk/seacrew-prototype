@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { WebShell } from '@/components/web/shell'
 import { useAttachment } from '@/components/web/web-viewer'
 import { ApplicationStatusDot, WebAvatar } from '@/components/web/status-badge'
-import { FORMS, seafarerById } from '@/lib/data-web'
+import { FORMS, jobById, ME_RECRUITER, RECRUITERS, seafarerById, type RecruiterRole } from '@/lib/data-web'
+import { TEAM, type TeamMember } from '@/lib/data-recruiter-3'
 import { formTitle, type Chat, type ChatMsg } from '@/lib/data-recruiter-2'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
@@ -21,7 +22,7 @@ export function RMessages({ go }: ScreenProps) {
   return (
     <Layout go={go} openId={null}>
       <div className="flex flex-1 items-center justify-center">
-        {view === 'normal' && <EmptyState icon={MessageSquare} title="Выберите разговор" text="Разговор появляется, когда моряк откликается на вакансию или отвечает на ваше предложение." />}
+        {view === 'normal' && <EmptyState icon={MessageSquare} title="Выберите диалог" text="Диалог появляется, когда моряк откликается на вакансию или отвечает на ваше предложение." />}
       </div>
     </Layout>
   )
@@ -37,11 +38,32 @@ export function RChat({ go }: ScreenProps) {
   )
 }
 
+// Роль берём из команды (r3.team). Для показа обоих вариантов в прототипе её можно задать адресом: `#r-messages?role=recruiter`
+// (или owner / admin) — выбор запоминается на время просмотра.
+function useMyRole(): RecruiterRole {
+  const { bag, setBag } = useProto()
+  const asked = new URLSearchParams(location.hash.split('?')[1] ?? '').get('role')
+  const fromUrl = asked === 'owner' || asked === 'admin' || asked === 'recruiter' ? asked : null
+  useEffect(() => {
+    if (fromUrl) setBag('r2.messagesRole', fromUrl)
+  }, [fromUrl])
+  const own = bag<TeamMember[]>('r3.team', TEAM).find((m) => m.id === ME_RECRUITER.id)?.role ?? ME_RECRUITER.role
+  return fromUrl ?? bag<RecruiterRole | null>('r2.messagesRole', null) ?? own
+}
+
+type ChatFilter = 'all' | 'unread'
+
 function Layout({ go, openId, children }: { go: Go; openId: string | null; children: ReactNode }) {
   const r = useR2()
+  const role = useMyRole()
+  const seeAll = role !== 'recruiter'
   const [q, setQ] = useState('')
+  const [filter, setFilter] = useState<ChatFilter>('all')
   const needle = q.trim().toLowerCase()
-  const list = r.chats.filter((c) => {
+  const mine = seeAll ? r.chats : r.chats.filter((c) => jobById(c.jobId)?.recruiterId === ME_RECRUITER.id)
+  const unreadCount = mine.filter((c) => c.unread > 0).length
+  const list = mine.filter((c) => {
+    if (filter === 'unread' && c.unread === 0) return false
     if (!needle) return true
     const s = seafarerById(c.seafarerId)!
     const j = r.jobs.find((x) => x.id === c.jobId)
@@ -55,13 +77,16 @@ function Layout({ go, openId, children }: { go: Go; openId: string | null; child
           key={c.id}
           chat={c}
           active={c.id === openId}
+          leader={seeAll ? RECRUITERS.find((x) => x.id === jobById(c.jobId)?.recruiterId)?.name : undefined}
           onOpen={() => {
             r.openChat(c.id)
             go('r-chat')
           }}
         />
       ))}
-      {list.length === 0 && <li className="px-6 py-8 text-sm text-muted-foreground">Никого не нашли по запросу «{q}».</li>}
+      {list.length === 0 && (
+        <li className="px-6 py-8 text-sm text-muted-foreground">{needle ? `Никого не нашли по запросу «${q}».` : 'Непрочитанных диалогов нет.'}</li>
+      )}
     </ul>
   )
 
@@ -72,8 +97,30 @@ function Layout({ go, openId, children }: { go: Go; openId: string | null; child
           <h1 className="text-[28px] leading-tight font-semibold tracking-tight">Сообщения</h1>
           <label className="flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 focus-within:border-primary">
             <Search className="size-4 shrink-0 text-muted-foreground" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Моряк или вакансия" aria-label="Поиск по разговорам" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Моряк или вакансия" aria-label="Поиск по диалогам" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
           </label>
+          <div role="group" aria-label="Фильтр диалогов" className="flex gap-1.5">
+            {(
+              [
+                ['all', 'Все', mine.length],
+                ['unread', 'Непрочитанные', unreadCount],
+              ] as const
+            ).map(([id, label, n]) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={filter === id}
+                onClick={() => setFilter(id)}
+                className={cn(
+                  'flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors',
+                  filter === id ? 'border-primary bg-primary/10 font-medium text-primary' : 'border-border text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {label}
+                <span className="font-mono text-xs">{n}</span>
+              </button>
+            ))}
+          </div>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto">
           {openId ? (
@@ -81,7 +128,7 @@ function Layout({ go, openId, children }: { go: Go; openId: string | null; child
           ) : (
             <ViewState
               loading={{ kind: 'list', className: 'px-4' }}
-              empty={{ icon: MessageSquare, title: 'Разговоров пока нет', text: 'Разговор появится, когда моряк откликнется на вашу вакансию.' }}
+              empty={{ icon: MessageSquare, title: 'Диалогов пока нет', text: 'Диалог появится, когда моряк откликнется на вашу вакансию.' }}
             >
               {listBody}
             </ViewState>
@@ -104,7 +151,7 @@ function lastPreview(m: ChatMsg) {
   return ''
 }
 
-function ChatRow({ chat, active, onOpen }: { chat: Chat; active: boolean; onOpen: () => void }) {
+function ChatRow({ chat, active, leader, onOpen }: { chat: Chat; active: boolean; /** сотрудник, который ведёт диалог (видят владелец и администратор) */ leader?: string; onOpen: () => void }) {
   const r = useR2()
   const s = seafarerById(chat.seafarerId)!
   const j = r.jobs.find((x) => x.id === chat.jobId)
@@ -121,6 +168,7 @@ function ChatRow({ chat, active, onOpen }: { chat: Chat; active: boolean; onOpen
           <span className="truncate text-[13px] text-muted-foreground">
             {j?.position}, {j?.vesselName}
           </span>
+          {leader && <span className="truncate text-[13px] text-muted-foreground">Ведёт: {leader}</span>}
           <span className="flex items-center justify-between gap-3">
             <span className={cn('truncate text-sm', chat.unread && !active ? 'text-foreground' : 'text-muted-foreground')}>{lastPreview(last)}</span>
             {chat.unread > 0 && !active && <span className="shrink-0 rounded-full bg-primary px-1.5 font-mono text-xs leading-5 text-primary-foreground">{chat.unread}</span>}

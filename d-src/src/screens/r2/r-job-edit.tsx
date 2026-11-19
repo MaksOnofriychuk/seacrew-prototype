@@ -5,17 +5,18 @@ import { BOUNDS, isoToRu, ruToIso } from '@/lib/dates'
 import { BadgeCheck, Bookmark, ChevronLeft, Search } from 'lucide-react'
 import { MonoNums } from '@/components/app/mono-nums'
 import { Button } from '@/components/ui/button'
+import { LanguageLevelsField } from '@/components/web/language-levels-field'
 import { WebField, WebInput, WebSelect, WebTextarea } from '@/components/web/fields'
 import { PageHeader } from '@/components/web/page-header'
 import { WebShell } from '@/components/web/shell'
 import { departmentsFor, FLEETS, positionsFor } from '@/lib/data'
 import { RECRUITER_ORG, type WebJob } from '@/lib/data-web'
-import { CURRENCIES, emptyJob, JOB_EXTRA, NEW_JOB_ID, REGIONS, VESSEL_TYPES_WEB } from '@/lib/data-recruiter-2'
+import { CURRENCIES, emptyJob, NEW_JOB_ID, REGIONS, VESSEL_TYPES_WEB } from '@/lib/data-recruiter-2'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { plural, ruDate, useR2 } from './_parts'
-import { CERT_OPTIONS, EMPTY_META, ENGLISH_LEVELS, EXPERIENCE, LANG_OPTIONS, requirementLines, SEATS, VISA_OPTIONS, type JobMeta } from './_job-meta'
+import { CERT_OPTIONS, DP_LEVELS, EMPTY_META, ENGINE_TYPES, EXPERIENCE, LANG_LEVELS, LANG_OPTIONS, requirementLines, SEATS, VISA_OPTIONS, type JobMeta } from './_job-meta'
 
 type Key = 'fleet' | 'department' | 'position' | 'vesselType' | 'amount' | 'board' | 'duration'
 const REQUIRED: Key[] = ['fleet', 'department', 'position', 'vesselType', 'amount', 'board', 'duration']
@@ -30,7 +31,7 @@ export function RJobEdit({ go }: ScreenProps) {
   const [j, setJ] = useState<WebJob>(source)
   const { bag, setBag } = useProto()
   const metaAll = bag<Record<string, JobMeta>>('r2.jobMeta', {})
-  const [meta, setMeta] = useState<JobMeta>(() => metaAll[source.id] ?? { ...EMPTY_META, note: isNew ? '' : (JOB_EXTRA[source.id]?.requirements ?? '') })
+  const [meta, setMeta] = useState<JobMeta>(() => ({ ...EMPTY_META, ...metaAll[source.id] }))
   const putMeta = (p: Partial<JobMeta>) => setMeta((m) => ({ ...m, ...p }))
   const [tried, setTried] = useState(false)
   const [sal, setSal] = useState(() => parseSalary(source.salary.amount))
@@ -86,6 +87,30 @@ export function RJobEdit({ go }: ScreenProps) {
                   <WebSelect className="data-[size=default]:h-10" id="je-pos" searchable value={j.position} onChange={(position) => put({ position })} options={positionsFor(j.fleet ? [j.fleet] : [], j.department || null)} disabled={!j.department} placeholder={j.department ? 'Выберите' : 'Сначала департамент'} />
                 </WebField>
               </div>
+              {(j.department || j.fleet === 'Offshore') && (
+                <div className="grid grid-cols-3 items-start gap-4">
+                  {j.department === 'Engine' && (
+                    <WebField id="je-eng" label="Тип двигателя">
+                      <WebMultiSelect id="je-eng" label="Тип двигателя" values={meta.engines} onChange={(engines) => putMeta({ engines })} options={ENGINE_TYPES} placeholder="Выберите" />
+                    </WebField>
+                  )}
+                  {j.department && (
+                    <WebField id="je-ton" label="Размер судна">
+                      <div className="flex gap-2">
+                        <div className="w-[120px] shrink-0">
+                          <Segmented value={meta.tonnageKind} onChange={(tonnageKind) => putMeta({ tonnageKind })} options={[['DWT', 'DWT'], ['GRT', 'GRT']]} />
+                        </div>
+                        <WebInput id="je-ton" inputMode="numeric" className="min-w-0 flex-1 font-mono" value={meta.tonnage} onChange={(e) => putMeta({ tonnage: e.target.value.replace(/[^\d\s]/g, '') })} placeholder="0" />
+                      </div>
+                    </WebField>
+                  )}
+                  {j.fleet === 'Offshore' && (
+                    <WebField id="je-dp" label="DP Experience">
+                      <WebSelect className="data-[size=default]:h-10" id="je-dp" value={meta.dp} onChange={(dp) => putMeta({ dp })} options={DP_LEVELS} />
+                    </WebField>
+                  )}
+                </div>
+              )}
             </Block>
 
             <Block title="Судно">
@@ -118,7 +143,7 @@ export function RJobEdit({ go }: ScreenProps) {
                     )}
                   </>
                 ) : (
-                  <p className="col-span-2 self-center text-sm text-muted-foreground">Сумму моряк увидит после отклика, в карточке будет «Договорная».</p>
+                  <span className="col-span-2" />
                 )}
                 <WebField id="je-cur" label="Валюта" hint="">
                   <WebSelect className="data-[size=default]:h-10" id="je-cur" value={j.salary.currency} onChange={(currency) => putSalary({ currency: currency as WebJob['salary']['currency'] })} options={[...CURRENCIES]} />
@@ -165,11 +190,8 @@ export function RJobEdit({ go }: ScreenProps) {
                 <WebField id="je-visa" label="Визы">
                   <WebMultiSelect id="je-visa" label="Визы" values={meta.visas} onChange={(visas) => putMeta({ visas })} options={VISA_OPTIONS} placeholder="Не нужны" />
                 </WebField>
-                <WebField id="je-lang" label="Языки экипажа">
-                  <WebMultiSelect id="je-lang" label="Языки" values={meta.langs} onChange={(langs) => putMeta({ langs })} options={LANG_OPTIONS} placeholder="Не важны" />
-                </WebField>
-                <WebField id="je-eng" label="Английский">
-                  <WebSelect className="data-[size=default]:h-10" id="je-eng" value={meta.english} onChange={(english) => putMeta({ english })} options={ENGLISH_LEVELS} />
+                <WebField label="Языки" className="col-span-2">
+                  <LanguageLevelsField values={meta.languages} onChange={(languages) => putMeta({ languages })} languages={LANG_OPTIONS} levels={LANG_LEVELS} />
                 </WebField>
               </div>
             </Block>
@@ -178,9 +200,6 @@ export function RJobEdit({ go }: ScreenProps) {
               <div className="grid grid-cols-2 gap-4">
                 <WebField id="je-desc" label="Описание">
                   <WebTextarea id="je-desc" value={j.description} onChange={(e) => put({ description: e.target.value })} placeholder="Судовладелец, линия, смена экипажа, условия на борту" className="min-h-28" />
-                </WebField>
-                <WebField id="je-req" label="Ещё для моряка" hint="Только то, чего нет в списках выше">
-                  <WebTextarea id="je-req" value={meta.note} onChange={(e) => putMeta({ note: e.target.value })} placeholder="Например: двигатели MAN B&W" className="min-h-28" />
                 </WebField>
               </div>
             </Block>

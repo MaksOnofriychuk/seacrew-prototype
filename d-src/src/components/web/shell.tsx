@@ -33,6 +33,7 @@ import { usePhonePortal } from '@/lib/phone-portal'
 import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import { useNavCounts, type NavCountKey } from './nav-counts'
+import { DescriptionAsTip } from './info-tip'
 import { useOutside } from './web-pickers'
 import { WebAvatar } from './status-badge'
 import { themeAttrs, usePrefs } from './web-prefs'
@@ -235,7 +236,7 @@ export function WebShell({
     ? [
         { id: 'r-applications', text: 'Новый отклик на вакансию 3rd Engineer', time: 'сегодня' },
         { id: 'r-invitations', text: 'Моряк принял приглашение', time: 'вчера' },
-        { id: 'r-messages', text: 'Новое сообщение в разговоре', time: 'вчера' },
+        { id: 'r-messages', text: 'Новое сообщение в диалоге', time: 'вчера' },
       ]
     : [
         { id: 'a-orgs', text: 'Новая организация ждёт проверки', time: 'сегодня' },
@@ -315,7 +316,9 @@ export function WebShell({
             </span>
           </div>
         </header>
-        <main className={cn('min-h-0 flex-1 overflow-y-auto bg-background px-8 py-8', className)}>{children}</main>
+        <main className={cn('min-h-0 flex-1 overflow-y-auto bg-background px-8 py-8', className)}>
+          <DescriptionAsTip.Provider value={recruiter}>{children}</DescriptionAsTip.Provider>
+        </main>
       </div>
     </div>
   )
