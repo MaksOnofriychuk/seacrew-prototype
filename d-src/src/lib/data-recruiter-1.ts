@@ -152,10 +152,12 @@ export const CERT_OPTIONS = [...BASIC, ...uniq(SEAFARERS.flatMap((s) => s.certif
 export const VISA_OPTIONS = uniq(SEAFARERS.flatMap((s) => s.visas))
 export const AIRPORT_OPTIONS = uniq(SEAFARERS.map((s) => s.airport))
 export const EXP_OPTIONS = [
-  { value: '12', label: 'от 1 года' },
+  { value: '3', label: 'от 3 месяцев' },
+  { value: '6', label: 'от 6 месяцев' },
+  { value: '12', label: 'от 12 месяцев' },
+  { value: '24', label: 'от 2 лет' },
   { value: '36', label: 'от 3 лет' },
   { value: '60', label: 'от 5 лет' },
-  { value: '120', label: 'от 10 лет' },
 ]
 export const AVAIL_FILTER = [
   { value: 'now', label: 'Готов сейчас' },
