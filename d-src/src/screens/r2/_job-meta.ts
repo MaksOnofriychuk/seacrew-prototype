@@ -44,6 +44,19 @@ export const CERT_OPTIONS = [
 export const VISA_OPTIONS = ['США C1/D', 'Шенген', 'Великобритания', 'Канада', 'Австралия', 'ОАЭ']
 export const EXPERIENCE = ['Не требуется', 'от 6 месяцев', 'от 1 года', 'от 2 лет', 'от 3 лет', 'от 5 лет', 'от 8 лет']
 
+// Требования вакансий из моков — теми же полями, что в форме (без свободного текста).
+export const SEED_META: Record<string, Partial<JobMeta>> = {
+  j01: { visas: ['США C1/D'], expVessel: 'от 1 года', engines: ['Дизельный низкооборотный'] },
+  j02: { expPos: 'от 2 лет', certs: ['ECDIS'], tonnageKind: 'DWT', tonnage: '58 000' },
+  j03: { certs: ['DP Unlimited', 'BOSIET'], dp: 'Dynamic position 2' },
+  j04: { certs: ['High Voltage'], expVessel: 'от 6 месяцев' },
+  j05: { certs: ['Сертификат судового повара'] },
+  j06: { certs: ['Crowd Management'], expVessel: 'от 1 года' },
+}
+
+/** Поля вакансии: моки, поверх — сохранённое в форме. */
+export const jobMetaFor = (id: string, saved?: Partial<JobMeta>): JobMeta => ({ ...EMPTY_META, ...SEED_META[id], ...saved })
+
 /** Требования одной строкой (для карточки и страницы вакансии). */
 export function requirementLines(m: JobMeta): string[] {
   const out: string[] = []

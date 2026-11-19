@@ -16,7 +16,7 @@ import { useProto } from '@/lib/proto-state'
 import { cn } from '@/lib/utils'
 import type { ScreenProps } from '../registry'
 import { plural, ruDate, useR2 } from './_parts'
-import { CERT_OPTIONS, DP_LEVELS, EMPTY_META, ENGINE_TYPES, EXPERIENCE, LANG_LEVELS, LANG_OPTIONS, requirementLines, SEATS, VISA_OPTIONS, type JobMeta } from './_job-meta'
+import { CERT_OPTIONS, DP_LEVELS, ENGINE_TYPES, jobMetaFor, EXPERIENCE, LANG_LEVELS, LANG_OPTIONS, requirementLines, SEATS, VISA_OPTIONS, type JobMeta } from './_job-meta'
 
 type Key = 'fleet' | 'department' | 'position' | 'vesselType' | 'amount' | 'board' | 'duration'
 const REQUIRED: Key[] = ['fleet', 'department', 'position', 'vesselType', 'amount', 'board', 'duration']
@@ -31,7 +31,7 @@ export function RJobEdit({ go }: ScreenProps) {
   const [j, setJ] = useState<WebJob>(source)
   const { bag, setBag } = useProto()
   const metaAll = bag<Record<string, JobMeta>>('r2.jobMeta', {})
-  const [meta, setMeta] = useState<JobMeta>(() => ({ ...EMPTY_META, ...metaAll[source.id] }))
+  const [meta, setMeta] = useState<JobMeta>(() => jobMetaFor(source.id, metaAll[source.id]))
   const putMeta = (p: Partial<JobMeta>) => setMeta((m) => ({ ...m, ...p }))
   const [tried, setTried] = useState(false)
   const [sal, setSal] = useState(() => parseSalary(source.salary.amount))

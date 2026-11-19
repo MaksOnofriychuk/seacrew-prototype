@@ -9,17 +9,15 @@ export type JobExtra = {
   views: number
   /** перегляди за останні 14 днів, від старих до нових */
   daily: number[]
-  /** обов'язкові вимоги до моряка — вільним текстом (відп. 92) */
-  requirements: string
 }
 
 export const JOB_EXTRA: Record<string, JobExtra> = {
-  j01: { views: 312, daily: [8, 14, 22, 19, 25, 31, 18, 12, 27, 33, 29, 24, 30, 20], requirements: 'Виза США C1/D. Опыт на химовозах от 12 месяцев. Двигатели MAN B&W.' },
-  j02: { views: 248, daily: [11, 16, 20, 15, 18, 22, 17, 19, 21, 14, 16, 18, 20, 21], requirements: 'Стаж в должности от 24 месяцев. Балкеры Supramax. ECDIS.' },
-  j03: { views: 167, daily: [0, 0, 0, 0, 0, 0, 0, 0, 9, 24, 31, 38, 35, 30], requirements: 'DP Unlimited. BOSIET и OGUK. Опыт DP2 от 6 месяцев.' },
-  j04: { views: 0, daily: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], requirements: 'High Voltage. Опыт на AHTS.' },
-  j05: { views: 96, daily: [3, 5, 9, 8, 6, 7, 4, 9, 8, 6, 7, 9, 7, 8], requirements: 'Сертификат судового повара. Опыт в смешанных экипажах.' },
-  j06: { views: 421, daily: [30, 34, 28, 25, 31, 27, 22, 0, 0, 0, 0, 0, 0, 0], requirements: 'Опыт на круизных судах от 2 контрактов. Crowd Management.' },
+  j01: { views: 312, daily: [8, 14, 22, 19, 25, 31, 18, 12, 27, 33, 29, 24, 30, 20] },
+  j02: { views: 248, daily: [11, 16, 20, 15, 18, 22, 17, 19, 21, 14, 16, 18, 20, 21] },
+  j03: { views: 167, daily: [0, 0, 0, 0, 0, 0, 0, 0, 9, 24, 31, 38, 35, 30] },
+  j04: { views: 0, daily: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+  j05: { views: 96, daily: [3, 5, 9, 8, 6, 7, 4, 9, 8, 6, 7, 9, 7, 8] },
+  j06: { views: 421, daily: [30, 34, 28, 25, 31, 27, 22, 0, 0, 0, 0, 0, 0, 0] },
 }
 
 export const VESSEL_TYPES_WEB = ['Chemical Tanker', 'Oil Tanker', 'LPG Carrier', 'Bulk Carrier', 'Container Ship', 'PSV', 'AHTS', 'Cruise Ship']
