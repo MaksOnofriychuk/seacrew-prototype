@@ -31,7 +31,7 @@ export function ExampleMark({ className, children = 'пример' }: { classNam
 /* ---------- публічні сторінки ---------- */
 
 // Звичайна веб-сторінка без кабінету: шапка з «Seafolio», вміст, тихий низ.
-export function PublicLayout({ go, onGetApp, here, children }: { go: Go; onGetApp: () => void; /** id этой страницы: «Назад» из текстов вернёт сюда */ here?: string; children: ReactNode }) {
+export function PublicLayout({ go, onGetApp, here, inCabinet, children }: { go: Go; onGetApp: () => void; /** id этой страницы: «Назад» из текстов вернёт сюда */ here?: string; /** страницу открыл рекрутер из кабинета: кнопок входа и скачивания приложения нет */ inCabinet?: boolean; children: ReactNode }) {
   const { setBag } = useProto()
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
@@ -47,14 +47,16 @@ export function PublicLayout({ go, onGetApp, here, children }: { go: Go; onGetAp
             Для агентств
           </button>
         </nav>
-        <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" className="h-10 text-primary" onClick={() => go('r-login')}>
-            Войти в кабинет
-          </Button>
-          <Button className="h-10" onClick={onGetApp}>
-            <Smartphone /> Скачать приложение
-          </Button>
-        </div>
+        {!inCabinet && (
+          <div className="ml-auto flex items-center gap-2">
+            <Button variant="ghost" className="h-10 text-primary" onClick={() => go('r-login')}>
+              Войти в кабинет
+            </Button>
+            <Button className="h-10" onClick={onGetApp}>
+              <Smartphone /> Скачать приложение
+            </Button>
+          </div>
+        )}
       </header>
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         <main className="flex-1">{children}</main>
@@ -75,7 +77,7 @@ export function PublicLayout({ go, onGetApp, here, children }: { go: Go; onGetAp
                 type="button"
                 onClick={() => {
                   setBag('legal.web', id)
-                  setBag('back.pub-legal', here ?? 'pub-landing')
+                  if (here !== 'pub-legal') setBag('back.pub-legal', here ?? 'pub-landing')
                   go('pub-legal')
                 }}
                 className="hover:text-foreground"

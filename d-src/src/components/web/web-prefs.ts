@@ -15,7 +15,7 @@ export type Channel = { email: boolean; cabinet: boolean }
 export const NOTIFY_EVENTS = [
   { id: 'application', label: 'Новый отклик на вакансию' },
   { id: 'invitation', label: 'Моряк ответил на приглашение' },
-  { id: 'message', label: 'Новое сообщение в разговоре' },
+  { id: 'message', label: 'Новое сообщение в диалоге' },
   { id: 'form', label: 'Моряк заполнил анкету' },
   { id: 'billing', label: 'Счета и срок тарифа' },
 ] as const

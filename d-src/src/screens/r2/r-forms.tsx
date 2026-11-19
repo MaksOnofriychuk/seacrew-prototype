@@ -182,7 +182,7 @@ export function RForms({ go }: ScreenProps) {
             go('r-assignment')
           }}
           initialSort={{ key: 'date', dir: 'desc' }}
-          empty={{ icon: Inbox, title: 'Ответов пока нет', text: 'Отправьте анкету моряку из разговора — его ответ появится здесь.' }}
+          empty={{ icon: Inbox, title: 'Ответов пока нет', text: 'Отправьте анкету моряку из диалога — его ответ появится здесь.' }}
         />
         </>
       )}

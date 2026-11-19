@@ -309,7 +309,7 @@ export function EmptyChat({ onWrite }: { onWrite: () => void }) {
     <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-surface px-6 py-14 text-center">
       <MessageSquare className="size-8 text-muted-foreground" />
       <p className="text-[15px] font-medium">Переписки пока нет</p>
-      <p className="max-w-[420px] text-sm text-muted-foreground">Напишите первым: моряк получит сообщение в приложении. Разговор откроется, когда он ответит.</p>
+      <p className="max-w-[420px] text-sm text-muted-foreground">Напишите первым: моряк получит сообщение в приложении. Диалог откроется, когда он ответит.</p>
       <Button variant="outline" className="text-primary" onClick={onWrite}>
         Написать
       </Button>

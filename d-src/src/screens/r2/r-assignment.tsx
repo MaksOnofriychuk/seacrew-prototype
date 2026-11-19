@@ -45,7 +45,7 @@ export function RAssignment({ go }: ScreenProps) {
   const view = (name: string) => att.open(name, kindOf(name), `${s.name}, ${form.title}`)
   const download = (name: string) => r.showToast(`Файл скачан: ${name}`)
 
-  const notYet = <EmptyState icon={Hourglass} title="Моряк ещё не отправил анкету" text="Ответы появятся здесь, когда он её отправит. Напомнить можно в разговоре." />
+  const notYet = <EmptyState icon={Hourglass} title="Моряк ещё не отправил анкету" text="Ответы появятся здесь, когда он её отправит. Напомнить можно в диалоге." />
 
   const body = !submitted ? (
     notYet
@@ -146,6 +146,7 @@ export function RAssignment({ go }: ScreenProps) {
       <PageHeader
         back={{ label: 'Анкеты', onClick: () => go('r-forms') }}
         title={s.name}
+        plainDescription
         description={`${s.position}. Ответ на анкету «${form.title}»`}
         meta={
           <>
